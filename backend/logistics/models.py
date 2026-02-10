@@ -38,6 +38,24 @@ class TransportJob(models.Model):
     # Specifications (JSONB for flexibility between Transport vs Moving)
     specifications = models.JSONField(default=dict)
     
+    # Budget hint (Blueprint §2.3)
+    price_tnd_min = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Client's minimum budget hint (TND)"
+    )
+    price_tnd_max = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Client's maximum budget hint (TND)"
+    )
+    
+    # Description and photos
+    description = models.TextField(blank=True, help_text="What needs transporting")
+    photos = models.JSONField(default=list, blank=True, help_text="List of photo URLs for job items")
+    
+    # Regional filtering
+    pickup_governorate = models.CharField(max_length=50, blank=True, db_index=True)
+    dropoff_governorate = models.CharField(max_length=50, blank=True, db_index=True)
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

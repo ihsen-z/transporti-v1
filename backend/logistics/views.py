@@ -11,7 +11,8 @@ from .serializers import (
     TransportJobCreateSerializer, TransportJobListSerializer, 
     TransportJobDetailSerializer, OfferCreateSerializer, 
     OfferListSerializer, OfferDetailSerializer,
-    OfferAcceptSerializer
+    OfferAcceptSerializer,
+    TransportJobUpdateSerializer, TransporterProfileSerializer
 )
 from users.permissions import RequireRole, RequireVerification
 
@@ -58,15 +59,31 @@ class JobPublicListView(generics.ListAPIView):
     GET /api/jobs/public/
     Verified transporters view PUBLISHED jobs.
     Filters out expired tasks (scheduled < now).
+    Supports query params: job_type, pickup_governorate, dropoff_governorate.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER'), RequireVerification]
     serializer_class = TransportJobListSerializer
 
     def get_queryset(self):
-        return TransportJob.objects.filter(
+        queryset = TransportJob.objects.filter(
             status=TransportJob.Status.PUBLISHED,
             scheduled_time__gte=timezone.now()
         ).order_by('-created_at')
+
+        # Apply Filters
+        job_type = self.request.query_params.get('job_type')
+        if job_type:
+            queryset = queryset.filter(job_type=job_type)
+
+        pickup_gov = self.request.query_params.get('pickup_governorate')
+        if pickup_gov:
+            queryset = queryset.filter(pickup_governorate=pickup_gov)
+
+        dropoff_gov = self.request.query_params.get('dropoff_governorate')
+        if dropoff_gov:
+            queryset = queryset.filter(dropoff_governorate=dropoff_gov)
+
+        return queryset
 
 
 class JobDetailView(APIView):
@@ -211,3 +228,126 @@ class OfferAcceptView(generics.GenericAPIView):
             response_data['escrow'] = EscrowDetailSerializer(escrow).data
 
         return Response(response_data)
+
+
+# =============================================================================
+# JOB LIFECYCLE VIEWS
+# =============================================================================
+
+class JobUpdateView(generics.UpdateAPIView):
+    """
+    PUT/PATCH /api/jobs/{id}/
+    Client edits a DRAFT job.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
+    serializer_class = TransportJobUpdateSerializer
+    queryset = TransportJob.objects.all()
+    lookup_field = 'id'
+
+    def get_queryset(self):
+        return TransportJob.objects.filter(owner=self.request.user, status=TransportJob.Status.DRAFT)
+
+
+class JobPublishView(APIView):
+    """
+    POST /api/jobs/{id}/publish/
+    Client publishes a DRAFT job.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
+
+    def post(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id, owner=request.user)
+        
+        if job.status != TransportJob.Status.DRAFT:
+            return Response({'error': 'Only DRAFT jobs can be published.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        job.status = TransportJob.Status.PUBLISHED
+        job.save()
+        
+        return Response({
+            'message': 'Job published successfully.',
+            'job': TransportJobDetailSerializer(job, context={'request': request}).data
+        })
+
+
+class JobCancelView(APIView):
+    """
+    POST /api/jobs/{id}/cancel/
+    Client cancels a job (DRAFT or PUBLISHED).
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
+
+    def post(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id, owner=request.user)
+        
+        if job.status not in [TransportJob.Status.DRAFT, TransportJob.Status.PUBLISHED]:
+            return Response(
+                {'error': 'Cannot cancel job in current status.'}, 
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        job.status = TransportJob.Status.CANCELLED
+        job.save()
+        
+        # Withdraw all offers
+        job.offers.update(status=Offer.Status.EXPIRED)
+        
+        return Response({'message': 'Job cancelled successfully.'})
+
+
+class JobCompleteView(APIView):
+    """
+    POST /api/jobs/{id}/complete/
+    Transporter marks job as completed (Delivered).
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    def post(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id)
+        
+        # Verify transporter is the assignee
+        offer = job.offers.filter(status=Offer.Status.ACCEPTED, transporter=request.user).first()
+        if not offer:
+            return Response({'error': 'You are not assigned to this job.'}, status=status.HTTP_403_FORBIDDEN)
+            
+        if job.status != TransportJob.Status.IN_PROGRESS:
+            return Response({'error': 'Job is not in progress.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        job.status = TransportJob.Status.COMPLETED
+        job.save()
+        
+        return Response({'message': 'Job marked as completed.'})
+
+
+class OfferWithdrawView(APIView):
+    """
+    POST /api/offers/{id}/withdraw/
+    Transporter withdraws a PENDING offer.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    def post(self, request, offer_id):
+        offer = get_object_or_404(Offer, id=offer_id, transporter=request.user)
+        
+        if offer.status != Offer.Status.PENDING:
+            return Response({'error': 'Only PENDING offers can be withdrawn.'}, status=status.HTTP_400_BAD_REQUEST)
+            
+        offer.status = Offer.Status.WITHDRAWN
+        offer.save()
+        
+        return Response({'message': 'Offer withdrawn successfully.'})
+
+
+class TransporterProfileView(generics.RetrieveAPIView):
+    """
+    GET /api/transporter/profile/{user_id}/
+    Public profile for transporters.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = TransporterProfileSerializer
+    lookup_field = 'user_id' # Looking up via User ID, not TrustProfile ID directly
+    
+    def get_object(self):
+        from trust.models import TrustProfile
+        user_id = self.kwargs['user_id']
+        return get_object_or_404(TrustProfile, user_id=user_id)

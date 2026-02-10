@@ -220,6 +220,43 @@ class TrustProfile(models.Model):
     rejection_reason = models.TextField(blank=True, null=True)
     last_submitted_at = models.DateTimeField(null=True, blank=True)
     
+    # Vehicle details (Blueprint §4 - Product Vision: transporter profile)
+    vehicle_type = models.CharField(
+        max_length=50, blank=True,
+        help_text="e.g. Pickup, Van, Truck, Camion"
+    )
+    vehicle_capacity_kg = models.DecimalField(
+        max_digits=8, decimal_places=1, null=True, blank=True,
+        help_text="Max load capacity in kg"
+    )
+    vehicle_plate = models.CharField(max_length=20, blank=True)
+    vehicle_photos = models.JSONField(
+        default=list, blank=True,
+        help_text="List of vehicle photo URLs"
+    )
+    insurance_valid_until = models.DateField(null=True, blank=True)
+    
+    # Service coverage
+    service_areas = models.JSONField(
+        default=list, blank=True,
+        help_text="List of governorates served e.g. ['Tunis', 'Sousse', 'Sfax']"
+    )
+    specializations = models.JSONField(
+        default=list, blank=True,
+        help_text="e.g. ['furniture', 'electronics', 'fragile', 'construction']"
+    )
+    
+    # Performance metrics (cached from analytics)
+    response_time_avg_minutes = models.IntegerField(
+        null=True, blank=True,
+        help_text="Average response time to offers in minutes"
+    )
+    total_jobs_completed = models.IntegerField(default=0)
+    completion_rate = models.DecimalField(
+        max_digits=5, decimal_places=2, default=100.00,
+        help_text="Percentage of accepted jobs completed successfully"
+    )
+    
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

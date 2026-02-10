@@ -1,0 +1,55 @@
+import React from 'react';
+import { Truck, Home } from 'lucide-react';
+
+interface JobTypeSelectorProps {
+    selectedType: string | null;
+    onSelect: (type: 'TRANSPORT' | 'MOVING') => void;
+}
+
+export function JobTypeSelector({ selectedType, onSelect }: JobTypeSelectorProps) {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {/* Transport Option */}
+            <button
+                type="button"
+                onClick={() => onSelect('TRANSPORT')}
+                className={`p-6 border-2 rounded-xl flex flex-col items-center gap-4 transition-all
+          ${selectedType === 'TRANSPORT'
+                        ? 'border-blue-600 bg-blue-50 text-blue-900'
+                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                    }`}
+            >
+                <div className={`p-4 rounded-full ${selectedType === 'TRANSPORT' ? 'bg-blue-200' : 'bg-gray-100'}`}>
+                    <Truck className="w-8 h-8" />
+                </div>
+                <div className="text-center">
+                    <h3 className="font-bold text-lg">Transport de Marchandises</h3>
+                    <p className="text-sm text-gray-500 mt-2">
+                        Pour vos colis, meubles, ou équipements. Idéal pour les livraisons rapides.
+                    </p>
+                </div>
+            </button>
+
+            {/* Moving Option */}
+            <button
+                type="button"
+                onClick={() => onSelect('MOVING')}
+                className={`p-6 border-2 rounded-xl flex flex-col items-center gap-4 transition-all
+          ${selectedType === 'MOVING'
+                        ? 'border-blue-600 bg-blue-50 text-blue-900'
+                        : 'border-gray-200 hover:border-blue-300 hover:bg-gray-50'
+                    }`}
+            >
+                <div className={`p-4 rounded-full ${selectedType === 'MOVING' ? 'bg-blue-200' : 'bg-gray-100'}`}>
+                    <Home className="w-8 h-8" />
+                </div>
+                <div className="text-center">
+                    <h3 className="font-bold text-lg">Déménagement</h3>
+                    <p className="text-sm text-gray-500 mt-2">
+                        Service complet pour changer de domicile. Inclus estimation du volume.
+                    </p>
+                </div>
+            </button>
+        </div>
+    );
+}

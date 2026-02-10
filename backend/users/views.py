@@ -92,10 +92,31 @@ class LoginView(APIView):
 
 class ProfileView(APIView):
     """
-    GET /api/auth/profile/
-    Returns current user profile.
+    GET /api/auth/profile/ - Returns current user profile.
+    PUT /api/auth/profile/ - Updates user profile (partial).
     """
     def get(self, request):
         return Response({
             'user': UserProfileSerializer(request.user).data
         })
+
+    def put(self, request):
+        from .serializers import UserProfileUpdateSerializer
+        
+        serializer = UserProfileUpdateSerializer(
+            request.user, 
+            data=request.data, 
+            partial=True
+        )
+        
+        if serializer.is_valid():
+            serializer.save()
+            
+            logger.info(f"USER_PROFILE_UPDATED: user_id={request.user.id}")
+            
+            return Response({
+                'message': 'Profile updated successfully.',
+                'user': UserProfileSerializer(request.user).data
+            })
+            
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

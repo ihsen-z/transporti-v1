@@ -119,3 +119,46 @@ class UserProfileSerializer(serializers.ModelSerializer):
             except:
                 return 'UNVERIFIED'
         return None
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializer for the nested Profile model.
+    """
+    class Meta:
+        from .models import Profile
+        model = Profile
+        fields = ['avatar_url', 'language_pref', 'address_summary', 'bio']
+
+
+class UserProfileUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating user and nested profile data.
+    """
+    profile = ProfileSerializer()
+    
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'phone', 'profile']
+
+    def update(self, instance, validated_data):
+        profile_data = validated_data.pop('profile', {})
+        
+        # Update User fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        
+        # Update Profile fields
+        # Note: Profile is auto-created, but handle case if missing
+        try:
+            profile = instance.profile
+        except User.profile.RelatedObjectDoesNotExist:
+            from .models import Profile
+            profile = Profile.objects.create(user=instance)
+            
+        for attr, value in profile_data.items():
+            setattr(profile, attr, value)
+        profile.save()
+        
+        return instance

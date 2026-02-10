@@ -64,4 +64,7 @@ urlpatterns = [
     
     # Notifications Module
     path('api/notifications/', include('notifications.urls')),
+    
+    # Reviews Module
+    path('api/', include('reviews.urls')),
 ]

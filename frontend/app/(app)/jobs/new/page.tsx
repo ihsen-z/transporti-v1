@@ -1,0 +1,232 @@
+'use client';
+
+import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { JobTypeSelector } from '@/components/jobs/JobTypeSelector';
+import { LocationPicker } from '@/components/jobs/LocationPicker';
+import { TransportDetailsForm } from '@/components/jobs/TransportDetailsForm';
+import { MovingDetailsForm } from '@/components/jobs/MovingDetailsForm';
+import { JobPreview } from '@/components/jobs/JobPreview';
+
+const STEPS = [
+    { id: 'type', title: 'Type de service' },
+    { id: 'location', title: 'Adresses' },
+    { id: 'details', title: 'Détails' },
+    { id: 'schedule', title: 'Date & Budget' },
+    { id: 'preview', title: 'Confirmation' },
+];
+
+export default function NewJobPage() {
+    const router = useRouter();
+    const { user } = useAuth();
+    const [currentStep, setCurrentStep] = useState(0);
+    const [loading, setLoading] = useState(false);
+    const [formData, setFormData] = useState({
+        job_type: null as 'TRANSPORT' | 'MOVING' | null,
+        pickup_address: '',
+        pickup_governorate: '',
+        dropoff_address: '',
+        dropoff_governorate: '',
+        description: '',
+        photos: [] as string[],
+        specifications: {},
+        scheduled_time: '',
+        price_tnd_min: '',
+        price_tnd_max: '',
+    });
+
+    const handleNext = () => {
+        if (currentStep < STEPS.length - 1) {
+            setCurrentStep(currentStep + 1);
+            window.scrollTo(0, 0);
+        } else {
+            handleSubmit();
+        }
+    };
+
+    const handleBack = () => {
+        if (currentStep > 0) {
+            setCurrentStep(currentStep - 1);
+            window.scrollTo(0, 0);
+        }
+    };
+
+    const handleSubmit = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('/api/jobs/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
+                },
+                body: JSON.stringify(formData)
+            });
+
+            if (!response.ok) throw new Error('Failed to create job');
+
+            const data = await response.json();
+            router.push(`/jobs/${data.id}`); // Redirect to job details
+        } catch (error) {
+            console.error('Error creating job:', error);
+            alert('Une erreur est survenue lors de la création de votre demande.');
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const updateFormData = (newData: any) => {
+        setFormData(prev => ({ ...prev, ...newData }));
+    };
+
+    const renderStep = () => {
+        switch (currentStep) {
+            case 0:
+                return (
+                    <JobTypeSelector
+                        selectedType={formData.job_type}
+                        onSelect={(type) => updateFormData({ job_type: type })}
+                    />
+                );
+            case 1:
+                return (
+                    <LocationPicker
+                        data={formData}
+                        onChange={updateFormData}
+                    />
+                );
+            case 2:
+                return formData.job_type === 'TRANSPORT' ? (
+                    <TransportDetailsForm data={formData} onChange={updateFormData} />
+                ) : (
+                    <MovingDetailsForm data={formData} onChange={updateFormData} />
+                );
+            case 3:
+                return (
+                    <div className="space-y-6">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Date et heure souhaitées
+                            </label>
+                            <input
+                                type="datetime-local"
+                                value={formData.scheduled_time}
+                                onChange={(e) => updateFormData({ scheduled_time: e.target.value })}
+                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                            />
+                            <p className="text-sm text-gray-500 mt-1">
+                                Choisissez une date au moins 24h à l'avance pour maximiser les offres.
+                            </p>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Budget Min (TND)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={formData.price_tnd_min}
+                                    onChange={(e) => updateFormData({ price_tnd_min: e.target.value })}
+                                    placeholder="Optionnel"
+                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Budget Max (TND)
+                                </label>
+                                <input
+                                    type="number"
+                                    value={formData.price_tnd_max}
+                                    onChange={(e) => updateFormData({ price_tnd_max: e.target.value })}
+                                    placeholder="Optionnel"
+                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 4:
+                return <JobPreview data={formData} />;
+            default:
+                return null;
+        }
+    };
+
+    return (
+        <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-3xl mx-auto">
+                {/* Progress Bar */}
+                <div className="mb-8">
+                    <div className="flex justify-between items-center mb-4">
+                        {STEPS.map((step, index) => (
+                            <div key={step.id} className="flex flex-col items-center flex-1 relative">
+                                <div
+                                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold z-10 transition-colors
+                    ${index <= currentStep
+                                            ? 'bg-blue-600 text-white'
+                                            : 'bg-gray-200 text-gray-500'}`}
+                                >
+                                    {index < currentStep ? <Check className="w-5 h-5" /> : index + 1}
+                                </div>
+                                <span className="text-xs mt-2 text-gray-600 hidden sm:block">{step.title}</span>
+
+                                {/* Connecting Line */}
+                                {index < STEPS.length - 1 && (
+                                    <div
+                                        className={`absolute top-4 left-1/2 w-full h-[2px] -z-0 transition-colors
+                    ${index < currentStep ? 'bg-blue-600' : 'bg-gray-200'}`}
+                                    />
+                                )}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Content Card */}
+                <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
+                    <h2 className="text-2xl font-bold text-gray-900 mb-6">
+                        {STEPS[currentStep].title}
+                    </h2>
+
+                    {renderStep()}
+
+                    {/* Actions */}
+                    <div className="mt-8 flex justify-between pt-6 border-t">
+                        <button
+                            onClick={handleBack}
+                            disabled={currentStep === 0 || loading}
+                            className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors
+                ${currentStep === 0
+                                    ? 'text-gray-300 cursor-not-allowed'
+                                    : 'text-gray-700 hover:bg-gray-100'}`}
+                        >
+                            <ChevronLeft className="w-5 h-5" />
+                            Retour
+                        </button>
+
+                        <button
+                            onClick={handleNext}
+                            disabled={loading || (currentStep === 0 && !formData.job_type)}
+                            className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                            {loading ? (
+                                'Publication...'
+                            ) : currentStep === STEPS.length - 1 ? (
+                                'Publier ma demande'
+                            ) : (
+                                <>
+                                    Suivant
+                                    <ChevronRight className="w-5 h-5" />
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}

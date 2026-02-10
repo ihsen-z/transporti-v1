@@ -207,3 +207,83 @@ class OfferAcceptSerializer(serializers.Serializer):
     Body is explicitly empty as the ID is in the URL.
     """
     pass
+
+
+class TransportJobUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for updating DRAFT jobs.
+    """
+    class Meta:
+        model = TransportJob
+        fields = [
+            'job_type', 'pickup_address', 'pickup_lat', 'pickup_lng',
+            'dropoff_address', 'dropoff_lat', 'dropoff_lng',
+            'scheduled_time', 'specifications',
+            'price_tnd_min', 'price_tnd_max', 'description', 'photos'
+        ]
+
+    def validate_scheduled_time(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError("Scheduled time must be in the future.")
+        return value
+
+
+class JobActionSerializer(serializers.Serializer):
+    """
+    Generic serializer for job actions (publish, cancel, complete).
+    """
+    reason = serializers.CharField(required=False, allow_blank=True)
+
+
+class OfferWithdrawSerializer(serializers.Serializer):
+    """
+    Serializer for withdrawing an offer.
+    """
+    reason = serializers.CharField(required=False, allow_blank=True)
+
+
+class TransporterProfileSerializer(serializers.ModelSerializer):
+    """
+    Public profile for transporters (Trust Signals).
+    Used by clients to vetting before accepting offers.
+    """
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
+    avatar_url = serializers.CharField(source='user.profile.avatar_url', read_only=True)
+    joined_at = serializers.DateTimeField(source='user.date_joined', read_only=True)
+    
+    # Trust Profile Fields
+    is_verified = serializers.BooleanField(source='is_verified', read_only=True)
+    trust_score = serializers.IntegerField(read_only=True)
+    vehicle_type = serializers.CharField(read_only=True)
+    vehicle_capacity_kg = serializers.DecimalField(max_digits=8, decimal_places=1, read_only=True)
+    vehicle_photos = serializers.JSONField(read_only=True)
+    service_areas = serializers.JSONField(read_only=True)
+    specializations = serializers.JSONField(read_only=True)
+    completion_rate = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
+    total_jobs_completed = serializers.IntegerField(read_only=True)
+    
+    # Reviews (Summary)
+    rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+
+    class Meta:
+        from trust.models import TrustProfile
+        model = TrustProfile
+        fields = [
+            'first_name', 'last_name', 'avatar_url', 'joined_at',
+            'is_verified', 'trust_score', 
+            'vehicle_type', 'vehicle_capacity_kg', 'vehicle_photos',
+            'service_areas', 'specializations',
+            'completion_rate', 'total_jobs_completed',
+            'rating', 'review_count'
+        ]
+
+    def get_rating(self, obj) -> float:
+        # PENDING: Aggregate from Review model
+        # For now return placeholder or 0.0
+        return 0.0
+
+    def get_review_count(self, obj) -> int:
+        return 0
+

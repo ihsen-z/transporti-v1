@@ -155,15 +155,17 @@ def send_message(user, job: TransportJob, content: str, is_system: bool = False)
         raise ValidationError("This conversation is locked and no longer accepting messages.")
     
     # Anti-bypass check (skip for system messages)
-    if not is_system:
+    # BLOCKED: During negotiation (PUBLISHED)
+    # ALLOWED: Once booking is confirmed (IN_PROGRESS, COMPLETED)
+    if not is_system and job.status == TransportJob.Status.PUBLISHED:
         is_blocked, pattern = _contains_bypass_attempt(content)
         if is_blocked:
             logger.warning(
                 f"ANTI_BYPASS_TRIGGERED: user_id={user.id}, job_id={job.id}, pattern={pattern}"
             )
             raise ValidationError(
-                "Message contains contact information (phone, email, or URL) which is not allowed. "
-                "Please use the platform's communication system."
+                "Message contains contact information (phone, email, or URL) which is not allowed during negotiation. "
+                "Contact details will be shared automatically once a booking is confirmed."
             )
     
     # Create message

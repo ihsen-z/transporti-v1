@@ -67,6 +67,12 @@ class Review(models.Model):
         help_text="Optional review comment"
     )
     
+    # Structured aspect ratings (Blueprint §2.5)
+    aspects = models.JSONField(
+        default=dict, blank=True,
+        help_text="Aspect ratings e.g. {'punctuality': 5, 'care': 4, 'professionalism': 5}"
+    )
+    
     # Abuse detection fields
     is_flagged = models.BooleanField(
         default=False,

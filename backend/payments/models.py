@@ -88,3 +88,57 @@ class EscrowTransaction(models.Model):
 
     def __str__(self):
         return f"Escrow #{self.id} - {self.status} ({self.amount} TND)"
+
+
+class Booking(models.Model):
+    """
+    Booking contract created when client accepts an offer (Blueprint §2.4).
+    Links job + accepted offer with payment terms.
+    """
+    class PaymentMethod(models.TextChoices):
+        DIGITAL = 'DIGITAL', 'Digital Payment (Escrow)'
+        COD = 'COD', 'Cash on Delivery'
+
+    job = models.OneToOneField(
+        'logistics.TransportJob',
+        on_delete=models.PROTECT,
+        related_name='booking'
+    )
+    accepted_offer = models.OneToOneField(
+        'logistics.Offer',
+        on_delete=models.PROTECT,
+        related_name='booking'
+    )
+    
+    final_price = models.DecimalField(max_digits=10, decimal_places=2)
+    commission_rate = models.DecimalField(
+        max_digits=5, decimal_places=4,
+        help_text="Commission rate applied (e.g., 0.1500 for 15%)"
+    )
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PaymentMethod.choices,
+        default=PaymentMethod.DIGITAL
+    )
+    
+    # COD threshold (from functional_decomposition: >300 TND = mandatory escrow)
+    cod_allowed = models.BooleanField(
+        default=True,
+        help_text="Whether COD was allowed for this booking amount"
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['payment_method', 'created_at']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(final_price__gte=0),
+                name='booking_price_positive'
+            ),
+        ]
+
+    def __str__(self):
+        return f"Booking #{self.id} - Job #{self.job_id} ({self.payment_method})"

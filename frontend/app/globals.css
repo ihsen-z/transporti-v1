@@ -159,3 +159,72 @@
     scroll-behavior: smooth;
   }
 }
+
+/* ============================================================================
+   MAP MARKER ANIMATIONS
+   ============================================================================ */
+
+/* Pulse animation for active transport markers */
+@keyframes markerPulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+
+  50% {
+    transform: scale(1.3);
+    opacity: 0;
+  }
+
+  100% {
+    transform: scale(1);
+    opacity: 0;
+  }
+}
+
+/* Bounce animation for marker entry */
+@keyframes markerBounce {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  25% {
+    transform: translateY(-8px);
+  }
+
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
+/* Route dash animation for IN_PROGRESS status */
+@keyframes routeDash {
+  to {
+    stroke-dashoffset: -20;
+  }
+}
+
+/* Map marker styles */
+.transporti-premium-marker {
+  transition: transform 0.2s ease;
+}
+
+.transporti-premium-marker:hover {
+  transform: scale(1.05);
+}
+
+.transporti-marker-transport .marker-pulse {
+  animation: markerPulse 2s infinite;
+}
+
+/* Route animation class */
+.route-animated {
+  animation: routeDash 1s linear infinite;
+}
+
+/* Subtle glow for active markers */
+.transporti-marker-active {
+  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+}
