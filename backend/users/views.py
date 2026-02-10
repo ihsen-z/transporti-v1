@@ -1,3 +1,4 @@
+import logging
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -5,6 +6,9 @@ from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
+from transporti_core.throttling import AuthRateThrottle
+
+logger = logging.getLogger('transporti')
 
 
 class RegisterView(APIView):
@@ -14,12 +18,15 @@ class RegisterView(APIView):
     Returns JWT tokens on success (auto-login).
     """
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         serializer = UserRegistrationSerializer(data=request.data)
         
         if serializer.is_valid():
             user = serializer.save()
+            
+            logger.info(f"USER_REGISTERED: user_id={user.id}, email={user.email}, role={user.role}")
             
             # Generate JWT tokens (auto-login)
             refresh = RefreshToken.for_user(user)
@@ -46,12 +53,15 @@ class LoginView(APIView):
     Validates credentials and returns JWT tokens.
     """
     permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         serializer = UserLoginSerializer(data=request.data)
         
         if serializer.is_valid():
             user = serializer.validated_data['user']
+            
+            logger.info(f"USER_LOGIN: user_id={user.id}, email={user.email}")
             
             # Generate JWT tokens
             refresh = RefreshToken.for_user(user)
@@ -64,7 +74,8 @@ class LoginView(APIView):
             if user.role == 'TRANSPORTER':
                 try:
                     refresh['trust_status'] = user.trust_profile.verification_status
-                except:
+                except AttributeError:
+                    logger.warning(f"USER_LOGIN: transporter {user.id} missing trust_profile")
                     refresh['trust_status'] = 'UNVERIFIED'
             
             return Response({

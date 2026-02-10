@@ -33,6 +33,10 @@ db.sqlite3
 *.pyc
 media/
 
+# Logs directory (keep .gitkeep)
+backend/logs/*
+!backend/logs/.gitkeep
+
 # IDE
 .idea/
 .vscode/
@@ -56,3 +60,8 @@ htmlcov/
 
 # Static files
 staticfiles/
+
+# Project specific artifacts
+transportiv1_artifacts/
+backend/check_error.txt
+REANALYSIS_COMPARISON.md

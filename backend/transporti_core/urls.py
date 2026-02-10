@@ -1,11 +1,43 @@
 """
 URL configuration for transporti_core project.
+Production-hardened with health check endpoint.
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 
+
+def health_check(request):
+    """
+    Health check endpoint for load balancers and monitoring.
+    Returns 200 OK with basic system status.
+    """
+    from django.db import connection
+    from django.utils import timezone
+    
+    status = {
+        'status': 'healthy',
+        'timestamp': timezone.now().isoformat(),
+        'version': '1.0.0',
+    }
+    
+    # Check database connectivity
+    try:
+        with connection.cursor() as cursor:
+            cursor.execute('SELECT 1')
+        status['database'] = 'connected'
+    except Exception as e:
+        status['database'] = 'error'
+        status['status'] = 'degraded'
+    
+    return JsonResponse(status)
+
+
 urlpatterns = [
+    # Health Check (unauthenticated)
+    path('health/', health_check, name='health_check'),
+    
     path('admin/', admin.site.urls),
     
     # API Schema
@@ -14,4 +46,22 @@ urlpatterns = [
     
     # Auth Module
     path('api/auth/', include('users.urls')),
+    
+    # Logistics Module (Jobs & Offers)
+    path('api/', include('logistics.urls')),
+    
+    # Payments Module
+    path('api/', include('payments.urls')),
+    
+    # Support Module (Disputes)
+    path('api/', include('support.urls')),
+    
+    # Messaging Module
+    path('api/', include('messaging.urls')),
+    
+    # Trust Module (Admin Moderation)
+    path('api/trust/', include('trust.urls')),
+    
+    # Notifications Module
+    path('api/notifications/', include('notifications.urls')),
 ]
