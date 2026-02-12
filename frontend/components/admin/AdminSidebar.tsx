@@ -10,6 +10,9 @@ import {
     Settings,
     Shield,
     ChevronLeft,
+    ShieldCheck,
+    AlertTriangle,
+    Star,
 } from 'lucide-react';
 
 const navItems = [
@@ -17,6 +20,9 @@ const navItems = [
     { href: '/admin/jobs', label: 'Transports', icon: Truck },
     { href: '/admin/users', label: 'Utilisateurs', icon: Users },
     { href: '/admin/payments', label: 'Paiements', icon: CreditCard },
+    { href: '/admin/verifications', label: 'Vérifications', icon: ShieldCheck },
+    { href: '/admin/disputes', label: 'Litiges', icon: AlertTriangle },
+    { href: '/admin/reviews', label: 'Avis', icon: Star },
 ];
 
 export default function AdminSidebar() {
