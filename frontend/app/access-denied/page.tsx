@@ -41,7 +41,7 @@ export default function AccessDeniedPage() {
                 {/* Help Text */}
                 <p className="mt-8 text-sm text-neutral-500">
                     Besoin d&apos;aide ?{' '}
-                    <Link href="/aide" className="text-primary-600 hover:underline">
+                    <Link href="/help" className="text-primary-600 hover:underline">
                         Contactez le support
                     </Link>
                 </p>

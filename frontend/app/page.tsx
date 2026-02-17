@@ -1,5 +1,6 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import Link from "next/link";
 
 export default function Home() {
   return (
@@ -7,6 +8,7 @@ export default function Home() {
       <Header />
 
       <main className="flex-1 pt-16">
+        {/* Hero Section */}
         <section className="relative bg-gradient-to-br from-blue-700 via-blue-800 to-blue-900 text-white overflow-hidden">
           <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0" style={{
@@ -27,12 +29,18 @@ export default function Home() {
                   Envoyez vos colis en toute confiance.
                 </p>
                 <div className="flex gap-4">
-                  <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg">
-                    Découvrir la plateforme
-                  </button>
-                  <button className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-3 rounded-lg border border-white/30">
-                    En savoir plus
-                  </button>
+                  <Link
+                    href="/register"
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition-colors"
+                  >
+                    Créer un compte
+                  </Link>
+                  <Link
+                    href="/login"
+                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-3 rounded-lg border border-white/30 transition-colors"
+                  >
+                    Se connecter
+                  </Link>
                 </div>
               </div>
 
@@ -72,6 +80,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* Features Section */}
         <section className="py-20 bg-white">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="text-center mb-16">
@@ -124,6 +133,7 @@ export default function Home() {
           </div>
         </section>
 
+        {/* CTA Section */}
         <section className="py-20 bg-gradient-to-r from-blue-700 to-blue-900">
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h2 className="text-4xl font-bold text-white mb-6">
@@ -132,9 +142,12 @@ export default function Home() {
             <p className="text-xl text-blue-100 mb-8">
               Rejoignez des milliers d&apos;utilisateurs qui font confiance à Transporti V1
             </p>
-            <button className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-10 py-4 rounded-lg shadow-xl text-lg">
+            <Link
+              href="/register"
+              className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-semibold px-10 py-4 rounded-lg shadow-xl text-lg transition-colors"
+            >
               Créer un compte gratuitement
-            </button>
+            </Link>
           </div>
         </section>
       </main>

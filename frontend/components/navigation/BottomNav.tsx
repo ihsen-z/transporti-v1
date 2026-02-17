@@ -2,11 +2,12 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Truck, Bell, Play } from 'lucide-react';
+import { LayoutDashboard, Truck, Bell, Play, MessageSquare } from 'lucide-react';
 
 const navItems = [
     { href: '/dashboard', icon: LayoutDashboard, label: 'Accueil' },
     { href: '/jobs', icon: Truck, label: 'Transports' },
+    { href: '/messages', icon: MessageSquare, label: 'Messages' },
     { href: '/notifications', icon: Bell, label: 'Notifs' },
     { href: '/simulation/delivery', icon: Play, label: 'Simulation' },
 ];

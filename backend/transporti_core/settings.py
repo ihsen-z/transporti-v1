@@ -218,6 +218,13 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'Transporti V1 API',
     'DESCRIPTION': 'Modular Monolith API for Transporti Tunisia',
     'VERSION': '1.0.0',
+    'COMPONENT_SPLIT_REQUEST': True,
+    'SERVE_INCLUDE_SCHEMA': False,
+    'ENUM_NAME_OVERRIDES': {},
+    # Gracefully handle serializer introspection issues
+    'POSTPROCESSING_HOOKS': [
+        'drf_spectacular.hooks.postprocess_schema_enums',
+    ],
 }
 
 

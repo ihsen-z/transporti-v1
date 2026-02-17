@@ -21,7 +21,7 @@ export default function MarketingHome() {
                                 Envoyez vos colis en toute confiance.
                             </p>
                             <div className="flex gap-4">
-                                <a href="/dashboard" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition-colors">
+                                <a href="/register" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition-colors">
                                     Découvrir la plateforme
                                 </a>
                                 <button className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-3 rounded-lg border border-white/30">
@@ -126,7 +126,7 @@ export default function MarketingHome() {
                     <p className="text-xl text-blue-100 mb-8">
                         Rejoignez des milliers d&apos;utilisateurs qui font confiance à Transporti V1
                     </p>
-                    <a href="/dashboard" className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-semibold px-10 py-4 rounded-lg shadow-xl text-lg transition-colors">
+                    <a href="/register" className="inline-block bg-orange-500 hover:bg-orange-600 text-white font-semibold px-10 py-4 rounded-lg shadow-xl text-lg transition-colors">
                         Créer un compte gratuitement
                     </a>
                 </div>

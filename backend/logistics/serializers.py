@@ -253,7 +253,7 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     joined_at = serializers.DateTimeField(source='user.date_joined', read_only=True)
     
     # Trust Profile Fields
-    is_verified = serializers.BooleanField(source='is_verified', read_only=True)
+    is_verified = serializers.BooleanField(read_only=True)
     trust_score = serializers.IntegerField(read_only=True)
     vehicle_type = serializers.CharField(read_only=True)
     vehicle_capacity_kg = serializers.DecimalField(max_digits=8, decimal_places=1, read_only=True)

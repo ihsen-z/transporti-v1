@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function Footer() {
     return (
         <footer className="bg-gray-900 text-white mt-auto">
@@ -13,27 +15,27 @@ export default function Footer() {
                     <div>
                         <h4 className="font-semibold mb-4">Services</h4>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            <li><a href="#" className="hover:text-white">Transport de colis</a></li>
-                            <li><a href="#" className="hover:text-white">Transport de marchandises</a></li>
-                            <li><a href="#" className="hover:text-white">Suivi en temps réel</a></li>
+                            <li><Link href="/register" className="hover:text-white transition-colors">Transport de colis</Link></li>
+                            <li><Link href="/register" className="hover:text-white transition-colors">Transport de marchandises</Link></li>
+                            <li><Link href="/register" className="hover:text-white transition-colors">Suivi en temps réel</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-semibold mb-4">Entreprise</h4>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            <li><a href="#" className="hover:text-white">À propos</a></li>
-                            <li><a href="#" className="hover:text-white">Devenir transporteur</a></li>
-                            <li><a href="#" className="hover:text-white">Contact</a></li>
+                            <li><Link href="/help" className="hover:text-white transition-colors">À propos</Link></li>
+                            <li><Link href="/register" className="hover:text-white transition-colors">Devenir transporteur</Link></li>
+                            <li><Link href="/help" className="hover:text-white transition-colors">Contact</Link></li>
                         </ul>
                     </div>
 
                     <div>
                         <h4 className="font-semibold mb-4">Légal</h4>
                         <ul className="space-y-2 text-sm text-gray-400">
-                            <li><a href="#" className="hover:text-white">Conditions d&apos;utilisation</a></li>
-                            <li><a href="#" className="hover:text-white">Politique de confidentialité</a></li>
-                            <li><a href="#" className="hover:text-white">Mentions légales</a></li>
+                            <li><Link href="/terms" className="hover:text-white transition-colors">Conditions d&apos;utilisation</Link></li>
+                            <li><Link href="/privacy" className="hover:text-white transition-colors">Politique de confidentialité</Link></li>
+                            <li><Link href="/disputes" className="hover:text-white transition-colors">Résolution de litiges</Link></li>
                         </ul>
                     </div>
                 </div>

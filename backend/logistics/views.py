@@ -1,7 +1,7 @@
 from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from django.db import transaction
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
@@ -57,11 +57,11 @@ class JobMyListView(generics.ListAPIView):
 class JobPublicListView(generics.ListAPIView):
     """
     GET /api/jobs/public/
-    Verified transporters view PUBLISHED jobs.
+    Browse PUBLISHED jobs. Open to all users (including unauthenticated).
     Filters out expired tasks (scheduled < now).
     Supports query params: job_type, pickup_governorate, dropoff_governorate.
     """
-    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER'), RequireVerification]
+    permission_classes = [IsAuthenticatedOrReadOnly]
     serializer_class = TransportJobListSerializer
 
     def get_queryset(self):

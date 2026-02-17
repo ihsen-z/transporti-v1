@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
-import { ChevronLeft, ChevronRight, Check } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Check, AlertCircle } from 'lucide-react';
 import { JobTypeSelector } from '@/components/jobs/JobTypeSelector';
 import { LocationPicker } from '@/components/jobs/LocationPicker';
 import { TransportDetailsForm } from '@/components/jobs/TransportDetailsForm';
@@ -37,7 +37,21 @@ export default function NewJobPage() {
         price_tnd_max: '',
     });
 
+    const [validationError, setValidationError] = useState<string | null>(null);
+
     const handleNext = () => {
+        setValidationError(null);
+
+        // Step 3 validation: date ≥ 24h from now
+        if (currentStep === 3 && formData.scheduled_time) {
+            const selected = new Date(formData.scheduled_time);
+            const minDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+            if (selected < minDate) {
+                setValidationError('La date doit être au moins 24h dans le futur pour maximiser les offres.');
+                return;
+            }
+        }
+
         if (currentStep < STEPS.length - 1) {
             setCurrentStep(currentStep + 1);
             window.scrollTo(0, 0);
@@ -113,12 +127,24 @@ export default function NewJobPage() {
                             <input
                                 type="datetime-local"
                                 value={formData.scheduled_time}
-                                onChange={(e) => updateFormData({ scheduled_time: e.target.value })}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                min={new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().slice(0, 16)}
+                                onChange={(e) => {
+                                    updateFormData({ scheduled_time: e.target.value });
+                                    setValidationError(null);
+                                }}
+                                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 transition-colors ${validationError ? 'border-red-400 bg-red-50' : 'border-neutral-300'
+                                    }`}
                             />
-                            <p className="text-sm text-gray-500 mt-1">
-                                Choisissez une date au moins 24h à l'avance pour maximiser les offres.
-                            </p>
+                            {validationError ? (
+                                <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                                    <AlertCircle className="w-4 h-4" />
+                                    {validationError}
+                                </p>
+                            ) : (
+                                <p className="text-sm text-neutral-500 mt-1">
+                                    Minimum 24h à l&apos;avance pour maximiser les offres reçues.
+                                </p>
+                            )}
                         </div>
 
                         <div className="grid grid-cols-2 gap-4">
@@ -131,7 +157,7 @@ export default function NewJobPage() {
                                     value={formData.price_tnd_min}
                                     onChange={(e) => updateFormData({ price_tnd_min: e.target.value })}
                                     placeholder="Optionnel"
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
                             <div>
@@ -143,7 +169,7 @@ export default function NewJobPage() {
                                     value={formData.price_tnd_max}
                                     onChange={(e) => updateFormData({ price_tnd_max: e.target.value })}
                                     placeholder="Optionnel"
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                                    className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500"
                                 />
                             </div>
                         </div>

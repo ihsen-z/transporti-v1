@@ -56,16 +56,71 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
 
 class ReviewListSerializer(serializers.ModelSerializer):
     """
-    Serializer for listing reviews publically.
+    Serializer for listing reviews with double-blind protection.
+    
+    DOUBLE-BLIND LOGIC (Blueprint §2.5):
+    Reviews are hidden from the other party until BOTH sides have reviewed,
+    OR until a 7-day reveal window expires (whichever comes first).
+    This prevents retaliatory ratings/comments.
+    
+    - Public viewers (no auth / not a participant): see all revealed reviews
+    - Participants on a job: see their own review immediately, but the
+      counterpart's review is masked until both reviews exist or 7 days pass.
     """
     reviewer_name = serializers.CharField(source='reviewer.first_name', read_only=True)
     reviewer_avatar = serializers.SerializerMethodField()
-    
+    is_revealed = serializers.SerializerMethodField()
+
     class Meta:
         model = Review
-        fields = ['id', 'rating', 'comment', 'aspects', 'reviewer_name', 'reviewer_avatar', 'created_at']
-        
+        fields = [
+            'id', 'rating', 'comment', 'aspects',
+            'reviewer_name', 'reviewer_avatar',
+            'is_revealed', 'created_at',
+        ]
+
+    # Number of days after which a review is auto-revealed regardless
+    REVEAL_WINDOW_DAYS = 7
+
     def get_reviewer_avatar(self, obj):
         if hasattr(obj.reviewer, 'profile') and obj.reviewer.profile.avatar_url:
             return obj.reviewer.profile.avatar_url
         return None
+
+    def get_is_revealed(self, obj):
+        """
+        A review is revealed if:
+          1. The viewer IS the reviewer (you always see your own review), OR
+          2. Both parties have submitted reviews for this job, OR
+          3. The review is older than REVEAL_WINDOW_DAYS days.
+        """
+        from datetime import timedelta
+        from django.utils import timezone
+
+        # Check if reveal window has passed
+        if obj.created_at and (timezone.now() - obj.created_at).days >= self.REVEAL_WINDOW_DAYS:
+            return True
+
+        # Check if both reviews exist for this job
+        both_exist = Review.objects.filter(job_id=obj.job_id).count() >= 2
+        if both_exist:
+            return True
+
+        # If the request user IS the reviewer, always reveal
+        request = self.context.get('request')
+        if request and hasattr(request, 'user') and request.user.is_authenticated:
+            if request.user.id == obj.reviewer_id:
+                return True
+
+        return False
+
+    def to_representation(self, instance):
+        """
+        Mask rating and comment for unrevealed reviews.
+        """
+        data = super().to_representation(instance)
+        if not data.get('is_revealed', True):
+            data['rating'] = None
+            data['comment'] = '[Avis masqué — en attente de l\'avis de l\'autre partie]'
+            data['aspects'] = {}
+        return data

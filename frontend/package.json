@@ -9,8 +9,11 @@
     "lint": "next lint",
     "prepare": "husky"
   },
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
-    "@types/leaflet": "^1.9.21",
+    "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",
     "lucide-react": "^0.563.0",
     "next": "14.2.35",
@@ -21,6 +24,7 @@
   "devDependencies": {
     "@commitlint/cli": "^20.4.1",
     "@commitlint/config-conventional": "^20.4.1",
+    "@types/leaflet": "^1.9.21",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",

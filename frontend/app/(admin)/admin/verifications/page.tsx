@@ -3,17 +3,14 @@
 import { useState } from 'react';
 import DataTable from '@/components/admin/DataTable';
 import StatusBadge from '@/components/admin/StatusBadge';
-import { formatDate, formatTimeAgoShort } from '@/lib/admin';
+import { formatTimeAgoShort } from '@/lib/admin';
 import {
-    ShieldCheck,
     Eye,
     CheckCircle,
     XCircle,
     Clock,
     FileText,
     User,
-    Search,
-    Filter,
 } from 'lucide-react';
 
 /* -------------------------------------------------------------------------- */
@@ -197,7 +194,7 @@ export default function AdminVerificationsPage() {
             header: 'Confiance',
             render: (v: VerificationRequest) => (
                 <span className={`text-sm font-semibold ${v.trustScore >= 80 ? 'text-green-600' :
-                        v.trustScore >= 50 ? 'text-orange-600' : 'text-red-600'
+                    v.trustScore >= 50 ? 'text-orange-600' : 'text-red-600'
                     }`}>
                     {v.trustScore}/100
                 </span>
@@ -276,8 +273,8 @@ export default function AdminVerificationsPage() {
                             key={tab.value}
                             onClick={() => setFilter(tab.value)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive
-                                    ? 'bg-primary-600 text-white shadow-sm'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                ? 'bg-primary-600 text-white shadow-sm'
+                                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                                 }`}
                         >
                             {tab.label}

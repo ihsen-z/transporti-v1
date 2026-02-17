@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { useAuth } from '@/hooks/useAuth';
 import { BookingSummary } from '@/components/booking/BookingSummary';
 import { PaymentMethodSelector } from '@/components/booking/PaymentMethodSelector';
+import { PaymentGateway } from '@/components/booking/PaymentGateway';
 import { EscrowBadge } from '@/components/booking/EscrowBadge';
-import { ArrowLeft, CheckCircle2, Loader2, PartyPopper } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, Loader2, PartyPopper, MessageSquare } from 'lucide-react';
 
 /* -------------------------------------------------------------------------- */
 /*  Mock Data (until booking API wired)                                       */
@@ -46,6 +47,7 @@ export default function BookingPage() {
     const [step, setStep] = useState<BookingStep>('review');
     const [paymentMethod, setPaymentMethod] = useState<'DIGITAL' | 'COD'>('DIGITAL');
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [showGateway, setShowGateway] = useState(false);
 
     // In production, fetch the job + accepted offer from the API
     const job = MOCK_JOB;
@@ -96,8 +98,13 @@ export default function BookingPage() {
                     </div>
 
                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                        <Link href={`/jobs/${job.id}`}
+                        <Link href={`/messages/${job.id}`}
                             className="inline-flex items-center justify-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-blue-700 transition-colors">
+                            <MessageSquare className="w-5 h-5" />
+                            Contacter le transporteur
+                        </Link>
+                        <Link href={`/jobs/${job.id}`}
+                            className="inline-flex items-center justify-center gap-2 bg-neutral-100 text-neutral-700 px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors">
                             Suivre la mission
                         </Link>
                         <Link href="/dashboard"
@@ -169,22 +176,46 @@ export default function BookingPage() {
                         <>
                             <PaymentMethodSelector
                                 selected={paymentMethod}
-                                onSelect={setPaymentMethod}
+                                onSelect={(m) => {
+                                    setPaymentMethod(m);
+                                    setShowGateway(false);
+                                }}
                                 totalPrice={offer.total_price}
                             />
                             <EscrowBadge paymentMethod={paymentMethod} totalPrice={offer.total_price} />
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={() => setStep('review')}
-                                    className="flex-1 bg-neutral-100 text-neutral-700 py-3.5 rounded-xl font-semibold hover:bg-neutral-200 transition-colors">
-                                    Retour
-                                </button>
-                                <button
-                                    onClick={() => setStep('confirm')}
-                                    className="flex-[2] bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
-                                    Vérifier et confirmer
-                                </button>
-                            </div>
+
+                            {/* Payment Gateway for digital payments */}
+                            {paymentMethod === 'DIGITAL' && showGateway ? (
+                                <div className="bg-white rounded-2xl border border-neutral-100 p-6">
+                                    <PaymentGateway
+                                        amount={offer.total_price}
+                                        onSuccess={(txnId) => {
+                                            console.log('Payment success:', txnId);
+                                            setStep('success');
+                                        }}
+                                        onCancel={() => setShowGateway(false)}
+                                    />
+                                </div>
+                            ) : (
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={() => setStep('review')}
+                                        className="flex-1 bg-neutral-100 text-neutral-700 py-3.5 rounded-xl font-semibold hover:bg-neutral-200 transition-colors">
+                                        Retour
+                                    </button>
+                                    <button
+                                        onClick={() => {
+                                            if (paymentMethod === 'DIGITAL') {
+                                                setShowGateway(true);
+                                            } else {
+                                                setStep('confirm');
+                                            }
+                                        }}
+                                        className="flex-[2] bg-blue-600 text-white py-3.5 rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-600/20">
+                                        {paymentMethod === 'DIGITAL' ? 'Procéder au paiement' : 'Vérifier et confirmer'}
+                                    </button>
+                                </div>
+                            )}
                         </>
                     )}
 

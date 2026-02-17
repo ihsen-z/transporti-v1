@@ -1,6 +1,6 @@
 import React from 'react';
 import Link from 'next/link';
-import { MapPin, Calendar, Clock, Truck, Home, UserCheck, ShieldCheck } from 'lucide-react';
+import { MapPin, Calendar, Clock, Truck, Home, UserCheck, ShieldCheck, Users, Zap } from 'lucide-react';
 import { format } from 'date-fns';
 import { fr } from 'date-fns/locale';
 
@@ -10,6 +10,13 @@ interface JobFeedCardProps {
 
 export function JobFeedCard({ job }: JobFeedCardProps) {
     const isTransport = job.job_type === 'TRANSPORT';
+
+    // Urgency: job date < 48h from now
+    const hoursUntilJob = Math.floor(
+        (new Date(job.scheduled_time).getTime() - Date.now()) / (1000 * 60 * 60)
+    );
+    const isUrgent = hoursUntilJob > 0 && hoursUntilJob < 48;
+    const offerCount = job.offer_count || 0;
 
     return (
         <div className="bg-white border rounded-xl p-5 hover:shadow-md transition-shadow relative overflow-hidden group">
@@ -28,6 +35,18 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
                             <Clock className="w-3 h-3" />
                             Publié {format(new Date(job.created_at), 'd MMM', { locale: fr })}
                         </span>
+                        {isUrgent && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-200">
+                                <Zap className="w-3 h-3" />
+                                Urgent
+                            </span>
+                        )}
+                        {offerCount > 0 && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
+                                <Users className="w-3 h-3" />
+                                {offerCount} offre{offerCount > 1 ? 's' : ''}
+                            </span>
+                        )}
                     </div>
                     <div className="text-right">
                         {(job.price_tnd_min || job.price_tnd_max) ? (

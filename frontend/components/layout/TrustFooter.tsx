@@ -56,10 +56,10 @@ export default function TrustFooter() {
                     <div>
                         <h4 className="text-sm font-semibold text-neutral-900 mb-3">Liens utiles</h4>
                         <ul className="space-y-2">
-                            <li><Link href="/aide" className="text-sm text-neutral-500 hover:text-blue-600 transition-colors">Centre d'aide</Link></li>
-                            <li><Link href="#" className="text-sm text-neutral-500 hover:text-blue-600 transition-colors">Conditions générales</Link></li>
-                            <li><Link href="#" className="text-sm text-neutral-500 hover:text-blue-600 transition-colors">Politique de confidentialité</Link></li>
-                            <li><Link href="#" className="text-sm text-neutral-500 hover:text-blue-600 transition-colors">Processus de résolution de litiges</Link></li>
+                            <li><Link href="/help" className="text-sm text-neutral-500 hover:text-blue-600 transition-colors">Centre d&apos;aide</Link></li>
+                            <li><Link href="/terms" className="text-sm text-neutral-500 hover:text-blue-600 transition-colors">Conditions générales</Link></li>
+                            <li><Link href="/privacy" className="text-sm text-neutral-500 hover:text-blue-600 transition-colors">Politique de confidentialité</Link></li>
+                            <li><Link href="/disputes" className="text-sm text-neutral-500 hover:text-blue-600 transition-colors">Processus de résolution de litiges</Link></li>
                         </ul>
                     </div>
 

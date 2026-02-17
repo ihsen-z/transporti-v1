@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, Truck, Bell, Play, PlusCircle, Search, ShieldCheck } from 'lucide-react';
+import { LayoutDashboard, Truck, Bell, Play, PlusCircle, Search, ShieldCheck, FileText, MessageSquare, Settings } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import NavItem from './NavItem';
 
@@ -12,16 +12,20 @@ export default function AppSidebar() {
 
     const commonItems = [
         { href: '/dashboard', icon: LayoutDashboard, label: 'Tableau de bord' },
-        { href: '/jobs/my', icon: Truck, label: 'Mes Transports' }, // Updated to point to /jobs/my
+        { href: '/jobs', icon: Truck, label: 'Mes Transports' },
         { href: '/notifications', icon: Bell, label: 'Notifications' },
+        { href: '/settings', icon: Settings, label: 'Paramètres' },
     ];
 
     const clientItems = [
         { href: '/jobs/new', icon: PlusCircle, label: 'Publier une annonce' },
+        { href: '/messages', icon: MessageSquare, label: 'Messages' },
     ];
 
     const transporterItems = [
         { href: '/jobs/browse', icon: Search, label: 'Trouver une mission' },
+        { href: '/offers', icon: FileText, label: 'Mes offres' },
+        { href: '/messages/1', icon: MessageSquare, label: 'Messages' },
         { href: '/verification', icon: ShieldCheck, label: 'Vérification' },
     ];
 

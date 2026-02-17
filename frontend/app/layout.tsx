@@ -23,7 +23,7 @@ export default function RootLayout({
         <AuthProvider>
           <ToastProvider>
             {children}
-            <RoleSwitcher />
+            {process.env.NODE_ENV === 'development' && <RoleSwitcher />}
           </ToastProvider>
         </AuthProvider>
       </body>

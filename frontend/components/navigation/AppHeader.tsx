@@ -111,6 +111,21 @@ export default function AppHeader() {
                                     <p className="text-xs text-neutral-500">{user?.email}</p>
                                 </div>
                                 <div className="p-2">
+                                    <Link
+                                        href="/settings"
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+                                    >
+                                        <User className="w-4 h-4" />
+                                        Paramètres
+                                    </Link>
+                                    <Link
+                                        href="/help"
+                                        className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+                                    >
+                                        <Menu className="w-4 h-4" />
+                                        Centre d&apos;aide
+                                    </Link>
+                                    <div className="border-t border-neutral-100 my-1" />
                                     <button
                                         onClick={handleLogout}
                                         className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"

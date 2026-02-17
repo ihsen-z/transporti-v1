@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import DataTable from '@/components/admin/DataTable';
 import StatusBadge from '@/components/admin/StatusBadge';
-import { formatDate, formatTimeAgoShort, formatCurrency } from '@/lib/admin';
+import { formatTimeAgoShort, formatCurrency } from '@/lib/admin';
 import {
     AlertTriangle,
     Eye,
@@ -11,7 +11,6 @@ import {
     MessageSquare,
     CheckCircle,
     XCircle,
-    Clock,
     User,
     DollarSign,
 } from 'lucide-react';
@@ -276,8 +275,8 @@ export default function AdminDisputesPage() {
                             key={tab.value}
                             onClick={() => setFilter(tab.value)}
                             className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive
-                                    ? 'bg-primary-600 text-white shadow-sm'
-                                    : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+                                ? 'bg-primary-600 text-white shadow-sm'
+                                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
                                 }`}
                         >
                             {tab.label}
