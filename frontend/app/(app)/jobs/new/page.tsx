@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
 import { ChevronLeft, ChevronRight, Check, AlertCircle } from 'lucide-react';
+import { apiClient } from '@/lib/api/client';
 import { JobTypeSelector } from '@/components/jobs/JobTypeSelector';
 import { LocationPicker } from '@/components/jobs/LocationPicker';
 import { TransportDetailsForm } from '@/components/jobs/TransportDetailsForm';
@@ -42,7 +43,11 @@ export default function NewJobPage() {
     const handleNext = () => {
         setValidationError(null);
 
-        // Step 3 validation: date ≥ 24h from now
+        // Step 3 validation: date is required and ≥ 24h from now
+        if (currentStep === 3 && !formData.scheduled_time) {
+            setValidationError('Veuillez sélectionner une date et heure.');
+            return;
+        }
         if (currentStep === 3 && formData.scheduled_time) {
             const selected = new Date(formData.scheduled_time);
             const minDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
@@ -68,31 +73,44 @@ export default function NewJobPage() {
     };
 
     const handleSubmit = async () => {
+        if (loading) return;
         setLoading(true);
         try {
-            const response = await fetch('/api/jobs/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                },
-                body: JSON.stringify(formData)
-            });
-
-            if (!response.ok) throw new Error('Failed to create job');
-
-            const data = await response.json();
-            router.push(`/jobs/${data.id}`); // Redirect to job details
-        } catch (error) {
-            console.error('Error creating job:', error);
-            alert('Une erreur est survenue lors de la création de votre demande.');
+            console.log('Submitting Job Data:', formData);
+            const data = await apiClient.post<{ message: string; job: { id: number } }>('/api/jobs/', formData);
+            
+            if (data && data.job) {
+                router.push(`/jobs/${data.job.id}`);
+            } else {
+                router.push('/jobs');
+            }
+        } catch (error: any) {
+            console.error('Publish Error:', error);
+            
+            // Extract detailed error message if available
+            let errorMessage = 'Une erreur est survenue lors de la publication.';
+            
+            if (error.response && typeof error.response === 'object') {
+                errorMessage += '\n' + JSON.stringify(error.response, null, 2);
+            } else if (error.message) {
+                errorMessage = error.message;
+            }
+            
+            alert(errorMessage);
         } finally {
             setLoading(false);
         }
     };
 
     const updateFormData = (newData: any) => {
-        setFormData(prev => ({ ...prev, ...newData }));
+        setFormData(prev => {
+            const updated = { ...prev, ...newData };
+            // Ensure specifications is merged, not replaced
+            if (newData.specifications && prev.specifications) {
+                updated.specifications = { ...prev.specifications, ...newData.specifications };
+            }
+            return updated;
+        });
     };
 
     const renderStep = () => {

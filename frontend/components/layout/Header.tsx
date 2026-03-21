@@ -29,8 +29,8 @@ export default function Header() {
                             <path d="M20 8L32 20L20 32" fill="#1e40af" />
                         </svg>
                         <div className="flex flex-col">
-                            <span className="text-xl font-bold text-gray-900">Transporti V1</span>
-                            <span className="text-xs text-gray-500 hidden sm:block">Transporti.com</span>
+                            <span className="text-xl font-bold text-neutral-900">Transporti V1</span>
+                            <span className="text-xs text-neutral-500 hidden sm:block">Transporti.com</span>
                         </div>
                     </Link>
 
@@ -40,7 +40,7 @@ export default function Header() {
                             <Link
                                 key={link.href}
                                 href={link.href}
-                                className="text-gray-700 hover:text-blue-700 font-medium transition-colors"
+                                className="text-neutral-700 hover:text-primary-700 font-medium transition-colors"
                             >
                                 {link.label}
                             </Link>
@@ -51,13 +51,13 @@ export default function Header() {
                     <div className="hidden md:flex items-center gap-3">
                         <Link
                             href="/login"
-                            className="text-blue-700 hover:text-blue-800 font-medium px-4 py-2 rounded-lg hover:bg-blue-50 transition-colors"
+                            className="text-primary-700 hover:text-primary-800 font-medium px-4 py-2 rounded-lg hover:bg-primary-50 transition-colors"
                         >
                             Se connecter
                         </Link>
                         <Link
                             href="/register"
-                            className="bg-blue-700 hover:bg-blue-800 text-white font-medium px-6 py-2 rounded-lg transition-colors shadow-sm"
+                            className="bg-primary-700 hover:bg-primary-800 text-white font-medium px-6 py-2 rounded-lg transition-colors shadow-sm"
                         >
                             Créer un compte
                         </Link>
@@ -66,7 +66,7 @@ export default function Header() {
                     {/* Hamburger Button (mobile) */}
                     <button
                         onClick={() => setMobileOpen(!mobileOpen)}
-                        className="md:hidden p-2 rounded-lg text-gray-700 hover:bg-gray-100 transition-colors"
+                        className="md:hidden p-2 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors"
                         aria-label={mobileOpen ? 'Fermer le menu' : 'Ouvrir le menu'}
                     >
                         {mobileOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
@@ -76,31 +76,31 @@ export default function Header() {
 
             {/* Mobile Menu Overlay */}
             {mobileOpen && (
-                <div className="md:hidden border-t border-gray-100 bg-white shadow-lg">
+                <div className="md:hidden border-t border-neutral-100 bg-white shadow-lg">
                     <nav className="px-4 py-4 space-y-1">
                         {navLinks.map((link) => (
                             <Link
                                 key={link.href}
                                 href={link.href}
                                 onClick={() => setMobileOpen(false)}
-                                className="block px-4 py-3 text-gray-700 hover:text-blue-700 hover:bg-blue-50 rounded-lg font-medium transition-colors"
+                                className="block px-4 py-3 text-neutral-700 hover:text-primary-700 hover:bg-primary-50 rounded-lg font-medium transition-colors"
                             >
                                 {link.label}
                             </Link>
                         ))}
                     </nav>
-                    <div className="px-4 pb-4 pt-2 border-t border-gray-100 space-y-2">
+                    <div className="px-4 pb-4 pt-2 border-t border-neutral-100 space-y-2">
                         <Link
                             href="/login"
                             onClick={() => setMobileOpen(false)}
-                            className="block w-full text-center px-4 py-3 text-blue-700 font-medium rounded-lg border border-blue-200 hover:bg-blue-50 transition-colors"
+                            className="block w-full text-center px-4 py-3 text-primary-700 font-medium rounded-lg border border-primary-200 hover:bg-primary-50 transition-colors"
                         >
                             Se connecter
                         </Link>
                         <Link
                             href="/register"
                             onClick={() => setMobileOpen(false)}
-                            className="block w-full text-center px-4 py-3 bg-blue-700 hover:bg-blue-800 text-white font-medium rounded-lg transition-colors"
+                            className="block w-full text-center px-4 py-3 bg-primary-700 hover:bg-primary-800 text-white font-medium rounded-lg transition-colors"
                         >
                             Créer un compte
                         </Link>

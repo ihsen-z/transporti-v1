@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useAuth } from '@/hooks/useAuth';
+import { apiClient } from '@/lib/api/client';
 import { JobPreview } from '@/components/jobs/JobPreview';
 import { OfferForm } from '@/components/offers/OfferForm';
 import { OfferList } from '@/components/offers/OfferList';
@@ -28,18 +29,8 @@ export default function JobDetailsPage() {
 
     const fetchJob = async () => {
         try {
-            const response = await fetch(`/api/jobs/${jobId}/`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setJob(data);
-            } else {
-                // Handle 404 or 403
-                console.error('Failed to fetch job');
-            }
+            const data = await apiClient.get(`/api/jobs/${jobId}/`);
+            setJob(data);
         } catch (error) {
             console.error('Error fetching job:', error);
         } finally {

@@ -32,7 +32,9 @@ export function JobPreview({ data }: JobPreviewProps) {
                             <p className="text-xs text-blue-200 uppercase font-semibold">Départ</p>
                             <p className="font-medium">{data.pickup_address}</p>
                             <p className="text-sm text-blue-100">
-                                {format(new Date(data.scheduled_time), 'EEEE d MMMM yyyy à HH:mm', { locale: fr })}
+                                {data.scheduled_time && !isNaN(new Date(data.scheduled_time).getTime())
+                                    ? format(new Date(data.scheduled_time), 'EEEE d MMMM yyyy à HH:mm', { locale: fr })
+                                    : 'Date non spécifiée'}
                             </p>
                         </div>
                     </div>
@@ -71,16 +73,43 @@ export function JobPreview({ data }: JobPreviewProps) {
                 ) : (
                     <div className="grid grid-cols-2 gap-4 text-sm">
                         <div className="bg-gray-50 p-3 rounded-lg">
-                            <span className="block text-gray-500 text-xs">Pièces</span>
-                            <span className="font-medium">{data.specifications?.rooms}</span>
+                            <span className="block text-gray-500 text-xs">Type de logement</span>
+                            <span className="font-medium">{data.specifications?.room_count || '-'}</span>
                         </div>
                         <div className="bg-gray-50 p-3 rounded-lg">
-                            <span className="block text-gray-500 text-xs">Étage</span>
-                            <span className="font-medium">{data.specifications?.floor_pickup || 'RDC'}</span>
+                            <span className="block text-gray-500 text-xs">Volume estimé</span>
+                            <span className="font-medium">{data.specifications?.volume || '-'} m³</span>
                         </div>
                         <div className="bg-gray-50 p-3 rounded-lg">
-                            <span className="block text-gray-500 text-xs">Ascenseur</span>
-                            <span className="font-medium">{data.specifications?.elevator ? 'Oui' : 'Non'}</span>
+                            <span className="block text-gray-500 text-xs text-orange-600 font-semibold mb-1">📤 Départ (Étage)</span>
+                            <span className="font-medium">{data.specifications?.floor_departure ?? 0} (Asc: {data.specifications?.elevator_departure || 'Non'})</span>
+                        </div>
+                        <div className="bg-gray-50 p-3 rounded-lg">
+                            <span className="block text-gray-500 text-xs text-green-600 font-semibold mb-1">📥 Arrivée (Étage)</span>
+                            <span className="font-medium">{data.specifications?.floor_arrival ?? 0} (Asc: {data.specifications?.elevator_arrival || 'Non'})</span>
+                        </div>
+                        <div className="col-span-2 bg-gray-50 p-3 rounded-lg border-l-4 border-blue-400">
+                             <span className="block text-gray-500 text-xs mb-1">Services & Aides</span>
+                             <p className="text-gray-700 font-medium whitespace-pre-line">
+                                {data.specifications?.helpers_count} manutentionnaires souhaités
+                                {data.specifications?.needs_disassembly && "\n• Besoin de démontage/remontage"}
+                                {data.specifications?.needs_packing && "\n• Besoin d'emballage"}
+                             </p>
+                        </div>
+                         <div className="col-span-2 bg-gray-50 p-3 rounded-lg">
+                            <span className="block text-gray-500 text-xs mb-1">Description</span>
+                            <p className="text-gray-700">{data.description || 'Aucune description'}</p>
+                        </div>
+                    </div>
+                )}
+
+                {data.photos && data.photos.length > 0 && (
+                    <div className="mt-4">
+                        <span className="block text-gray-500 text-xs mb-2">Photos ({data.photos.length})</span>
+                        <div className="flex gap-2 overflow-x-auto pb-2">
+                            {data.photos.map((url: string, i: number) => (
+                                <img key={i} src={url} alt="" className="w-16 h-16 object-cover rounded-md border" />
+                            ))}
                         </div>
                     </div>
                 )}

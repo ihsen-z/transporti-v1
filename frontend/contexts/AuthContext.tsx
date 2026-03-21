@@ -9,8 +9,8 @@ import {
     type TokenPair,
 } from '@/lib/api/tokenManager';
 
-// Backend login response shape (from POST /api/auth/login/)
-interface LoginApiResponse {
+// Backend response shape (from POST /api/auth/login/ and /api/auth/register/)
+interface AuthApiResponse {
     message: string;
     user: {
         id: number;
@@ -25,6 +25,17 @@ interface LoginApiResponse {
     tokens: TokenPair;
 }
 
+interface RegisterPayload {
+    email: string;
+    password: string;
+    password_confirm: string;
+    username: string;
+    phone: string;
+    role: 'CLIENT' | 'TRANSPORTER';
+    first_name?: string;
+    last_name?: string;
+}
+
 /** Map backend UPPERCASE role to frontend lowercase UserRole */
 function mapBackendRole(backendRole: string): Exclude<UserRole, 'guest'> {
     const mapping: Record<string, Exclude<UserRole, 'guest'>> = {
@@ -37,7 +48,7 @@ function mapBackendRole(backendRole: string): Exclude<UserRole, 'guest'> {
 }
 
 /** Convert backend user response to frontend AuthUser shape */
-function toAuthUser(apiUser: LoginApiResponse['user']): AuthUser {
+function toAuthUser(apiUser: AuthApiResponse['user']): AuthUser {
     return {
         id: apiUser.id,
         name: `${apiUser.first_name} ${apiUser.last_name}`,
@@ -55,6 +66,8 @@ interface AuthContextType {
     login: (role: Exclude<UserRole, 'guest'>) => void;
     /** Real login — authenticates via backend API with email/password */
     loginWithCredentials: (email: string, password: string) => Promise<{ success: boolean; error?: string }>;
+    /** Real register — creates account via backend API */
+    registerWithCredentials: (payload: RegisterPayload) => Promise<{ success: boolean; error?: string }>;
     logout: () => void;
     switchRole: (role: Exclude<UserRole, 'guest'>) => void;
     /** Whether auth is loading (hydrating from tokens) */
@@ -113,7 +126,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     ): Promise<{ success: boolean; error?: string }> => {
         setIsLoading(true);
         try {
-            const data = await apiClient.post<LoginApiResponse>(
+            const data = await apiClient.post<AuthApiResponse>(
                 '/api/auth/login/',
                 { email, password },
                 { skipAuth: true },
@@ -132,9 +145,42 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return { success: true };
         } catch (err) {
             if (err instanceof ApiError && err.body) {
-                // Extract first error message from backend response
                 const messages = Object.values(err.body).flat();
                 return { success: false, error: String(messages[0] || 'Login failed.') };
+            }
+            return { success: false, error: 'Network error. Please try again.' };
+        } finally {
+            setIsLoading(false);
+        }
+    }, []);
+
+    /** Real registration via backend API */
+    const registerWithCredentials = useCallback(async (
+        payload: RegisterPayload,
+    ): Promise<{ success: boolean; error?: string }> => {
+        setIsLoading(true);
+        try {
+            const data = await apiClient.post<AuthApiResponse>(
+                '/api/auth/register/',
+                payload,
+                { skipAuth: true },
+            );
+
+            // Store JWT tokens (auto-login)
+            storeTokens(data.tokens);
+
+            // Map to frontend user shape
+            const authUser = toAuthUser(data.user);
+            setUser(authUser);
+            setRole(authUser.role);
+            localStorage.setItem(STORAGE_KEY, authUser.role);
+            localStorage.setItem(USER_DATA_KEY, JSON.stringify(authUser));
+
+            return { success: true };
+        } catch (err) {
+            if (err instanceof ApiError && err.body) {
+                const messages = Object.values(err.body).flat();
+                return { success: false, error: String(messages[0] || 'Registration failed.') };
             }
             return { success: false, error: 'Network error. Please try again.' };
         } finally {
@@ -161,6 +207,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAdmin: role === 'admin',
         login,
         loginWithCredentials,
+        registerWithCredentials,
         logout,
         switchRole,
         isLoading,

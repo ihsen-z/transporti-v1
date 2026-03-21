@@ -8,7 +8,9 @@ interface LocationPickerProps {
 
 export function LocationPicker({ data, onChange }: LocationPickerProps) {
     const handleChange = (field: string, value: any) => {
-        onChange({ ...data, [field]: value });
+        // Only send the field that changed. 
+        // Parent handleFormData uses a functional update to merge it.
+        onChange({ [field]: value });
     };
 
     return (
@@ -84,6 +86,8 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                                 <label className="block text-xs text-gray-500 mb-1">Code Postal</label>
                                 <input
                                     type="text"
+                                    value={data.pickup_postal_code || ''}
+                                    onChange={(e) => handleChange('pickup_postal_code', e.target.value)}
                                     className="w-full p-2 border rounded-lg text-sm"
                                     placeholder="Ex: 1001"
                                 />
@@ -150,6 +154,8 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                                 <label className="block text-xs text-gray-500 mb-1">Code Postal</label>
                                 <input
                                     type="text"
+                                    value={data.dropoff_postal_code || ''}
+                                    onChange={(e) => handleChange('dropoff_postal_code', e.target.value)}
                                     className="w-full p-2 border rounded-lg text-sm"
                                     placeholder="Ex: 3000"
                                 />

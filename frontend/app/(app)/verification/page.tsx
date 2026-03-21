@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { apiClient } from '@/lib/api/client';
 import { VerificationUpload } from '@/components/trust/VerificationUpload';
 import { ShieldCheck, AlertTriangle, Clock, FileText } from 'lucide-react';
 
@@ -18,26 +19,18 @@ export default function VerificationPage() {
 
     const fetchStatus = async () => {
         try {
-            const response = await fetch('/api/trust/status/', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setStatus(data.verification_status);
-            }
+            const data = await apiClient.get<{ verification_status: string }>('/api/trust/status/');
+            setStatus(data.verification_status);
         } catch (e) {
             console.error(e);
+            setStatus('UNVERIFIED');
         }
     };
 
     const fetchDocuments = async () => {
         try {
-            const response = await fetch('/api/trust/documents/', {
-                headers: { 'Authorization': `Bearer ${localStorage.getItem('access_token')}` }
-            });
-            if (response.ok) {
-                setDocuments(await response.json());
-            }
+            const data = await apiClient.get<any[]>('/api/trust/documents/');
+            setDocuments(data);
         } catch (e) {
             console.error(e);
         } finally {
@@ -47,21 +40,9 @@ export default function VerificationPage() {
 
     const handleSubmitReview = async () => {
         try {
-            const response = await fetch('/api/trust/submit/', {
-                method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                },
-                body: JSON.stringify({
-                    // Could include vehicle details here if form existed
-                })
-            });
-
-            if (response.ok) {
-                alert('Profil soumis pour vérification !');
-                fetchStatus();
-            }
+            await apiClient.put('/api/trust/submit/', {});
+            alert('Profil soumis pour vérification !');
+            fetchStatus();
         } catch (e) {
             console.error(e);
             alert('Erreur lors de la soumission.');

@@ -93,6 +93,25 @@ export default function MyOffersPage() {
     const [activeTab, setActiveTab] = useState<TabFilter>('ALL');
     const [offers, setOffers] = useState(MOCK_OFFERS);
 
+    const role = user?.role?.toUpperCase();
+
+    // Clients see a different view — redirect them to their jobs page
+    if (role === 'CLIENT') {
+        return (
+            <div className="p-6 lg:p-8 max-w-4xl mx-auto text-center">
+                <FileText className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                <h1 className="text-2xl font-bold text-neutral-900 mb-2">Offres reçues</h1>
+                <p className="text-neutral-500">
+                    Consultez les offres reçues dans chaque annonce de votre espace « Mes Transports ».
+                </p>
+                <a href="/jobs" className="inline-block mt-4 text-blue-600 hover:underline font-medium">
+                    Voir mes annonces →
+                </a>
+            </div>
+        );
+    }
+
+
     // Filter offers
     const filtered = activeTab === 'ALL'
         ? offers

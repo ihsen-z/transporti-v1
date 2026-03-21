@@ -7,6 +7,7 @@ import {
     Truck, Package, Clock, DollarSign, PlusCircle, Search, Star,
     ShieldCheck, TrendingUp, ArrowRight, CheckCircle2, AlertCircle, BarChart3
 } from 'lucide-react';
+import { DashboardSkeleton } from '@/components/ui/Skeleton';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -78,7 +79,7 @@ function StatCard({ icon: Icon, label, value, accent, sub }: {
     sub?: string;
 }) {
     return (
-        <div className="bg-white rounded-2xl border border-neutral-100 p-6 hover:shadow-lg transition-shadow duration-300">
+        <div className="bg-white rounded-2xl border border-neutral-100 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
             <div className="flex items-start justify-between mb-4">
                 <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${accent}`}>
                     <Icon className="w-6 h-6" />
@@ -87,7 +88,7 @@ function StatCard({ icon: Icon, label, value, accent, sub }: {
                     <span className="text-xs font-medium text-neutral-500 bg-neutral-50 px-2 py-1 rounded-full">{sub}</span>
                 )}
             </div>
-            <p className="text-3xl font-bold text-neutral-900">{value}</p>
+            <p className="text-3xl font-bold text-neutral-900 animate-count-up">{value}</p>
             <p className="text-sm text-neutral-500 mt-1">{label}</p>
         </div>
     );
@@ -129,16 +130,16 @@ function ClientDashboard({ stats, recentJobs }: { stats: ClientStats; recentJobs
     return (
         <>
             {/* CTA Hero */}
-            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 rounded-2xl p-8 text-white mb-8 relative overflow-hidden animate-fade-in-up">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
                 <div className="relative z-10">
                     <h2 className="text-2xl font-bold mb-2">Besoin de transporter quelque chose ?</h2>
-                    <p className="text-blue-100 mb-6 max-w-lg">
+                    <p className="text-primary-100 mb-6 max-w-lg">
                         Publiez votre annonce et recevez des offres de transporteurs vérifiés en quelques minutes.
                     </p>
                     <Link href="/jobs/new"
-                        className="inline-flex items-center gap-2 bg-white text-blue-700 px-6 py-3 rounded-xl font-semibold hover:bg-blue-50 transition-colors shadow-lg shadow-blue-900/20">
+                        className="inline-flex items-center gap-2 bg-white text-primary-700 px-6 py-3 rounded-xl font-semibold hover:bg-primary-50 transition-all hover:scale-105 shadow-lg shadow-primary-900/20">
                         <PlusCircle className="w-5 h-5" />
                         Publier une annonce
                     </Link>
@@ -147,17 +148,25 @@ function ClientDashboard({ stats, recentJobs }: { stats: ClientStats; recentJobs
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <StatCard icon={Truck} label="Annonces actives" value={stats.active_jobs} accent="bg-blue-50 text-blue-600" />
-                <StatCard icon={Package} label="Offres reçues" value={stats.total_offers_received} accent="bg-purple-50 text-purple-600" sub="en attente" />
-                <StatCard icon={CheckCircle2} label="Missions terminées" value={stats.completed_jobs} accent="bg-emerald-50 text-emerald-600" />
-                <StatCard icon={Clock} label="Offres en attente" value={stats.pending_offers} accent="bg-amber-50 text-amber-600" />
+                <div className="animate-fade-in-up delay-100">
+                    <StatCard icon={Truck} label="Annonces actives" value={stats.active_jobs} accent="bg-primary-50 text-primary-600" />
+                </div>
+                <div className="animate-fade-in-up delay-200">
+                    <StatCard icon={Package} label="Offres reçues" value={stats.total_offers_received} accent="bg-purple-50 text-purple-600" sub="en attente" />
+                </div>
+                <div className="animate-fade-in-up delay-300">
+                    <StatCard icon={CheckCircle2} label="Missions terminées" value={stats.completed_jobs} accent="bg-accent-50 text-accent-600" />
+                </div>
+                <div className="animate-fade-in-up delay-400">
+                    <StatCard icon={Clock} label="Offres en attente" value={stats.pending_offers} accent="bg-amber-50 text-amber-600" />
+                </div>
             </div>
 
             {/* Recent Jobs */}
             <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
                 <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
                     <h3 className="text-lg font-semibold text-neutral-900">Mes annonces récentes</h3>
-                    <Link href="/jobs" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                    <Link href="/jobs" className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
                         Voir tout <ArrowRight className="w-4 h-4" />
                     </Link>
                 </div>
@@ -166,7 +175,7 @@ function ClientDashboard({ stats, recentJobs }: { stats: ClientStats; recentJobs
                         <Link key={job.id} href={`/jobs/${job.id}`}
                             className="flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors">
                             <div className="flex items-center gap-4 min-w-0">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === 'TRANSPORT' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === 'TRANSPORT' ? 'bg-primary-50 text-primary-600' : 'bg-purple-50 text-purple-600'}`}>
                                     {job.job_type === 'TRANSPORT' ? <Truck className="w-5 h-5" /> : <Package className="w-5 h-5" />}
                                 </div>
                                 <div className="min-w-0">
@@ -212,15 +221,15 @@ function TransporterDashboard({ stats, recentJobs }: { stats: TransporterStats; 
             )}
 
             {/* Find Missions CTA */}
-            <div className="bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-800 rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
+            <div className="bg-gradient-to-br from-accent-600 via-accent-700 to-teal-800 rounded-2xl p-8 text-white mb-8 relative overflow-hidden animate-fade-in-up">
                 <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
                 <div className="relative z-10">
                     <h2 className="text-2xl font-bold mb-2">Trouvez de nouvelles missions</h2>
-                    <p className="text-emerald-100 mb-6 max-w-lg">
+                    <p className="text-accent-100 mb-6 max-w-lg">
                         {stats.available_missions} missions disponibles dans votre zone. Soumettez vos offres dès maintenant.
                     </p>
                     <Link href="/jobs/browse"
-                        className="inline-flex items-center gap-2 bg-white text-emerald-700 px-6 py-3 rounded-xl font-semibold hover:bg-emerald-50 transition-colors shadow-lg shadow-emerald-900/20">
+                        className="inline-flex items-center gap-2 bg-white text-accent-700 px-6 py-3 rounded-xl font-semibold hover:bg-accent-50 transition-all hover:scale-105 shadow-lg shadow-accent-900/20">
                         <Search className="w-5 h-5" />
                         Parcourir les missions
                     </Link>
@@ -229,10 +238,18 @@ function TransporterDashboard({ stats, recentJobs }: { stats: TransporterStats; 
 
             {/* Stats Grid */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                <StatCard icon={Search} label="Missions disponibles" value={stats.available_missions} accent="bg-blue-50 text-blue-600" />
-                <StatCard icon={Package} label="Offres actives" value={stats.active_offers} accent="bg-purple-50 text-purple-600" />
-                <StatCard icon={CheckCircle2} label="Missions terminées" value={stats.completed_jobs} accent="bg-emerald-50 text-emerald-600" />
-                <StatCard icon={DollarSign} label="Gains totaux" value={`${stats.total_earnings} TND`} accent="bg-amber-50 text-amber-600" />
+                <div className="animate-fade-in-up delay-100">
+                    <StatCard icon={Search} label="Missions disponibles" value={stats.available_missions} accent="bg-primary-50 text-primary-600" />
+                </div>
+                <div className="animate-fade-in-up delay-200">
+                    <StatCard icon={Package} label="Offres actives" value={stats.active_offers} accent="bg-purple-50 text-purple-600" />
+                </div>
+                <div className="animate-fade-in-up delay-300">
+                    <StatCard icon={CheckCircle2} label="Missions terminées" value={stats.completed_jobs} accent="bg-accent-50 text-accent-600" />
+                </div>
+                <div className="animate-fade-in-up delay-400">
+                    <StatCard icon={DollarSign} label="Gains totaux" value={`${stats.total_earnings} TND`} accent="bg-amber-50 text-amber-600" />
+                </div>
             </div>
 
             {/* Performance + Recent Missions Row */}
@@ -250,7 +267,7 @@ function TransporterDashboard({ stats, recentJobs }: { stats: TransporterStats; 
                                 <span className="text-lg font-bold text-neutral-900">{stats.average_rating}/5</span>
                             </div>
                             <div className="w-full bg-neutral-100 rounded-full h-2">
-                                <div className="bg-amber-500 h-2 rounded-full transition-all" style={{ width: `${(stats.average_rating / 5) * 100}%` }} />
+                                <div className="bg-amber-500 h-2 rounded-full animate-progress-fill" style={{ width: `${(stats.average_rating / 5) * 100}%` }} />
                             </div>
                         </div>
                         <div>
@@ -262,16 +279,16 @@ function TransporterDashboard({ stats, recentJobs }: { stats: TransporterStats; 
                                 <span className="text-lg font-bold text-neutral-900">{stats.completion_rate}%</span>
                             </div>
                             <div className="w-full bg-neutral-100 rounded-full h-2">
-                                <div className="bg-emerald-500 h-2 rounded-full transition-all" style={{ width: `${stats.completion_rate}%` }} />
+                                <div className="bg-accent-500 h-2 rounded-full animate-progress-fill" style={{ width: `${stats.completion_rate}%` }} />
                             </div>
                         </div>
                         <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
                             <div className="flex items-center gap-2 text-sm text-neutral-600">
-                                <ShieldCheck className="w-4 h-4 text-blue-500" />
+                                <ShieldCheck className="w-4 h-4 text-primary-500" />
                                 Statut vérification
                             </div>
                             <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${stats.verification_status === 'VERIFIED'
-                                ? 'bg-emerald-50 text-emerald-700'
+                                ? 'bg-accent-50 text-accent-700'
                                 : 'bg-amber-50 text-amber-700'
                                 }`}>
                                 {stats.verification_status === 'VERIFIED' ? 'Vérifié ✓' : 'En attente'}
@@ -284,7 +301,7 @@ function TransporterDashboard({ stats, recentJobs }: { stats: TransporterStats; 
                 <div className="lg:col-span-2 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
                     <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
                         <h3 className="text-lg font-semibold text-neutral-900">Activité récente</h3>
-                        <Link href="/jobs/browse" className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1">
+                        <Link href="/jobs/browse" className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1">
                             Tout voir <ArrowRight className="w-4 h-4" />
                         </Link>
                     </div>
@@ -293,7 +310,7 @@ function TransporterDashboard({ stats, recentJobs }: { stats: TransporterStats; 
                             <Link key={job.id} href={`/jobs/${job.id}`}
                                 className="flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors">
                                 <div className="flex items-center gap-4 min-w-0">
-                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === 'TRANSPORT' ? 'bg-blue-50 text-blue-600' : 'bg-purple-50 text-purple-600'}`}>
+                                    <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === 'TRANSPORT' ? 'bg-primary-50 text-primary-600' : 'bg-purple-50 text-purple-600'}`}>
                                         {job.job_type === 'TRANSPORT' ? <Truck className="w-5 h-5" /> : <Package className="w-5 h-5" />}
                                     </div>
                                     <div className="min-w-0">
@@ -324,13 +341,27 @@ export default function DashboardPage() {
     const [clientStats, setClientStats] = useState<ClientStats>(MOCK_CLIENT_STATS);
     const [transporterStats, setTransporterStats] = useState<TransporterStats>(MOCK_TRANSPORTER_STATS);
     const [recentJobs, setRecentJobs] = useState<RecentJob[]>(MOCK_RECENT_JOBS);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(true);
 
     const isClient = user?.role === 'client' || user?.role === 'CLIENT';
     const isTransporter = user?.role === 'transporter' || user?.role === 'TRANSPORTER';
 
+    // Simulate load delay for skeleton demo
+    useEffect(() => {
+        const timer = setTimeout(() => setLoading(false), 800);
+        return () => clearTimeout(timer);
+    }, []);
+
+    if (loading) {
+        return (
+            <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+                <DashboardSkeleton />
+            </div>
+        );
+    }
+
     return (
-        <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+        <div className="p-6 lg:p-8 max-w-7xl mx-auto animate-fade-in">
             {/* Header */}
             <div className="mb-8">
                 <h1 className="text-2xl font-bold text-neutral-900">

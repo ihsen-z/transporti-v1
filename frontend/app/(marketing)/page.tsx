@@ -24,7 +24,7 @@ export default function MarketingHome() {
                                 <a href="/register" className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-lg shadow-lg transition-colors">
                                     Découvrir la plateforme
                                 </a>
-                                <button className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-3 rounded-lg border border-white/30">
+                                <button onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })} className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-3 rounded-lg border border-white/30">
                                     En savoir plus
                                 </button>
                             </div>
@@ -66,7 +66,7 @@ export default function MarketingHome() {
                 </div>
             </section>
 
-            <section className="py-20 bg-white">
+            <section id="features" className="py-20 bg-white">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="text-center mb-16">
                         <h2 className="text-4xl font-bold text-gray-900 mb-4">

@@ -1,6 +1,6 @@
 'use client';
 
-import { CreditCard, Clock, Lock, CheckCircle, AlertTriangle, DollarSign } from 'lucide-react';
+import { CreditCard, Clock, Lock, AlertTriangle, DollarSign } from 'lucide-react';
 import StatCard from '@/components/admin/StatCard';
 import DataTable from '@/components/admin/DataTable';
 import { PaymentStatusBadge } from '@/components/admin/StatusBadge';

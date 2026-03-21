@@ -3,8 +3,9 @@
 import React from 'react';
 import {
     Home, ArrowUpDown, Users, Package, ShieldAlert,
-    Wrench, Box, Camera,
+    Wrench, Box,
 } from 'lucide-react';
+import { PhotoUploader } from './PhotoUploader';
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -42,43 +43,16 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
 
     const update = (field: string, value: any) => {
         onChange({
-            ...data,
-            specifications: { ...specs, [field]: value },
+            specifications: { [field]: value },
         });
     };
 
     const handleDescriptionChange = (value: string) => {
-        onChange({ ...data, description: value });
+        onChange({ description: value });
     };
 
-    const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files) return;
-
-        const existing: string[] = data.photos || [];
-        if (existing.length + files.length > 5) {
-            alert('Maximum 5 photos autorisées.');
-            return;
-        }
-
-        Array.from(files).forEach(file => {
-            if (file.size > 5 * 1024 * 1024) {
-                alert(`Le fichier "${file.name}" dépasse 5 MB.`);
-                return;
-            }
-            const reader = new FileReader();
-            reader.onload = () => {
-                const newPhotos = [...(data.photos || []), reader.result as string];
-                onChange({ ...data, photos: newPhotos });
-            };
-            reader.readAsDataURL(file);
-        });
-    };
-
-    const removePhoto = (idx: number) => {
-        const updated = [...(data.photos || [])];
-        updated.splice(idx, 1);
-        onChange({ ...data, photos: updated });
+    const handlePhotosChange = (photos: string[]) => {
+        onChange({ photos });
     };
 
     return (
@@ -313,42 +287,11 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
             {/*  Section 6: Photos                                                 */}
             {/* ------------------------------------------------------------------ */}
             <section>
-                <h3 className="text-base font-semibold text-neutral-800 flex items-center gap-2 mb-3">
-                    <Camera className="w-5 h-5 text-neutral-500" />
-                    Photos (optionnel, max 5)
-                </h3>
-
-                <div className="flex flex-wrap gap-3 mb-3">
-                    {(data.photos || []).map((photo: string, idx: number) => (
-                        <div key={idx} className="relative w-24 h-24 rounded-lg overflow-hidden border border-neutral-200 group">
-                            <img src={photo} alt={`Photo ${idx + 1}`} className="w-full h-full object-cover" />
-                            <button
-                                type="button"
-                                onClick={() => removePhoto(idx)}
-                                className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
-                            >
-                                <span className="text-white text-xs font-medium">Supprimer</span>
-                            </button>
-                        </div>
-                    ))}
-
-                    {(data.photos || []).length < 5 && (
-                        <label className="w-24 h-24 rounded-lg border-2 border-dashed border-neutral-300 flex flex-col items-center justify-center cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-colors">
-                            <Camera className="w-5 h-5 text-neutral-400" />
-                            <span className="text-xs text-neutral-400 mt-1">Ajouter</span>
-                            <input
-                                type="file"
-                                accept="image/jpeg,image/png,image/webp"
-                                onChange={handlePhotoUpload}
-                                className="sr-only"
-                                multiple
-                            />
-                        </label>
-                    )}
-                </div>
-                <p className="text-xs text-neutral-400">
-                    JPG, PNG ou WebP — 5 MB max par photo
-                </p>
+                <PhotoUploader
+                    photos={data.photos || []}
+                    onPhotosChange={handlePhotosChange}
+                    maxPhotos={5}
+                />
             </section>
         </div>
     );

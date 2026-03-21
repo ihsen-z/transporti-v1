@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { apiClient } from '@/lib/api/client';
 import { JobFilters } from '@/components/jobs/JobFilters';
 import { JobFeedCard } from '@/components/jobs/JobFeedCard';
 import { Search, MapPin } from 'lucide-react';
@@ -28,16 +29,8 @@ export default function JobBrowsePage() {
             if (filters.pickup_governorate) queryParams.append('pickup_governorate', filters.pickup_governorate);
             if (filters.dropoff_governorate) queryParams.append('dropoff_governorate', filters.dropoff_governorate);
 
-            const response = await fetch(`/api/jobs/public/?${queryParams.toString()}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                }
-            });
-
-            if (response.ok) {
-                const data = await response.json();
-                setJobs(data);
-            }
+            const data = await apiClient.get<any[]>(`/api/jobs/public/?${queryParams.toString()}`);
+            setJobs(data);
         } catch (error) {
             console.error('Error fetching jobs:', error);
         } finally {
@@ -47,7 +40,7 @@ export default function JobBrowsePage() {
 
     if (authLoading) return <div className="p-8 text-center">Chargement...</div>;
 
-    if (user?.role !== 'TRANSPORTER') {
+    if (user?.role?.toUpperCase() !== 'TRANSPORTER') {
         return (
             <div className="p-8 text-center">
                 <h2 className="text-xl font-bold text-red-600">Accès Refusé</h2>

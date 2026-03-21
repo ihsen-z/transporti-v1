@@ -30,9 +30,10 @@ export default function AppSidebar() {
     ];
 
     let items = [...commonItems];
-    if (user?.role === 'CLIENT') {
+    const role = user?.role?.toUpperCase();
+    if (role === 'CLIENT') {
         items = [...clientItems, ...items];
-    } else if (user?.role === 'TRANSPORTER') {
+    } else if (role === 'TRANSPORTER') {
         items = [...items, ...transporterItems];
     }
 
@@ -66,7 +67,7 @@ export default function AppSidebar() {
                 <div className="px-4 py-3 bg-neutral-50 rounded-lg">
                     <p className="text-xs text-neutral-500 mb-1">Connecté en tant que</p>
                     <p className="text-sm font-bold text-neutral-900 truncate">
-                        {user?.first_name || 'Utilisateur'}
+                        {user?.first_name || user?.name || 'Utilisateur'}
                     </p>
                     <p className="text-xs text-blue-600 font-medium">{user?.role || 'Guest'}</p>
                 </div>
