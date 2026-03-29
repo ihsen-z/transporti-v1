@@ -4,7 +4,7 @@ Tests Job and Offer API endpoints via DRF APITestCase.
 Strictly additive: new test file in existing tests/ package.
 Complements model-level tests in test_status_transitions.py.
 """
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APITestCase
 from rest_framework import status
 from django.contrib.auth import get_user_model
@@ -17,6 +17,7 @@ from logistics.models import TransportJob, Offer
 User = get_user_model()
 
 
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
 class JobAPITestBase(APITestCase):
     """Shared setup for Job API tests."""
 
@@ -89,7 +90,9 @@ class JobCreateAPITests(JobAPITestBase):
             format='json',
         )
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
-        self.assertEqual(resp.data['status'], 'DRAFT')
+        # JobCreateView wraps response in {'message': ..., 'job': {...}}
+        job_data = resp.data.get('job', resp.data)
+        self.assertEqual(job_data['status'], 'DRAFT')
 
     def test_create_job_unauthenticated(self):
         """Unauthenticated request to create job returns 401."""
@@ -137,8 +140,9 @@ class JobPublicListAPITests(JobAPITestBase):
         self._create_job_in_db(status_val='DRAFT')  # Should not appear
         resp = self.client.get(self.PUBLIC_JOBS_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        # All returned jobs should be PUBLISHED
-        for job in resp.data.get('results', resp.data):
+        # All returned jobs should be PUBLISHED (response is a plain list)
+        jobs = resp.data if isinstance(resp.data, list) else resp.data.get('results', [])
+        for job in jobs:
             self.assertEqual(job['status'], 'PUBLISHED')
 
 
@@ -166,7 +170,8 @@ class JobMyListAPITests(JobAPITestBase):
         self._login_as('apiclient@test.tn')
         resp = self.client.get(self.MY_JOBS_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        jobs = resp.data.get('results', resp.data)
+        # Response is a plain list (no pagination)
+        jobs = resp.data if isinstance(resp.data, list) else resp.data.get('results', [])
         # Client user should only see 1 job (their own)
         for job in jobs:
             self.assertEqual(job['owner'], self.client_user.id)

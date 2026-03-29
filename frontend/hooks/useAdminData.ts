@@ -1,59 +1,74 @@
-'use client';
+"use client";
 
 // Admin Data Hooks
 // Sprint 7.5 — API Transition Layer
+// Sprint 1 — Connected to real backend APIs
 
-import { useCallback } from 'react';
-import { useDataService } from './useDataService';
+import { useCallback } from "react";
+import { useDataService } from "./useDataService";
 import {
-    getAdminStats,
-    getAdminJobs,
-    getAdminUsers,
-    getAdminPayments,
-    getActivityLogs,
-    getSystemAlerts,
-} from '@/lib/services/admin';
+  getAdminStats,
+  getAdminJobs,
+  getAdminUsers,
+  getAdminPayments,
+  getActivityLogs,
+  getSystemAlerts,
+  getAdminDisputes,
+  getAdminVerifications,
+  type BackendDispute,
+  type BackendVerification,
+} from "@/lib/services/admin";
 import {
-    mockAdminStats,
-    mockAdminJobs,
-    mockAdminUsers,
-    mockAdminPayments,
-    mockActivityLogs,
-    mockSystemAlerts,
-    type AdminStats,
-    type AdminJob,
-    type AdminUser,
-    type AdminPayment,
-    type ActivityLog,
-    type SystemAlert,
-} from '@/lib/admin';
+  mockAdminStats,
+  mockAdminJobs,
+  mockAdminUsers,
+  mockAdminPayments,
+  mockActivityLogs,
+  mockSystemAlerts,
+  type AdminStats,
+  type AdminJob,
+  type AdminUser,
+  type AdminPayment,
+  type ActivityLog,
+  type SystemAlert,
+} from "@/lib/admin";
 
 export function useAdminStats() {
-    const fetcher = useCallback(() => getAdminStats(), []);
-    return useDataService<AdminStats>(fetcher, mockAdminStats);
+  const fetcher = useCallback(() => getAdminStats(), []);
+  return useDataService<AdminStats>(fetcher, mockAdminStats);
 }
 
 export function useAdminJobs() {
-    const fetcher = useCallback(() => getAdminJobs(), []);
-    return useDataService<AdminJob[]>(fetcher, []);
+  const fetcher = useCallback(() => getAdminJobs(), []);
+  return useDataService<AdminJob[]>(fetcher, []);
 }
 
 export function useAdminUsers() {
-    const fetcher = useCallback(() => getAdminUsers(), []);
-    return useDataService<AdminUser[]>(fetcher, []);
+  const fetcher = useCallback(() => getAdminUsers(), []);
+  return useDataService<AdminUser[]>(fetcher, []);
 }
 
 export function useAdminPayments() {
-    const fetcher = useCallback(() => getAdminPayments(), []);
-    return useDataService<AdminPayment[]>(fetcher, []);
+  const fetcher = useCallback(() => getAdminPayments(), []);
+  return useDataService<AdminPayment[]>(fetcher, []);
 }
 
 export function useActivityLogs() {
-    const fetcher = useCallback(() => getActivityLogs(), []);
-    return useDataService<ActivityLog[]>(fetcher, []);
+  const fetcher = useCallback(() => getActivityLogs(), []);
+  return useDataService<ActivityLog[]>(fetcher, []);
 }
 
 export function useSystemAlerts() {
-    const fetcher = useCallback(() => getSystemAlerts(), []);
-    return useDataService<SystemAlert[]>(fetcher, []);
+  const fetcher = useCallback(() => getSystemAlerts(), []);
+  return useDataService<SystemAlert[]>(fetcher, []);
+}
+
+export function useAdminDisputes() {
+  const fetcher = useCallback(() => getAdminDisputes(), []);
+  return useDataService<BackendDispute[]>(fetcher, []);
+}
+
+export function useAdminVerifications() {
+  const fetcher = useCallback(() => getAdminVerifications(), []);
+  return useDataService<BackendVerification[]>(fetcher, []);
 }

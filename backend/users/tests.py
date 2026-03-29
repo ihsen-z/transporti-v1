@@ -3,7 +3,7 @@ Users Module Tests — Sprint D Fondamentaux
 Tests registration, login, and profile endpoints via DRF APITestCase.
 Strictly additive: fills the empty tests.py stub.
 """
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from rest_framework.test import APITestCase, APIClient
 from rest_framework import status
 from django.contrib.auth import get_user_model
@@ -115,6 +115,7 @@ class AuthAuditModelTests(TestCase):
             entry.save()
 
 
+@override_settings(REST_FRAMEWORK={'DEFAULT_THROTTLE_CLASSES': [], 'DEFAULT_THROTTLE_RATES': {}})
 class RegisterAPITests(APITestCase):
     """API tests for POST /api/auth/register/."""
 
@@ -276,7 +277,9 @@ class ProfileAPITests(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {token}')
         resp = self.client.get(self.PROFILE_URL)
         self.assertEqual(resp.status_code, status.HTTP_200_OK)
-        self.assertEqual(resp.data['email'], 'profile@test.tn')
+        # ProfileView wraps response in {'user': {...}}
+        user_data = resp.data.get('user', resp.data)
+        self.assertEqual(user_data['email'], 'profile@test.tn')
 
     def test_profile_get_unauthenticated(self):
         """Unauthenticated GET /profile/ returns 401."""
@@ -300,6 +303,6 @@ class ProfileAPITests(APITestCase):
             },
             format='json',
         )
-        self.assertIn(resp.status_code, [status.HTTP_200_OK, status.HTTP_202_ACCEPTED])
+        self.assertEqual(resp.status_code, status.HTTP_200_OK)
         self.user.refresh_from_db()
         self.assertEqual(self.user.first_name, 'Updated')

@@ -1,450 +1,615 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import DataTable from '@/components/admin/DataTable';
-import StatusBadge from '@/components/admin/StatusBadge';
-import { formatTimeAgoShort, formatCurrency } from '@/lib/admin';
+import { useState } from "react";
+import DataTable from "@/components/admin/DataTable";
+import StatusBadge from "@/components/admin/StatusBadge";
+import { formatTimeAgoShort, formatCurrency } from "@/lib/admin";
+import { useAdminDisputes } from "@/hooks/useAdminData";
 import {
-    AlertTriangle,
-    Eye,
-    Search as SearchIcon,
-    MessageSquare,
-    CheckCircle,
-    XCircle,
-    User,
-    DollarSign,
-} from 'lucide-react';
+  investigateDispute,
+  resolveDispute,
+  rejectDispute,
+  type BackendDispute,
+} from "@/lib/services/admin";
+import {
+  AlertTriangle,
+  Eye,
+  Search as SearchIcon,
+  MessageSquare,
+  CheckCircle,
+  XCircle,
+  User,
+  DollarSign,
+  Loader2,
+  AlertCircle,
+  Wifi,
+  WifiOff,
+} from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/*  Types & Mock Data                                                         */
+/*  Status Config                                                              */
 /* -------------------------------------------------------------------------- */
 
-type DisputeStatus = 'OPEN' | 'INVESTIGATING' | 'RESOLVED' | 'REJECTED';
-
-interface AdminDispute {
-    id: number;
-    jobId: number;
-    jobTitle: string;
-    openedBy: string;
-    openedByEmail: string;
-    openedByRole: 'CLIENT' | 'TRANSPORTER';
-    respondentName: string;
-    reason: string;
-    status: DisputeStatus;
-    createdAt: string;
-    resolvedAt?: string;
-    escrowAmount: number;
-    resolution?: string;
-    messages: { from: string; text: string; at: string }[];
-}
+type DisputeStatus = "OPEN" | "INVESTIGATING" | "RESOLVED" | "REJECTED";
 
 const statusColors: Record<DisputeStatus, string> = {
-    OPEN: 'bg-red-100 text-red-700',
-    INVESTIGATING: 'bg-blue-100 text-blue-700',
-    RESOLVED: 'bg-green-100 text-green-700',
-    REJECTED: 'bg-slate-100 text-slate-600',
+  OPEN: "bg-red-100 text-red-700",
+  INVESTIGATING: "bg-blue-100 text-blue-700",
+  RESOLVED: "bg-green-100 text-green-700",
+  REJECTED: "bg-slate-100 text-slate-600",
 };
 
 const statusLabels: Record<DisputeStatus, string> = {
-    OPEN: 'Ouvert',
-    INVESTIGATING: 'Investigation',
-    RESOLVED: 'Résolu',
-    REJECTED: 'Rejeté',
+  OPEN: "Ouvert",
+  INVESTIGATING: "Investigation",
+  RESOLVED: "Résolu",
+  REJECTED: "Rejeté",
 };
 
-const mockDisputes: AdminDispute[] = [
-    {
-        id: 1,
-        jobId: 1002,
-        jobTitle: 'Déménagement appartement — Sfax → Tunis',
-        openedBy: 'Fatma Kasri',
-        openedByEmail: 'fatma@example.tn',
-        openedByRole: 'CLIENT',
-        respondentName: 'Karim Bouazizi',
-        reason: 'Objets endommagés lors du transport — une table brisée et un miroir fissuré.',
-        status: 'OPEN',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString(),
-        escrowAmount: 350,
-        messages: [
-            { from: 'Fatma Kasri', text: 'Ma table est cassée, le miroir est fissuré.', at: new Date(Date.now() - 1000 * 60 * 60 * 3).toISOString() },
-            { from: 'Karim Bouazizi', text: 'Les objets étaient mal emballés par le client.', at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
-        ],
-    },
-    {
-        id: 2,
-        jobId: 1004,
-        jobTitle: 'Transport électroménager — Tunis → Monastir',
-        openedBy: 'Sami Riahi',
-        openedByEmail: 'sami@example.tn',
-        openedByRole: 'CLIENT',
-        respondentName: 'Ali Hammami',
-        reason: 'Transporteur n\'est jamais venu. Pas de réponse après confirmation.',
-        status: 'INVESTIGATING',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString(),
-        escrowAmount: 80,
-        messages: [
-            { from: 'Sami Riahi', text: 'Le transporteur ne se présente pas et ne répond plus.', at: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2).toISOString() },
-        ],
-    },
-    {
-        id: 3,
-        jobId: 1005,
-        jobTitle: 'Déménagement complet — Gabès → Ariana',
-        openedBy: 'Hichem Karray',
-        openedByEmail: 'hichem@fast.tn',
-        openedByRole: 'TRANSPORTER',
-        respondentName: 'Leila Hamdi',
-        reason: 'Le client refuse de payer malgré la livraison effectuée.',
-        status: 'RESOLVED',
-        createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7).toISOString(),
-        resolvedAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5).toISOString(),
-        escrowAmount: 850,
-        resolution: 'Paiement libéré en faveur du transporteur après vérification des preuves de livraison.',
-        messages: [],
-    },
-];
+const reasonLabels: Record<string, string> = {
+  DAMAGED_ITEMS: "Objets endommagés",
+  NO_SHOW: "Non-présentation",
+  PAYMENT_ISSUE: "Problème de paiement",
+  LATE_DELIVERY: "Livraison tardive",
+  HARASSMENT: "Harcèlement",
+  FRAUD: "Fraude suspectée",
+  OTHER: "Autre",
+};
 
 /* -------------------------------------------------------------------------- */
-/*  Component                                                                 */
+/*  Component                                                                  */
 /* -------------------------------------------------------------------------- */
 
-type FilterTab = 'ALL' | 'OPEN' | 'INVESTIGATING' | 'RESOLVED';
+type FilterTab = "ALL" | "OPEN" | "INVESTIGATING" | "RESOLVED";
 
 export default function AdminDisputesPage() {
-    const [filter, setFilter] = useState<FilterTab>('ALL');
-    const [selectedDispute, setSelectedDispute] = useState<AdminDispute | null>(null);
+  const {
+    data: disputes,
+    loading,
+    error,
+    source,
+    refetch,
+  } = useAdminDisputes();
+  const [filter, setFilter] = useState<FilterTab>("ALL");
+  const [selectedDispute, setSelectedDispute] = useState<BackendDispute | null>(
+    null,
+  );
+  const [actionLoading, setActionLoading] = useState(false);
+  const [feedback, setFeedback] = useState<{
+    type: "success" | "error";
+    message: string;
+  } | null>(null);
+  const [resolveNotes, setResolveNotes] = useState("");
+  const [showResolveModal, setShowResolveModal] = useState(false);
+  const [showRejectModal, setShowRejectModal] = useState(false);
+  const [pendingActionId, setPendingActionId] = useState<number | null>(null);
 
-    const filterTabs: { value: FilterTab; label: string }[] = [
-        { value: 'ALL', label: 'Tous' },
-        { value: 'OPEN', label: 'Ouverts' },
-        { value: 'INVESTIGATING', label: 'Investigation' },
-        { value: 'RESOLVED', label: 'Résolus' },
-    ];
+  const filterTabs: { value: FilterTab; label: string }[] = [
+    { value: "ALL", label: "Tous" },
+    { value: "OPEN", label: "Ouverts" },
+    { value: "INVESTIGATING", label: "Investigation" },
+    { value: "RESOLVED", label: "Résolus" },
+  ];
 
-    const filtered = filter === 'ALL'
-        ? mockDisputes
-        : mockDisputes.filter(d => d.status === filter);
+  const filtered =
+    filter === "ALL" ? disputes : disputes.filter((d) => d.status === filter);
 
-    const openCount = mockDisputes.filter(d => d.status === 'OPEN').length;
-    const investigatingCount = mockDisputes.filter(d => d.status === 'INVESTIGATING').length;
+  const openCount = disputes.filter((d) => d.status === "OPEN").length;
+  const investigatingCount = disputes.filter(
+    (d) => d.status === "INVESTIGATING",
+  ).length;
 
-    const handleInvestigate = (id: number) => {
-        // POST /api/admin/disputes/{id}/investigate/
-        alert(`🔍 Investigation ouverte sur litige #${id} (mock)`);
-    };
+  // ─── Actions ───────────────────────────────────────────────
 
-    const handleResolve = (id: number) => {
-        // POST /api/admin/disputes/{id}/resolve/
-        alert(`✅ Litige #${id} résolu (mock)`);
-    };
+  const showFeedback = (type: "success" | "error", message: string) => {
+    setFeedback({ type, message });
+    setTimeout(() => setFeedback(null), 4000);
+  };
 
-    const handleReject = (id: number) => {
-        // POST /api/admin/disputes/{id}/reject/
-        alert(`❌ Litige #${id} rejeté (mock)`);
-    };
+  const handleInvestigate = async (id: number) => {
+    setActionLoading(true);
+    try {
+      await investigateDispute(id);
+      showFeedback("success", `🔍 Investigation ouverte sur le litige #${id}`);
+      refetch();
+      setSelectedDispute(null);
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      showFeedback("error", `Échec: ${msg}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-    const columns = [
-        {
-            key: 'id',
-            header: 'ID',
-            width: 'w-16',
-            render: (d: AdminDispute) => (
-                <span className="font-mono text-slate-500">#{d.id}</span>
-            ),
-        },
-        {
-            key: 'job',
-            header: 'Mission',
-            render: (d: AdminDispute) => (
-                <div>
-                    <p className="font-medium text-slate-900 text-sm">{d.jobTitle}</p>
-                    <p className="text-xs text-slate-400">Job #{d.jobId}</p>
-                </div>
-            ),
-        },
-        {
-            key: 'openedBy',
-            header: 'Ouvert par',
-            render: (d: AdminDispute) => (
-                <div className="flex items-center gap-2">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${d.openedByRole === 'CLIENT' ? 'bg-blue-100' : 'bg-purple-100'
-                        }`}>
-                        <User className={`w-4 h-4 ${d.openedByRole === 'CLIENT' ? 'text-blue-600' : 'text-purple-600'}`} />
-                    </div>
-                    <div>
-                        <p className="text-sm font-medium text-slate-900">{d.openedBy}</p>
-                        <p className="text-xs text-slate-400">{d.openedByRole === 'CLIENT' ? 'Client' : 'Transporteur'}</p>
-                    </div>
-                </div>
-            ),
-        },
-        {
-            key: 'status',
-            header: 'Statut',
-            render: (d: AdminDispute) => (
-                <StatusBadge status={statusLabels[d.status]} colorClass={statusColors[d.status]} />
-            ),
-        },
-        {
-            key: 'escrow',
-            header: 'Escrow',
-            render: (d: AdminDispute) => (
-                <span className="text-sm font-medium text-slate-700">
-                    {formatCurrency(d.escrowAmount)}
-                </span>
-            ),
-        },
-        {
-            key: 'createdAt',
-            header: 'Ouvert',
-            render: (d: AdminDispute) => (
-                <span className="text-sm text-slate-500">{formatTimeAgoShort(d.createdAt)}</span>
-            ),
-        },
-        {
-            key: 'actions',
-            header: 'Actions',
-            render: (d: AdminDispute) => (
-                <div className="flex items-center gap-2">
-                    <button
-                        onClick={() => setSelectedDispute(d)}
-                        title="Voir détails"
-                        className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
-                    >
-                        <Eye className="w-4 h-4" />
-                    </button>
-                    {d.status === 'OPEN' && (
-                        <button
-                            onClick={() => handleInvestigate(d.id)}
-                            title="Investiguer"
-                            className="p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors"
-                        >
-                            <SearchIcon className="w-4 h-4" />
-                        </button>
-                    )}
-                    {(d.status === 'OPEN' || d.status === 'INVESTIGATING') && (
-                        <>
-                            <button
-                                onClick={() => handleResolve(d.id)}
-                                title="Résoudre"
-                                className="p-1.5 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors"
-                            >
-                                <CheckCircle className="w-4 h-4" />
-                            </button>
-                            <button
-                                onClick={() => handleReject(d.id)}
-                                title="Rejeter"
-                                className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
-                            >
-                                <XCircle className="w-4 h-4" />
-                            </button>
-                        </>
-                    )}
-                </div>
-            ),
-        },
-    ];
+  const handleResolve = (id: number) => {
+    setPendingActionId(id);
+    setResolveNotes("");
+    setShowResolveModal(true);
+  };
 
-    return (
-        <div className="space-y-6">
-            {/* Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                    <h1 className="text-2xl font-bold text-slate-900">Litiges</h1>
-                    <p className="text-slate-500">Résolution des conflits entre clients et transporteurs</p>
-                </div>
-                {openCount > 0 && (
-                    <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2 rounded-lg">
-                        <AlertTriangle className="w-4 h-4 text-red-600" />
-                        <span className="text-sm font-medium text-red-800">
-                            {openCount} litige{openCount > 1 ? 's' : ''} ouvert{openCount > 1 ? 's' : ''}
-                        </span>
-                    </div>
-                )}
-            </div>
+  const confirmResolve = async () => {
+    if (!pendingActionId || !resolveNotes.trim()) return;
+    setActionLoading(true);
+    try {
+      await resolveDispute(pendingActionId, resolveNotes);
+      showFeedback("success", `✅ Litige #${pendingActionId} résolu`);
+      setShowResolveModal(false);
+      setSelectedDispute(null);
+      refetch();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      showFeedback("error", `Échec: ${msg}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-            {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-2">
-                {filterTabs.map(tab => {
-                    const isActive = filter === tab.value;
-                    const count = tab.value === 'ALL'
-                        ? mockDisputes.length
-                        : mockDisputes.filter(d => d.status === tab.value).length;
-                    return (
-                        <button
-                            key={tab.value}
-                            onClick={() => setFilter(tab.value)}
-                            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${isActive
-                                ? 'bg-primary-600 text-white shadow-sm'
-                                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-                                }`}
-                        >
-                            {tab.label}
-                            <span className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? 'bg-white/20' : 'bg-slate-100'}`}>
-                                {count}
-                            </span>
-                        </button>
-                    );
-                })}
-            </div>
+  const handleReject = (id: number) => {
+    setPendingActionId(id);
+    setResolveNotes("");
+    setShowRejectModal(true);
+  };
 
-            {/* Stats Bar */}
-            <div className="bg-white rounded-xl border border-slate-200 p-4">
-                <div className="flex flex-wrap gap-6 text-sm">
-                    <div>
-                        <span className="text-slate-500">Total:</span>
-                        <span className="ml-2 font-semibold text-slate-900">{filtered.length}</span>
-                    </div>
-                    <div>
-                        <span className="text-slate-500">Ouverts:</span>
-                        <span className="ml-2 font-semibold text-red-600">{openCount}</span>
-                    </div>
-                    <div>
-                        <span className="text-slate-500">En investigation:</span>
-                        <span className="ml-2 font-semibold text-blue-600">{investigatingCount}</span>
-                    </div>
-                    <div>
-                        <span className="text-slate-500">Escrow impliqué:</span>
-                        <span className="ml-2 font-semibold text-slate-900">
-                            {formatCurrency(mockDisputes.reduce((s, d) => s + d.escrowAmount, 0))}
-                        </span>
-                    </div>
-                </div>
-            </div>
+  const confirmReject = async () => {
+    if (!pendingActionId || !resolveNotes.trim()) return;
+    setActionLoading(true);
+    try {
+      await rejectDispute(pendingActionId, resolveNotes);
+      showFeedback("success", `❌ Litige #${pendingActionId} rejeté`);
+      setShowRejectModal(false);
+      setSelectedDispute(null);
+      refetch();
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Erreur inconnue";
+      showFeedback("error", `Échec: ${msg}`);
+    } finally {
+      setActionLoading(false);
+    }
+  };
 
-            {/* Table */}
-            <DataTable
-                columns={columns}
-                data={filtered}
-                emptyMessage="Aucun litige trouvé pour ce filtre"
-            />
+  // ─── Columns ──────────────────────────────────────────────
 
-            {/* Detail Drawer */}
-            {selectedDispute && (
-                <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-                    <div className="bg-white w-full max-w-lg h-full overflow-y-auto shadow-2xl">
-                        <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-                            <h2 className="text-lg font-bold text-slate-900">
-                                Litige #{selectedDispute.id}
-                            </h2>
-                            <button
-                                onClick={() => setSelectedDispute(null)}
-                                className="text-slate-400 hover:text-slate-600 text-xl"
-                            >
-                                ×
-                            </button>
-                        </div>
-
-                        <div className="p-6 space-y-6">
-                            {/* Status */}
-                            <div className="flex items-center gap-3">
-                                <StatusBadge
-                                    status={statusLabels[selectedDispute.status]}
-                                    colorClass={statusColors[selectedDispute.status]}
-                                    size="md"
-                                />
-                                <span className="text-sm text-slate-500">
-                                    Ouvert {formatTimeAgoShort(selectedDispute.createdAt)}
-                                </span>
-                            </div>
-
-                            {/* Job Info */}
-                            <div className="bg-slate-50 rounded-xl p-4">
-                                <p className="text-xs text-slate-500 mb-1">Mission concernée</p>
-                                <p className="font-medium text-slate-900">{selectedDispute.jobTitle}</p>
-                                <p className="text-sm text-slate-500">Job #{selectedDispute.jobId}</p>
-                            </div>
-
-                            {/* Parties */}
-                            <div className="grid grid-cols-2 gap-4">
-                                <div className="bg-blue-50 rounded-xl p-3">
-                                    <p className="text-xs text-blue-600 mb-1">Plaignant</p>
-                                    <p className="font-medium text-slate-900 text-sm">{selectedDispute.openedBy}</p>
-                                    <p className="text-xs text-slate-500">{selectedDispute.openedByRole === 'CLIENT' ? 'Client' : 'Transporteur'}</p>
-                                </div>
-                                <div className="bg-purple-50 rounded-xl p-3">
-                                    <p className="text-xs text-purple-600 mb-1">Mis en cause</p>
-                                    <p className="font-medium text-slate-900 text-sm">{selectedDispute.respondentName}</p>
-                                </div>
-                            </div>
-
-                            {/* Reason */}
-                            <div>
-                                <p className="text-xs text-slate-500 mb-2">Motif du litige</p>
-                                <p className="text-sm text-slate-700 bg-slate-50 rounded-xl p-4">{selectedDispute.reason}</p>
-                            </div>
-
-                            {/* Escrow */}
-                            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 flex items-center gap-3">
-                                <DollarSign className="w-5 h-5 text-amber-600" />
-                                <div>
-                                    <p className="text-sm font-semibold text-amber-900">
-                                        Escrow: {formatCurrency(selectedDispute.escrowAmount)}
-                                    </p>
-                                    <p className="text-xs text-amber-700">Fonds bloqués en attente de résolution</p>
-                                </div>
-                            </div>
-
-                            {/* Messages / Chat History */}
-                            {selectedDispute.messages.length > 0 && (
-                                <div>
-                                    <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
-                                        <MessageSquare className="w-3 h-3" /> Historique
-                                    </p>
-                                    <div className="space-y-3">
-                                        {selectedDispute.messages.map((msg, idx) => (
-                                            <div key={idx} className="bg-white border border-slate-100 rounded-xl p-3">
-                                                <div className="flex items-center justify-between mb-1">
-                                                    <span className="text-xs font-medium text-slate-700">{msg.from}</span>
-                                                    <span className="text-xs text-slate-400">{formatTimeAgoShort(msg.at)}</span>
-                                                </div>
-                                                <p className="text-sm text-slate-600">{msg.text}</p>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            )}
-
-                            {/* Resolution */}
-                            {selectedDispute.resolution && (
-                                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                                    <p className="text-xs text-green-600 mb-1">Résolution</p>
-                                    <p className="text-sm text-green-800">{selectedDispute.resolution}</p>
-                                </div>
-                            )}
-
-                            {/* Actions */}
-                            {(selectedDispute.status === 'OPEN' || selectedDispute.status === 'INVESTIGATING') && (
-                                <div className="flex gap-3 pt-4 border-t border-slate-100">
-                                    {selectedDispute.status === 'OPEN' && (
-                                        <button
-                                            onClick={() => { handleInvestigate(selectedDispute.id); setSelectedDispute(null); }}
-                                            className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-                                        >
-                                            <SearchIcon className="w-4 h-4" />
-                                            Investiguer
-                                        </button>
-                                    )}
-                                    <button
-                                        onClick={() => { handleResolve(selectedDispute.id); setSelectedDispute(null); }}
-                                        className="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <CheckCircle className="w-4 h-4" />
-                                        Résoudre
-                                    </button>
-                                    <button
-                                        onClick={() => { handleReject(selectedDispute.id); setSelectedDispute(null); }}
-                                        className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
-                                    >
-                                        <XCircle className="w-4 h-4" />
-                                        Rejeter
-                                    </button>
-                                </div>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+  const columns = [
+    {
+      key: "id",
+      header: "ID",
+      width: "w-16",
+      render: (d: BackendDispute) => (
+        <span className="font-mono text-slate-500">#{d.id}</span>
+      ),
+    },
+    {
+      key: "job",
+      header: "Mission",
+      render: (d: BackendDispute) => (
+        <div>
+          <p className="font-medium text-slate-900 text-sm">
+            {reasonLabels[d.reason] || d.reason}
+          </p>
+          <p className="text-xs text-slate-400">
+            Job #{d.job_summary?.id || d.job}
+          </p>
         </div>
+      ),
+    },
+    {
+      key: "openedBy",
+      header: "Ouvert par",
+      render: (d: BackendDispute) => (
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100">
+            <User className="w-4 h-4 text-blue-600" />
+          </div>
+          <div>
+            <p className="text-sm font-medium text-slate-900">
+              {d.opened_by_name}
+            </p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Statut",
+      render: (d: BackendDispute) => (
+        <StatusBadge
+          status={statusLabels[d.status] || d.status}
+          colorClass={statusColors[d.status] || "bg-slate-100 text-slate-600"}
+        />
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Ouvert",
+      render: (d: BackendDispute) => (
+        <span className="text-sm text-slate-500">
+          {formatTimeAgoShort(d.created_at)}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (d: BackendDispute) => (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSelectedDispute(d)}
+            title="Voir détails"
+            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+          >
+            <Eye className="w-4 h-4" />
+          </button>
+          {d.status === "OPEN" && (
+            <button
+              onClick={() => handleInvestigate(d.id)}
+              title="Investiguer"
+              disabled={actionLoading}
+              className="p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors disabled:opacity-50"
+            >
+              <SearchIcon className="w-4 h-4" />
+            </button>
+          )}
+          {(d.status === "OPEN" || d.status === "INVESTIGATING") && (
+            <>
+              <button
+                onClick={() => handleResolve(d.id)}
+                title="Résoudre"
+                disabled={actionLoading}
+                className="p-1.5 rounded-lg bg-green-100 text-green-600 hover:bg-green-200 transition-colors disabled:opacity-50"
+              >
+                <CheckCircle className="w-4 h-4" />
+              </button>
+              <button
+                onClick={() => handleReject(d.id)}
+                title="Rejeter"
+                disabled={actionLoading}
+                className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors disabled:opacity-50"
+              >
+                <XCircle className="w-4 h-4" />
+              </button>
+            </>
+          )}
+        </div>
+      ),
+    },
+  ];
+
+  // ─── Loading / Error States ───────────────────────────────
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
+          <p className="text-sm text-slate-500">Chargement des litiges...</p>
+        </div>
+      </div>
     );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <AlertCircle className="w-8 h-8 text-red-500" />
+          <p className="text-sm text-red-600">Erreur: {error.message}</p>
+          <button
+            onClick={refetch}
+            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700"
+          >
+            Réessayer
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Render ───────────────────────────────────────────────
+
+  return (
+    <div className="space-y-6">
+      {/* Feedback Banner */}
+      {feedback && (
+        <div
+          className={`rounded-xl p-4 text-sm font-medium ${
+            feedback.type === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
+          }`}
+        >
+          {feedback.message}
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-slate-900">Litiges</h1>
+          <p className="text-slate-500">
+            Résolution des conflits entre clients et transporteurs
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          {/* Data Source Indicator */}
+          <div
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
+              source === "api"
+                ? "bg-green-50 text-green-700 border border-green-200"
+                : "bg-orange-50 text-orange-700 border border-orange-200"
+            }`}
+          >
+            {source === "api" ? (
+              <Wifi className="w-3 h-3" />
+            ) : (
+              <WifiOff className="w-3 h-3" />
+            )}
+            {source === "api" ? "API Live" : "Mock Data"}
+          </div>
+          {openCount > 0 && (
+            <div className="flex items-center gap-2 bg-red-50 border border-red-200 px-4 py-2 rounded-lg">
+              <AlertTriangle className="w-4 h-4 text-red-600" />
+              <span className="text-sm font-medium text-red-800">
+                {openCount} litige{openCount > 1 ? "s" : ""} ouvert
+                {openCount > 1 ? "s" : ""}
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Filter Tabs */}
+      <div className="flex flex-wrap gap-2">
+        {filterTabs.map((tab) => {
+          const isActive = filter === tab.value;
+          const count =
+            tab.value === "ALL"
+              ? disputes.length
+              : disputes.filter((d) => d.status === tab.value).length;
+          return (
+            <button
+              key={tab.value}
+              onClick={() => setFilter(tab.value)}
+              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                isActive
+                  ? "bg-primary-600 text-white shadow-sm"
+                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+              }`}
+            >
+              {tab.label}
+              <span
+                className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-slate-100"}`}
+              >
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Stats Bar */}
+      <div className="bg-white rounded-xl border border-slate-200 p-4">
+        <div className="flex flex-wrap gap-6 text-sm">
+          <div>
+            <span className="text-slate-500">Total:</span>
+            <span className="ml-2 font-semibold text-slate-900">
+              {filtered.length}
+            </span>
+          </div>
+          <div>
+            <span className="text-slate-500">Ouverts:</span>
+            <span className="ml-2 font-semibold text-red-600">{openCount}</span>
+          </div>
+          <div>
+            <span className="text-slate-500">En investigation:</span>
+            <span className="ml-2 font-semibold text-blue-600">
+              {investigatingCount}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <DataTable
+        columns={columns}
+        data={filtered}
+        emptyMessage="Aucun litige trouvé pour ce filtre"
+      />
+
+      {/* Detail Drawer */}
+      {selectedDispute && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
+          <div className="bg-white w-full max-w-lg h-full overflow-y-auto shadow-2xl">
+            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-slate-900">
+                Litige #{selectedDispute.id}
+              </h2>
+              <button
+                onClick={() => setSelectedDispute(null)}
+                className="text-slate-400 hover:text-slate-600 text-xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="p-6 space-y-6">
+              {/* Status */}
+              <div className="flex items-center gap-3">
+                <StatusBadge
+                  status={statusLabels[selectedDispute.status]}
+                  colorClass={statusColors[selectedDispute.status]}
+                  size="md"
+                />
+                <span className="text-sm text-slate-500">
+                  Ouvert {formatTimeAgoShort(selectedDispute.created_at)}
+                </span>
+              </div>
+
+              {/* Job Info */}
+              <div className="bg-slate-50 rounded-xl p-4">
+                <p className="text-xs text-slate-500 mb-1">Mission concernée</p>
+                <p className="font-medium text-slate-900">
+                  {reasonLabels[selectedDispute.reason] ||
+                    selectedDispute.reason}
+                </p>
+                <p className="text-sm text-slate-500">
+                  Job #{selectedDispute.job_summary?.id || selectedDispute.job}
+                </p>
+                {selectedDispute.job_summary?.pickup && (
+                  <p className="text-xs text-slate-400 mt-1">
+                    {selectedDispute.job_summary.pickup} →{" "}
+                    {selectedDispute.job_summary.dropoff}
+                  </p>
+                )}
+              </div>
+
+              {/* Opened By */}
+              <div className="bg-blue-50 rounded-xl p-3">
+                <p className="text-xs text-blue-600 mb-1">Plaignant</p>
+                <p className="font-medium text-slate-900 text-sm">
+                  {selectedDispute.opened_by_name}
+                </p>
+              </div>
+
+              {/* Description */}
+              <div>
+                <p className="text-xs text-slate-500 mb-2">
+                  Description du litige
+                </p>
+                <p className="text-sm text-slate-700 bg-slate-50 rounded-xl p-4">
+                  {selectedDispute.description}
+                </p>
+              </div>
+
+              {/* Resolution Notes */}
+              {selectedDispute.resolution_notes && (
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                  <p className="text-xs text-green-600 mb-1">Résolution</p>
+                  <p className="text-sm text-green-800">
+                    {selectedDispute.resolution_notes}
+                  </p>
+                  {selectedDispute.resolved_by_name && (
+                    <p className="text-xs text-green-600 mt-2">
+                      Par {selectedDispute.resolved_by_name}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Actions */}
+              {(selectedDispute.status === "OPEN" ||
+                selectedDispute.status === "INVESTIGATING") && (
+                <div className="flex gap-3 pt-4 border-t border-slate-100">
+                  {selectedDispute.status === "OPEN" && (
+                    <button
+                      onClick={() => handleInvestigate(selectedDispute.id)}
+                      disabled={actionLoading}
+                      className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {actionLoading ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <SearchIcon className="w-4 h-4" />
+                      )}
+                      Investiguer
+                    </button>
+                  )}
+                  <button
+                    onClick={() => handleResolve(selectedDispute.id)}
+                    disabled={actionLoading}
+                    className="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-medium hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <CheckCircle className="w-4 h-4" />
+                    Résoudre
+                  </button>
+                  <button
+                    onClick={() => handleReject(selectedDispute.id)}
+                    disabled={actionLoading}
+                    className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    <XCircle className="w-4 h-4" />
+                    Rejeter
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Resolve Modal */}
+      {showResolveModal && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-slate-900 mb-2">
+              Résoudre le litige #{pendingActionId}
+            </h3>
+            <p className="text-sm text-slate-500 mb-4">
+              Décrivez la résolution. Le résultat sera enregistré dans
+              l&apos;audit trail.
+            </p>
+            <textarea
+              value={resolveNotes}
+              onChange={(e) => setResolveNotes(e.target.value)}
+              placeholder="Notes de résolution (min. 10 caractères)..."
+              rows={3}
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => setShowResolveModal(false)}
+                className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmResolve}
+                disabled={resolveNotes.trim().length < 10 || actionLoading}
+                className="flex-1 bg-green-600 text-white py-2.5 rounded-xl font-medium hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Confirmer
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reject Modal */}
+      {showRejectModal && (
+        <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
+            <h3 className="text-lg font-bold text-slate-900 mb-2">
+              Rejeter le litige #{pendingActionId}
+            </h3>
+            <p className="text-sm text-slate-500 mb-4">
+              Indiquez la raison du rejet. Les deux parties seront notifiées.
+            </p>
+            <textarea
+              value={resolveNotes}
+              onChange={(e) => setResolveNotes(e.target.value)}
+              placeholder="Raison du rejet (min. 10 caractères)..."
+              rows={3}
+              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => setShowRejectModal(false)}
+                className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmReject}
+                disabled={resolveNotes.trim().length < 10 || actionLoading}
+                className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
+                Confirmer le rejet
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }

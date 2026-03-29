@@ -1,122 +1,166 @@
-import React, { useState } from 'react';
-import { Upload, CheckCircle, AlertCircle, FileText } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  Upload,
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  Loader2,
+} from "lucide-react";
+import { apiClient, ApiError } from "@/lib/api/client";
 
 interface VerificationUploadProps {
-    documentType: 'ID_CARD' | 'DRIVING_LICENSE' | 'VEHICLE_REGISTRATION' | 'INSURANCE';
-    label: string;
-    onUploadSuccess: () => void;
+  documentType:
+    | "ID_CARD"
+    | "DRIVING_LICENSE"
+    | "VEHICLE_REGISTRATION"
+    | "INSURANCE";
+  label: string;
+  onUploadSuccess: () => void;
 }
 
-export function VerificationUpload({ documentType, label, onUploadSuccess }: VerificationUploadProps) {
-    const [file, setFile] = useState<File | null>(null);
-    const [uploading, setUploading] = useState(false);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState(false);
+// Map frontend document types to backend DocumentType choices
+const DOCUMENT_TYPE_MAP: Record<string, string> = {
+  ID_CARD: "CIN_FRONT",
+  DRIVING_LICENSE: "LICENSE",
+  VEHICLE_REGISTRATION: "CARTE_GRISE",
+  INSURANCE: "INSURANCE",
+};
 
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files[0]) {
-            setFile(e.target.files[0]);
-            setError('');
-            setSuccess(false);
-        }
-    };
+export function VerificationUpload({
+  documentType,
+  label,
+  onUploadSuccess,
+}: VerificationUploadProps) {
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState(false);
 
-    const handleUpload = async () => {
-        if (!file) return;
-        setUploading(true);
-        setError('');
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const selectedFile = e.target.files[0];
 
-        const formData = new FormData();
-        formData.append('document_type', documentType);
-        formData.append('file_url', file); // In a real app, this would be a file upload. 
-        // Since backend expects URL or File handled by DRF, we need to adjust backend or mock here.
-        // Backend VerificationDocumentSerializer expects 'file_url' as URLField? 
-        // Let's check backend model.
-        // Backend model VerificationDocument uses 'file_url = models.URLField'. 
-        // So we can't upload file content directly unless we have a file upload service that returns a URL.
-        // OR we change backend to FileField. 
-        // Model in Step 2928 view: 'file_url = models.URLField'.
-        // So I must simulate upload to cloud and get URL, OR just send a dummy URL for prototype.
-        // FOR PROTOTYPE: I will send a dummy URL or base64 data uri if backend accepts it? 
-        // URLField expects valid URL.
-        // I will simulate by sending a placeholder URL.
+      // Client-side pre-validation (5MB max)
+      if (selectedFile.size > 5 * 1024 * 1024) {
+        setError("Fichier trop volumineux. Maximum autorisé : 5MB.");
+        return;
+      }
 
-        // ADJUSTMENT: The backend serializer expects 'file_url'. 
-        // I will mock the upload process client-side and send a fake URL.
+      setFile(selectedFile);
+      setError("");
+      setSuccess(false);
+    }
+  };
 
-        await new Promise(r => setTimeout(r, 1000)); // Simulate upload
+  const handleUpload = async () => {
+    if (!file || uploading) return; // Double-click prevention
+    setUploading(true);
+    setError("");
 
-        try {
-            const response = await fetch('/api/trust/documents/', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${localStorage.getItem('access_token')}`
-                },
-                body: JSON.stringify({
-                    document_type: documentType,
-                    file_url: `https://storage.transporti.app/docs/${file.name}` // Mock URL
-                })
-            });
+    try {
+      const formData = new FormData();
+      formData.append(
+        "document_type",
+        DOCUMENT_TYPE_MAP[documentType] || documentType,
+      );
+      formData.append("document_file", file);
 
-            if (!response.ok) {
-                throw new Error('Upload failed');
+      // Use apiClient.upload (correct base URL + JWT auth + multipart)
+      await apiClient.upload("/api/trust/documents/", formData);
+
+      setSuccess(true);
+      setFile(null);
+      onUploadSuccess();
+    } catch (err: unknown) {
+      console.error("Upload error:", err);
+
+      if (err instanceof ApiError) {
+        const body = err.body as Record<string, unknown> | undefined;
+
+        if (err.status === 403) {
+          setError(
+            "Accès refusé. Vérifiez que vous êtes connecté en tant que transporteur.",
+          );
+        } else if (err.status === 400 && body) {
+          // Extract validation messages
+          const messages: string[] = [];
+          for (const [, val] of Object.entries(body)) {
+            if (Array.isArray(val)) {
+              messages.push(...val.map((v) => String(v)));
+            } else if (typeof val === "string") {
+              messages.push(val);
             }
-
-            setSuccess(true);
-            onUploadSuccess();
-            setFile(null);
-        } catch (err: any) {
-            setError(err.message);
-        } finally {
-            setUploading(false);
+          }
+          setError(messages.join(" ") || "Erreur de validation du document.");
+        } else {
+          setError(`Erreur serveur (${err.status}). Veuillez réessayer.`);
         }
-    };
+      } else {
+        setError("Erreur réseau. Vérifiez votre connexion.");
+      }
+    } finally {
+      setUploading(false);
+    }
+  };
 
-    return (
-        <div className="border rounded-lg p-4 bg-gray-50">
-            <div className="flex justify-between items-start mb-2">
-                <label className="font-medium text-gray-700 flex items-center gap-2">
-                    <FileText className="w-4 h-4 text-blue-600" />
-                    {label}
-                </label>
-                {success && <CheckCircle className="w-5 h-5 text-green-500" />}
+  return (
+    <div className="border rounded-lg p-4 bg-gray-50">
+      <div className="flex justify-between items-start mb-2">
+        <label className="font-medium text-gray-700 flex items-center gap-2">
+          <FileText className="w-4 h-4 text-blue-600" />
+          {label}
+        </label>
+        {success && <CheckCircle className="w-5 h-5 text-green-500" />}
+      </div>
+
+      {!success ? (
+        <div className="space-y-3">
+          <input
+            type="file"
+            accept="image/jpeg,image/png,application/pdf"
+            onChange={handleFileChange}
+            disabled={uploading}
+            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+          />
+
+          {file && (
+            <div className="space-y-2">
+              <p className="text-xs text-gray-500">
+                {file.name} ({(file.size / 1024).toFixed(0)} KB)
+              </p>
+              <button
+                onClick={handleUpload}
+                disabled={uploading}
+                className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {uploading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Envoi en cours...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    Envoyer le document
+                  </>
+                )}
+              </button>
             </div>
+          )}
 
-            {!success ? (
-                <div className="space-y-3">
-                    <input
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={handleFileChange}
-                        className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                    />
-
-                    {file && (
-                        <button
-                            onClick={handleUpload}
-                            disabled={uploading}
-                            className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
-                        >
-                            {uploading ? 'Envoi...' : (
-                                <>
-                                    <Upload className="w-4 h-4" />
-                                    Envoyer le document
-                                </>
-                            )}
-                        </button>
-                    )}
-
-                    {error && (
-                        <p className="text-xs text-red-600 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            {error}
-                        </p>
-                    )}
-                </div>
-            ) : (
-                <p className="text-sm text-green-600">Document envoyé avec succès.</p>
-            )}
+          {error && (
+            <p className="text-xs text-red-600 flex items-center gap-1">
+              <AlertCircle className="w-3 h-3 flex-shrink-0" />
+              {error}
+            </p>
+          )}
         </div>
-    );
+      ) : (
+        <p className="text-sm text-green-600 flex items-center gap-1">
+          <CheckCircle className="w-4 h-4" />
+          Document envoyé avec succès.
+        </p>
+      )}
+    </div>
+  );
 }

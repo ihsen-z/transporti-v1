@@ -33,17 +33,43 @@ class ConfirmCompletionSerializer(serializers.Serializer):
 
 class EscrowDetailSerializer(serializers.ModelSerializer):
     """
-    Read-only escrow details.
+    Read-only escrow details with client/transporter names.
     """
     job_id = serializers.IntegerField(source='booking_reference.id', read_only=True)
+    client_name = serializers.SerializerMethodField()
+    transporter_name = serializers.SerializerMethodField()
     
     class Meta:
         model = EscrowTransaction
         fields = [
             'id', 'job_id', 'status', 'amount', 
-            'gateway_reference', 'created_at', 'updated_at'
+            'gateway_reference', 'created_at', 'updated_at',
+            'client_name', 'transporter_name',
         ]
         read_only_fields = fields
+
+    def get_client_name(self, obj) -> str:
+        try:
+            owner = obj.booking_reference.owner
+            name = f"{owner.first_name} {owner.last_name}".strip()
+            return name or owner.email
+        except Exception:
+            return '-'
+
+    def get_transporter_name(self, obj) -> str:
+        try:
+            from logistics.models import Offer
+            accepted = Offer.objects.filter(
+                job=obj.booking_reference,
+                status='ACCEPTED'
+            ).select_related('transporter').first()
+            if accepted:
+                t = accepted.transporter
+                name = f"{t.first_name} {t.last_name}".strip()
+                return name or t.email
+            return '-'
+        except Exception:
+            return '-'
 
 
 class CommissionLedgerDetailSerializer(serializers.ModelSerializer):

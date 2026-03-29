@@ -98,6 +98,7 @@ INSTALLED_APPS = [
     'notifications',
     'messaging',
     'analytics',
+    'realtime_api',
 ]
 
 MIDDLEWARE = [
@@ -174,6 +175,18 @@ STATIC_URL = 'static/'
 
 
 # =============================================================================
+# MEDIA FILES (User uploads: photos, documents)
+# =============================================================================
+
+MEDIA_ROOT = BASE_DIR / 'media'
+MEDIA_URL = '/media/'
+
+# Max upload size: 10 MB (allows 5 MB images with overhead)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+
+# =============================================================================
 # DEFAULT PRIMARY KEY
 # =============================================================================
 
@@ -233,7 +246,7 @@ SPECTACULAR_SETTINGS = {
 # =============================================================================
 
 # Load from environment, with safe defaults
-_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:5173')
+_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173')
 CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
 CORS_ALLOW_CREDENTIALS = True
 

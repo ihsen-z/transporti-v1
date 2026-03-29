@@ -11,9 +11,11 @@ class TransportJobCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = TransportJob
         fields = [
-            'job_type', 'pickup_address', 'pickup_lat', 'pickup_lng',
-            'dropoff_address', 'dropoff_lat', 'dropoff_lng',
-            'scheduled_time', 'specifications'
+            'job_type', 'pickup_address', 'pickup_governorate', 'pickup_lat', 'pickup_lng',
+            'dropoff_address', 'dropoff_governorate', 'dropoff_lat', 'dropoff_lng',
+            'scheduled_time', 'specifications', 'description', 'photos',
+            'price_tnd_min', 'price_tnd_max',
+            'pickup_hint', 'dropoff_hint'
         ]
 
     def validate_scheduled_time(self, value):
@@ -60,9 +62,11 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
         model = TransportJob
         fields = [
             'id', 'job_type', 'status', 
-            'pickup_address', 'pickup_lat', 'pickup_lng',
-            'dropoff_address', 'dropoff_lat', 'dropoff_lng',
-            'scheduled_time', 'specifications', 'owner',
+            'pickup_address', 'pickup_governorate', 'pickup_lat', 'pickup_lng',
+            'dropoff_address', 'dropoff_governorate', 'dropoff_lat', 'dropoff_lng',
+            'scheduled_time', 'specifications', 'description', 'photos',
+            'price_tnd_min', 'price_tnd_max', 'owner',
+            'pickup_hint', 'dropoff_hint',
             'created_at', 'updated_at'
         ]
         read_only_fields = fields

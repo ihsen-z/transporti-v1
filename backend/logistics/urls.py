@@ -5,8 +5,12 @@ from .views import (
     JobUpdateView, JobPublishView, JobCancelView, JobCompleteView,
     OfferWithdrawView, TransporterProfileView
 )
+from .upload_views import PhotoUploadView
 
 urlpatterns = [
+    # Photo upload
+    path('upload/photo/', PhotoUploadView.as_view(), name='photo_upload'),
+
     # Job endpoints
     path('jobs/', JobCreateView.as_view(), name='job_create'),
     path('jobs/my/', JobMyListView.as_view(), name='job_my_list'),

@@ -55,6 +55,10 @@ class TransportJob(models.Model):
     # Regional filtering
     pickup_governorate = models.CharField(max_length=50, blank=True, db_index=True)
     dropoff_governorate = models.CharField(max_length=50, blank=True, db_index=True)
+
+    # Location hints (visible to transporter for precise delivery)
+    pickup_hint = models.TextField(blank=True, help_text="Location tip for pickup (floor, door code, landmark...)")
+    dropoff_hint = models.TextField(blank=True, help_text="Location tip for dropoff (floor, door code, landmark...)")
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

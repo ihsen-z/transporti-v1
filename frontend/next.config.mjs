@@ -8,6 +8,7 @@ const nextConfig = {
         // Warning: ignoring TS errors for production simulation
         ignoreBuildErrors: true,
     },
+    optimizeFonts: false,
 };
 
 export default nextConfig;

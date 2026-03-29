@@ -13,9 +13,10 @@ import { fr } from "date-fns/locale";
 
 interface JobPreviewProps {
   data: any;
+  isOwner?: boolean;
 }
 
-export function JobPreview({ data }: JobPreviewProps) {
+export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
   const isTransport = data.job_type === "TRANSPORT";
 
   return (
@@ -231,13 +232,15 @@ export function JobPreview({ data }: JobPreviewProps) {
         )}
       </div>
 
-      <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-        <p className="text-sm text-orange-800">
-          <strong>Note :</strong> Une fois publiée, votre demande sera visible
-          par les transporteurs vérifiés. Vous recevrez des offres sous forme
-          d'enchères inversées.
-        </p>
-      </div>
+      {isOwner && (
+        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+          <p className="text-sm text-orange-800">
+            <strong>Note :</strong> Une fois publiée, votre demande sera visible
+            par les transporteurs vérifiés. Vous recevrez des offres sous forme
+            d'enchères inversées.
+          </p>
+        </div>
+      )}
     </div>
   );
 }

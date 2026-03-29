@@ -118,9 +118,11 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
         async (position) => {
           const { latitude, longitude } = position.coords;
 
-          // Store lat/lng
-          handleChange(`${target}_lat`, latitude);
-          handleChange(`${target}_lng`, longitude);
+          // Build a SINGLE update object with ALL GPS data
+          const updates: Record<string, any> = {
+            [`${target}_lat`]: latitude,
+            [`${target}_lng`]: longitude,
+          };
 
           // Reverse geocode via Nominatim (free, no API key)
           try {
@@ -131,7 +133,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
             const geo = await res.json();
 
             if (geo.display_name) {
-              handleChange(`${target}_address`, geo.display_name);
+              updates[`${target}_address`] = geo.display_name;
             }
 
             // Auto-detect governorate from response
@@ -142,12 +144,14 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                 g.toLowerCase().includes(state.toLowerCase()),
             );
             if (matchedGov) {
-              handleChange(`${target}_governorate`, matchedGov);
+              updates[`${target}_governorate`] = matchedGov;
             }
           } catch {
             // Reverse geocoding failed — we still have lat/lng, which is fine
           }
 
+          // Send ALL updates in ONE call — prevents state race conditions
+          onChange(updates);
           setGps({ loading: false, error: null, done: true });
         },
         (err) => {
@@ -161,14 +165,13 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
       );
     },
-    [handleChange],
+    [onChange],
   );
 
   /* -------------- Hint chip click -------------- */
   const addHintChip = (target: "pickup" | "dropoff", prefix: string) => {
     const field = `${target}_hint`;
     const current = data[field] || "";
-    // If hint is already a complete phrase, append with separator
     const separator = current ? " • " : "";
     handleChange(field, current + separator + prefix);
   };
@@ -189,7 +192,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
 
     return (
       <div className="border rounded-xl p-4 bg-white shadow-sm">
-        <div className={`flex items-center justify-between mb-3`}>
+        <div className="flex items-center justify-between mb-3">
           <div
             className={`flex items-center gap-2 text-${color}-600 font-semibold`}
           >
@@ -360,8 +363,9 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
             Astuce de localisation
           </h4>
           <p className="text-sm text-blue-700">
-            Cliquez <strong>"Ma position"</strong> pour remplir automatiquement
-            via GPS. Ajoutez étage, code porte ou repère pour guider le livreur.
+            Cliquez <strong>&quot;Ma position&quot;</strong> pour remplir
+            automatiquement via GPS. Ajoutez étage, code porte ou repère pour
+            guider le livreur.
           </p>
         </div>
       </div>

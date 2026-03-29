@@ -5,7 +5,13 @@ Production-hardened with health check endpoint.
 from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
+from django.conf import settings
+from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
+from .views_admin import (
+    AdminStatsView, AdminJobListView, AdminUserListView,
+    AdminActivityView, AdminAlertsView,
+)
 
 
 def health_check(request):
@@ -67,4 +73,18 @@ urlpatterns = [
     
     # Reviews Module
     path('api/', include('reviews.urls')),
+    
+    # Realtime DB Access API (Read-Only)
+    path('api/realtime/', include('realtime_api.urls')),
+
+    # Admin Panel API (Sprint 2)
+    path('api/admin/stats/', AdminStatsView.as_view(), name='admin_stats'),
+    path('api/admin/jobs/', AdminJobListView.as_view(), name='admin_jobs'),
+    path('api/admin/users/', AdminUserListView.as_view(), name='admin_users'),
+    path('api/admin/activity/', AdminActivityView.as_view(), name='admin_activity'),
+    path('api/admin/alerts/', AdminAlertsView.as_view(), name='admin_alerts'),
 ]
+
+# Serve media files in development
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
