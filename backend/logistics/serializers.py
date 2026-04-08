@@ -57,6 +57,9 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
     Detailed view for job owner.
     """
     owner = serializers.SerializerMethodField()
+    accepted_transporter = serializers.SerializerMethodField()
+    has_reviewed = serializers.SerializerMethodField()
+    client_confirmed = serializers.SerializerMethodField()
 
     class Meta:
         model = TransportJob
@@ -67,6 +70,7 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
             'scheduled_time', 'specifications', 'description', 'photos',
             'price_tnd_min', 'price_tnd_max', 'owner',
             'pickup_hint', 'dropoff_hint',
+            'accepted_transporter', 'has_reviewed', 'client_confirmed',
             'created_at', 'updated_at'
         ]
         read_only_fields = fields
@@ -77,6 +81,36 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
             'name': f"{obj.owner.first_name} {obj.owner.last_name}",
             'phone': obj.owner.phone if self.context.get('show_contact') else None
         }
+
+    def get_accepted_transporter(self, obj) -> dict | None:
+        """Return accepted transporter info for IN_PROGRESS/COMPLETED jobs."""
+        offer = obj.accepted_offer
+        if not offer:
+            return None
+        t = offer.transporter
+        return {
+            'id': t.id,
+            'name': f"{t.first_name} {t.last_name}",
+            'phone': t.phone if obj.status in ('IN_PROGRESS', 'COMPLETED') else None,
+            'total_price': float(offer.total_price),
+        }
+
+    def get_has_reviewed(self, obj) -> bool:
+        """Check if current user has already reviewed this job."""
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return False
+        from reviews.models import Review
+        return Review.objects.filter(
+            job=obj, reviewer=request.user
+        ).exists()
+
+    def get_client_confirmed(self, obj) -> bool:
+        """Check if the client has confirmed delivery (escrow released)."""
+        from payments.models import EscrowTransaction
+        return EscrowTransaction.objects.filter(
+            booking_reference=obj, status='RELEASED'
+        ).exists()
 
 
 class OfferCreateSerializer(serializers.ModelSerializer):
@@ -158,8 +192,12 @@ class OfferListSerializer(serializers.ModelSerializer):
         return f"{obj.transporter.first_name} {obj.transporter.last_name[0]}."
 
     def get_transporter_rating(self, obj) -> float:
-        # Placeholder - will be implemented with reviews module
-        return 4.5
+        from reviews.models import Review
+        from django.db.models import Avg
+        avg = Review.objects.filter(
+            target=obj.transporter
+        ).aggregate(avg=Avg('rating'))['avg']
+        return round(float(avg), 1) if avg else 0.0
     
     def get_trust_badge(self, obj) -> dict:
         """Get trust badge for transporter (read-only exposure)."""
@@ -208,9 +246,13 @@ class OfferDetailSerializer(serializers.ModelSerializer):
 class OfferAcceptSerializer(serializers.Serializer):
     """
     Serializer to define the contract for accepting an offer.
-    Body is explicitly empty as the ID is in the URL.
+    payment_method: 'DIGITAL' (escrow) or 'COD' (cash on delivery)
     """
-    pass
+    payment_method = serializers.ChoiceField(
+        choices=['DIGITAL', 'COD'],
+        default='DIGITAL',
+        help_text="DIGITAL = escrow payment, COD = cash on delivery"
+    )
 
 
 class TransportJobUpdateSerializer(serializers.ModelSerializer):
@@ -284,10 +326,14 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
         ]
 
     def get_rating(self, obj) -> float:
-        # PENDING: Aggregate from Review model
-        # For now return placeholder or 0.0
-        return 0.0
+        from reviews.models import Review
+        from django.db.models import Avg
+        avg = Review.objects.filter(
+            target=obj.user
+        ).aggregate(avg=Avg('rating'))['avg']
+        return round(float(avg), 1) if avg else 0.0
 
     def get_review_count(self, obj) -> int:
-        return 0
+        from reviews.models import Review
+        return Review.objects.filter(target=obj.user).count()
 

@@ -4,6 +4,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework.views import APIView
 from django.shortcuts import get_object_or_404
+from django.utils import timezone
 from users.permissions import RequireRole
 from .models import TrustProfile, VerificationDocument, TrustVerificationRequest
 from .serializers import (
@@ -11,7 +12,10 @@ from .serializers import (
     VerificationDocumentReadSerializer,
     TrustProfileSubmissionSerializer,
     AdminVerificationRequestSerializer,
+    AdminVerificationDocumentSerializer,
+    AdminTrustProfileSerializer,
 )
+from .services import recalculate_profile_status
 
 
 class VerificationDocumentListCreateView(generics.GenericAPIView):
@@ -60,7 +64,7 @@ class TrustProfileSubmissionView(generics.RetrieveUpdateAPIView):
 
 
 # =============================================================================
-# Admin Verification Endpoints
+# Admin Verification Endpoints (Global Request-level)
 # =============================================================================
 
 class AdminVerificationListView(APIView):
@@ -142,3 +146,112 @@ class AdminVerificationRejectView(APIView):
         })
 
 
+# =============================================================================
+# Admin Per-Document Review Endpoints (NEW)
+# =============================================================================
+
+class AdminDocumentListView(APIView):
+    """
+    GET /api/trust/admin/verifications/{profile_id}/documents/
+    List all uploaded documents for a specific transporter profile.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
+
+    def get(self, request, profile_id):
+        profile = get_object_or_404(
+            TrustProfile.objects.select_related('user'), pk=profile_id
+        )
+        docs = VerificationDocument.objects.filter(
+            profile=profile
+        ).select_related('reviewed_by').order_by('uploaded_at')
+
+        user = profile.user
+        name = f"{user.first_name} {user.last_name}".strip() or user.email
+
+        return Response({
+            'profileId': profile.id,
+            'transporterName': name,
+            'transporterEmail': user.email,
+            'verificationStatus': profile.verification_status,
+            'trustScore': profile.trust_score,
+            'documents': AdminVerificationDocumentSerializer(docs, many=True).data,
+        })
+
+
+class AdminDocumentReviewView(APIView):
+    """
+    PATCH /api/trust/admin/documents/{doc_id}/review/
+    Approve or reject a single document, then recalculate profile status.
+
+    Body:
+        { "action": "approve" | "reject", "reason": "..." (required for reject) }
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
+
+    def patch(self, request, doc_id):
+        doc = get_object_or_404(
+            VerificationDocument.objects.select_related('profile__user'), pk=doc_id
+        )
+        action = request.data.get('action', '').lower()
+        reason = request.data.get('reason', '')
+
+        if action == 'approve':
+            doc.is_valid = True
+            doc.rejection_reason = ''
+        elif action == 'reject':
+            if not reason.strip():
+                return Response(
+                    {'error': 'Un motif est requis pour le rejet du document.'},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            doc.is_valid = False
+            doc.rejection_reason = reason
+        else:
+            return Response(
+                {'error': 'action must be "approve" or "reject"'},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        doc.reviewed_at = timezone.now()
+        doc.reviewed_by = request.user
+        doc.save()
+
+        # Recalculate global profile status
+        new_status = recalculate_profile_status(doc.profile)
+
+        return Response({
+            'message': f'Document #{doc_id} {"approuvé" if action == "approve" else "rejeté"}.',
+            'document': AdminVerificationDocumentSerializer(doc).data,
+            'profileStatus': new_status,
+        })
+
+
+class AdminTrustProfileListView(APIView):
+    """
+    GET /api/trust/admin/profiles/
+    List ALL transporter TrustProfiles with document counts.
+    Supports ?status= filter (UNVERIFIED, PENDING, PARTIALLY_REVIEWED, VERIFIED, REJECTED).
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
+
+    def get(self, request):
+        from django.db.models import Count, Q
+
+        qs = TrustProfile.objects.select_related('user').annotate(
+            _doc_count=Count('documents'),
+            _approved_count=Count('documents', filter=Q(documents__is_valid=True)),
+            _rejected_count=Count(
+                'documents',
+                filter=Q(documents__is_valid=False, documents__rejection_reason__gt='')
+            ),
+        ).filter(
+            user__role='TRANSPORTER'
+        ).order_by('-created_at')
+
+        # Optional status filter
+        status_filter = request.query_params.get('status')
+        if status_filter:
+            qs = qs.filter(verification_status=status_filter)
+
+        serializer = AdminTrustProfileSerializer(qs, many=True)
+        return Response(serializer.data)

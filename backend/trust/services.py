@@ -394,3 +394,67 @@ def get_user_verification_history(user) -> list:
             trust_profile=profile
         ).order_by('-submitted_at')
     )
+
+
+# =============================================================================
+# PER-DOCUMENT VERIFICATION RECALCULATION
+# =============================================================================
+
+def recalculate_profile_status(trust_profile) -> str:
+    """
+    Recalculate TrustProfile.verification_status based on individual document states.
+
+    Rules:
+    - All docs is_valid=True                         → VERIFIED
+    - Any doc with non-empty rejection_reason         → REJECTED
+    - Some docs reviewed (mix valid/pending)          → PARTIALLY_REVIEWED
+    - No docs or none reviewed yet                    → keep current status
+
+    NON-DESTRUCTIVE: Uses existing TrustProfile methods (mark_verified, mark_rejected).
+    Returns the new status string.
+    """
+    from .models import VerificationDocument, VerificationStatus
+
+    docs = VerificationDocument.objects.filter(profile=trust_profile)
+    total = docs.count()
+
+    if total == 0:
+        return trust_profile.verification_status
+
+    approved_count = docs.filter(is_valid=True).count()
+    rejected = docs.filter(is_valid=False).exclude(rejection_reason='')
+    rejected_count = rejected.count()
+    pending_count = total - approved_count - rejected_count
+
+    # Rule 1: Any rejection → REJECTED
+    if rejected_count > 0:
+        reason = rejected.first().rejection_reason
+        trust_profile.mark_rejected(reason)
+        logger.info(
+            f"DOC_REVIEW_RECALC: user_id={trust_profile.user_id}, "
+            f"result=REJECTED, approved={approved_count}, rejected={rejected_count}, pending={pending_count}"
+        )
+        return 'REJECTED'
+
+    # Rule 2: All approved → VERIFIED
+    if approved_count == total:
+        trust_profile.mark_verified()
+        logger.info(
+            f"DOC_REVIEW_RECALC: user_id={trust_profile.user_id}, "
+            f"result=VERIFIED, all {total} documents approved"
+        )
+        return 'VERIFIED'
+
+    # Rule 3: Some approved but not all → PARTIALLY_REVIEWED
+    if approved_count > 0 and pending_count > 0:
+        trust_profile.verification_status = VerificationStatus.PARTIALLY_REVIEWED
+        trust_profile.save(update_fields=['verification_status', 'updated_at'])
+        logger.info(
+            f"DOC_REVIEW_RECALC: user_id={trust_profile.user_id}, "
+            f"result=PARTIALLY_REVIEWED, approved={approved_count}, pending={pending_count}"
+        )
+        return 'PARTIALLY_REVIEWED'
+
+    # Rule 4: None reviewed yet → keep current
+    return trust_profile.verification_status
+

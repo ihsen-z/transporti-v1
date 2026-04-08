@@ -135,7 +135,7 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
     """
     Serializer for updating user and nested profile data.
     """
-    profile = ProfileSerializer()
+    profile = ProfileSerializer(required=False)
     
     class Meta:
         model = User

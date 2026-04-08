@@ -137,12 +137,40 @@ WSGI_APPLICATION = 'transporti_core.wsgi.application'
 # DATABASE
 # =============================================================================
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Database: PostgreSQL via DATABASE_URL (Docker) or SQLite fallback for dev
+_db_url = os.environ.get('DATABASE_URL', '')
+if _db_url:
+    # Parse DATABASE_URL: postgres://user:password@host:port/dbname
+    import re
+    _match = re.match(
+        r'postgres(?:ql)?://(?P<user>[^:]+):(?P<password>[^@]+)@(?P<host>[^:]+):(?P<port>\d+)/(?P<name>.+)',
+        _db_url
+    )
+    if _match:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': _match.group('name'),
+                'USER': _match.group('user'),
+                'PASSWORD': _match.group('password'),
+                'HOST': _match.group('host'),
+                'PORT': _match.group('port'),
+                'CONN_MAX_AGE': 600,  # Connection pooling: 10 min
+                'OPTIONS': {
+                    'connect_timeout': 5,
+                },
+            }
+        }
+    else:
+        raise ValueError(f"Cannot parse DATABASE_URL: {_db_url}")
+else:
+    # SQLite fallback for local dev without Docker
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
     }
-}
 
 
 # =============================================================================
@@ -212,6 +240,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.IsAuthenticated',
     ),
+    # Pagination: prevent unbounded responses
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 20,
     # API Throttling for rate limiting
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',

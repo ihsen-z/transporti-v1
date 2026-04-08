@@ -65,3 +65,8 @@ staticfiles/
 transportiv1_artifacts/
 backend/check_error.txt
 REANALYSIS_COMPARISON.md
+
+# Test/Debug artifacts (never commit)
+test_*.jpg
+test_*.png
+test_output.txt

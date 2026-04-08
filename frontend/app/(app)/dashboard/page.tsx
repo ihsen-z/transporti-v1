@@ -526,7 +526,9 @@ export default function DashboardPage() {
       try {
         if (isClient) {
           // Fetch real jobs from the API for the client
-          const jobs = await apiClient.get<RecentJob[]>("/api/jobs/my/");
+          const response = await apiClient.get<any>("/api/jobs/my/");
+          const jobs: RecentJob[] =
+            response.results ?? (Array.isArray(response) ? response : []);
           if (jobs) {
             setRecentJobs(jobs);
 
@@ -557,10 +559,20 @@ export default function DashboardPage() {
           }
         } else if (isTransporter) {
           // Fetch real data for Transporter
-          const [publicJobs, myOffers] = await Promise.all([
-            apiClient.get<RecentJob[]>("/api/jobs/public/").catch(() => []),
-            apiClient.get<any[]>("/api/offers/my/").catch(() => []),
+          const [publicJobsResponse, myOffersResponse] = await Promise.all([
+            apiClient
+              .get<any>("/api/jobs/public/")
+              .catch(() => ({ results: [] })),
+            apiClient
+              .get<any>("/api/offers/my/")
+              .catch(() => ({ results: [] })),
           ]);
+          const publicJobs: RecentJob[] =
+            publicJobsResponse.results ??
+            (Array.isArray(publicJobsResponse) ? publicJobsResponse : []);
+          const myOffers: any[] =
+            myOffersResponse.results ??
+            (Array.isArray(myOffersResponse) ? myOffersResponse : []);
 
           if (publicJobs) {
             // Show available missions as "Activité récente" for now

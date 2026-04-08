@@ -19,6 +19,7 @@ logger = logging.getLogger('transporti')
 class VerificationStatus(models.TextChoices):
     UNVERIFIED = 'UNVERIFIED', 'Unverified'
     PENDING = 'PENDING', 'Pending Review'
+    PARTIALLY_REVIEWED = 'PARTIALLY_REVIEWED', 'Partially Reviewed'
     VERIFIED = 'VERIFIED', 'Verified'
     REJECTED = 'REJECTED', 'Rejected'
     SUSPENDED = 'SUSPENDED', 'Suspended'
@@ -331,6 +332,17 @@ class VerificationDocument(models.Model):
     
     uploaded_at = models.DateTimeField(auto_now_add=True)
     is_valid = models.BooleanField(default=False)  # Marked by Admin
+
+    # Per-document review tracking (added for admin per-doc review feature)
+    rejection_reason = models.TextField(blank=True, default='')
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviewed_documents',
+    )
 
     class Meta:
         indexes = [

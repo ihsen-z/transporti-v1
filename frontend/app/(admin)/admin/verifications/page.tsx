@@ -3,14 +3,27 @@
 import { useState } from "react";
 import DataTable from "@/components/admin/DataTable";
 import StatusBadge from "@/components/admin/StatusBadge";
+import DocumentReviewDrawer from "@/components/admin/DocumentReviewDrawer";
 import { formatTimeAgoShort } from "@/lib/admin";
-import { useAdminVerifications } from "@/hooks/useAdminData";
+import { useAdminVerifications, useAdminProfiles } from "@/hooks/useAdminData";
 import {
   approveVerification,
   rejectVerification,
   type BackendVerification,
+  type AdminTrustProfile,
 } from "@/lib/services/admin";
-import { Eye, CheckCircle, XCircle, Clock, FileText, User } from "lucide-react";
+import {
+  Eye,
+  CheckCircle,
+  XCircle,
+  Clock,
+  FileText,
+  User,
+  FolderOpen,
+  Shield,
+  Users,
+  ClipboardList,
+} from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
 /*  Types & Config                                                             */
@@ -30,48 +43,72 @@ const statusLabels: Record<VerificationStatus, string> = {
   REJECTED: "Rejeté",
 };
 
+const profileStatusLabels: Record<string, { label: string; color: string }> = {
+  UNVERIFIED: { label: "Non vérifié", color: "bg-slate-100 text-slate-600" },
+  PENDING: { label: "En attente", color: "bg-orange-100 text-orange-700" },
+  PARTIALLY_REVIEWED: {
+    label: "Partiellement vérifié",
+    color: "bg-blue-100 text-blue-700",
+  },
+  VERIFIED: { label: "Vérifié", color: "bg-green-100 text-green-700" },
+  REJECTED: { label: "Rejeté", color: "bg-red-100 text-red-700" },
+  SUSPENDED: { label: "Suspendu", color: "bg-slate-200 text-slate-800" },
+};
+
+/* -------------------------------------------------------------------------- */
+/*  Sub-filter types                                                           */
+/* -------------------------------------------------------------------------- */
+
+type VerifFilterTab = "ALL" | "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+type ProfileFilterTab =
+  | "ALL"
+  | "UNVERIFIED"
+  | "PENDING"
+  | "PARTIALLY_REVIEWED"
+  | "VERIFIED"
+  | "REJECTED";
+
 /* -------------------------------------------------------------------------- */
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
-type FilterTab = "ALL" | "PENDING_REVIEW" | "APPROVED" | "REJECTED";
+type MainView = "requests" | "profiles";
 
 export default function AdminVerificationsPage() {
-  const [filter, setFilter] = useState<FilterTab>("ALL");
+  const [mainView, setMainView] = useState<MainView>("profiles");
+  const [verifFilter, setVerifFilter] = useState<VerifFilterTab>("ALL");
+  const [profileFilter, setProfileFilter] = useState<ProfileFilterTab>("ALL");
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [actionLoading, setActionLoading] = useState(false);
+  const [drawerProfileId, setDrawerProfileId] = useState<number | null>(null);
 
+  // Data hooks
   const {
     data: allVerifications,
-    source,
-    loading,
-    error,
-    refetch,
+    source: verifSource,
+    loading: verifLoading,
+    error: verifError,
+    refetch: refetchVerifications,
   } = useAdminVerifications();
 
-  const filterTabs: { value: FilterTab; label: string }[] = [
-    { value: "ALL", label: "Toutes" },
-    { value: "PENDING_REVIEW", label: "En attente" },
-    { value: "APPROVED", label: "Approuvées" },
-    { value: "REJECTED", label: "Rejetées" },
-  ];
+  const {
+    data: allProfiles,
+    source: profileSource,
+    loading: profileLoading,
+    error: profileError,
+    refetch: refetchProfiles,
+  } = useAdminProfiles();
 
-  const filtered =
-    filter === "ALL"
-      ? allVerifications
-      : allVerifications.filter((v) => v.status === filter);
+  const source = mainView === "requests" ? verifSource : profileSource;
 
-  const pendingCount = allVerifications.filter(
-    (v) => v.status === "PENDING_REVIEW",
-  ).length;
-
+  // ── Verification request handlers ──
   const handleApprove = async (id: number) => {
     setActionLoading(true);
     try {
       await approveVerification(id);
-      refetch();
+      refetchVerifications();
     } catch (err) {
       alert(
         `Erreur: ${err instanceof Error ? err.message : "Erreur inconnue"}`,
@@ -91,7 +128,7 @@ export default function AdminVerificationsPage() {
     setActionLoading(true);
     try {
       await rejectVerification(selectedId, rejectReason);
-      refetch();
+      refetchVerifications();
     } catch (err) {
       alert(
         `Erreur: ${err instanceof Error ? err.message : "Erreur inconnue"}`,
@@ -104,7 +141,43 @@ export default function AdminVerificationsPage() {
     }
   };
 
-  const columns = [
+  // ── Requests filters ──
+  const verifFilterTabs: { value: VerifFilterTab; label: string }[] = [
+    { value: "ALL", label: "Toutes" },
+    { value: "PENDING_REVIEW", label: "En attente" },
+    { value: "APPROVED", label: "Approuvées" },
+    { value: "REJECTED", label: "Rejetées" },
+  ];
+
+  const filteredVerifications =
+    verifFilter === "ALL"
+      ? allVerifications
+      : allVerifications.filter((v) => v.status === verifFilter);
+
+  const pendingCount = allVerifications.filter(
+    (v) => v.status === "PENDING_REVIEW",
+  ).length;
+
+  // ── Profile filters ──
+  const profileFilterTabs: { value: ProfileFilterTab; label: string }[] = [
+    { value: "ALL", label: "Tous" },
+    { value: "UNVERIFIED", label: "Non vérifiés" },
+    { value: "PENDING", label: "En attente" },
+    { value: "PARTIALLY_REVIEWED", label: "En cours" },
+    { value: "VERIFIED", label: "Vérifiés" },
+    { value: "REJECTED", label: "Rejetés" },
+  ];
+
+  const filteredProfiles =
+    profileFilter === "ALL"
+      ? allProfiles
+      : allProfiles.filter((p) => p.verificationStatus === profileFilter);
+
+  const profilesWithDocs = allProfiles.filter((p) => p.documentCount > 0);
+  const profilesNeedingReview = allProfiles.filter((p) => p.pendingCount > 0);
+
+  // ── Columns: Verification Requests ──
+  const verifColumns = [
     {
       key: "id",
       header: "ID",
@@ -179,6 +252,24 @@ export default function AdminVerificationsPage() {
       header: "Actions",
       render: (v: BackendVerification) => (
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setDrawerProfileId(v.profileId)}
+            title={
+              v.documentCount > 0
+                ? `Voir les ${v.documentCount} documents`
+                : "Voir les documents"
+            }
+            className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 ${
+              v.documentCount > 0
+                ? "bg-purple-100 text-purple-600 hover:bg-purple-200"
+                : "bg-slate-50 text-slate-400 hover:bg-slate-100"
+            }`}
+          >
+            <FolderOpen className="w-4 h-4" />
+            {v.documentCount > 0 && (
+              <span className="text-xs font-medium">{v.documentCount}</span>
+            )}
+          </button>
           {v.documentUrl && (
             <a
               href={
@@ -219,6 +310,133 @@ export default function AdminVerificationsPage() {
     },
   ];
 
+  // ── Columns: Profiles ──
+  const profileColumns = [
+    {
+      key: "id",
+      header: "ID",
+      width: "w-16",
+      render: (p: AdminTrustProfile) => (
+        <span className="font-mono text-slate-500">#{p.id}</span>
+      ),
+    },
+    {
+      key: "transporter",
+      header: "Transporteur",
+      render: (p: AdminTrustProfile) => (
+        <div className="flex items-center gap-3">
+          <div className="w-9 h-9 bg-indigo-100 rounded-full flex items-center justify-center">
+            <User className="w-4 h-4 text-indigo-600" />
+          </div>
+          <div>
+            <p className="font-medium text-slate-900">{p.transporterName}</p>
+            <p className="text-xs text-slate-500">{p.transporterEmail}</p>
+          </div>
+        </div>
+      ),
+    },
+    {
+      key: "status",
+      header: "Statut",
+      render: (p: AdminTrustProfile) => {
+        const cfg = profileStatusLabels[p.verificationStatus] || {
+          label: p.verificationStatus,
+          color: "bg-slate-100 text-slate-600",
+        };
+        return <StatusBadge status={cfg.label} colorClass={cfg.color} />;
+      },
+    },
+    {
+      key: "documents",
+      header: "Documents",
+      render: (p: AdminTrustProfile) => (
+        <div className="flex items-center gap-2">
+          {p.documentCount > 0 ? (
+            <>
+              <div className="flex items-center gap-1">
+                <span className="text-xs font-semibold text-green-600">
+                  {p.approvedCount}
+                </span>
+                <span className="text-slate-300">/</span>
+                <span
+                  className={`text-xs font-semibold ${p.rejectedCount > 0 ? "text-red-600" : "text-slate-400"}`}
+                >
+                  {p.rejectedCount}
+                </span>
+                <span className="text-slate-300">/</span>
+                <span
+                  className={`text-xs font-semibold ${p.pendingCount > 0 ? "text-orange-600" : "text-slate-400"}`}
+                >
+                  {p.pendingCount}
+                </span>
+              </div>
+              <span className="text-[10px] text-slate-400">A/R/P</span>
+            </>
+          ) : (
+            <span className="text-xs text-slate-400">Aucun</span>
+          )}
+        </div>
+      ),
+    },
+    {
+      key: "trustScore",
+      header: "Confiance",
+      render: (p: AdminTrustProfile) => (
+        <span
+          className={`text-sm font-semibold ${
+            p.trustScore >= 80
+              ? "text-green-600"
+              : p.trustScore >= 50
+                ? "text-orange-600"
+                : "text-red-600"
+          }`}
+        >
+          {p.trustScore}/100
+        </span>
+      ),
+    },
+    {
+      key: "createdAt",
+      header: "Inscrit",
+      render: (p: AdminTrustProfile) => (
+        <span className="text-sm text-slate-500">
+          {p.createdAt ? formatTimeAgoShort(p.createdAt) : "-"}
+        </span>
+      ),
+    },
+    {
+      key: "actions",
+      header: "Actions",
+      render: (p: AdminTrustProfile) => (
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setDrawerProfileId(p.id)}
+            title={
+              p.documentCount > 0
+                ? `Voir les ${p.documentCount} documents`
+                : "Voir les documents"
+            }
+            className={`p-1.5 rounded-lg transition-colors flex items-center gap-1.5 ${
+              p.pendingCount > 0
+                ? "bg-orange-100 text-orange-600 hover:bg-orange-200 ring-1 ring-orange-300"
+                : p.documentCount > 0
+                  ? "bg-purple-100 text-purple-600 hover:bg-purple-200"
+                  : "bg-slate-50 text-slate-400 hover:bg-slate-100"
+            }`}
+          >
+            <FolderOpen className="w-4 h-4" />
+            {p.documentCount > 0 && (
+              <span className="text-xs font-medium">{p.documentCount}</span>
+            )}
+          </button>
+        </div>
+      ),
+    },
+  ];
+
+  const loading = mainView === "requests" ? verifLoading : profileLoading;
+  const error = mainView === "requests" ? verifError : profileError;
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -226,19 +444,19 @@ export default function AdminVerificationsPage() {
         <div>
           <h1 className="text-2xl font-bold text-slate-900">Vérifications</h1>
           <p className="text-slate-500">
-            File de vérification des transporteurs
+            Gestion des profils et documents transporteurs
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {pendingCount > 0 && (
+          {profilesNeedingReview.length > 0 && (
             <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 px-4 py-2 rounded-lg">
               <Clock className="w-4 h-4 text-orange-600" />
               <span className="text-sm font-medium text-orange-800">
-                {pendingCount} demande{pendingCount > 1 ? "s" : ""} en attente
+                {profilesNeedingReview.length} profil
+                {profilesNeedingReview.length > 1 ? "s" : ""} à vérifier
               </span>
             </div>
           )}
-          {/* Source Badge */}
           <div
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
               source === "api"
@@ -254,27 +472,152 @@ export default function AdminVerificationsPage() {
         </div>
       </div>
 
-      {/* Loading State */}
+      {/* Main View Toggle */}
+      <div className="flex gap-1 bg-slate-100 rounded-xl p-1">
+        <button
+          onClick={() => setMainView("profiles")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            mainView === "profiles"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          Profils transporteurs
+          <span
+            className={`px-1.5 py-0.5 rounded text-xs ${
+              mainView === "profiles"
+                ? "bg-primary-100 text-primary-700"
+                : "bg-slate-200 text-slate-500"
+            }`}
+          >
+            {allProfiles.length}
+          </span>
+        </button>
+        <button
+          onClick={() => setMainView("requests")}
+          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
+            mainView === "requests"
+              ? "bg-white text-slate-900 shadow-sm"
+              : "text-slate-500 hover:text-slate-700"
+          }`}
+        >
+          <ClipboardList className="w-4 h-4" />
+          Demandes de vérification
+          <span
+            className={`px-1.5 py-0.5 rounded text-xs ${
+              mainView === "requests"
+                ? "bg-primary-100 text-primary-700"
+                : "bg-slate-200 text-slate-500"
+            }`}
+          >
+            {allVerifications.length}
+          </span>
+          {pendingCount > 0 && (
+            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+          )}
+        </button>
+      </div>
+
+      {/* Loading */}
       {loading && (
         <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
-          <p className="text-slate-500">Chargement des vérifications...</p>
+          <p className="text-slate-500">Chargement...</p>
         </div>
       )}
 
-      {/* Error State */}
+      {/* Error */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
           ⚠️ Erreur de chargement: {error?.message}
         </div>
       )}
 
-      {!loading && (
+      {/* ─── PROFILES VIEW ─── */}
+      {!loading && mainView === "profiles" && (
         <>
-          {/* Filter Tabs */}
+          {/* Profile Filter Tabs */}
           <div className="flex flex-wrap gap-2">
-            {filterTabs.map((tab) => {
-              const isActive = filter === tab.value;
+            {profileFilterTabs.map((tab) => {
+              const isActive = profileFilter === tab.value;
+              const count =
+                tab.value === "ALL"
+                  ? allProfiles.length
+                  : allProfiles.filter(
+                      (p) => p.verificationStatus === tab.value,
+                    ).length;
+              return (
+                <button
+                  key={tab.value}
+                  onClick={() => setProfileFilter(tab.value)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                    isActive
+                      ? "bg-primary-600 text-white shadow-sm"
+                      : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                  }`}
+                >
+                  {tab.label}
+                  <span
+                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-slate-100"}`}
+                  >
+                    {count}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Profile Stats Bar */}
+          <div className="bg-white rounded-xl border border-slate-200 p-4">
+            <div className="flex flex-wrap gap-6 text-sm">
+              <div>
+                <span className="text-slate-500">Affichés:</span>
+                <span className="ml-2 font-semibold text-slate-900">
+                  {filteredProfiles.length}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-500">Avec documents:</span>
+                <span className="ml-2 font-semibold text-purple-600">
+                  {profilesWithDocs.length}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-500">À vérifier:</span>
+                <span className="ml-2 font-semibold text-orange-600">
+                  {profilesNeedingReview.length}
+                </span>
+              </div>
+              <div>
+                <span className="text-slate-500">Vérifiés:</span>
+                <span className="ml-2 font-semibold text-green-600">
+                  {
+                    allProfiles.filter(
+                      (p) => p.verificationStatus === "VERIFIED",
+                    ).length
+                  }
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Profiles Table */}
+          <DataTable
+            columns={profileColumns}
+            data={filteredProfiles}
+            emptyMessage="Aucun profil transporteur trouvé"
+          />
+        </>
+      )}
+
+      {/* ─── REQUESTS VIEW ─── */}
+      {!loading && mainView === "requests" && (
+        <>
+          {/* Verification Filter Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {verifFilterTabs.map((tab) => {
+              const isActive = verifFilter === tab.value;
               const count =
                 tab.value === "ALL"
                   ? allVerifications.length
@@ -283,7 +626,7 @@ export default function AdminVerificationsPage() {
               return (
                 <button
                   key={tab.value}
-                  onClick={() => setFilter(tab.value)}
+                  onClick={() => setVerifFilter(tab.value)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
                       ? "bg-primary-600 text-white shadow-sm"
@@ -307,7 +650,7 @@ export default function AdminVerificationsPage() {
               <div>
                 <span className="text-slate-500">Affichées:</span>
                 <span className="ml-2 font-semibold text-slate-900">
-                  {filtered.length}
+                  {filteredVerifications.length}
                 </span>
               </div>
               <div>
@@ -337,10 +680,10 @@ export default function AdminVerificationsPage() {
             </div>
           </div>
 
-          {/* Table */}
+          {/* Verifications Table */}
           <DataTable
-            columns={columns}
-            data={filtered}
+            columns={verifColumns}
+            data={filteredVerifications}
             emptyMessage="Aucune demande de vérification trouvée"
           />
         </>
@@ -383,6 +726,18 @@ export default function AdminVerificationsPage() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Document Review Drawer */}
+      {drawerProfileId !== null && (
+        <DocumentReviewDrawer
+          profileId={drawerProfileId}
+          onClose={() => setDrawerProfileId(null)}
+          onStatusChanged={() => {
+            refetchVerifications();
+            refetchProfiles();
+          }}
+        />
       )}
     </div>
   );

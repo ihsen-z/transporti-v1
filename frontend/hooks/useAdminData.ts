@@ -15,8 +15,12 @@ import {
   getSystemAlerts,
   getAdminDisputes,
   getAdminVerifications,
+  getAdminReviews,
+  getAdminProfiles,
   type BackendDispute,
   type BackendVerification,
+  type BackendReview,
+  type AdminTrustProfile,
 } from "@/lib/services/admin";
 import {
   mockAdminStats,
@@ -71,4 +75,14 @@ export function useAdminDisputes() {
 export function useAdminVerifications() {
   const fetcher = useCallback(() => getAdminVerifications(), []);
   return useDataService<BackendVerification[]>(fetcher, []);
+}
+
+export function useAdminReviews() {
+  const fetcher = useCallback(() => getAdminReviews(), []);
+  return useDataService<BackendReview[]>(fetcher, []);
+}
+
+export function useAdminProfiles() {
+  const fetcher = useCallback(() => getAdminProfiles(), []);
+  return useDataService<AdminTrustProfile[]>(fetcher, []);
 }

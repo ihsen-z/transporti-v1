@@ -137,6 +137,7 @@ class Review(models.Model):
     
     def save(self, *args, **kwargs):
         self.clean()
+        is_new = self.pk is None
         super().save(*args, **kwargs)
         
         # Log review creation
@@ -146,6 +147,39 @@ class Review(models.Model):
                 f"role={self.role}, rating={self.rating}, reviewer_id={self.reviewer_id}, "
                 f"target_id={self.target_id}"
             )
+        
+        # Update target's trust score based on review average
+        if is_new and not self.trust_impact_applied:
+            self._apply_trust_impact()
+
+    def _apply_trust_impact(self):
+        """Recalculate target's trust score from all their reviews."""
+        from django.db.models import Avg
+        try:
+            from trust.models import TrustProfile
+            profile = TrustProfile.objects.filter(user=self.target).first()
+            if not profile:
+                return
+            
+            avg_rating = Review.objects.filter(
+                target=self.target
+            ).aggregate(avg=Avg('rating'))['avg']
+            
+            if avg_rating:
+                # Formula: avg_rating * 20 (5.0 → 100, 3.0 → 60, 1.0 → 20)
+                new_score = min(100, max(0, int(avg_rating * 20)))
+                profile.trust_score = new_score
+                profile.save(update_fields=['trust_score', 'updated_at'])
+                
+                self.trust_impact_applied = True
+                self.save(update_fields=['trust_impact_applied'])
+                
+                logger.info(
+                    f"TRUST_SCORE_UPDATED: target_id={self.target_id}, "
+                    f"avg_rating={avg_rating:.2f}, new_score={new_score}"
+                )
+        except Exception as e:
+            logger.error(f"TRUST_IMPACT_FAILED: review_id={self.id}, error={str(e)}")
 
 
 class ReviewAbuseLog(models.Model):

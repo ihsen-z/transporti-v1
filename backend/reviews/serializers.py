@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Review, ReviewRole
+from .models import Review, ReviewRole, ReviewAbuseLog
 from logistics.models import TransportJob
 from django.contrib.auth import get_user_model
 
@@ -124,3 +124,56 @@ class ReviewListSerializer(serializers.ModelSerializer):
             data['comment'] = '[Avis masqué — en attente de l\'avis de l\'autre partie]'
             data['aspects'] = {}
         return data
+
+
+# =============================================================================
+# Admin Review Serializers
+# =============================================================================
+
+class AdminReviewAbuseLogSerializer(serializers.ModelSerializer):
+    """Nested serializer for abuse detection logs."""
+    at = serializers.DateTimeField(source='created_at')
+
+    class Meta:
+        model = ReviewAbuseLog
+        fields = ['detector', 'reason', 'severity', 'at']
+
+
+class AdminReviewSerializer(serializers.ModelSerializer):
+    """
+    Admin-facing serializer for the Reviews moderation page.
+    Maps to the frontend FlaggedReview interface.
+    """
+    reviewerName = serializers.SerializerMethodField()
+    reviewerEmail = serializers.SerializerMethodField()
+    targetName = serializers.SerializerMethodField()
+    role = serializers.CharField()
+    jobId = serializers.IntegerField(source='job_id')
+    flagReason = serializers.CharField(source='flag_reason', default='')
+    isHidden = serializers.BooleanField(source='is_flagged')
+    createdAt = serializers.DateTimeField(source='created_at')
+    abuseLogs = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Review
+        fields = [
+            'id', 'jobId', 'reviewerName', 'reviewerEmail',
+            'targetName', 'role', 'rating', 'comment',
+            'flagReason', 'isHidden', 'createdAt', 'abuseLogs',
+        ]
+        read_only_fields = fields
+
+    def get_reviewerName(self, obj) -> str:
+        name = f"{obj.reviewer.first_name} {obj.reviewer.last_name}".strip()
+        return name or obj.reviewer.email
+
+    def get_reviewerEmail(self, obj) -> str:
+        return obj.reviewer.email
+
+    def get_targetName(self, obj) -> str:
+        name = f"{obj.target.first_name} {obj.target.last_name}".strip()
+        return name or obj.target.email
+
+    def get_abuseLogs(self, obj):
+        logs = obj.abuse_logs.all()
+        return AdminReviewAbuseLogSerializer(logs, many=True).data

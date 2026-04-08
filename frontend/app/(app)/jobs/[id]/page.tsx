@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError } from "@/lib/api/client";
 import { JobPreview } from "@/components/jobs/JobPreview";
 import { OfferForm } from "@/components/offers/OfferForm";
 import { OfferList } from "@/components/offers/OfferList";
@@ -17,6 +17,10 @@ import {
   MapPin,
   Route,
   MessageSquare,
+  Truck,
+  CreditCard,
+  ShieldCheck,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -26,16 +30,14 @@ export default function JobDetailsPage() {
   const { user } = useAuth();
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [confirming, setConfirming] = useState(false);
 
-  // Helper to extract ID safely
   const jobId = params?.id
     ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id)
     : null;
 
   useEffect(() => {
-    if (jobId) {
-      fetchJob();
-    }
+    if (jobId) fetchJob();
   }, [jobId]);
 
   const fetchJob = async () => {
@@ -46,6 +48,32 @@ export default function JobDetailsPage() {
       console.error("Error fetching job:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleConfirmDelivery = async () => {
+    if (
+      !confirm(
+        "Confirmez-vous la bonne réception de votre livraison ? Cette action libérera le paiement au transporteur.",
+      )
+    ) {
+      return;
+    }
+    setConfirming(true);
+    try {
+      await apiClient.post("/api/payments/confirm-completion/", {
+        job_id: job.id,
+      });
+      alert("Livraison confirmée ! Le paiement a été libéré au transporteur.");
+      fetchJob();
+    } catch (error) {
+      if (error instanceof ApiError && error.body) {
+        alert(error.body.error || "Erreur lors de la confirmation.");
+      } else {
+        alert("Une erreur est survenue.");
+      }
+    } finally {
+      setConfirming(false);
     }
   };
 
@@ -60,14 +88,21 @@ export default function JobDetailsPage() {
 
   const isOwner = user?.id === job.owner?.id;
   const isTransporter = user?.role === "transporter";
-  const isVerified = user?.is_verified !== false; // default true for demo
+  const isVerified = user?.is_verified !== false;
   const showOfferForm =
     isTransporter && !isOwner && job.status === "PUBLISHED" && isVerified;
   const showVerificationGate =
     isTransporter && !isOwner && job.status === "PUBLISHED" && !isVerified;
   const showOffersList =
     isOwner && (job.status === "PUBLISHED" || job.status === "IN_PROGRESS");
-  const showReviewForm = job.status === "COMPLETED" && !job.has_reviewed;
+
+  // Post-livraison logic
+  const isCompleted = job.status === "COMPLETED";
+  const clientConfirmed = job.client_confirmed === true;
+  const hasReviewed = job.has_reviewed === true;
+  const showConfirmButton = isCompleted && isOwner && !clientConfirmed;
+  const showReviewForm =
+    isCompleted && !hasReviewed && (isOwner ? clientConfirmed : true);
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -77,24 +112,47 @@ export default function JobDetailsPage() {
           <h1 className="text-2xl font-bold text-gray-900">
             Détail de la mission #{job.id}
           </h1>
-          <span
-            className={`px-3 py-1 rounded-full text-sm font-semibold 
-            ${
-              job.status === "PUBLISHED"
-                ? "bg-green-100 text-green-800"
-                : job.status === "DRAFT"
-                  ? "bg-gray-100 text-gray-800"
-                  : "bg-blue-100 text-blue-800"
-            }`}
-          >
-            {job.status}
-          </span>
+          <StatusBadge status={job.status} />
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content: Job Preview */}
           <div className="lg:col-span-2">
             <JobPreview data={job} isOwner={isOwner} />
+
+            {/* Accepted Transporter Info (visible when job is assigned) */}
+            {job.accepted_transporter &&
+              (job.status === "IN_PROGRESS" || isCompleted) && (
+                <div className="mt-6 bg-white rounded-xl shadow-sm border border-neutral-200 p-5">
+                  <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
+                    <Truck className="w-4 h-4 text-primary-600" />
+                    Transporteur assigné
+                  </h3>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
+                        {(job.accepted_transporter.name || "T")[0]}
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-neutral-900">
+                          {job.accepted_transporter.name}
+                        </p>
+                        {job.accepted_transporter.phone && (
+                          <p className="text-xs text-neutral-500">
+                            📞 {job.accepted_transporter.phone}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-lg font-bold text-neutral-900">
+                        {job.accepted_transporter.total_price} TND
+                      </p>
+                      <p className="text-xs text-neutral-500">Prix accepté</p>
+                    </div>
+                  </div>
+                </div>
+              )}
           </div>
 
           {/* Sidebar: Actions */}
@@ -126,6 +184,7 @@ export default function JobDetailsPage() {
             {showOfferForm && (
               <OfferForm
                 jobId={job.id}
+                jobType={job.job_type}
                 onOfferSubmitted={() => {
                   alert("Offre envoyée avec succès !");
                   fetchJob();
@@ -141,12 +200,12 @@ export default function JobDetailsPage() {
                 </h3>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
-                    {(job.owner.first_name || "C")[0]}
+                    {(job.owner.first_name || job.owner.name?.[0] || "C")[0]}
                   </div>
                   <div>
                     <p className="text-sm font-medium text-neutral-900">
-                      {job.owner.first_name || "Client"}{" "}
-                      {(job.owner.last_name || "")[0]}.
+                      {job.owner.name ||
+                        `${job.owner.first_name || "Client"} ${(job.owner.last_name || "")[0]}.`}
                     </p>
                     {job.owner.rating && (
                       <div className="flex items-center gap-1 text-xs text-neutral-500">
@@ -192,7 +251,7 @@ export default function JobDetailsPage() {
               </div>
             )}
 
-            {/* In Progress / Completed Status */}
+            {/* In Progress Status */}
             {job.status === "IN_PROGRESS" && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800">
                 <h3 className="font-bold flex items-center gap-2 mb-2">
@@ -200,45 +259,140 @@ export default function JobDetailsPage() {
                   Mission en cours
                 </h3>
                 <p className="text-sm">
-                  Le transporteur a été assigné. Veuillez procéder à la
-                  communication via la messagerie pour la coordination.
+                  Le transporteur a été assigné. Coordonnez-vous via la
+                  messagerie.
                 </p>
                 <div className="mt-4">
                   <button
                     onClick={() => router.push(`/messages/${job.id}`)}
-                    className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700"
+                    className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
                   >
+                    <MessageSquare className="w-4 h-4" />
                     Ouvrir la messagerie
                   </button>
                 </div>
               </div>
             )}
 
-            {job.status === "COMPLETED" && (
-              <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
-                <h3 className="font-bold flex items-center gap-2 mb-2">
-                  <CheckCircle className="w-5 h-5" />
-                  Mission terminée
-                </h3>
-                <p className="text-sm mb-3">
-                  Le transport a été effectué avec succès.
-                </p>
+            {/* ============================================ */}
+            {/* POST-LIVRAISON FLOW (BL-03, UX-01)          */}
+            {/* ============================================ */}
+
+            {isCompleted && (
+              <div className="space-y-4">
+                {/* Step 1: CLIENT CONFIRMATION */}
+                {showConfirmButton && (
+                  <div className="bg-amber-50 border border-amber-300 rounded-xl p-5 animate-fade-in-up">
+                    <h3 className="font-bold flex items-center gap-2 mb-2 text-amber-900">
+                      <AlertCircle className="w-5 h-5" />
+                      Confirmer la livraison
+                    </h3>
+                    <p className="text-sm text-amber-800 mb-4">
+                      Le transporteur a marqué cette mission comme terminée.
+                      Confirmez la bonne réception pour libérer le paiement.
+                    </p>
+                    <button
+                      onClick={handleConfirmDelivery}
+                      disabled={confirming}
+                      className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      {confirming ? (
+                        "Confirmation..."
+                      ) : (
+                        <>
+                          <CheckCircle className="w-5 h-5" />
+                          Confirmer la réception & Libérer le paiement
+                        </>
+                      )}
+                    </button>
+                  </div>
+                )}
+
+                {/* Confirmed badge (after confirmation) */}
+                {clientConfirmed && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                    <div className="flex items-center gap-2 text-green-800">
+                      <ShieldCheck className="w-5 h-5" />
+                      <span className="font-semibold">
+                        Livraison confirmée — Paiement libéré ✓
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                {/* Transporter waiting for confirmation */}
+                {!clientConfirmed && isTransporter && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800">
+                    <h3 className="font-bold flex items-center gap-2 mb-2">
+                      <Clock className="w-5 h-5" />
+                      En attente de confirmation
+                    </h3>
+                    <p className="text-sm">
+                      Le client doit confirmer la bonne réception avant que
+                      votre paiement soit libéré.
+                    </p>
+                  </div>
+                )}
+
+                {/* Step 2: REVIEW (after confirmation for client, immediate for transporter) */}
                 {showReviewForm && (
-                  <div className="mt-4 pt-4 border-t border-green-200">
+                  <div className="animate-fade-in-up">
                     <ReviewForm
                       jobId={job.id}
                       onReviewSubmitted={() => {
-                        alert("Avis soumis avec succès !");
                         fetchJob();
                       }}
                     />
                   </div>
                 )}
+
+                {/* Already reviewed */}
+                {hasReviewed && (
+                  <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 flex items-center gap-2 text-neutral-600">
+                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <span className="text-sm">
+                      Vous avez déjà laissé un avis pour cette mission.
+                    </span>
+                  </div>
+                )}
+
+                {/* Mission completed summary */}
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
+                  <h3 className="font-bold flex items-center gap-2 mb-1">
+                    <CheckCircle className="w-5 h-5" />
+                    Mission terminée
+                  </h3>
+                  <p className="text-sm">
+                    Le transport a été effectué avec succès.
+                  </p>
+                </div>
               </div>
             )}
           </div>
         </div>
       </div>
     </div>
+  );
+}
+
+/* Status Badge */
+function StatusBadge({ status }: { status: string }) {
+  const config: Record<string, { bg: string; label: string }> = {
+    DRAFT: { bg: "bg-gray-100 text-gray-700", label: "Brouillon" },
+    PUBLISHED: { bg: "bg-green-100 text-green-800", label: "Publiée" },
+    MATCHED: { bg: "bg-purple-100 text-purple-800", label: "Attribuée" },
+    IN_PROGRESS: { bg: "bg-blue-100 text-blue-800", label: "En cours" },
+    COMPLETED: { bg: "bg-emerald-100 text-emerald-800", label: "Terminée" },
+    CANCELLED: { bg: "bg-red-100 text-red-700", label: "Annulée" },
+    DISPUTED: { bg: "bg-orange-100 text-orange-800", label: "Litige" },
+  };
+  const c = config[status] || {
+    bg: "bg-gray-100 text-gray-600",
+    label: status,
+  };
+  return (
+    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${c.bg}`}>
+      {c.label}
+    </span>
   );
 }

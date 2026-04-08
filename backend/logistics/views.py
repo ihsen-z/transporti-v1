@@ -51,7 +51,7 @@ class JobMyListView(generics.ListAPIView):
     def get_queryset(self):
         return TransportJob.objects.filter(
             owner=self.request.user
-        ).order_by('-created_at')
+        ).select_related('owner').prefetch_related('offers').order_by('-created_at')
 
 
 class JobPublicListView(generics.ListAPIView):
@@ -68,7 +68,7 @@ class JobPublicListView(generics.ListAPIView):
         queryset = TransportJob.objects.filter(
             status=TransportJob.Status.PUBLISHED,
             scheduled_time__gte=timezone.now()
-        ).order_by('-created_at')
+        ).select_related('owner').prefetch_related('offers').order_by('-created_at')
 
         # Apply Filters
         job_type = self.request.query_params.get('job_type')
@@ -90,14 +90,32 @@ class JobDetailView(APIView):
     """
     GET /api/jobs/{id}/
     Client views their own job details.
+    Transporter views PUBLISHED jobs or jobs they have offers on.
     """
-    permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT', 'TRANSPORTER')]
 
     def get(self, request, job_id):
-        job = get_object_or_404(TransportJob, id=job_id, owner=request.user)
+        job = get_object_or_404(TransportJob.objects.select_related('owner'), id=job_id)
+
+        # Client: must own the job
+        if request.user.role == 'CLIENT':
+            if job.owner != request.user:
+                return Response(
+                    {'error': 'You do not own this job.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+        # Transporter: can view PUBLISHED jobs, or jobs they have offers on
+        elif request.user.role == 'TRANSPORTER':
+            has_offer = Offer.objects.filter(job=job, transporter=request.user).exists()
+            if job.status != TransportJob.Status.PUBLISHED and not has_offer:
+                return Response(
+                    {'error': 'Job not available.'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
         serializer = TransportJobDetailSerializer(
             job, 
-            context={'request': request, 'show_contact': True}
+            context={'request': request, 'show_contact': job.owner == request.user}
         )
         return Response(serializer.data)
 
@@ -113,7 +131,9 @@ class JobOffersView(generics.ListAPIView):
     def get_queryset(self):
         job_id = self.kwargs['job_id']
         job = get_object_or_404(TransportJob, id=job_id, owner=self.request.user)
-        return Offer.objects.filter(job=job).order_by('-created_at')
+        return Offer.objects.filter(job=job).select_related(
+            'transporter', 'transporter__trust_profile'
+        ).order_by('-created_at')
 
 
 # =============================================================================
@@ -150,7 +170,7 @@ class OfferMyListView(generics.ListAPIView):
     def get_queryset(self):
         return Offer.objects.filter(
             transporter=self.request.user
-        ).order_by('-created_at')
+        ).select_related('job', 'job__owner', 'transporter').order_by('-created_at')
 
 
 class OfferAcceptView(generics.GenericAPIView):
@@ -167,6 +187,8 @@ class OfferAcceptView(generics.GenericAPIView):
         # Validate body
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        payment_method = serializer.validated_data.get('payment_method', 'DIGITAL')
 
         # Get offer and verify ownership
         offer = get_object_or_404(Offer, id=offer_id)
@@ -193,6 +215,14 @@ class OfferAcceptView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # COD threshold guard: max 300 TND for cash on delivery
+        COD_MAX_TND = 300
+        if payment_method == 'COD' and offer.total_price > COD_MAX_TND:
+            return Response(
+                {'error': f'Montant trop élevé pour le paiement à la livraison. Maximum: {COD_MAX_TND} TND.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         # === ATOMIC STATE TRANSITIONS ===
         
         # 1. Accept this offer
@@ -208,18 +238,20 @@ class OfferAcceptView(generics.GenericAPIView):
         job.status = TransportJob.Status.IN_PROGRESS
         job.save()
 
-        # 4. Create escrow (digital payment assumed by default)
-        from payments.services import create_escrow_on_booking
-        try:
-            escrow = create_escrow_on_booking(job=job, offer=offer)
-        except ValueError as e:
-            # Log error but don't fail the booking
-            # In production, this would trigger an alert
-            escrow = None
+        # 4. Handle payment
+        escrow = None
+        if payment_method == 'DIGITAL':
+            from payments.services import create_escrow_on_booking
+            try:
+                escrow = create_escrow_on_booking(job=job, offer=offer)
+            except ValueError as e:
+                # Log error but don't fail the booking
+                escrow = None
 
         response_data = {
-            'message': 'Offer accepted successfully. Job is now IN_PROGRESS.',
-            'job': TransportJobDetailSerializer(job, context={'show_contact': True}).data,
+            'message': f'Offer accepted successfully ({payment_method}). Job is now IN_PROGRESS.',
+            'payment_method': payment_method,
+            'job': TransportJobDetailSerializer(job, context={'show_contact': True, 'request': request}).data,
             'accepted_offer': OfferDetailSerializer(offer).data
         }
         

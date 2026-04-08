@@ -10,7 +10,7 @@ from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError, PermissionDenied
 
 from .models import Conversation, Message
-from .serializers import MessageSerializer, MessageCreateSerializer, ConversationSerializer
+from .serializers import MessageSerializer, MessageCreateSerializer, ConversationSerializer, ConversationListSerializer
 from .services import (
     send_message, get_conversation_messages, 
     get_or_create_conversation, mark_messages_as_read
@@ -19,6 +19,29 @@ from logistics.models import TransportJob
 from transporti_core.throttling import BookingRateThrottle
 
 logger = logging.getLogger('transporti')
+
+
+class UserConversationsView(generics.ListAPIView):
+    """
+    GET /api/conversations/ - List all conversations the current user participates in.
+    Returns conversations ordered by most recent activity.
+    """
+    permission_classes = [IsAuthenticated]
+    serializer_class = ConversationListSerializer
+
+    def get_queryset(self):
+        return (
+            Conversation.objects
+            .filter(participants=self.request.user)
+            .select_related('job')
+            .prefetch_related('participants', 'messages')
+            .order_by('-updated_at')
+        )
+
+    def get_serializer_context(self):
+        ctx = super().get_serializer_context()
+        ctx['request'] = self.request
+        return ctx
 
 
 class JobMessagesView(generics.GenericAPIView):
@@ -55,10 +78,35 @@ class JobMessagesView(generics.GenericAPIView):
             except Conversation.DoesNotExist:
                 conv_data = None
             
+            # Build job info for the chat header
+            job_info = {
+                'id': job.id,
+                'pickup_address': job.pickup_address,
+                'dropoff_address': job.dropoff_address,
+                'status': job.status,
+                'job_type': job.job_type,
+            }
+            
+            # Identify other party in the conversation
+            other_party = None
+            if conversation:
+                for p in conversation.participants.all():
+                    if p.id != request.user.id:
+                        other_party = {
+                            'id': p.id,
+                            'name': f"{p.first_name} {p.last_name}".strip() or p.email,
+                            'role': p.role,
+                            'phone': p.phone if job.status in ('IN_PROGRESS', 'COMPLETED') else None,
+                            'email': p.email if job.status in ('IN_PROGRESS', 'COMPLETED') else None,
+                        }
+                        break
+            
             return Response({
                 'conversation': conv_data,
                 'messages': MessageSerializer(messages, many=True).data,
-                'count': len(messages)
+                'count': len(messages),
+                'job': job_info,
+                'other_party': other_party,
             })
         
         except PermissionDenied as e:

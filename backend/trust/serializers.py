@@ -128,7 +128,7 @@ class VerificationDocumentReadSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = VerificationDocument
-        fields = ['id', 'document_type', 'file_url', 'is_valid', 'uploaded_at']
+        fields = ['id', 'document_type', 'file_url', 'is_valid', 'uploaded_at', 'rejection_reason', 'reviewed_at']
         read_only_fields = fields
 
     def get_file_url(self, obj) -> str:
@@ -185,6 +185,7 @@ class AdminVerificationRequestSerializer(serializers.ModelSerializer):
     """
     transporterName = serializers.SerializerMethodField()
     transporterEmail = serializers.SerializerMethodField()
+    profileId = serializers.IntegerField(source='trust_profile_id', read_only=True)
     documentType = serializers.SerializerMethodField()
     status = serializers.SerializerMethodField()
     submittedAt = serializers.DateTimeField(source='submitted_at')
@@ -192,13 +193,15 @@ class AdminVerificationRequestSerializer(serializers.ModelSerializer):
     reviewerNote = serializers.CharField(source='review_notes', default='')
     documentUrl = serializers.SerializerMethodField()
     trustScore = serializers.SerializerMethodField()
+    documentCount = serializers.SerializerMethodField()
 
     class Meta:
         model = TrustVerificationRequest
         fields = [
-            'id', 'transporterName', 'transporterEmail',
+            'id', 'transporterName', 'transporterEmail', 'profileId',
             'documentType', 'status', 'submittedAt',
             'reviewedAt', 'reviewerNote', 'documentUrl', 'trustScore',
+            'documentCount',
         ]
         read_only_fields = fields
 
@@ -230,3 +233,93 @@ class AdminVerificationRequestSerializer(serializers.ModelSerializer):
     def get_trustScore(self, obj) -> int:
         return obj.trust_profile.trust_score
 
+    def get_documentCount(self, obj) -> int:
+        from .models import VerificationDocument
+        return VerificationDocument.objects.filter(profile=obj.trust_profile).count()
+
+
+class AdminVerificationDocumentSerializer(serializers.ModelSerializer):
+    """
+    Admin-facing serializer for per-document review.
+    Maps to frontend AdminDocument interface.
+    """
+    documentType = serializers.CharField(source='document_type', read_only=True)
+    documentTypeLabel = serializers.SerializerMethodField()
+    isValid = serializers.BooleanField(source='is_valid', read_only=True)
+    rejectionReason = serializers.CharField(source='rejection_reason', read_only=True, default='')
+    fileUrl = serializers.SerializerMethodField()
+    reviewedAt = serializers.DateTimeField(source='reviewed_at', read_only=True, default=None)
+    reviewedBy = serializers.SerializerMethodField()
+    uploadedAt = serializers.DateTimeField(source='uploaded_at', read_only=True)
+
+    class Meta:
+        model = VerificationDocument
+        fields = [
+            'id', 'documentType', 'documentTypeLabel', 'isValid',
+            'rejectionReason', 'fileUrl', 'reviewedAt', 'reviewedBy', 'uploadedAt',
+        ]
+        read_only_fields = fields
+
+    def get_documentTypeLabel(self, obj) -> str:
+        return DOCUMENT_TYPE_LABELS.get(obj.document_type, obj.document_type)
+
+    def get_fileUrl(self, obj) -> str:
+        if obj.s3_key:
+            return f"{settings.MEDIA_URL}{obj.s3_key}"
+        return ''
+
+    def get_reviewedBy(self, obj) -> str:
+        if obj.reviewed_by:
+            name = f"{obj.reviewed_by.first_name} {obj.reviewed_by.last_name}".strip()
+            return name or obj.reviewed_by.email
+        return ''
+
+
+class AdminTrustProfileSerializer(serializers.ModelSerializer):
+    """
+    Admin-facing serializer for TrustProfile.
+    Lists ALL transporter profiles (not just verification requests).
+    """
+    transporterName = serializers.SerializerMethodField()
+    transporterEmail = serializers.SerializerMethodField()
+    verificationStatus = serializers.CharField(source='verification_status', read_only=True)
+    trustScore = serializers.IntegerField(source='trust_score', read_only=True)
+    documentCount = serializers.SerializerMethodField()
+    approvedCount = serializers.SerializerMethodField()
+    rejectedCount = serializers.SerializerMethodField()
+    pendingCount = serializers.SerializerMethodField()
+    createdAt = serializers.DateTimeField(source='created_at', read_only=True)
+    verifiedAt = serializers.DateTimeField(source='verified_at', read_only=True, default=None)
+
+    class Meta:
+        model = TrustProfile
+        fields = [
+            'id', 'transporterName', 'transporterEmail',
+            'verificationStatus', 'trustScore',
+            'documentCount', 'approvedCount', 'rejectedCount', 'pendingCount',
+            'createdAt', 'verifiedAt',
+        ]
+        read_only_fields = fields
+
+    def get_transporterName(self, obj) -> str:
+        u = obj.user
+        name = f"{u.first_name} {u.last_name}".strip()
+        return name or u.email
+
+    def get_transporterEmail(self, obj) -> str:
+        return obj.user.email
+
+    def get_documentCount(self, obj) -> int:
+        return getattr(obj, '_doc_count', 0)
+
+    def get_approvedCount(self, obj) -> int:
+        return getattr(obj, '_approved_count', 0)
+
+    def get_rejectedCount(self, obj) -> int:
+        return getattr(obj, '_rejected_count', 0)
+
+    def get_pendingCount(self, obj) -> int:
+        total = getattr(obj, '_doc_count', 0)
+        approved = getattr(obj, '_approved_count', 0)
+        rejected = getattr(obj, '_rejected_count', 0)
+        return total - approved - rejected

@@ -72,6 +72,11 @@ class TransportJob(models.Model):
     def __str__(self):
         return f"Job #{self.id} - {self.job_type} ({self.status})"
 
+    @property
+    def accepted_offer(self):
+        """Returns the ACCEPTED offer for this job, or None."""
+        return self.offers.filter(status='ACCEPTED').first()
+
 
 class Offer(models.Model):
     class Status(models.TextChoices):

@@ -4,12 +4,17 @@ import { apiClient, ApiError } from "@/lib/api/client";
 
 interface OfferFormProps {
   jobId: number;
+  jobType?: string;
   onOfferSubmitted: () => void;
 }
 
 type FeedbackType = "success" | "error" | "warning" | null;
 
-export function OfferForm({ jobId, onOfferSubmitted }: OfferFormProps) {
+export function OfferForm({
+  jobId,
+  jobType,
+  onOfferSubmitted,
+}: OfferFormProps) {
   const [priceNet, setPriceNet] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -22,14 +27,22 @@ export function OfferForm({ jobId, onOfferSubmitted }: OfferFormProps) {
     message: string;
   }>({ type: null, message: "" });
 
-  const COMMISSION_RATE = 0.15; // 15%
+  // Dynamic commission rate matching backend settings.COMMISSION_RATES
+  const COMMISSION_RATES: Record<string, number> = {
+    TRANSPORT: 0.12,
+    MOVING: 0.15,
+    DEFAULT: 0.12,
+  };
+  const commissionRate =
+    COMMISSION_RATES[jobType || "DEFAULT"] || COMMISSION_RATES.DEFAULT;
+  const commissionPct = Math.round(commissionRate * 100);
 
   useEffect(() => {
     const net = parseFloat(priceNet) || 0;
-    const comm = net * COMMISSION_RATE;
+    const comm = net * commissionRate;
     setCommission(comm);
     setTotal(net + comm);
-  }, [priceNet]);
+  }, [priceNet, commissionRate]);
 
   // Auto-dismiss feedback after 6s
   useEffect(() => {
@@ -168,7 +181,7 @@ export function OfferForm({ jobId, onOfferSubmitted }: OfferFormProps) {
         {/* Pricing Breakdown */}
         <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
           <div className="flex justify-between text-gray-600">
-            <span>+ Commission plateforme (15%)</span>
+            <span>+ Commission plateforme ({commissionPct}%)</span>
             <span>{commission.toFixed(2)} TND</span>
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-gray-200">

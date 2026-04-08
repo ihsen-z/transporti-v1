@@ -20,7 +20,7 @@ class AdminLoginThrottle(AnonRateThrottle):
     Uses AnonRateThrottle to track by IP, not by user.
     """
     scope = 'admin_auth'
-    rate = '5/10m'  # 5 requests per 10 minutes
+    rate = '30/h'  # ~5 requests per 10 minutes (DRF only supports s/m/h/d)
     
     def get_cache_key(self, request, view):
         """Use IP address as cache key for admin login throttling."""
