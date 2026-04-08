@@ -1,4 +1,8 @@
 #!/bin/sh
-cd frontend
-npx lint-staged
-node scripts/git/validate-branch-name.js
+# Resolve frontend directory relative to repo root
+REPO_ROOT=$(git rev-parse --show-toplevel)
+FRONTEND_DIR="$REPO_ROOT/frontend"
+
+cd "$FRONTEND_DIR" || exit 1
+npx lint-staged --cwd "$FRONTEND_DIR"
+node "$FRONTEND_DIR/scripts/git/validate-branch-name.js"

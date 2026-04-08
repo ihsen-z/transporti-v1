@@ -1,2 +1,6 @@
 #!/bin/sh
-cat "$1" | (cd frontend && npx --no-install commitlint)
+# Validate commit message via commitlint
+REPO_ROOT=$(git rev-parse --show-toplevel)
+FRONTEND_DIR="$REPO_ROOT/frontend"
+
+cat "$1" | (cd "$FRONTEND_DIR" && npx --no-install commitlint)
