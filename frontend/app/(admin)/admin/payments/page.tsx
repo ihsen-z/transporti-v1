@@ -43,14 +43,14 @@ export default function AdminPaymentsPage() {
       header: "ID",
       width: "w-16",
       render: (p: AdminPayment) => (
-        <span className="font-mono text-slate-500">#{p.id}</span>
+        <span className="font-mono text-neutral-500">#{p.id}</span>
       ),
     },
     {
       key: "jobId",
       header: "Job",
       render: (p: AdminPayment) => (
-        <span className="font-mono text-primary-600">#{p.jobId}</span>
+        <span className="font-mono text-brand-600">#{p.jobId}</span>
       ),
     },
     {
@@ -61,7 +61,7 @@ export default function AdminPaymentsPage() {
       key: "transporterName",
       header: "Transporteur",
       render: (p: AdminPayment) => (
-        <span className={p.transporterName === "-" ? "text-slate-400" : ""}>
+        <span className={p.transporterName === "-" ? "text-neutral-400" : ""}>
           {p.transporterName}
         </span>
       ),
@@ -73,7 +73,7 @@ export default function AdminPaymentsPage() {
         <span
           className={`px-2 py-1 rounded text-xs font-medium ${
             p.type === "ESCROW"
-              ? "bg-blue-50 text-blue-700"
+              ? "bg-brand-600/5 text-brand-600"
               : "bg-orange-50 text-orange-700"
           }`}
         >
@@ -90,7 +90,7 @@ export default function AdminPaymentsPage() {
       key: "amount",
       header: "Montant",
       render: (p: AdminPayment) => (
-        <span className="font-semibold text-slate-900">
+        <span className="font-semibold text-neutral-900">
           {formatCurrency(p.amount)}
         </span>
       ),
@@ -99,7 +99,7 @@ export default function AdminPaymentsPage() {
       key: "createdAt",
       header: "Date",
       render: (p: AdminPayment) => (
-        <span className="text-slate-500 text-sm">
+        <span className="text-neutral-500 text-sm">
           {formatDate(p.createdAt)}
         </span>
       ),
@@ -111,8 +111,10 @@ export default function AdminPaymentsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
-          <p className="text-sm text-slate-500">Chargement des paiements...</p>
+          <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
+          <p className="text-sm text-neutral-500">
+            Chargement des paiements...
+          </p>
         </div>
       </div>
     );
@@ -137,8 +139,8 @@ export default function AdminPaymentsPage() {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Paiements</h1>
-          <p className="text-slate-500">
+          <h1 className="text-2xl font-bold text-neutral-900">Paiements</h1>
+          <p className="text-neutral-500">
             Aperçu financier et suivi des escrows (lecture seule)
           </p>
         </div>
@@ -209,14 +211,14 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Escrow Status Summary */}
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <h2 className="text-lg font-bold text-slate-900 mb-4">
+      <div className="bg-white rounded-xl border border-neutral-200 p-6">
+        <h2 className="text-lg font-bold text-neutral-900 mb-4">
           Répartition des Escrows
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           {[
             { status: "PENDING", label: "En attente", color: "bg-orange-500" },
-            { status: "HELD", label: "Retenus", color: "bg-blue-500" },
+            { status: "HELD", label: "Retenus", color: "bg-brand-600" },
             { status: "RELEASED", label: "Libérés", color: "bg-green-500" },
             { status: "REFUNDED", label: "Remboursés", color: "bg-purple-500" },
             { status: "BLOCKED", label: "Bloqués", color: "bg-red-500" },
@@ -231,18 +233,18 @@ export default function AdminPaymentsPage() {
             return (
               <div
                 key={item.status}
-                className="text-center p-4 bg-slate-50 rounded-lg"
+                className="text-center p-4 bg-neutral-50 rounded-lg"
               >
                 <div
                   className={`w-3 h-3 ${item.color} rounded-full mx-auto mb-2`}
                 ></div>
-                <p className="text-sm font-medium text-slate-700">
+                <p className="text-sm font-medium text-neutral-700">
                   {item.label}
                 </p>
-                <p className="text-2xl font-bold text-slate-900 mt-1">
+                <p className="text-2xl font-bold text-neutral-900 mt-1">
                   {count}
                 </p>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-neutral-500">
                   {formatCurrency(amount)}
                 </p>
               </div>
@@ -271,7 +273,7 @@ export default function AdminPaymentsPage() {
 
       {/* Transactions Table */}
       <div>
-        <h2 className="text-lg font-bold text-slate-900 mb-4">
+        <h2 className="text-lg font-bold text-neutral-900 mb-4">
           Transactions Récentes
         </h2>
         <DataTable
@@ -282,8 +284,8 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Read-Only Notice */}
-      <div className="bg-slate-100 rounded-xl p-4 text-center">
-        <p className="text-sm text-slate-600">
+      <div className="bg-neutral-100 rounded-xl p-4 text-center">
+        <p className="text-sm text-neutral-600">
           <Lock className="w-4 h-4 inline mr-1" />
           Mode lecture seule — Aucune action financière possible depuis ce
           panneau

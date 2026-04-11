@@ -3,6 +3,7 @@ Django settings for transporti_core project.
 Production-hardened configuration with environment variable support.
 """
 import os
+from decimal import Decimal
 from pathlib import Path
 from datetime import timedelta
 
@@ -379,6 +380,47 @@ COMMISSION_RATES = {
     'MOVING': 0.15,     # 15%
     'DEFAULT': 0.12,    # Fallback rate
 }
+
+
+# =============================================================================
+# PAYMENT GATEWAY CONFIGURATION
+# =============================================================================
+
+# Gateway mode: 'SANDBOX' (development) or 'KONNECT' (production)
+PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'SANDBOX')
+
+# Konnect.tn settings (Tunisia's main payment gateway)
+KONNECT_API_KEY = os.environ.get('KONNECT_API_KEY', '')
+KONNECT_WALLET_ID = os.environ.get('KONNECT_WALLET_ID', '')
+KONNECT_API_URL = os.environ.get(
+    'KONNECT_API_URL',
+    'https://api.preprod.konnect.network/api/v2'
+)
+
+# COD threshold — above this amount, digital payment is mandatory
+COD_MAX_AMOUNT = Decimal(os.environ.get('COD_MAX_AMOUNT', '300'))
+
+
+# =============================================================================
+# EMAIL CONFIGURATION
+# =============================================================================
+
+# Default: console backend (prints to terminal in dev)
+# Production: set EMAIL_BACKEND to smtp and configure SendGrid/Gmail
+EMAIL_BACKEND = os.environ.get(
+    'EMAIL_BACKEND',
+    'django.core.mail.backends.console.EmailBackend'
+)
+
+# SMTP settings (for production with SendGrid)
+EMAIL_HOST = os.environ.get('EMAIL_HOST', 'smtp.sendgrid.net')
+EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
+EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'apikey')
+EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY', '')
+
+DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@transporti.tn')
+FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 
 # =============================================================================

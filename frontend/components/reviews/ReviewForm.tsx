@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Star, Send } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
+import { useToast } from "@/components/ui/Toast";
 
 interface ReviewFormProps {
   jobId: number;
@@ -8,6 +9,7 @@ interface ReviewFormProps {
 }
 
 export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
+  const { showToast } = useToast();
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [aspects, setAspects] = useState({
@@ -20,7 +22,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (rating === 0) {
-      alert("Veuillez donner une note globale.");
+      showToast("warning", "Veuillez donner une note globale.");
       return;
     }
 
@@ -35,7 +37,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
       });
 
       onReviewSubmitted();
-      alert("Merci pour votre avis !");
+      showToast("success", "Merci pour votre avis !");
     } catch (error: any) {
       console.error("Error submitting review:", error);
       const msg =
@@ -43,7 +45,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
         error?.body?.detail ||
         error?.message ||
         "Erreur lors de l'envoi.";
-      alert(msg);
+      showToast("error", msg);
     } finally {
       setLoading(false);
     }
@@ -65,7 +67,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
           type="button"
           onClick={() => onChange(star)}
           className={`focus:outline-none transition-colors ${
-            star <= value ? "text-yellow-400" : "text-gray-300"
+            star <= value ? "text-yellow-400" : "text-neutral-300"
           }`}
         >
           <Star
@@ -78,23 +80,25 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
 
   return (
     <div className="bg-white p-6 rounded-xl border shadow-sm">
-      <h3 className="text-lg font-bold text-gray-900 mb-6">Laisser un avis</h3>
+      <h3 className="text-lg font-bold text-neutral-900 mb-6">
+        Laisser un avis
+      </h3>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
             Note globale
           </label>
           <StarRating value={rating} onChange={setRating} />
         </div>
 
         <div className="space-y-3">
-          <p className="text-sm font-medium text-gray-700">
+          <p className="text-sm font-medium text-neutral-700">
             Détails (Optionnel)
           </p>
 
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Ponctualité</span>
+            <span className="text-sm text-neutral-600">Ponctualité</span>
             <StarRating
               value={aspects.punctuality}
               onChange={(v) => setAspects((p) => ({ ...p, punctuality: v }))}
@@ -103,7 +107,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Soin & Attention</span>
+            <span className="text-sm text-neutral-600">Soin & Attention</span>
             <StarRating
               value={aspects.care}
               onChange={(v) => setAspects((p) => ({ ...p, care: v }))}
@@ -112,7 +116,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
           </div>
 
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-600">Communication</span>
+            <span className="text-sm text-neutral-600">Communication</span>
             <StarRating
               value={aspects.communication}
               onChange={(v) => setAspects((p) => ({ ...p, communication: v }))}
@@ -122,7 +126,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-neutral-700 mb-2">
             Commentaire
           </label>
           <textarea
@@ -136,7 +140,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-gray-900 text-white rounded-lg font-bold hover:bg-gray-800 flex items-center justify-center gap-2"
+          className="w-full py-3 bg-neutral-900 text-white rounded-lg font-bold hover:bg-neutral-800 flex items-center justify-center gap-2"
         >
           {loading ? (
             "Envoi..."

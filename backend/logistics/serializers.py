@@ -167,7 +167,16 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         validated_data['price_net'] = price_net
         validated_data['commission_amount'] = commission
 
-        return super().create(validated_data)
+        offer = super().create(validated_data)
+
+        # Send email notification to job owner
+        try:
+            from notifications.emails import notify_offer_received
+            notify_offer_received(job, offer)
+        except Exception:
+            pass  # Email failure must never block business logic
+
+        return offer
 
 
 class OfferListSerializer(serializers.ModelSerializer):

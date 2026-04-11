@@ -200,7 +200,7 @@ export default function SettingsPage() {
       type="button"
       onClick={() => onChange(!checked)}
       className={`w-11 h-6 rounded-full relative transition-colors ${
-        checked ? "bg-blue-600" : "bg-neutral-300"
+        checked ? "bg-brand-600" : "bg-neutral-300"
       }`}
     >
       <span
@@ -230,7 +230,7 @@ export default function SettingsPage() {
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors ${
                   activeTab === tab.id
-                    ? "bg-white text-neutral-900 shadow-sm lg:bg-blue-50 lg:text-blue-700"
+                    ? "bg-white text-neutral-900 shadow-sm lg:bg-brand-600/5 lg:text-brand-600"
                     : "text-neutral-500 hover:text-neutral-700 lg:hover:bg-neutral-50"
                 }`}
               >
@@ -252,7 +252,7 @@ export default function SettingsPage() {
 
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <Loader2 className="w-6 h-6 animate-spin text-blue-600" />
+                  <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
                   <span className="ml-2 text-neutral-500">
                     Chargement du profil...
                   </span>
@@ -261,7 +261,7 @@ export default function SettingsPage() {
                 <>
                   {/* Avatar */}
                   <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center text-white font-bold text-2xl">
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-2xl">
                       {firstName?.[0]?.toUpperCase() || "U"}
                     </div>
                     <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
@@ -279,7 +279,7 @@ export default function SettingsPage() {
                         value={firstName}
                         onChange={(e) => setFirstName(e.target.value)}
                         placeholder="Votre prénom"
-                        className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
                       />
                     </div>
                     <div>
@@ -290,7 +290,7 @@ export default function SettingsPage() {
                         value={lastName}
                         onChange={(e) => setLastName(e.target.value)}
                         placeholder="Votre nom"
-                        className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                        className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
                       />
                     </div>
                   </div>
@@ -319,7 +319,7 @@ export default function SettingsPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       placeholder="+216 XX XXX XXX"
-                      className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
                     />
                   </div>
 
@@ -330,7 +330,7 @@ export default function SettingsPage() {
                     <select
                       value={governorate}
                       onChange={(e) => setGovernorate(e.target.value)}
-                      className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                      className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
                     >
                       {GOVERNORATES.map((g) => (
                         <option key={g} value={g}>
@@ -357,7 +357,7 @@ export default function SettingsPage() {
                   <button
                     onClick={handleSaveProfile}
                     disabled={saving || !firstName.trim() || !lastName.trim()}
-                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {saving ? (
                       <Loader2 className="w-5 h-5 animate-spin" />
@@ -460,7 +460,7 @@ export default function SettingsPage() {
 
               <button
                 onClick={handleSaveNotifications}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors"
               >
                 {saveStatus === "success" ? (
                   <CheckCircle className="w-5 h-5" />
@@ -490,7 +490,7 @@ export default function SettingsPage() {
                     type={showPasswords ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 pr-10 outline-none"
+                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 pr-10 outline-none"
                   />
                   <button
                     type="button"
@@ -515,7 +515,7 @@ export default function SettingsPage() {
                     type={showPasswords ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 outline-none"
                   />
                 </div>
                 <div>
@@ -526,7 +526,7 @@ export default function SettingsPage() {
                     type={showPasswords ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 outline-none"
                   />
                 </div>
               </div>
@@ -546,7 +546,7 @@ export default function SettingsPage() {
                   !newPassword ||
                   newPassword !== confirmPassword
                 }
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Lock className="w-5 h-5" />
                 Mettre à jour le mot de passe
@@ -568,7 +568,7 @@ export default function SettingsPage() {
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 outline-none"
                 >
                   <option value="fr">Français</option>
                   <option value="ar" disabled>
@@ -587,7 +587,7 @@ export default function SettingsPage() {
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 outline-none"
                 >
                   <option value="TND">Dinar Tunisien (TND)</option>
                 </select>
@@ -595,7 +595,7 @@ export default function SettingsPage() {
 
               <button
                 onClick={handleSaveNotifications}
-                className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors"
               >
                 {saveStatus === "success" ? (
                   <CheckCircle className="w-5 h-5" />

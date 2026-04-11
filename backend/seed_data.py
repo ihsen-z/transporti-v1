@@ -39,31 +39,33 @@ for u in users_data:
 
 leila, ahmed, mehdi, sami, fatma, karim = created_users
 
-# ── Transport Jobs ─────────────────────────────────────────
+from django.utils import timezone
+from datetime import timedelta
+
 jobs_data = [
     {
         'owner': leila, 'pickup_address': 'Rue de Marseille, La Marsa',
         'dropoff_address': 'Rue du Lac Léman, Lac 2', 'status': 'COMPLETED',
         'job_type': 'MOVING', 'description': 'Déménagement complet 3 pièces',
-        'estimated_weight': 500.0, 'pickup_date': '2026-04-01',
+        'scheduled_time': timezone.now() - timedelta(days=7),
     },
     {
         'owner': ahmed, 'pickup_address': 'Avenue Habib Bourguiba, Tunis',
         'dropoff_address': 'Boulevard du 14 Janvier, Sousse', 'status': 'IN_PROGRESS',
         'job_type': 'DELIVERY', 'description': 'Livraison de mobilier de bureau',
-        'estimated_weight': 200.0, 'pickup_date': '2026-04-10',
+        'scheduled_time': timezone.now() + timedelta(days=2),
     },
     {
         'owner': leila, 'pickup_address': 'Rue de Palestine, Ariana',
         'dropoff_address': 'Rue de France, La Marsa', 'status': 'PUBLISHED',
         'job_type': 'MOVING', 'description': 'Déménagement studio étudiant',
-        'estimated_weight': 150.0, 'pickup_date': '2026-04-15',
+        'scheduled_time': timezone.now() + timedelta(days=7),
     },
     {
         'owner': leila, 'pickup_address': 'Route de la Marsa, Tunis',
         'dropoff_address': 'Sousse Centre', 'status': 'PUBLISHED',
         'job_type': 'DELIVERY', 'description': 'Transport de cartons',
-        'estimated_weight': 80.0, 'pickup_date': '2026-04-20',
+        'scheduled_time': timezone.now() + timedelta(days=12),
     },
 ]
 
@@ -85,15 +87,17 @@ job1, job2, job3, job4 = created_jobs
 
 # ── Offers ─────────────────────────────────────────────────
 offers_data = [
-    {'job': job1, 'transporter': mehdi, 'price': 350.0, 'status': 'ACCEPTED', 'message': 'Je suis disponible avec un camion 20m³'},
-    {'job': job2, 'transporter': mehdi, 'price': 200.0, 'status': 'ACCEPTED', 'message': 'Livraison express disponible'},
-    {'job': job3, 'transporter': sami, 'price': 180.0, 'status': 'PENDING', 'message': 'Je peux être là samedi matin'},
+    {'job': job1, 'transporter': mehdi, 'price_net': 350.0, 'commission_amount': 35.0, 'total_price': 385.0, 'status': 'ACCEPTED', 'message': 'Je suis disponible avec un camion 20m³', 'valid_until': timezone.now() + timedelta(days=30)},
+    {'job': job2, 'transporter': mehdi, 'price_net': 200.0, 'commission_amount': 20.0, 'total_price': 220.0, 'status': 'ACCEPTED', 'message': 'Livraison express disponible', 'valid_until': timezone.now() + timedelta(days=30)},
+    {'job': job3, 'transporter': sami, 'price_net': 180.0, 'commission_amount': 18.0, 'total_price': 198.0, 'status': 'PENDING', 'message': 'Je peux être là samedi matin', 'valid_until': timezone.now() + timedelta(days=14)},
 ]
 
 for od in offers_data:
+    job = od.pop('job')
+    transporter = od.pop('transporter')
     offer, created = Offer.objects.get_or_create(
-        job=od['job'], transporter=od['transporter'],
-        defaults={'price': od['price'], 'status': od['status'], 'message': od['message']},
+        job=job, transporter=transporter,
+        defaults=od,
     )
     if created:
         print(f"  ✅ Created offer: #{offer.id} by {offer.transporter.first_name} for job #{offer.job.id} [{offer.status}]")

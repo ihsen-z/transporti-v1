@@ -209,7 +209,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                             ${
                               gpsState.done
                                 ? "bg-emerald-100 text-emerald-700 border border-emerald-300"
-                                : "bg-blue-100 text-blue-700 hover:bg-blue-200 border border-blue-300"
+                                : "bg-brand-600/10 text-brand-600 hover:bg-brand-600/20 border border-brand-600/30"
                             }
                             disabled:opacity-50 disabled:cursor-wait`}
           >
@@ -247,7 +247,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
               href={`https://www.google.com/maps?q=${data[latField]},${data[lngField]}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto text-blue-600 hover:underline"
+              className="ml-auto text-brand-600 hover:underline"
             >
               Voir sur Maps →
             </a>
@@ -256,7 +256,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
 
         <div className="space-y-3">
           <div>
-            <label className="block text-sm text-gray-600 mb-1">
+            <label className="block text-sm text-neutral-600 mb-1">
               Adresse complète
             </label>
             <input
@@ -274,7 +274,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-xs text-neutral-500 mb-1">
                 Gouvernorat
               </label>
               <select
@@ -291,7 +291,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
               </select>
             </div>
             <div>
-              <label className="block text-xs text-gray-500 mb-1">
+              <label className="block text-xs text-neutral-500 mb-1">
                 Code Postal
               </label>
               <input
@@ -306,8 +306,8 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
 
           {/* ========== ASTUCE DE LOCALISATION ========== */}
           <div className="border-t pt-3 mt-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center gap-1.5">
-              <Navigation className="w-4 h-4 text-blue-500" />
+            <label className="block text-sm font-medium text-neutral-700 mb-2 flex items-center gap-1.5">
+              <Navigation className="w-4 h-4 text-brand-600" />
               Astuce de localisation
             </label>
 
@@ -318,7 +318,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                   key={idx}
                   type="button"
                   onClick={() => addHintChip(target, chip.prefix)}
-                  className="flex items-center gap-1 px-2.5 py-1.5 bg-gray-100 hover:bg-blue-100 hover:text-blue-700 rounded-full text-xs font-medium text-gray-600 transition-colors border border-gray-200 hover:border-blue-300"
+                  className="flex items-center gap-1 px-2.5 py-1.5 bg-neutral-100 hover:bg-brand-600/10 hover:text-brand-600 rounded-full text-xs font-medium text-neutral-600 transition-colors border border-neutral-200 hover:border-brand-600/30"
                 >
                   {chip.icon}
                   {chip.label}
@@ -333,13 +333,13 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                 value={data[hintField] || ""}
                 onChange={(e) => handleChange(hintField, e.target.value)}
                 placeholder="Ex: 3ème étage, code porte 4589, en face de la boulangerie"
-                className="w-full p-2.5 pr-8 border rounded-lg text-sm focus:ring-2 focus:ring-blue-400 bg-blue-50/30"
+                className="w-full p-2.5 pr-8 border rounded-lg text-sm focus:ring-2 focus:ring-accent-500 bg-brand-600/5/30"
               />
               {data[hintField] && (
                 <button
                   type="button"
                   onClick={() => handleChange(hintField, "")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-500"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-red-500"
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -354,15 +354,15 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
   return (
     <div className="space-y-6">
       {/* Info banner — now interactive */}
-      <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-4 rounded-lg flex items-start gap-3 border border-blue-200">
-        <div className="mt-1 bg-white p-1.5 rounded-full text-blue-600 shadow-sm">
+      <div className="bg-gradient-to-r from-primary-50 to-primary-50 p-4 rounded-lg flex items-start gap-3 border border-brand-600/20">
+        <div className="mt-1 bg-white p-1.5 rounded-full text-brand-600 shadow-sm">
           <Navigation className="w-5 h-5" />
         </div>
         <div>
-          <h4 className="font-semibold text-blue-900">
+          <h4 className="font-semibold text-brand-800">
             Astuce de localisation
           </h4>
-          <p className="text-sm text-blue-700">
+          <p className="text-sm text-brand-600">
             Cliquez <strong>&quot;Ma position&quot;</strong> pour remplir
             automatiquement via GPS. Ajoutez étage, code porte ou repère pour
             guider le livreur.

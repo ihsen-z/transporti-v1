@@ -10,6 +10,13 @@ const inter = Inter({ subsets: ["latin"] });
 export const metadata: Metadata = {
   title: "Transporti V1 - La logistique réinventée",
   description: "Plateforme de transport en Tunisie. Simple, rapide, fiable.",
+  icons: {
+    icon: [
+      { url: "/favicon.svg", type: "image/svg+xml" },
+      { url: "/images/logo.png", type: "image/png", sizes: "512x512" },
+    ],
+    apple: "/images/logo.png",
+  },
 };
 
 export default function RootLayout({
@@ -23,7 +30,7 @@ export default function RootLayout({
         <AuthProvider>
           <ToastProvider>
             {children}
-            {process.env.NODE_ENV === 'development' && <RoleSwitcher />}
+            {process.env.NODE_ENV === "development" && <RoleSwitcher />}
           </ToastProvider>
         </AuthProvider>
       </body>

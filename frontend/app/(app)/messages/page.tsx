@@ -56,10 +56,14 @@ export default function MessagesInboxPage() {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiClient.get<ConversationItem[]>(
-        "/api/conversations/",
-      );
-      setConversations(data);
+      const data = await apiClient.get<
+        ConversationItem[] | { results: ConversationItem[] }
+      >("/api/conversations/");
+      // Handle paginated response from DRF
+      const items = Array.isArray(data)
+        ? data
+        : (data as { results: ConversationItem[] }).results;
+      setConversations(items);
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -103,7 +107,7 @@ export default function MessagesInboxPage() {
     switch (status) {
       case "IN_PROGRESS":
         return (
-          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600">
+          <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-full bg-brand-600/5 text-brand-600">
             En cours
           </span>
         );
@@ -154,7 +158,7 @@ export default function MessagesInboxPage() {
               placeholder="Rechercher..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none w-48"
+              className="pl-9 pr-4 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none w-48"
             />
           </div>
         </div>
@@ -179,7 +183,7 @@ export default function MessagesInboxPage() {
       {/* Loading State */}
       {loading && (
         <div className="text-center py-16">
-          <Loader2 className="w-8 h-8 text-blue-500 animate-spin mx-auto mb-4" />
+          <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-4" />
           <p className="text-sm text-neutral-500">
             Chargement des conversations...
           </p>
@@ -210,11 +214,11 @@ export default function MessagesInboxPage() {
             <Link
               key={conv.id}
               href={`/messages/${conv.job}`}
-              className="flex items-center gap-4 p-4 bg-white border border-neutral-200 rounded-xl hover:border-blue-300 hover:shadow-sm transition-all group"
+              className="flex items-center gap-4 p-4 bg-white border border-neutral-200 rounded-xl hover:border-brand-600/30 hover:shadow-sm transition-all group"
             >
               {/* Avatar */}
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span className="text-lg font-semibold text-blue-700">
+              <div className="w-12 h-12 bg-brand-600/10 rounded-full flex items-center justify-center flex-shrink-0">
+                <span className="text-lg font-semibold text-brand-600">
                   {conv.other_party_name.charAt(0).toUpperCase()}
                 </span>
               </div>
@@ -245,14 +249,14 @@ export default function MessagesInboxPage() {
               {/* Unread badge + Arrow */}
               <div className="flex items-center gap-2 flex-shrink-0">
                 {conv.unread_count > 0 && (
-                  <span className="w-5 h-5 bg-blue-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
+                  <span className="w-5 h-5 bg-brand-600 text-white text-xs font-bold rounded-full flex items-center justify-center">
                     {conv.unread_count}
                   </span>
                 )}
                 {conv.is_locked && (
                   <span className="text-xs text-neutral-400">🔒</span>
                 )}
-                <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-blue-500 transition-colors" />
+                <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-brand-600 transition-colors" />
               </div>
             </Link>
           ))}

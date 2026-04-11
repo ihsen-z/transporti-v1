@@ -109,6 +109,13 @@ class AdminVerificationApproveView(APIView):
         notes = request.data.get('notes', '')
         verification.approve(admin_user=request.user, notes=notes)
 
+        # Send verification approved email
+        try:
+            from notifications.emails import notify_verification_status
+            notify_verification_status(verification.trust_profile.user, approved=True)
+        except Exception:
+            pass
+
         return Response({
             'message': f'Vérification #{pk} approuvée.',
             'verification': AdminVerificationRequestSerializer(verification).data,
@@ -139,6 +146,13 @@ class AdminVerificationRejectView(APIView):
             )
 
         verification.reject(admin_user=request.user, reason=reason)
+
+        # Send verification rejected email
+        try:
+            from notifications.emails import notify_verification_status
+            notify_verification_status(verification.trust_profile.user, approved=False, reason=reason)
+        except Exception:
+            pass
 
         return Response({
             'message': f'Vérification #{pk} rejetée.',

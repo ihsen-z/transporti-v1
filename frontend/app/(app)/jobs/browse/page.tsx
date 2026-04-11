@@ -50,7 +50,7 @@ export default function JobBrowsePage() {
     return (
       <div className="p-8 text-center">
         <h2 className="text-xl font-bold text-red-600">Accès Refusé</h2>
-        <p className="text-gray-600">
+        <p className="text-neutral-600">
           Seuls les transporteurs peuvent accéder à cette page.
         </p>
       </div>
@@ -58,7 +58,7 @@ export default function JobBrowsePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar Filters */}
@@ -69,10 +69,10 @@ export default function JobBrowsePage() {
           {/* Main Feed */}
           <div className="flex-1">
             <div className="mb-6 flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-neutral-900">
                 Missions disponibles
               </h1>
-              <span className="bg-blue-100 text-blue-800 text-xs px-2.5 py-0.5 rounded-full font-medium">
+              <span className="bg-brand-600/10 text-brand-700 text-xs px-2.5 py-0.5 rounded-full font-medium">
                 {jobs.length} résultats
               </span>
             </div>
@@ -82,7 +82,7 @@ export default function JobBrowsePage() {
                 {[1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-48 bg-gray-200 rounded-xl animate-pulse"
+                    className="h-48 bg-neutral-200 rounded-xl animate-pulse"
                   />
                 ))}
               </div>
@@ -94,13 +94,13 @@ export default function JobBrowsePage() {
               </div>
             ) : (
               <div className="bg-white rounded-xl p-12 text-center border">
-                <div className="mx-auto w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                  <Search className="w-6 h-6 text-gray-400" />
+                <div className="mx-auto w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center mb-4">
+                  <Search className="w-6 h-6 text-neutral-400" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900">
+                <h3 className="text-lg font-medium text-neutral-900">
                   Aucune mission trouvée
                 </h3>
-                <p className="text-gray-500 mt-1">
+                <p className="text-neutral-500 mt-1">
                   Essayez de modifier vos filtres ou revenez plus tard.
                 </p>
               </div>

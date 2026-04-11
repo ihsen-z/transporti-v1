@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
+import { useToast } from "@/components/ui/Toast";
 import { VerificationUpload } from "@/components/trust/VerificationUpload";
 import {
   ShieldCheck,
@@ -51,6 +52,7 @@ export default function VerificationPage() {
   const [status, setStatus] = useState<string>("LOADING");
   const [documents, setDocuments] = useState<VerificationDoc[]>([]);
   const [loading, setLoading] = useState(true);
+  const { showToast } = useToast();
 
   useEffect(() => {
     fetchStatus();
@@ -85,20 +87,20 @@ export default function VerificationPage() {
   const handleSubmitReview = async () => {
     try {
       await apiClient.put("/api/trust/submit/", {});
-      alert("Profil soumis pour vérification !");
+      showToast("success", "Profil soumis pour vérification !");
       fetchStatus();
     } catch (e) {
       console.error(e);
-      alert("Erreur lors de la soumission.");
+      showToast("error", "Erreur lors de la soumission.");
     }
   };
 
   if (loading)
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto mb-3" />
-          <p className="text-slate-500">Chargement...</p>
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600 mx-auto mb-3" />
+          <p className="text-neutral-500">Chargement...</p>
         </div>
       </div>
     );
@@ -108,20 +110,21 @@ export default function VerificationPage() {
     switch (status) {
       case "VERIFIED":
         return {
-          icon: <ShieldCheck className="w-10 h-10 text-green-600" />,
+          icon: <ShieldCheck className="w-10 h-10 text-accent-600" />,
           title: "Profil Vérifié ✓",
           desc: "Félicitations ! Votre identité est confirmée. Vous pouvez répondre aux offres.",
           bgClass:
-            "bg-gradient-to-r from-green-50 to-emerald-50 border-green-200",
-          textClass: "text-green-800",
+            "bg-gradient-to-r from-accent-50 to-accent-100/50 border-accent-300",
+          textClass: "text-accent-800",
         };
       case "PENDING":
         return {
-          icon: <Clock className="w-10 h-10 text-blue-600" />,
+          icon: <Clock className="w-10 h-10 text-brand-600" />,
           title: "En cours de vérification",
           desc: "Nos équipes examinent vos documents. Délai estimé : 24-48h.",
-          bgClass: "bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200",
-          textClass: "text-blue-800",
+          bgClass:
+            "bg-gradient-to-r from-brand-600/5 to-brand-600/10 border-brand-600/20",
+          textClass: "text-brand-600",
         };
       case "PARTIALLY_REVIEWED":
         return {
@@ -142,11 +145,12 @@ export default function VerificationPage() {
         };
       default:
         return {
-          icon: <FileText className="w-10 h-10 text-gray-500" />,
+          icon: <FileText className="w-10 h-10 text-brand-600" />,
           title: "Vérification Requise",
           desc: "Pour répondre aux offres, vous devez vérifier votre identité.",
-          bgClass: "bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200",
-          textClass: "text-gray-800",
+          bgClass:
+            "bg-gradient-to-r from-neutral-50 to-neutral-100 border-neutral-200",
+          textClass: "text-neutral-800",
         };
     }
   };
@@ -186,7 +190,7 @@ export default function VerificationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* ── Status Header ── */}
         <div
@@ -201,11 +205,11 @@ export default function VerificationPage() {
 
         {/* ── Document Status Section ── */}
         {showDocumentStatus && (
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
             {/* Progress Header */}
-            <div className="p-5 border-b border-slate-100">
+            <div className="p-5 border-b border-neutral-100">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-bold text-slate-900">
+                <h2 className="text-lg font-bold text-neutral-900">
                   État de vos documents
                 </h2>
                 <button
@@ -213,7 +217,7 @@ export default function VerificationPage() {
                     fetchStatus();
                     fetchDocuments();
                   }}
-                  className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
+                  className="p-1.5 rounded-lg text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 transition-colors"
                   title="Rafraîchir"
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -222,16 +226,16 @@ export default function VerificationPage() {
 
               {/* Progress Bar */}
               <div className="space-y-2">
-                <div className="flex justify-between text-xs text-slate-500">
+                <div className="flex justify-between text-xs text-neutral-500">
                   <span>Progression de la vérification</span>
-                  <span className="font-semibold text-slate-700">
+                  <span className="font-semibold text-neutral-700">
                     {approvedCount}/{documents.length} approuvé
                     {approvedCount > 1 ? "s" : ""}
                   </span>
                 </div>
-                <div className="h-2.5 bg-slate-100 rounded-full overflow-hidden">
+                <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
                   <div
-                    className="h-full rounded-full transition-all duration-700 ease-out"
+                    className="h-full rounded-full animate-progress-fill"
                     style={{
                       width: `${progressPct}%`,
                       background:
@@ -239,29 +243,29 @@ export default function VerificationPage() {
                           ? "linear-gradient(90deg, #22c55e, #16a34a)"
                           : rejectedCount > 0
                             ? "linear-gradient(90deg, #f59e0b, #d97706)"
-                            : "linear-gradient(90deg, #3b82f6, #2563eb)",
+                            : "linear-gradient(90deg, #1E3A8A, #2563B3)",
                     }}
                   />
                 </div>
                 <div className="flex gap-4 text-xs">
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-green-500" />
-                    <span className="text-slate-500">
+                    <span className="text-neutral-500">
                       {approvedCount} approuvé{approvedCount > 1 ? "s" : ""}
                     </span>
                   </span>
                   {rejectedCount > 0 && (
                     <span className="flex items-center gap-1">
                       <span className="w-2 h-2 rounded-full bg-red-500" />
-                      <span className="text-slate-500">
+                      <span className="text-neutral-500">
                         {rejectedCount} rejeté{rejectedCount > 1 ? "s" : ""}
                       </span>
                     </span>
                   )}
                   {pendingCount > 0 && (
                     <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-slate-300" />
-                      <span className="text-slate-500">
+                      <span className="w-2 h-2 rounded-full bg-neutral-300" />
+                      <span className="text-neutral-500">
                         {pendingCount} en attente
                       </span>
                     </span>
@@ -271,7 +275,7 @@ export default function VerificationPage() {
             </div>
 
             {/* Document Cards */}
-            <div className="divide-y divide-slate-100">
+            <div className="divide-y divide-neutral-100">
               {documents.map((doc) => {
                 const docStatus = getDocStatus(doc);
                 const label =
@@ -280,17 +284,17 @@ export default function VerificationPage() {
                 return (
                   <div
                     key={doc.id}
-                    className="p-4 hover:bg-slate-50/50 transition-colors"
+                    className="p-4 hover:bg-neutral-50/50 transition-colors"
                   >
                     <div className="flex items-start gap-3">
                       {/* Status Icon */}
                       <div
                         className={`flex-shrink-0 mt-0.5 p-1.5 rounded-lg ${
                           docStatus === "approved"
-                            ? "bg-green-100 text-green-600"
+                            ? "bg-accent-100 text-accent-600"
                             : docStatus === "rejected"
                               ? "bg-red-100 text-red-600"
-                              : "bg-slate-100 text-slate-400"
+                              : "bg-neutral-100 text-neutral-400"
                         }`}
                       >
                         {docStatus === "approved" && (
@@ -307,16 +311,16 @@ export default function VerificationPage() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="text-sm font-semibold text-slate-900">
+                          <h3 className="text-sm font-semibold text-neutral-900">
                             {label}
                           </h3>
                           <span
                             className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                               docStatus === "approved"
-                                ? "bg-green-100 text-green-700"
+                                ? "bg-accent-100 text-accent-700"
                                 : docStatus === "rejected"
                                   ? "bg-red-100 text-red-700"
-                                  : "bg-slate-100 text-slate-500"
+                                  : "bg-neutral-100 text-neutral-500"
                             }`}
                           >
                             {docStatus === "approved" && "✓ Approuvé"}
@@ -325,7 +329,7 @@ export default function VerificationPage() {
                           </span>
                         </div>
 
-                        <p className="text-xs text-slate-400 mt-0.5">
+                        <p className="text-xs text-neutral-400 mt-0.5">
                           Soumis le {formatDate(doc.uploaded_at)}
                           {doc.reviewed_at && (
                             <> · Vérifié le {formatDate(doc.reviewed_at)}</>
@@ -360,7 +364,7 @@ export default function VerificationPage() {
                           }
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-colors"
+                          className="flex-shrink-0 p-1.5 rounded-lg text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 transition-colors"
                           title="Voir le document"
                         >
                           <Eye className="w-4 h-4" />
@@ -376,8 +380,8 @@ export default function VerificationPage() {
 
         {/* ── Upload Form (only for UNVERIFIED or REJECTED) ── */}
         {showUploadForm && (
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 space-y-6">
-            <h2 className="text-lg font-bold text-gray-900">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-200 space-y-6">
+            <h2 className="text-lg font-bold text-neutral-900">
               {status === "REJECTED"
                 ? "Renvoyer vos documents"
                 : "Documents requis"}
@@ -417,12 +421,12 @@ export default function VerificationPage() {
               <button
                 onClick={handleSubmitReview}
                 disabled={!hasDocuments}
-                className="w-full py-3 bg-blue-600 text-white rounded-xl font-bold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="w-full py-3.5 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-xl font-bold hover:from-accent-600 hover:to-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-accent-500/25 hover:scale-[1.01]"
               >
                 Soumettre pour vérification
               </button>
               {!hasDocuments && (
-                <p className="text-xs text-center text-gray-500 mt-2">
+                <p className="text-xs text-center text-neutral-500 mt-2">
                   Veuillez télécharger au moins votre pièce d&apos;identité et
                   votre permis.
                 </p>

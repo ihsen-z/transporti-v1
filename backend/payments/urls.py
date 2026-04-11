@@ -1,11 +1,16 @@
 from django.urls import path
 from .views import (
+    InitiatePaymentView, PaymentWebhookView,
     ConfirmCompletionView,
     AdminEscrowReleaseView, AdminCommissionSettleView,
     AdminEscrowListView, AdminCommissionListView
 )
 
 urlpatterns = [
+    # Payment gateway endpoints
+    path('payments/initiate/', InitiatePaymentView.as_view(), name='payment_initiate'),
+    path('payments/webhook/', PaymentWebhookView.as_view(), name='payment_webhook'),
+
     # Client endpoints
     path('payments/confirm-completion/', ConfirmCompletionView.as_view(), name='confirm_completion'),
     

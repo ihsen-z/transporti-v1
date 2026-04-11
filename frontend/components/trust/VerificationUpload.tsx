@@ -104,10 +104,10 @@ export function VerificationUpload({
   };
 
   return (
-    <div className="border rounded-lg p-4 bg-gray-50">
+    <div className="border rounded-lg p-4 bg-neutral-50">
       <div className="flex justify-between items-start mb-2">
-        <label className="font-medium text-gray-700 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-blue-600" />
+        <label className="font-medium text-neutral-700 flex items-center gap-2">
+          <FileText className="w-4 h-4 text-brand-600" />
           {label}
         </label>
         {success && <CheckCircle className="w-5 h-5 text-green-500" />}
@@ -120,18 +120,18 @@ export function VerificationUpload({
             accept="image/jpeg,image/png,application/pdf"
             onChange={handleFileChange}
             disabled={uploading}
-            className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 disabled:opacity-50"
+            className="block w-full text-sm text-neutral-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-600/5 file:text-brand-600 hover:file:bg-brand-600/10 disabled:opacity-50"
           />
 
           {file && (
             <div className="space-y-2">
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-neutral-500">
                 {file.name} ({(file.size / 1024).toFixed(0)} KB)
               </p>
               <button
                 onClick={handleUpload}
                 disabled={uploading}
-                className="w-full py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-50 flex items-center justify-center gap-2"
               >
                 {uploading ? (
                   <>

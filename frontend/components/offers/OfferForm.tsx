@@ -127,8 +127,8 @@ export function OfferForm({
 
   return (
     <div className="bg-white border rounded-xl p-6 shadow-sm">
-      <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-        <Send className="w-5 h-5 text-blue-600" />
+      <h3 className="text-lg font-bold text-neutral-900 mb-4 flex items-center gap-2">
+        <Send className="w-5 h-5 text-brand-600" />
         Faire une offre
       </h3>
 
@@ -158,7 +158,7 @@ export function OfferForm({
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
             Votre tarif net (ce que vous gagnez)
           </label>
           <div className="relative">
@@ -169,47 +169,47 @@ export function OfferForm({
               required
               value={priceNet}
               onChange={(e) => setPriceNet(e.target.value)}
-              className="w-full pl-3 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 font-bold text-lg"
+              className="w-full pl-3 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-accent-500 font-bold text-lg"
               placeholder="0.00"
             />
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 font-medium">
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">
               TND
             </span>
           </div>
         </div>
 
         {/* Pricing Breakdown */}
-        <div className="bg-gray-50 rounded-lg p-4 space-y-2 text-sm">
-          <div className="flex justify-between text-gray-600">
+        <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
+          <div className="flex justify-between text-neutral-600">
             <span>+ Commission plateforme ({commissionPct}%)</span>
             <span>{commission.toFixed(2)} TND</span>
           </div>
-          <div className="flex justify-between items-center pt-2 border-t border-gray-200">
-            <span className="font-semibold text-gray-900">
+          <div className="flex justify-between items-center pt-2 border-t border-neutral-200">
+            <span className="font-semibold text-neutral-900">
               Prix total (payé par le client)
             </span>
-            <span className="font-bold text-xl text-blue-600">
+            <span className="font-bold text-xl text-brand-600">
               {total.toFixed(2)} TND
             </span>
           </div>
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
+          <label className="block text-sm font-medium text-neutral-700 mb-1">
             Message pour le client (Optionnel)
           </label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Détaillez vos disponibilités, votre véhicule..."
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 h-24"
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500 h-24"
           />
         </div>
 
         <button
           type="submit"
           disabled={loading || !priceNet}
-          className="w-full py-3 bg-blue-600 text-white rounded-lg font-bold hover:bg-blue-700 disabled:opacity-50 transition-colors"
+          className="w-full py-3 bg-brand-600 text-white rounded-lg font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors"
         >
           {loading ? "Envoi en cours..." : "Envoyer mon offre"}
         </button>

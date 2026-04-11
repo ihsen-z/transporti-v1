@@ -28,6 +28,13 @@ class RegisterView(APIView):
             
             logger.info(f"USER_REGISTERED: user_id={user.id}, email={user.email}, role={user.role}")
             
+            # Send welcome email (async-safe: never blocks registration)
+            try:
+                from notifications.emails import notify_welcome
+                notify_welcome(user)
+            except Exception:
+                pass
+            
             # Generate JWT tokens (auto-login)
             refresh = RefreshToken.for_user(user)
             

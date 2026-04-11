@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useToast } from "@/components/ui/Toast";
 import DataTable from "@/components/admin/DataTable";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { formatTimeAgoShort } from "@/lib/admin";
@@ -25,7 +26,7 @@ import {
 /* -------------------------------------------------------------------------- */
 
 const severityColors: Record<string, string> = {
-  LOW: "bg-slate-100 text-slate-600",
+  LOW: "bg-neutral-100 text-neutral-600",
   MEDIUM: "bg-orange-100 text-orange-700",
   HIGH: "bg-red-100 text-red-700",
   CRITICAL: "bg-red-200 text-red-800 font-bold",
@@ -37,7 +38,7 @@ function StarDisplay({ rating }: { rating: number }) {
       {[1, 2, 3, 4, 5].map((v) => (
         <Star
           key={v}
-          className={`w-3.5 h-3.5 ${v <= rating ? "text-amber-400 fill-amber-400" : "text-slate-200"}`}
+          className={`w-3.5 h-3.5 ${v <= rating ? "text-amber-400 fill-amber-400" : "text-neutral-200"}`}
         />
       ))}
     </div>
@@ -56,6 +57,7 @@ export default function AdminReviewsPage() {
     null,
   );
   const [actionLoading, setActionLoading] = useState(false);
+  const { showToast } = useToast();
 
   const {
     data: allReviews,
@@ -84,7 +86,8 @@ export default function AdminReviewsPage() {
       await toggleReviewVisibility(id);
       refetch();
     } catch (err) {
-      alert(
+      showToast(
+        "error",
         `Erreur: ${err instanceof Error ? err.message : "Erreur inconnue"}`,
       );
     } finally {
@@ -93,7 +96,8 @@ export default function AdminReviewsPage() {
   };
 
   const handleWarnUser = (reviewerEmail: string) => {
-    alert(
+    showToast(
+      "info",
       `⚠️ Avertissement envoyé à ${reviewerEmail} (fonctionnalité à venir)`,
     );
   };
@@ -104,7 +108,7 @@ export default function AdminReviewsPage() {
       header: "ID",
       width: "w-16",
       render: (r: BackendReview) => (
-        <span className="font-mono text-slate-500">#{r.id}</span>
+        <span className="font-mono text-neutral-500">#{r.id}</span>
       ),
     },
     {
@@ -114,18 +118,18 @@ export default function AdminReviewsPage() {
         <div className="flex items-center gap-2">
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              r.role === "CLIENT" ? "bg-blue-100" : "bg-purple-100"
+              r.role === "CLIENT" ? "bg-brand-600/10" : "bg-purple-100"
             }`}
           >
             <User
-              className={`w-4 h-4 ${r.role === "CLIENT" ? "text-blue-600" : "text-purple-600"}`}
+              className={`w-4 h-4 ${r.role === "CLIENT" ? "text-brand-600" : "text-purple-600"}`}
             />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-900">
+            <p className="text-sm font-medium text-neutral-900">
               {r.reviewerName}
             </p>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-neutral-400">
               {r.role === "CLIENT" ? "Client" : "Transporteur"}
             </p>
           </div>
@@ -136,7 +140,7 @@ export default function AdminReviewsPage() {
       key: "target",
       header: "Cible",
       render: (r: BackendReview) => (
-        <span className="text-sm text-slate-700">{r.targetName}</span>
+        <span className="text-sm text-neutral-700">{r.targetName}</span>
       ),
     },
     {
@@ -156,7 +160,7 @@ export default function AdminReviewsPage() {
             </span>
           </div>
         ) : (
-          <span className="text-xs text-slate-400">—</span>
+          <span className="text-xs text-neutral-400">—</span>
         ),
     },
     {
@@ -167,7 +171,7 @@ export default function AdminReviewsPage() {
           status={r.isHidden ? "Masqué" : "Visible"}
           colorClass={
             r.isHidden
-              ? "bg-slate-100 text-slate-600"
+              ? "bg-neutral-100 text-neutral-600"
               : "bg-green-100 text-green-700"
           }
         />
@@ -177,7 +181,7 @@ export default function AdminReviewsPage() {
       key: "createdAt",
       header: "Date",
       render: (r: BackendReview) => (
-        <span className="text-sm text-slate-500">
+        <span className="text-sm text-neutral-500">
           {r.createdAt ? formatTimeAgoShort(r.createdAt) : "-"}
         </span>
       ),
@@ -190,7 +194,7 @@ export default function AdminReviewsPage() {
           <button
             onClick={() => setSelectedReview(r)}
             title="Voir détails"
-            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+            className="p-1.5 rounded-lg bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors"
           >
             <Eye className="w-4 h-4" />
           </button>
@@ -227,10 +231,10 @@ export default function AdminReviewsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">
+          <h1 className="text-2xl font-bold text-neutral-900">
             Modération des avis
           </h1>
-          <p className="text-slate-500">
+          <p className="text-neutral-500">
             Avis signalés pour contenu abusif ou frauduleux
           </p>
         </div>
@@ -251,9 +255,9 @@ export default function AdminReviewsPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
-          <p className="text-slate-500">Chargement des avis...</p>
+          <p className="text-neutral-500">Chargement des avis...</p>
         </div>
       )}
 
@@ -282,13 +286,13 @@ export default function AdminReviewsPage() {
                   onClick={() => setFilter(tab.value)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
-                      ? "bg-primary-600 text-white shadow-sm"
-                      : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                      ? "bg-brand-600 text-white shadow-sm"
+                      : "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200"
                   }`}
                 >
                   {tab.label}
                   <span
-                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-slate-100"}`}
+                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
                   >
                     {count}
                   </span>
@@ -298,22 +302,22 @@ export default function AdminReviewsPage() {
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <div className="bg-white rounded-xl border border-neutral-200 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
-                <span className="text-slate-500">Total:</span>
-                <span className="ml-2 font-semibold text-slate-900">
+                <span className="text-neutral-500">Total:</span>
+                <span className="ml-2 font-semibold text-neutral-900">
                   {allReviews.length}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500">Visibles:</span>
+                <span className="text-neutral-500">Visibles:</span>
                 <span className="ml-2 font-semibold text-green-600">
                   {allReviews.filter((r) => !r.isHidden).length}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500">Masqués:</span>
+                <span className="text-neutral-500">Masqués:</span>
                 <span className="ml-2 font-semibold text-red-600">
                   {allReviews.filter((r) => r.isHidden).length}
                 </span>
@@ -334,13 +338,13 @@ export default function AdminReviewsPage() {
       {selectedReview && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
           <div className="bg-white w-full max-w-lg h-full overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">
+            <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-neutral-900">
                 Avis #{selectedReview.id}
               </h2>
               <button
                 onClick={() => setSelectedReview(null)}
-                className="text-slate-400 hover:text-slate-600 text-xl"
+                className="text-neutral-400 hover:text-neutral-600 text-xl"
               >
                 ×
               </button>
@@ -350,14 +354,14 @@ export default function AdminReviewsPage() {
               {/* Rating */}
               <div className="flex items-center gap-3">
                 <StarDisplay rating={selectedReview.rating} />
-                <span className="text-lg font-bold text-slate-900">
+                <span className="text-lg font-bold text-neutral-900">
                   {selectedReview.rating}/5
                 </span>
                 <StatusBadge
                   status={selectedReview.isHidden ? "Masqué" : "Visible"}
                   colorClass={
                     selectedReview.isHidden
-                      ? "bg-slate-100 text-slate-600"
+                      ? "bg-neutral-100 text-neutral-600"
                       : "bg-green-100 text-green-700"
                   }
                 />
@@ -365,21 +369,21 @@ export default function AdminReviewsPage() {
 
               {/* Parties */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500 mb-1">Auteur</p>
-                  <p className="font-medium text-slate-900 text-sm">
+                <div className="bg-neutral-50 rounded-xl p-3">
+                  <p className="text-xs text-neutral-500 mb-1">Auteur</p>
+                  <p className="font-medium text-neutral-900 text-sm">
                     {selectedReview.reviewerName}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-neutral-400">
                     {selectedReview.reviewerEmail}
                   </p>
                 </div>
-                <div className="bg-slate-50 rounded-xl p-3">
-                  <p className="text-xs text-slate-500 mb-1">Cible</p>
-                  <p className="font-medium text-slate-900 text-sm">
+                <div className="bg-neutral-50 rounded-xl p-3">
+                  <p className="text-xs text-neutral-500 mb-1">Cible</p>
+                  <p className="font-medium text-neutral-900 text-sm">
                     {selectedReview.targetName}
                   </p>
-                  <p className="text-xs text-slate-400">
+                  <p className="text-xs text-neutral-400">
                     Job #{selectedReview.jobId}
                   </p>
                 </div>
@@ -387,10 +391,10 @@ export default function AdminReviewsPage() {
 
               {/* Comment */}
               <div>
-                <p className="text-xs text-slate-500 mb-2 flex items-center gap-1">
+                <p className="text-xs text-neutral-500 mb-2 flex items-center gap-1">
                   <MessageSquare className="w-3 h-3" /> Commentaire
                 </p>
-                <p className="text-sm text-slate-700 bg-slate-50 rounded-xl p-4 italic">
+                <p className="text-sm text-neutral-700 bg-neutral-50 rounded-xl p-4 italic">
                   &ldquo;{selectedReview.comment}&rdquo;
                 </p>
               </div>
@@ -411,7 +415,7 @@ export default function AdminReviewsPage() {
               {selectedReview.abuseLogs &&
                 selectedReview.abuseLogs.length > 0 && (
                   <div>
-                    <p className="text-xs text-slate-500 mb-2">
+                    <p className="text-xs text-neutral-500 mb-2">
                       Détections d&apos;abus
                     </p>
                     <div className="space-y-2">
@@ -419,7 +423,7 @@ export default function AdminReviewsPage() {
                         (log: BackendReviewAbuseLog, idx: number) => (
                           <div
                             key={idx}
-                            className="bg-white border border-slate-100 rounded-xl p-3"
+                            className="bg-white border border-neutral-100 rounded-xl p-3"
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <StatusBadge
@@ -429,11 +433,11 @@ export default function AdminReviewsPage() {
                                   severityColors.MEDIUM
                                 }
                               />
-                              <span className="text-xs font-mono text-slate-500">
+                              <span className="text-xs font-mono text-neutral-500">
                                 {log.detector}
                               </span>
                             </div>
-                            <p className="text-sm text-slate-600">
+                            <p className="text-sm text-neutral-600">
                               {log.reason}
                             </p>
                           </div>
@@ -444,7 +448,7 @@ export default function AdminReviewsPage() {
                 )}
 
               {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-slate-100">
+              <div className="flex gap-3 pt-4 border-t border-neutral-100">
                 <button
                   onClick={() => {
                     handleToggleVisibility(selectedReview.id);

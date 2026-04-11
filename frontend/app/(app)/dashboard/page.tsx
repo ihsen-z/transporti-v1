@@ -149,7 +149,7 @@ function StatCard({
 function StatusBadge({ status }: { status: string }) {
   const styles: Record<string, string> = {
     DRAFT: "bg-neutral-100 text-neutral-600",
-    PUBLISHED: "bg-blue-50 text-blue-700",
+    PUBLISHED: "bg-brand-600/5 text-brand-600",
     MATCHED: "bg-purple-50 text-purple-700",
     IN_PROGRESS: "bg-amber-50 text-amber-700",
     COMPLETED: "bg-emerald-50 text-emerald-700",
@@ -186,20 +186,20 @@ function ClientDashboard({
   return (
     <>
       {/* CTA Hero */}
-      <div className="bg-gradient-to-br from-primary-600 via-primary-700 to-indigo-800 rounded-2xl p-8 text-white mb-8 relative overflow-hidden animate-fade-in-up">
+      <div className="bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 rounded-2xl p-8 text-white mb-8 relative overflow-hidden animate-fade-in-up">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         <div className="relative z-10">
           <h2 className="text-2xl font-bold mb-2">
             Besoin de transporter quelque chose ?
           </h2>
-          <p className="text-primary-100 mb-6 max-w-lg">
+          <p className="text-blue-200 mb-6 max-w-lg">
             Publiez votre annonce et recevez des offres de transporteurs
             vérifiés en quelques minutes.
           </p>
           <Link
             href="/jobs/new"
-            className="inline-flex items-center gap-2 bg-white text-primary-700 px-6 py-3 rounded-xl font-semibold hover:bg-primary-50 transition-all hover:scale-105 shadow-lg shadow-primary-900/20"
+            className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
           >
             <PlusCircle className="w-5 h-5" />
             Publier une annonce
@@ -214,7 +214,7 @@ function ClientDashboard({
             icon={Truck}
             label="Annonces actives"
             value={stats.active_jobs}
-            accent="bg-primary-50 text-primary-600"
+            accent="bg-brand-600/10 text-brand-600"
           />
         </div>
         <div className="animate-fade-in-up delay-200">
@@ -252,7 +252,7 @@ function ClientDashboard({
           </h3>
           <Link
             href="/jobs"
-            className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+            className="text-sm text-brand-600 hover:text-brand-600 font-medium flex items-center gap-1"
           >
             Voir tout <ArrowRight className="w-4 h-4" />
           </Link>
@@ -266,7 +266,7 @@ function ClientDashboard({
             >
               <div className="flex items-center gap-4 min-w-0">
                 <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === "TRANSPORT" ? "bg-primary-50 text-primary-600" : "bg-purple-50 text-purple-600"}`}
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === "TRANSPORT" ? "bg-brand-600/5 text-brand-600" : "bg-purple-50 text-purple-600"}`}
                 >
                   {job.job_type === "TRANSPORT" ? (
                     <Truck className="w-5 h-5" />
@@ -334,19 +334,19 @@ function TransporterDashboard({
       )}
 
       {/* Find Missions CTA */}
-      <div className="bg-gradient-to-br from-accent-600 via-accent-700 to-teal-800 rounded-2xl p-8 text-white mb-8 relative overflow-hidden animate-fade-in-up">
+      <div className="bg-gradient-to-br from-brand-600 via-brand-800 to-brand-900 rounded-2xl p-8 text-white mb-8 relative overflow-hidden animate-fade-in-up">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10">
           <h2 className="text-2xl font-bold mb-2">
             Trouvez de nouvelles missions
           </h2>
-          <p className="text-accent-100 mb-6 max-w-lg">
+          <p className="text-blue-200 mb-6 max-w-lg">
             {stats.available_missions} missions disponibles dans votre zone.
             Soumettez vos offres dès maintenant.
           </p>
           <Link
             href="/jobs/browse"
-            className="inline-flex items-center gap-2 bg-white text-accent-700 px-6 py-3 rounded-xl font-semibold hover:bg-accent-50 transition-all hover:scale-105 shadow-lg shadow-accent-900/20"
+            className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
           >
             <Search className="w-5 h-5" />
             Parcourir les missions
@@ -361,7 +361,7 @@ function TransporterDashboard({
             icon={Search}
             label="Missions disponibles"
             value={stats.available_missions}
-            accent="bg-primary-50 text-primary-600"
+            accent="bg-brand-600/10 text-brand-600"
           />
         </div>
         <div className="animate-fade-in-up delay-200">
@@ -434,7 +434,7 @@ function TransporterDashboard({
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
               <div className="flex items-center gap-2 text-sm text-neutral-600">
-                <ShieldCheck className="w-4 h-4 text-primary-500" />
+                <ShieldCheck className="w-4 h-4 text-brand-600" />
                 Statut vérification
               </div>
               <span
@@ -460,7 +460,7 @@ function TransporterDashboard({
             </h3>
             <Link
               href="/jobs/browse"
-              className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center gap-1"
+              className="text-sm text-brand-600 hover:text-brand-600 font-medium flex items-center gap-1"
             >
               Tout voir <ArrowRight className="w-4 h-4" />
             </Link>
@@ -474,7 +474,7 @@ function TransporterDashboard({
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === "TRANSPORT" ? "bg-primary-50 text-primary-600" : "bg-purple-50 text-purple-600"}`}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === "TRANSPORT" ? "bg-brand-600/5 text-brand-600" : "bg-purple-50 text-purple-600"}`}
                   >
                     {job.job_type === "TRANSPORT" ? (
                       <Truck className="w-5 h-5" />

@@ -7,6 +7,7 @@ import {
   type AdminDocument,
   type TransporterDocumentsResponse,
 } from "@/lib/services/admin";
+import { useToast } from "@/components/ui/Toast";
 import {
   X,
   CheckCircle,
@@ -56,15 +57,18 @@ const docStatusConfig = {
 };
 
 const profileStatusLabels: Record<string, { label: string; color: string }> = {
-  UNVERIFIED: { label: "Non vérifié", color: "bg-slate-100 text-slate-600" },
+  UNVERIFIED: {
+    label: "Non vérifié",
+    color: "bg-neutral-100 text-neutral-600",
+  },
   PENDING: { label: "En attente", color: "bg-orange-100 text-orange-700" },
   PARTIALLY_REVIEWED: {
     label: "Partiellement vérifié",
-    color: "bg-blue-100 text-blue-700",
+    color: "bg-brand-600/10 text-brand-600",
   },
   VERIFIED: { label: "Vérifié", color: "bg-green-100 text-green-700" },
   REJECTED: { label: "Rejeté", color: "bg-red-100 text-red-700" },
-  SUSPENDED: { label: "Suspendu", color: "bg-slate-200 text-slate-800" },
+  SUSPENDED: { label: "Suspendu", color: "bg-neutral-200 text-neutral-800" },
 };
 
 function getDocStatus(doc: AdminDocument): "approved" | "rejected" | "pending" {
@@ -93,6 +97,7 @@ export default function DocumentReviewDrawer({
   const [rejectDocId, setRejectDocId] = useState<number | null>(null);
   const [rejectReason, setRejectReason] = useState("");
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const { showToast } = useToast();
 
   const fetchDocuments = useCallback(async () => {
     setLoading(true);
@@ -127,7 +132,8 @@ export default function DocumentReviewDrawer({
       }
       onStatusChanged?.();
     } catch (err) {
-      alert(
+      showToast(
+        "error",
         `Erreur: ${err instanceof Error ? err.message : "Erreur inconnue"}`,
       );
     } finally {
@@ -151,7 +157,8 @@ export default function DocumentReviewDrawer({
       }
       onStatusChanged?.();
     } catch (err) {
-      alert(
+      showToast(
+        "error",
         `Erreur: ${err instanceof Error ? err.message : "Erreur inconnue"}`,
       );
     } finally {
@@ -164,7 +171,7 @@ export default function DocumentReviewDrawer({
   const currentProfileStatus = data?.verificationStatus
     ? profileStatusLabels[data.verificationStatus] || {
         label: data.verificationStatus,
-        color: "bg-slate-100 text-slate-600",
+        color: "bg-neutral-100 text-neutral-600",
       }
     : null;
 
@@ -179,25 +186,27 @@ export default function DocumentReviewDrawer({
       {/* Drawer */}
       <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+        <div className="flex items-center justify-between p-6 border-b border-neutral-100">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
               <Shield className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-slate-900">
+              <h2 className="text-lg font-bold text-neutral-900">
                 Vérification des documents
               </h2>
               {data && (
-                <p className="text-sm text-slate-500">{data.transporterName}</p>
+                <p className="text-sm text-neutral-500">
+                  {data.transporterName}
+                </p>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-slate-100 transition-colors"
+            className="p-2 rounded-lg hover:bg-neutral-100 transition-colors"
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X className="w-5 h-5 text-neutral-400" />
           </button>
         </div>
 
@@ -206,8 +215,8 @@ export default function DocumentReviewDrawer({
           {/* Loading */}
           {loading && (
             <div className="flex flex-col items-center justify-center py-16">
-              <Loader2 className="w-8 h-8 text-primary-600 animate-spin mb-4" />
-              <p className="text-slate-500">Chargement des documents...</p>
+              <Loader2 className="w-8 h-8 text-brand-600 animate-spin mb-4" />
+              <p className="text-neutral-500">Chargement des documents...</p>
             </div>
           )}
 
@@ -223,14 +232,14 @@ export default function DocumentReviewDrawer({
           {data && !loading && (
             <>
               {/* Profile Summary */}
-              <div className="bg-slate-50 rounded-xl p-4 space-y-3">
+              <div className="bg-neutral-50 rounded-xl p-4 space-y-3">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-slate-500">Transporteur</p>
-                    <p className="font-semibold text-slate-900">
+                    <p className="text-sm text-neutral-500">Transporteur</p>
+                    <p className="font-semibold text-neutral-900">
                       {data.transporterName}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-neutral-400">
                       {data.transporterEmail}
                     </p>
                   </div>
@@ -245,14 +254,14 @@ export default function DocumentReviewDrawer({
 
                 {/* Progress */}
                 <div>
-                  <div className="flex items-center justify-between text-xs text-slate-500 mb-1">
+                  <div className="flex items-center justify-between text-xs text-neutral-500 mb-1">
                     <span>Progression de la vérification</span>
                     <span>
                       {data.documents.filter((d) => d.isValid).length}/
                       {data.documents.length} approuvés
                     </span>
                   </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
+                  <div className="w-full bg-neutral-200 rounded-full h-2">
                     <div
                       className="bg-green-500 rounded-full h-2 transition-all duration-300"
                       style={{
@@ -269,9 +278,9 @@ export default function DocumentReviewDrawer({
               {/* Empty state */}
               {data.documents.length === 0 && (
                 <div className="text-center py-12">
-                  <FileText className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                  <p className="text-slate-500">Aucun document soumis</p>
-                  <p className="text-xs text-slate-400 mt-1">
+                  <FileText className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+                  <p className="text-neutral-500">Aucun document soumis</p>
+                  <p className="text-xs text-neutral-400 mt-1">
                     Ce transporteur n&apos;a pas encore uploadé de documents
                   </p>
                 </div>
@@ -298,10 +307,10 @@ export default function DocumentReviewDrawer({
                       <div className="flex items-center gap-2">
                         <FileText className={`w-5 h-5 ${cfg.text}`} />
                         <div>
-                          <p className="font-medium text-slate-900 text-sm">
+                          <p className="font-medium text-neutral-900 text-sm">
                             {doc.documentTypeLabel}
                           </p>
-                          <p className="text-xs text-slate-400">
+                          <p className="text-xs text-neutral-400">
                             Doc #{doc.id} · Soumis le{" "}
                             {new Date(doc.uploadedAt).toLocaleDateString(
                               "fr-FR",
@@ -323,7 +332,7 @@ export default function DocumentReviewDrawer({
                         {isImageFile(fileUrl) ? (
                           <button
                             onClick={() => setPreviewUrl(fileUrl)}
-                            className="w-full h-32 bg-white rounded-lg border border-slate-200 overflow-hidden relative group cursor-pointer"
+                            className="w-full h-32 bg-white rounded-lg border border-neutral-200 overflow-hidden relative group cursor-pointer"
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
                             <img
@@ -340,7 +349,7 @@ export default function DocumentReviewDrawer({
                             href={fileUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-slate-200 text-sm text-primary-600 hover:bg-primary-50 transition-colors"
+                            className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-neutral-200 text-sm text-brand-600 hover:bg-brand-600/5 transition-colors"
                           >
                             <ExternalLink className="w-4 h-4" />
                             Voir le document (PDF)
@@ -361,7 +370,7 @@ export default function DocumentReviewDrawer({
 
                     {/* Reviewed By */}
                     {doc.reviewedAt && (
-                      <p className="text-xs text-slate-400 mb-3">
+                      <p className="text-xs text-neutral-400 mb-3">
                         Vérifié par {doc.reviewedBy || "Admin"} le{" "}
                         {new Date(doc.reviewedAt).toLocaleDateString("fr-FR")}
                       </p>
@@ -411,10 +420,10 @@ export default function DocumentReviewDrawer({
       {rejectDocId !== null && (
         <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
+            <h3 className="text-lg font-bold text-neutral-900 mb-2">
               Rejeter le document
             </h3>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-neutral-500 mb-4">
               Indiquez la raison du rejet. Le transporteur sera notifié.
             </p>
             <textarea
@@ -422,7 +431,7 @@ export default function DocumentReviewDrawer({
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Raison du rejet (ex: Document illisible, date expirée...)"
               rows={3}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+              className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
               autoFocus
             />
             <div className="flex gap-3 mt-4">
@@ -431,7 +440,7 @@ export default function DocumentReviewDrawer({
                   setRejectDocId(null);
                   setRejectReason("");
                 }}
-                className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+                className="flex-1 bg-neutral-100 text-neutral-700 py-2.5 rounded-xl font-medium hover:bg-neutral-200 transition-colors"
               >
                 Annuler
               </button>

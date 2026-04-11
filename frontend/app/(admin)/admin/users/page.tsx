@@ -38,7 +38,7 @@ export default function AdminUsersPage() {
       header: "ID",
       width: "w-16",
       render: (user: AdminUser) => (
-        <span className="font-mono text-slate-500">#{user.id}</span>
+        <span className="font-mono text-neutral-500">#{user.id}</span>
       ),
     },
     {
@@ -46,14 +46,14 @@ export default function AdminUsersPage() {
       header: "Utilisateur",
       render: (user: AdminUser) => (
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-slate-100 rounded-full flex items-center justify-center">
-            <span className="text-sm font-semibold text-slate-600">
+          <div className="w-10 h-10 bg-neutral-100 rounded-full flex items-center justify-center">
+            <span className="text-sm font-semibold text-neutral-600">
               {user.name.charAt(0)}
             </span>
           </div>
           <div>
-            <p className="font-medium text-slate-900">{user.name}</p>
-            <p className="text-xs text-slate-500">{user.email}</p>
+            <p className="font-medium text-neutral-900">{user.name}</p>
+            <p className="text-xs text-neutral-500">{user.email}</p>
           </div>
         </div>
       ),
@@ -80,12 +80,12 @@ export default function AdminUsersPage() {
       header: "Jobs",
       render: (user: AdminUser) => (
         <div className="text-sm">
-          <span className="font-semibold text-slate-700">
+          <span className="font-semibold text-neutral-700">
             {user.jobsCompleted}
           </span>
-          <span className="text-slate-400"> terminés</span>
+          <span className="text-neutral-400"> terminés</span>
           {user.jobsActive > 0 && (
-            <span className="text-blue-600 ml-2">
+            <span className="text-brand-600 ml-2">
               ({user.jobsActive} actifs)
             </span>
           )}
@@ -96,11 +96,11 @@ export default function AdminUsersPage() {
       key: "financial",
       header: "Finances",
       render: (user: AdminUser) => (
-        <span className="text-sm font-medium text-slate-700">
+        <span className="text-sm font-medium text-neutral-700">
           {user.role === "CLIENT"
             ? formatCurrency(user.totalSpent || 0)
             : formatCurrency(user.totalEarned || 0)}
-          <span className="text-xs text-slate-400 ml-1">
+          <span className="text-xs text-neutral-400 ml-1">
             {user.role === "CLIENT" ? "dépensé" : "gagné"}
           </span>
         </span>
@@ -110,7 +110,7 @@ export default function AdminUsersPage() {
       key: "lastSeenAt",
       header: "Dernière activité",
       render: (user: AdminUser) => (
-        <span className="text-sm text-slate-500">
+        <span className="text-sm text-neutral-500">
           {user.lastSeenAt ? formatTimeAgoShort(user.lastSeenAt) : "-"}
         </span>
       ),
@@ -119,7 +119,7 @@ export default function AdminUsersPage() {
       key: "createdAt",
       header: "Inscription",
       render: (user: AdminUser) => (
-        <span className="text-sm text-slate-500">
+        <span className="text-sm text-neutral-500">
           {formatDate(user.createdAt)}
         </span>
       ),
@@ -144,8 +144,8 @@ export default function AdminUsersPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Utilisateurs</h1>
-          <p className="text-slate-500">
+          <h1 className="text-2xl font-bold text-neutral-900">Utilisateurs</h1>
+          <p className="text-neutral-500">
             Gestion des clients et transporteurs de la plateforme
           </p>
         </div>
@@ -166,9 +166,9 @@ export default function AdminUsersPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white rounded-xl border border-slate-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
-          <p className="text-slate-500">Chargement des utilisateurs...</p>
+          <p className="text-neutral-500">Chargement des utilisateurs...</p>
         </div>
       )}
 
@@ -198,14 +198,14 @@ export default function AdminUsersPage() {
                                         px-4 py-2 rounded-lg text-sm font-medium transition-all
                                         ${
                                           isActive
-                                            ? "bg-primary-600 text-white shadow-sm"
-                                            : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                                            ? "bg-brand-600 text-white shadow-sm"
+                                            : "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200"
                                         }
                                     `}
                 >
                   {tab.label}
                   <span
-                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-slate-100"}`}
+                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
                   >
                     {count}
                   </span>
@@ -215,29 +215,29 @@ export default function AdminUsersPage() {
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white rounded-xl border border-slate-200 p-4">
+          <div className="bg-white rounded-xl border border-neutral-200 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
-                <span className="text-slate-500">Affichés:</span>
-                <span className="ml-2 font-semibold text-slate-900">
+                <span className="text-neutral-500">Affichés:</span>
+                <span className="ml-2 font-semibold text-neutral-900">
                   {filteredUsers.length}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500">Actifs:</span>
+                <span className="text-neutral-500">Actifs:</span>
                 <span className="ml-2 font-semibold text-green-600">
                   {activeUsers}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500">Suspendus:</span>
+                <span className="text-neutral-500">Suspendus:</span>
                 <span className="ml-2 font-semibold text-red-600">
                   {suspendedUsers}
                 </span>
               </div>
               <div>
-                <span className="text-slate-500">Score confiance moyen:</span>
-                <span className="ml-2 font-semibold text-slate-900">
+                <span className="text-neutral-500">Score confiance moyen:</span>
+                <span className="ml-2 font-semibold text-neutral-900">
                   {avgTrustScore}/100
                 </span>
               </div>

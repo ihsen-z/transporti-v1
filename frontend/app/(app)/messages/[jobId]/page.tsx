@@ -212,7 +212,7 @@ export default function MessagingPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "IN_PROGRESS":
-        return "bg-blue-50 text-blue-700";
+        return "bg-brand-600/5 text-brand-600";
       case "COMPLETED":
         return "bg-emerald-50 text-emerald-700";
       case "PUBLISHED":
@@ -228,7 +228,7 @@ export default function MessagingPage() {
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)]">
-        <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-4" />
+        <Loader2 className="w-8 h-8 text-brand-600 animate-spin mb-4" />
         <p className="text-sm text-neutral-500">
           Chargement de la conversation...
         </p>
@@ -248,7 +248,7 @@ export default function MessagingPage() {
           <p className="text-sm text-red-600 mb-4">{error}</p>
           <button
             onClick={() => router.push("/messages")}
-            className="text-sm font-medium text-blue-600 hover:text-blue-800"
+            className="text-sm font-medium text-brand-600 hover:text-brand-700"
           >
             ← Retour aux messages
           </button>
@@ -381,12 +381,12 @@ export default function MessagingPage() {
               onKeyDown={handleKeyDown}
               placeholder="Tapez votre message..."
               rows={1}
-              className="flex-1 p-3 border border-neutral-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm max-h-32"
+              className="flex-1 p-3 border border-neutral-300 rounded-xl resize-none focus:ring-2 focus:ring-accent-500 focus:border-brand-600 text-sm max-h-32"
             />
             <button
               onClick={handleSend}
               disabled={!newMessage.trim() || sending}
-              className="p-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
+              className="p-3 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0"
             >
               {sending ? (
                 <Loader2 className="w-5 h-5 animate-spin" />

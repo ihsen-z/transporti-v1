@@ -34,8 +34,8 @@ services:
       - "8000:8000"
     environment:
       - DATABASE_URL=postgres://transporti:transporti_dev@db:5432/transporti_v1
-      - SECRET_KEY=django-docker-xg8c9b26d9e64-transporti-v1
-      - JWT_SECRET_KEY=jwt-docker-xg8c9b26d9e64-transporti-v1
+      - SECRET_KEY=django-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-secret-key-2026
+      - JWT_SECRET_KEY=jwt-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-jwt-key-2026
       - DEBUG=True
       - ENV=development
       - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,backend

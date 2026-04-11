@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
+import { useToast } from "@/components/ui/Toast";
 import { JobTypeSelector } from "@/components/jobs/JobTypeSelector";
 import { LocationPicker } from "@/components/jobs/LocationPicker";
 import { TransportDetailsForm } from "@/components/jobs/TransportDetailsForm";
@@ -24,6 +25,7 @@ export default function NewJobPage() {
   const { user } = useAuth();
   const [currentStep, setCurrentStep] = useState(0);
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
   const [formData, setFormData] = useState({
     job_type: null as "TRANSPORT" | "MOVING" | null,
     pickup_address: "",
@@ -137,7 +139,7 @@ export default function NewJobPage() {
         errorMessage = error.message;
       }
 
-      alert(errorMessage);
+      showToast("error", errorMessage);
     } finally {
       setLoading(false);
     }
@@ -178,7 +180,7 @@ export default function NewJobPage() {
         return (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
                 Date et heure souhaitées
               </label>
               <input
@@ -191,7 +193,7 @@ export default function NewJobPage() {
                   updateFormData({ scheduled_time: e.target.value });
                   setValidationError(null);
                 }}
-                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 transition-colors ${
+                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-accent-500 transition-colors ${
                   validationError
                     ? "border-red-400 bg-red-50"
                     : "border-neutral-300"
@@ -211,7 +213,7 @@ export default function NewJobPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Budget Min (TND)
                 </label>
                 <input
@@ -221,11 +223,11 @@ export default function NewJobPage() {
                     updateFormData({ price_tnd_min: e.target.value })
                   }
                   placeholder="Optionnel"
-                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
                   Budget Max (TND)
                 </label>
                 <input
@@ -235,7 +237,7 @@ export default function NewJobPage() {
                     updateFormData({ price_tnd_max: e.target.value })
                   }
                   placeholder="Optionnel"
-                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
               </div>
             </div>
@@ -249,7 +251,7 @@ export default function NewJobPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-neutral-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Progress Bar */}
         <div className="mb-8">
@@ -263,8 +265,8 @@ export default function NewJobPage() {
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold z-10 transition-colors
                     ${
                       index <= currentStep
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-500"
+                        ? "bg-brand-600 text-white"
+                        : "bg-neutral-200 text-neutral-500"
                     }`}
                 >
                   {index < currentStep ? (
@@ -273,7 +275,7 @@ export default function NewJobPage() {
                     index + 1
                   )}
                 </div>
-                <span className="text-xs mt-2 text-gray-600 hidden sm:block">
+                <span className="text-xs mt-2 text-neutral-600 hidden sm:block">
                   {step.title}
                 </span>
 
@@ -281,7 +283,7 @@ export default function NewJobPage() {
                 {index < STEPS.length - 1 && (
                   <div
                     className={`absolute top-4 left-1/2 w-full h-[2px] -z-0 transition-colors
-                    ${index < currentStep ? "bg-blue-600" : "bg-gray-200"}`}
+                    ${index < currentStep ? "bg-brand-600" : "bg-neutral-200"}`}
                   />
                 )}
               </div>
@@ -291,7 +293,7 @@ export default function NewJobPage() {
 
         {/* Content Card */}
         <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">
+          <h2 className="text-2xl font-bold text-neutral-900 mb-6">
             {STEPS[currentStep].title}
           </h2>
 
@@ -305,8 +307,8 @@ export default function NewJobPage() {
               className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium transition-colors
                 ${
                   currentStep === 0
-                    ? "text-gray-300 cursor-not-allowed"
-                    : "text-gray-700 hover:bg-gray-100"
+                    ? "text-neutral-300 cursor-not-allowed"
+                    : "text-neutral-700 hover:bg-neutral-100"
                 }`}
             >
               <ChevronLeft className="w-5 h-5" />
@@ -316,7 +318,7 @@ export default function NewJobPage() {
             <button
               onClick={handleNext}
               disabled={loading || (currentStep === 0 && !formData.job_type)}
-              className="flex items-center gap-2 px-8 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex items-center gap-2 px-8 py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 "Publication..."

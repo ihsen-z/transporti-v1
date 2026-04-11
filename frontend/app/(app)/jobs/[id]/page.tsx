@@ -8,6 +8,7 @@ import { JobPreview } from "@/components/jobs/JobPreview";
 import { OfferForm } from "@/components/offers/OfferForm";
 import { OfferList } from "@/components/offers/OfferList";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { useToast } from "@/components/ui/Toast";
 import {
   BadgeCheck,
   Clock,
@@ -31,6 +32,7 @@ export default function JobDetailsPage() {
   const [job, setJob] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const { showToast } = useToast();
 
   const jobId = params?.id
     ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id)
@@ -64,13 +66,19 @@ export default function JobDetailsPage() {
       await apiClient.post("/api/payments/confirm-completion/", {
         job_id: job.id,
       });
-      alert("Livraison confirmée ! Le paiement a été libéré au transporteur.");
+      showToast(
+        "success",
+        "Livraison confirmée ! Le paiement a été libéré au transporteur.",
+      );
       fetchJob();
     } catch (error) {
       if (error instanceof ApiError && error.body) {
-        alert(error.body.error || "Erreur lors de la confirmation.");
+        showToast(
+          "error",
+          (error.body as any)?.error || "Erreur lors de la confirmation.",
+        );
       } else {
-        alert("Une erreur est survenue.");
+        showToast("error", "Une erreur est survenue.");
       }
     } finally {
       setConfirming(false);
@@ -78,7 +86,9 @@ export default function JobDetailsPage() {
   };
 
   if (loading)
-    return <div className="p-8 text-center text-gray-500">Chargement...</div>;
+    return (
+      <div className="p-8 text-center text-neutral-500">Chargement...</div>
+    );
   if (!job)
     return (
       <div className="p-8 text-center text-red-500">
@@ -105,11 +115,11 @@ export default function JobDetailsPage() {
     isCompleted && !hasReviewed && (isOwner ? clientConfirmed : true);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Status Banner */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">
+          <h1 className="text-2xl font-bold text-neutral-900">
             Détail de la mission #{job.id}
           </h1>
           <StatusBadge status={job.status} />
@@ -125,12 +135,12 @@ export default function JobDetailsPage() {
               (job.status === "IN_PROGRESS" || isCompleted) && (
                 <div className="mt-6 bg-white rounded-xl shadow-sm border border-neutral-200 p-5">
                   <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
-                    <Truck className="w-4 h-4 text-primary-600" />
+                    <Truck className="w-4 h-4 text-brand-600" />
                     Transporteur assigné
                   </h3>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center text-primary-700 font-bold text-sm">
+                      <div className="w-10 h-10 rounded-full bg-brand-600/10 flex items-center justify-center text-brand-600 font-bold text-sm">
                         {(job.accepted_transporter.name || "T")[0]}
                       </div>
                       <div>
@@ -186,7 +196,7 @@ export default function JobDetailsPage() {
                 jobId={job.id}
                 jobType={job.job_type}
                 onOfferSubmitted={() => {
-                  alert("Offre envoyée avec succès !");
+                  showToast("success", "Offre envoyée avec succès !");
                   fetchJob();
                 }}
               />
@@ -199,7 +209,7 @@ export default function JobDetailsPage() {
                   Client
                 </h3>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm">
+                  <div className="w-10 h-10 rounded-full bg-brand-600/10 flex items-center justify-center text-brand-600 font-bold text-sm">
                     {(job.owner.first_name || job.owner.name?.[0] || "C")[0]}
                   </div>
                   <div>
@@ -223,7 +233,7 @@ export default function JobDetailsPage() {
             {job.pickup_governorate && job.dropoff_governorate && (
               <div className="bg-white rounded-xl shadow-sm p-4 border border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-700 mb-2 flex items-center gap-2">
-                  <Route className="w-4 h-4 text-blue-500" />
+                  <Route className="w-4 h-4 text-brand-600" />
                   Estimation trajet
                 </h3>
                 <div className="flex items-center gap-4 text-sm">
@@ -243,7 +253,7 @@ export default function JobDetailsPage() {
             {/* Client Actions: Offers List */}
             {showOffersList && (
               <div className="bg-white rounded-xl shadow-sm p-4 border">
-                <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                <h3 className="font-bold text-neutral-900 mb-4 flex items-center gap-2">
                   <BadgeCheck className="w-5 h-5 text-purple-600" />
                   Offres reçues
                 </h3>
@@ -253,7 +263,7 @@ export default function JobDetailsPage() {
 
             {/* In Progress Status */}
             {job.status === "IN_PROGRESS" && (
-              <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800">
+              <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-brand-700">
                 <h3 className="font-bold flex items-center gap-2 mb-2">
                   <Clock className="w-5 h-5" />
                   Mission en cours
@@ -265,7 +275,7 @@ export default function JobDetailsPage() {
                 <div className="mt-4">
                   <button
                     onClick={() => router.push(`/messages/${job.id}`)}
-                    className="w-full py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 flex items-center justify-center gap-2"
+                    className="w-full py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2"
                   >
                     <MessageSquare className="w-4 h-4" />
                     Ouvrir la messagerie
@@ -322,7 +332,7 @@ export default function JobDetailsPage() {
 
                 {/* Transporter waiting for confirmation */}
                 {!clientConfirmed && isTransporter && (
-                  <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-blue-800">
+                  <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-brand-700">
                     <h3 className="font-bold flex items-center gap-2 mb-2">
                       <Clock className="w-5 h-5" />
                       En attente de confirmation
@@ -378,16 +388,16 @@ export default function JobDetailsPage() {
 /* Status Badge */
 function StatusBadge({ status }: { status: string }) {
   const config: Record<string, { bg: string; label: string }> = {
-    DRAFT: { bg: "bg-gray-100 text-gray-700", label: "Brouillon" },
+    DRAFT: { bg: "bg-neutral-100 text-neutral-700", label: "Brouillon" },
     PUBLISHED: { bg: "bg-green-100 text-green-800", label: "Publiée" },
     MATCHED: { bg: "bg-purple-100 text-purple-800", label: "Attribuée" },
-    IN_PROGRESS: { bg: "bg-blue-100 text-blue-800", label: "En cours" },
+    IN_PROGRESS: { bg: "bg-brand-600/10 text-brand-700", label: "En cours" },
     COMPLETED: { bg: "bg-emerald-100 text-emerald-800", label: "Terminée" },
     CANCELLED: { bg: "bg-red-100 text-red-700", label: "Annulée" },
     DISPUTED: { bg: "bg-orange-100 text-orange-800", label: "Litige" },
   };
   const c = config[status] || {
-    bg: "bg-gray-100 text-gray-600",
+    bg: "bg-neutral-100 text-neutral-600",
     label: status,
   };
   return (

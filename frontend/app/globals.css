@@ -8,6 +8,11 @@
 
 @layer base {
   :root {
+    /* Brand Royal Blue Charter */
+    --color-brand: #1e3a8a;
+    --color-brand-deep: #0f1d4e;
+    --color-brand-light: #2563b3;
+
     /* Brand Colors */
     --color-primary: #1e40af;
     --color-primary-light: #3b82f6;
@@ -40,7 +45,9 @@
     --color-info: #3b82f6;
 
     /* Typography */
-    --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    --font-sans:
+      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
+      sans-serif;
     --font-weight-normal: 400;
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
@@ -134,7 +141,6 @@
    ============================================================================ */
 
 @layer utilities {
-
   /* Text Gradients */
   .text-gradient-primary {
     @apply bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent;
@@ -165,46 +171,89 @@
    ============================================================================ */
 
 @keyframes fadeInUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 @keyframes slideInRight {
-  from { opacity: 0; transform: translateX(20px); }
-  to   { opacity: 1; transform: translateX(0); }
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 @keyframes float {
-  0%, 100% { transform: translateY(0) rotate(-1deg); }
-  50%      { transform: translateY(-12px) rotate(-1deg); }
+  0%,
+  100% {
+    transform: translateY(0) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-12px) rotate(-1deg);
+  }
 }
 
 @keyframes shimmer {
-  0%   { background-position: -200% 0; }
-  100% { background-position: 200% 0; }
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
 }
 
 @keyframes countUp {
-  from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @keyframes progressFill {
-  from { width: 0%; }
+  from {
+    width: 0%;
+  }
 }
 
 @layer utilities {
   /* Entry Animations */
-  .animate-fade-in-up { animation: fadeInUp 0.6s ease-out both; }
-  .animate-fade-in    { animation: fadeIn 0.4s ease-out both; }
-  .animate-slide-in-r { animation: slideInRight 0.5s ease-out both; }
-  .animate-float      { animation: float 3s ease-in-out infinite; }
-  .animate-count-up   { animation: countUp 0.4s ease-out both; }
+  .animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out both;
+  }
+  .animate-fade-in {
+    animation: fadeIn 0.4s ease-out both;
+  }
+  .animate-slide-in-r {
+    animation: slideInRight 0.5s ease-out both;
+  }
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  .animate-count-up {
+    animation: countUp 0.4s ease-out both;
+  }
 
   /* Skeleton Loading */
   .skeleton {
@@ -215,12 +264,24 @@
   }
 
   /* Stagger Delays */
-  .delay-100 { animation-delay: 0.1s; }
-  .delay-200 { animation-delay: 0.2s; }
-  .delay-300 { animation-delay: 0.3s; }
-  .delay-400 { animation-delay: 0.4s; }
-  .delay-500 { animation-delay: 0.5s; }
-  .delay-600 { animation-delay: 0.6s; }
+  .delay-100 {
+    animation-delay: 0.1s;
+  }
+  .delay-200 {
+    animation-delay: 0.2s;
+  }
+  .delay-300 {
+    animation-delay: 0.3s;
+  }
+  .delay-400 {
+    animation-delay: 0.4s;
+  }
+  .delay-500 {
+    animation-delay: 0.5s;
+  }
+  .delay-600 {
+    animation-delay: 0.6s;
+  }
 
   /* Progress bar fill animation */
   .animate-progress-fill {
@@ -262,7 +323,6 @@
 
 /* Bounce animation for marker entry */
 @keyframes markerBounce {
-
   0%,
   100% {
     transform: translateY(0);

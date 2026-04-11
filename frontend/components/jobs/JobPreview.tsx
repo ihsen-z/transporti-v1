@@ -21,7 +21,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
 
   return (
     <div className="space-y-6">
-      <div className="bg-gradient-to-r from-blue-600 to-blue-800 text-white p-6 rounded-xl shadow-lg">
+      <div className="bg-gradient-to-r from-brand-600 to-brand-900 text-white p-6 rounded-xl shadow-lg">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-white/20 rounded-lg">
             {isTransport ? (
@@ -34,7 +34,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
             <h3 className="font-bold text-xl">
               {isTransport ? "Transport de Marchandises" : "Déménagement"}
             </h3>
-            <p className="text-blue-100 text-sm">
+            <p className="text-blue-200 text-sm">
               Récapitulatif de votre demande
             </p>
           </div>
@@ -45,11 +45,11 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 mt-1 text-orange-300" />
             <div className="flex-1">
-              <p className="text-xs text-blue-200 uppercase font-semibold">
+              <p className="text-xs text-primary-200 uppercase font-semibold">
                 Départ
               </p>
               <p className="font-medium">{data.pickup_address}</p>
-              <p className="text-sm text-blue-100">
+              <p className="text-sm text-blue-200">
                 {data.scheduled_time &&
                 !isNaN(new Date(data.scheduled_time).getTime())
                   ? format(
@@ -60,7 +60,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                   : "Date non spécifiée"}
               </p>
               {data.pickup_lat && data.pickup_lng && (
-                <p className="text-xs text-blue-200 mt-1 flex items-center gap-1">
+                <p className="text-xs text-primary-200 mt-1 flex items-center gap-1">
                   <Crosshair className="w-3 h-3" />
                   GPS: {Number(data.pickup_lat).toFixed(5)},{" "}
                   {Number(data.pickup_lng).toFixed(5)}
@@ -68,7 +68,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                     href={`https://www.google.com/maps?q=${data.pickup_lat},${data.pickup_lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-1 text-blue-100 hover:text-white underline"
+                    className="ml-1 text-blue-200 hover:text-white underline"
                   >
                     Maps →
                   </a>
@@ -87,12 +87,12 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 mt-1 text-green-300" />
             <div className="flex-1">
-              <p className="text-xs text-blue-200 uppercase font-semibold">
+              <p className="text-xs text-primary-200 uppercase font-semibold">
                 Arrivée
               </p>
               <p className="font-medium">{data.dropoff_address}</p>
               {data.dropoff_lat && data.dropoff_lng && (
-                <p className="text-xs text-blue-200 mt-1 flex items-center gap-1">
+                <p className="text-xs text-primary-200 mt-1 flex items-center gap-1">
                   <Crosshair className="w-3 h-3" />
                   GPS: {Number(data.dropoff_lat).toFixed(5)},{" "}
                   {Number(data.dropoff_lng).toFixed(5)}
@@ -100,7 +100,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                     href={`https://www.google.com/maps?q=${data.dropoff_lat},${data.dropoff_lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-1 text-blue-100 hover:text-white underline"
+                    className="ml-1 text-blue-200 hover:text-white underline"
                   >
                     Maps →
                   </a>
@@ -118,52 +118,54 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
       </div>
 
       <div className="bg-white border rounded-xl p-6 shadow-sm">
-        <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-          <Package className="w-5 h-5 text-gray-500" />
+        <h4 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+          <Package className="w-5 h-5 text-neutral-500" />
           Détails de la mission
         </h4>
 
         {isTransport ? (
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <span className="block text-gray-500 text-xs">Poids</span>
+            <div className="bg-neutral-50 p-3 rounded-lg">
+              <span className="block text-neutral-500 text-xs">Poids</span>
               <span className="font-medium">
                 {data.specifications?.weight || "-"} kg
               </span>
             </div>
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <span className="block text-gray-500 text-xs">Volume</span>
+            <div className="bg-neutral-50 p-3 rounded-lg">
+              <span className="block text-neutral-500 text-xs">Volume</span>
               <span className="font-medium">
                 {data.specifications?.volume || "-"} m³
               </span>
             </div>
-            <div className="col-span-2 bg-gray-50 p-3 rounded-lg">
-              <span className="block text-gray-500 text-xs mb-1">
+            <div className="col-span-2 bg-neutral-50 p-3 rounded-lg">
+              <span className="block text-neutral-500 text-xs mb-1">
                 Description
               </span>
-              <p className="text-gray-700">
+              <p className="text-neutral-700">
                 {data.description || "Aucune description"}
               </p>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-4 text-sm">
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <span className="block text-gray-500 text-xs">
+            <div className="bg-neutral-50 p-3 rounded-lg">
+              <span className="block text-neutral-500 text-xs">
                 Type de logement
               </span>
               <span className="font-medium">
                 {data.specifications?.room_count || "-"}
               </span>
             </div>
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <span className="block text-gray-500 text-xs">Volume estimé</span>
+            <div className="bg-neutral-50 p-3 rounded-lg">
+              <span className="block text-neutral-500 text-xs">
+                Volume estimé
+              </span>
               <span className="font-medium">
                 {data.specifications?.volume || "-"} m³
               </span>
             </div>
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <span className="block text-gray-500 text-xs text-orange-600 font-semibold mb-1">
+            <div className="bg-neutral-50 p-3 rounded-lg">
+              <span className="block text-neutral-500 text-xs text-orange-600 font-semibold mb-1">
                 📤 Départ (Étage)
               </span>
               <span className="font-medium">
@@ -171,8 +173,8 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                 {data.specifications?.elevator_departure || "Non"})
               </span>
             </div>
-            <div className="bg-gray-50 p-3 rounded-lg">
-              <span className="block text-gray-500 text-xs text-green-600 font-semibold mb-1">
+            <div className="bg-neutral-50 p-3 rounded-lg">
+              <span className="block text-neutral-500 text-xs text-green-600 font-semibold mb-1">
                 📥 Arrivée (Étage)
               </span>
               <span className="font-medium">
@@ -180,22 +182,22 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                 {data.specifications?.elevator_arrival || "Non"})
               </span>
             </div>
-            <div className="col-span-2 bg-gray-50 p-3 rounded-lg border-l-4 border-blue-400">
-              <span className="block text-gray-500 text-xs mb-1">
+            <div className="col-span-2 bg-neutral-50 p-3 rounded-lg border-l-4 border-primary-400">
+              <span className="block text-neutral-500 text-xs mb-1">
                 Services & Aides
               </span>
-              <p className="text-gray-700 font-medium whitespace-pre-line">
+              <p className="text-neutral-700 font-medium whitespace-pre-line">
                 {data.specifications?.helpers_count} manutentionnaires souhaités
                 {data.specifications?.needs_disassembly &&
                   "\n• Besoin de démontage/remontage"}
                 {data.specifications?.needs_packing && "\n• Besoin d'emballage"}
               </p>
             </div>
-            <div className="col-span-2 bg-gray-50 p-3 rounded-lg">
-              <span className="block text-gray-500 text-xs mb-1">
+            <div className="col-span-2 bg-neutral-50 p-3 rounded-lg">
+              <span className="block text-neutral-500 text-xs mb-1">
                 Description
               </span>
-              <p className="text-gray-700">
+              <p className="text-neutral-700">
                 {data.description || "Aucune description"}
               </p>
             </div>
@@ -204,7 +206,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
 
         {data.photos && data.photos.length > 0 && (
           <div className="mt-4">
-            <span className="block text-gray-500 text-xs mb-2">
+            <span className="block text-neutral-500 text-xs mb-2">
               Photos ({data.photos.length})
             </span>
             <div className="flex gap-2 overflow-x-auto pb-2">
@@ -223,8 +225,10 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
         {(data.price_tnd_min || data.price_tnd_max) && (
           <div className="mt-6 pt-6 border-t">
             <div className="flex justify-between items-center">
-              <span className="text-gray-600 font-medium">Budget estimé</span>
-              <span className="text-xl font-bold text-gray-900">
+              <span className="text-neutral-600 font-medium">
+                Budget estimé
+              </span>
+              <span className="text-xl font-bold text-neutral-900">
                 {data.price_tnd_min || "0"} - {data.price_tnd_max || "?"} TND
               </span>
             </div>

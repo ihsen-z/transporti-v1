@@ -259,6 +259,13 @@ class OfferAcceptView(generics.GenericAPIView):
             from payments.serializers import EscrowDetailSerializer
             response_data['escrow'] = EscrowDetailSerializer(escrow).data
 
+        # Send email notification to transporter
+        try:
+            from notifications.emails import notify_offer_accepted
+            notify_offer_accepted(offer)
+        except Exception:
+            pass  # Email failure must never block business logic
+
         return Response(response_data)
 
 

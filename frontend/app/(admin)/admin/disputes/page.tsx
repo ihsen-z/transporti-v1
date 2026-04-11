@@ -34,9 +34,9 @@ type DisputeStatus = "OPEN" | "INVESTIGATING" | "RESOLVED" | "REJECTED";
 
 const statusColors: Record<DisputeStatus, string> = {
   OPEN: "bg-red-100 text-red-700",
-  INVESTIGATING: "bg-blue-100 text-blue-700",
+  INVESTIGATING: "bg-brand-600/10 text-brand-600",
   RESOLVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-slate-100 text-slate-600",
+  REJECTED: "bg-neutral-100 text-neutral-600",
 };
 
 const statusLabels: Record<DisputeStatus, string> = {
@@ -175,7 +175,7 @@ export default function AdminDisputesPage() {
       header: "ID",
       width: "w-16",
       render: (d: BackendDispute) => (
-        <span className="font-mono text-slate-500">#{d.id}</span>
+        <span className="font-mono text-neutral-500">#{d.id}</span>
       ),
     },
     {
@@ -183,10 +183,10 @@ export default function AdminDisputesPage() {
       header: "Mission",
       render: (d: BackendDispute) => (
         <div>
-          <p className="font-medium text-slate-900 text-sm">
+          <p className="font-medium text-neutral-900 text-sm">
             {reasonLabels[d.reason] || d.reason}
           </p>
-          <p className="text-xs text-slate-400">
+          <p className="text-xs text-neutral-400">
             Job #{d.job_summary?.id || d.job}
           </p>
         </div>
@@ -197,11 +197,11 @@ export default function AdminDisputesPage() {
       header: "Ouvert par",
       render: (d: BackendDispute) => (
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-blue-100">
-            <User className="w-4 h-4 text-blue-600" />
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-brand-600/10">
+            <User className="w-4 h-4 text-brand-600" />
           </div>
           <div>
-            <p className="text-sm font-medium text-slate-900">
+            <p className="text-sm font-medium text-neutral-900">
               {d.opened_by_name}
             </p>
           </div>
@@ -214,7 +214,9 @@ export default function AdminDisputesPage() {
       render: (d: BackendDispute) => (
         <StatusBadge
           status={statusLabels[d.status] || d.status}
-          colorClass={statusColors[d.status] || "bg-slate-100 text-slate-600"}
+          colorClass={
+            statusColors[d.status] || "bg-neutral-100 text-neutral-600"
+          }
         />
       ),
     },
@@ -222,7 +224,7 @@ export default function AdminDisputesPage() {
       key: "createdAt",
       header: "Ouvert",
       render: (d: BackendDispute) => (
-        <span className="text-sm text-slate-500">
+        <span className="text-sm text-neutral-500">
           {formatTimeAgoShort(d.created_at)}
         </span>
       ),
@@ -235,7 +237,7 @@ export default function AdminDisputesPage() {
           <button
             onClick={() => setSelectedDispute(d)}
             title="Voir détails"
-            className="p-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors"
+            className="p-1.5 rounded-lg bg-neutral-100 text-neutral-600 hover:bg-neutral-200 transition-colors"
           >
             <Eye className="w-4 h-4" />
           </button>
@@ -244,7 +246,7 @@ export default function AdminDisputesPage() {
               onClick={() => handleInvestigate(d.id)}
               title="Investiguer"
               disabled={actionLoading}
-              className="p-1.5 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors disabled:opacity-50"
+              className="p-1.5 rounded-lg bg-brand-600/10 text-brand-600 hover:bg-brand-600/20 transition-colors disabled:opacity-50"
             >
               <SearchIcon className="w-4 h-4" />
             </button>
@@ -280,8 +282,8 @@ export default function AdminDisputesPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3">
-          <Loader2 className="w-8 h-8 text-primary-600 animate-spin" />
-          <p className="text-sm text-slate-500">Chargement des litiges...</p>
+          <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
+          <p className="text-sm text-neutral-500">Chargement des litiges...</p>
         </div>
       </div>
     );
@@ -295,7 +297,7 @@ export default function AdminDisputesPage() {
           <p className="text-sm text-red-600">Erreur: {error.message}</p>
           <button
             onClick={refetch}
-            className="px-4 py-2 bg-primary-600 text-white rounded-lg text-sm hover:bg-primary-700"
+            className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700"
           >
             Réessayer
           </button>
@@ -324,8 +326,8 @@ export default function AdminDisputesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Litiges</h1>
-          <p className="text-slate-500">
+          <h1 className="text-2xl font-bold text-neutral-900">Litiges</h1>
+          <p className="text-neutral-500">
             Résolution des conflits entre clients et transporteurs
           </p>
         </div>
@@ -371,13 +373,13 @@ export default function AdminDisputesPage() {
               onClick={() => setFilter(tab.value)}
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 isActive
-                  ? "bg-primary-600 text-white shadow-sm"
-                  : "bg-white text-slate-600 hover:bg-slate-100 border border-slate-200"
+                  ? "bg-brand-600 text-white shadow-sm"
+                  : "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200"
               }`}
             >
               {tab.label}
               <span
-                className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-slate-100"}`}
+                className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
               >
                 {count}
               </span>
@@ -387,21 +389,21 @@ export default function AdminDisputesPage() {
       </div>
 
       {/* Stats Bar */}
-      <div className="bg-white rounded-xl border border-slate-200 p-4">
+      <div className="bg-white rounded-xl border border-neutral-200 p-4">
         <div className="flex flex-wrap gap-6 text-sm">
           <div>
-            <span className="text-slate-500">Total:</span>
-            <span className="ml-2 font-semibold text-slate-900">
+            <span className="text-neutral-500">Total:</span>
+            <span className="ml-2 font-semibold text-neutral-900">
               {filtered.length}
             </span>
           </div>
           <div>
-            <span className="text-slate-500">Ouverts:</span>
+            <span className="text-neutral-500">Ouverts:</span>
             <span className="ml-2 font-semibold text-red-600">{openCount}</span>
           </div>
           <div>
-            <span className="text-slate-500">En investigation:</span>
-            <span className="ml-2 font-semibold text-blue-600">
+            <span className="text-neutral-500">En investigation:</span>
+            <span className="ml-2 font-semibold text-brand-600">
               {investigatingCount}
             </span>
           </div>
@@ -419,13 +421,13 @@ export default function AdminDisputesPage() {
       {selectedDispute && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
           <div className="bg-white w-full max-w-lg h-full overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-slate-900">
+            <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-neutral-900">
                 Litige #{selectedDispute.id}
               </h2>
               <button
                 onClick={() => setSelectedDispute(null)}
-                className="text-slate-400 hover:text-slate-600 text-xl"
+                className="text-neutral-400 hover:text-neutral-600 text-xl"
               >
                 ×
               </button>
@@ -439,23 +441,25 @@ export default function AdminDisputesPage() {
                   colorClass={statusColors[selectedDispute.status]}
                   size="md"
                 />
-                <span className="text-sm text-slate-500">
+                <span className="text-sm text-neutral-500">
                   Ouvert {formatTimeAgoShort(selectedDispute.created_at)}
                 </span>
               </div>
 
               {/* Job Info */}
-              <div className="bg-slate-50 rounded-xl p-4">
-                <p className="text-xs text-slate-500 mb-1">Mission concernée</p>
-                <p className="font-medium text-slate-900">
+              <div className="bg-neutral-50 rounded-xl p-4">
+                <p className="text-xs text-neutral-500 mb-1">
+                  Mission concernée
+                </p>
+                <p className="font-medium text-neutral-900">
                   {reasonLabels[selectedDispute.reason] ||
                     selectedDispute.reason}
                 </p>
-                <p className="text-sm text-slate-500">
+                <p className="text-sm text-neutral-500">
                   Job #{selectedDispute.job_summary?.id || selectedDispute.job}
                 </p>
                 {selectedDispute.job_summary?.pickup && (
-                  <p className="text-xs text-slate-400 mt-1">
+                  <p className="text-xs text-neutral-400 mt-1">
                     {selectedDispute.job_summary.pickup} →{" "}
                     {selectedDispute.job_summary.dropoff}
                   </p>
@@ -463,19 +467,19 @@ export default function AdminDisputesPage() {
               </div>
 
               {/* Opened By */}
-              <div className="bg-blue-50 rounded-xl p-3">
-                <p className="text-xs text-blue-600 mb-1">Plaignant</p>
-                <p className="font-medium text-slate-900 text-sm">
+              <div className="bg-brand-600/5 rounded-xl p-3">
+                <p className="text-xs text-brand-600 mb-1">Plaignant</p>
+                <p className="font-medium text-neutral-900 text-sm">
                   {selectedDispute.opened_by_name}
                 </p>
               </div>
 
               {/* Description */}
               <div>
-                <p className="text-xs text-slate-500 mb-2">
+                <p className="text-xs text-neutral-500 mb-2">
                   Description du litige
                 </p>
-                <p className="text-sm text-slate-700 bg-slate-50 rounded-xl p-4">
+                <p className="text-sm text-neutral-700 bg-neutral-50 rounded-xl p-4">
                   {selectedDispute.description}
                 </p>
               </div>
@@ -498,12 +502,12 @@ export default function AdminDisputesPage() {
               {/* Actions */}
               {(selectedDispute.status === "OPEN" ||
                 selectedDispute.status === "INVESTIGATING") && (
-                <div className="flex gap-3 pt-4 border-t border-slate-100">
+                <div className="flex gap-3 pt-4 border-t border-neutral-100">
                   {selectedDispute.status === "OPEN" && (
                     <button
                       onClick={() => handleInvestigate(selectedDispute.id)}
                       disabled={actionLoading}
-                      className="flex-1 bg-blue-600 text-white py-2.5 rounded-xl font-medium hover:bg-blue-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                      className="flex-1 bg-brand-600 text-white py-2.5 rounded-xl font-medium hover:bg-brand-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {actionLoading ? (
                         <Loader2 className="w-4 h-4 animate-spin" />
@@ -540,10 +544,10 @@ export default function AdminDisputesPage() {
       {showResolveModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
+            <h3 className="text-lg font-bold text-neutral-900 mb-2">
               Résoudre le litige #{pendingActionId}
             </h3>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-neutral-500 mb-4">
               Décrivez la résolution. Le résultat sera enregistré dans
               l&apos;audit trail.
             </p>
@@ -552,12 +556,12 @@ export default function AdminDisputesPage() {
               onChange={(e) => setResolveNotes(e.target.value)}
               placeholder="Notes de résolution (min. 10 caractères)..."
               rows={3}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+              className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
             />
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowResolveModal(false)}
-                className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+                className="flex-1 bg-neutral-100 text-neutral-700 py-2.5 rounded-xl font-medium hover:bg-neutral-200 transition-colors"
               >
                 Annuler
               </button>
@@ -578,10 +582,10 @@ export default function AdminDisputesPage() {
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-slate-900 mb-2">
+            <h3 className="text-lg font-bold text-neutral-900 mb-2">
               Rejeter le litige #{pendingActionId}
             </h3>
-            <p className="text-sm text-slate-500 mb-4">
+            <p className="text-sm text-neutral-500 mb-4">
               Indiquez la raison du rejet. Les deux parties seront notifiées.
             </p>
             <textarea
@@ -589,12 +593,12 @@ export default function AdminDisputesPage() {
               onChange={(e) => setResolveNotes(e.target.value)}
               placeholder="Raison du rejet (min. 10 caractères)..."
               rows={3}
-              className="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent resize-none"
+              className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
             />
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowRejectModal(false)}
-                className="flex-1 bg-slate-100 text-slate-700 py-2.5 rounded-xl font-medium hover:bg-slate-200 transition-colors"
+                className="flex-1 bg-neutral-100 text-neutral-700 py-2.5 rounded-xl font-medium hover:bg-neutral-200 transition-colors"
               >
                 Annuler
               </button>
