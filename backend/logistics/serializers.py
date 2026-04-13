@@ -182,16 +182,27 @@ class OfferCreateSerializer(serializers.ModelSerializer):
 class OfferListSerializer(serializers.ModelSerializer):
     """
     Read-only serializer for offer listings.
-    Includes transporter trust badge for client-facing visibility.
+    Includes transporter trust badge for client-facing visibility,
+    and job details for the transporter's "Mes Offres" page.
     """
     transporter_name = serializers.SerializerMethodField()
     transporter_rating = serializers.SerializerMethodField()
     trust_badge = serializers.SerializerMethodField()
 
+    # Job details for transporter's offer tracking view
+    job_pickup = serializers.CharField(source='job.pickup_address', read_only=True)
+    job_dropoff = serializers.CharField(source='job.dropoff_address', read_only=True)
+    job_type = serializers.CharField(source='job.job_type', read_only=True)
+    job_date = serializers.DateTimeField(source='job.scheduled_time', read_only=True)
+    client_name = serializers.SerializerMethodField()
+
     class Meta:
         model = Offer
         fields = [
-            'id', 'job', 'status', 'total_price', 'message',
+            'id', 'job', 'status', 'total_price', 'price_net',
+            'commission_amount', 'message',
+            'job_pickup', 'job_dropoff', 'job_type', 'job_date',
+            'client_name',
             'transporter_name', 'transporter_rating', 'trust_badge',
             'valid_until', 'created_at'
         ]
@@ -212,6 +223,12 @@ class OfferListSerializer(serializers.ModelSerializer):
         """Get trust badge for transporter (read-only exposure)."""
         from logistics.services import get_transporter_trust_badge
         return get_transporter_trust_badge(obj.transporter)
+
+    def get_client_name(self, obj) -> str:
+        """Job owner's name — visible to transporter for accepted offers."""
+        owner = obj.job.owner
+        name = f"{owner.first_name} {owner.last_name}".strip()
+        return name or owner.email.split('@')[0]
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):

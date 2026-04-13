@@ -15,6 +15,8 @@ import {
   Truck,
   Loader2,
   Lock,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -67,6 +69,49 @@ interface SendMessageResponse {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
+/** Truncate long addresses */
+function shortAddr(addr: string, max = 35): string {
+  if (!addr || addr.length <= max) return addr;
+  const parts = addr.split(",").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const s = `${parts[0]}, ${parts[1]}`;
+    return s.length <= max ? s : parts[0].slice(0, max) + "…";
+  }
+  return addr.slice(0, max) + "…";
+}
+
+/** Format a date for separator display */
+function dateSeparatorLabel(dateStr: string): string {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  const diffDays = Math.floor((today.getTime() - msgDay.getTime()) / 86400000);
+
+  if (diffDays === 0) return "Aujourd'hui";
+  if (diffDays === 1) return "Hier";
+  return d.toLocaleDateString("fr-FR", {
+    weekday: "long",
+    day: "numeric",
+    month: "long",
+  });
+}
+
+/** Check if two messages are on different days */
+function isDifferentDay(a: string, b: string): boolean {
+  const da = new Date(a);
+  const db = new Date(b);
+  return (
+    da.getFullYear() !== db.getFullYear() ||
+    da.getMonth() !== db.getMonth() ||
+    da.getDate() !== db.getDate()
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Messaging Page (REAL API)                                                  */
 /* -------------------------------------------------------------------------- */
 
@@ -87,11 +132,13 @@ export default function MessagingPage() {
   const [sending, setSending] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorType, setErrorType] = useState<"403" | "404" | "other">("other");
   const [job, setJob] = useState<JobInfo | null>(null);
   const [otherParty, setOtherParty] = useState<OtherParty | null>(null);
   const [conversation, setConversation] = useState<ConversationInfo | null>(
     null,
   );
+  const [showContact, setShowContact] = useState(false);
 
   const isBookingConfirmed =
     job?.status === "IN_PROGRESS" || job?.status === "COMPLETED";
@@ -113,9 +160,22 @@ export default function MessagingPage() {
         setOtherParty(data.other_party);
         setConversation(data.conversation);
       } catch (err: unknown) {
-        if (err instanceof ApiError && err.status === 403) {
-          setError("Vous n'avez pas accès à cette conversation.");
+        // FIX #2: Differentiate 403 vs 404 errors
+        if (err instanceof ApiError) {
+          if (err.status === 403) {
+            setErrorType("403");
+            setError("Vous n'avez pas accès à cette conversation.");
+          } else if (err.status === 404) {
+            setErrorType("404");
+            setError(
+              "Aucune conversation trouvée pour cette mission. La conversation sera créée automatiquement après l'acceptation d'une offre.",
+            );
+          } else {
+            setErrorType("other");
+            setError(err.message || "Erreur lors du chargement.");
+          }
         } else {
+          setErrorType("other");
           const message =
             err instanceof Error ? err.message : "Erreur lors du chargement.";
           setError(message);
@@ -195,39 +255,35 @@ export default function MessagingPage() {
   };
 
   const getStatusLabel = (status: string) => {
-    switch (status) {
-      case "IN_PROGRESS":
-        return "En cours";
-      case "COMPLETED":
-        return "Terminée";
-      case "PUBLISHED":
-        return "Publiée";
-      case "DISPUTED":
-        return "Litige";
-      default:
-        return status;
-    }
+    const labels: Record<string, string> = {
+      IN_PROGRESS: "En cours",
+      COMPLETED: "Terminée",
+      PUBLISHED: "Publiée",
+      DISPUTED: "Litige",
+      MATCHED: "Confirmée",
+      CANCELLED: "Annulée",
+    };
+    return labels[status] || status;
   };
 
   const getStatusColor = (status: string) => {
-    switch (status) {
-      case "IN_PROGRESS":
-        return "bg-brand-600/5 text-brand-600";
-      case "COMPLETED":
-        return "bg-emerald-50 text-emerald-700";
-      case "PUBLISHED":
-        return "bg-amber-50 text-amber-700";
-      case "DISPUTED":
-        return "bg-red-50 text-red-700";
-      default:
-        return "bg-neutral-100 text-neutral-600";
-    }
+    const colors: Record<string, string> = {
+      IN_PROGRESS: "bg-brand-600/5 text-brand-600",
+      COMPLETED: "bg-emerald-50 text-emerald-700",
+      PUBLISHED: "bg-amber-50 text-amber-700",
+      DISPUTED: "bg-red-50 text-red-700",
+      CANCELLED: "bg-neutral-100 text-neutral-500",
+    };
+    return colors[status] || "bg-neutral-100 text-neutral-600";
   };
 
   // Loading state
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)]">
+      <div
+        className="flex flex-col items-center justify-center"
+        style={{ minHeight: "calc(100vh - 10rem)" }}
+      >
         <Loader2 className="w-8 h-8 text-brand-600 animate-spin mb-4" />
         <p className="text-sm text-neutral-500">
           Chargement de la conversation...
@@ -236,16 +292,57 @@ export default function MessagingPage() {
     );
   }
 
-  // Error state
+  // FIX #2: Differentiated error state
   if (error) {
     return (
-      <div className="flex flex-col items-center justify-center h-[calc(100vh-4rem)] px-4">
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 max-w-md text-center">
-          <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <h3 className="text-lg font-semibold text-red-800 mb-2">
-            Accès refusé
+      <div
+        className="flex flex-col items-center justify-center px-4"
+        style={{ minHeight: "calc(100vh - 10rem)" }}
+      >
+        <div
+          className={`border rounded-xl p-6 max-w-md text-center ${
+            errorType === "403"
+              ? "bg-red-50 border-red-200"
+              : errorType === "404"
+                ? "bg-amber-50 border-amber-200"
+                : "bg-neutral-50 border-neutral-200"
+          }`}
+        >
+          <AlertTriangle
+            className={`w-8 h-8 mx-auto mb-3 ${
+              errorType === "403"
+                ? "text-red-500"
+                : errorType === "404"
+                  ? "text-amber-500"
+                  : "text-neutral-400"
+            }`}
+          />
+          <h3
+            className={`text-lg font-semibold mb-2 ${
+              errorType === "403"
+                ? "text-red-800"
+                : errorType === "404"
+                  ? "text-amber-800"
+                  : "text-neutral-800"
+            }`}
+          >
+            {errorType === "403"
+              ? "Accès refusé"
+              : errorType === "404"
+                ? "Conversation introuvable"
+                : "Erreur"}
           </h3>
-          <p className="text-sm text-red-600 mb-4">{error}</p>
+          <p
+            className={`text-sm mb-4 ${
+              errorType === "403"
+                ? "text-red-600"
+                : errorType === "404"
+                  ? "text-amber-600"
+                  : "text-neutral-600"
+            }`}
+          >
+            {error}
+          </p>
           <button
             onClick={() => router.push("/messages")}
             className="text-sm font-medium text-brand-600 hover:text-brand-700"
@@ -258,9 +355,15 @@ export default function MessagingPage() {
   }
 
   return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] max-w-3xl mx-auto">
+    <div
+      className="flex flex-col max-w-3xl mx-auto -mb-20 lg:-mb-0"
+      style={{
+        height: "calc(100vh - 4rem - env(safe-area-inset-bottom, 0px))",
+        maxHeight: "calc(100vh - 4rem)",
+      }}
+    >
       {/* ---------------------------------------------------------------- */}
-      {/*  Header                                                         */}
+      {/*  Header — FIX #10: Truncated addresses                          */}
       {/* ---------------------------------------------------------------- */}
       <div className="bg-white border-b border-neutral-200 px-4 py-3 flex items-center gap-4 flex-shrink-0">
         <button
@@ -275,10 +378,14 @@ export default function MessagingPage() {
             {otherParty?.name || "Conversation"}
           </p>
           {job && (
-            <div className="flex items-center gap-2 text-xs text-neutral-500">
-              <Truck className="w-3.5 h-3.5" />
+            <div
+              className="flex items-center gap-2 text-xs text-neutral-500"
+              title={`${job.pickup_address} → ${job.dropoff_address}`}
+            >
+              <Truck className="w-3.5 h-3.5 flex-shrink-0" />
               <span className="truncate">
-                {job.pickup_address} → {job.dropoff_address}
+                {shortAddr(job.pickup_address)} →{" "}
+                {shortAddr(job.dropoff_address)}
               </span>
             </div>
           )}
@@ -296,22 +403,52 @@ export default function MessagingPage() {
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      {/*  Contact Reveal                                                 */}
+      {/*  Contact Reveal — FIX #11: Collapsible                          */}
       {/* ---------------------------------------------------------------- */}
-      <div className="px-4 py-3 bg-neutral-50 border-b border-neutral-200 flex-shrink-0">
-        <ContactReveal
-          isBookingConfirmed={isBookingConfirmed}
-          phone={otherParty?.phone || undefined}
-          email={otherParty?.email || undefined}
-          name={otherParty?.name || undefined}
-        />
-      </div>
+      {isBookingConfirmed && otherParty && (
+        <div className="border-b border-neutral-200 flex-shrink-0">
+          <button
+            onClick={() => setShowContact(!showContact)}
+            className="w-full px-4 py-2 flex items-center justify-between text-xs text-emerald-700 bg-emerald-50/50 hover:bg-emerald-50 transition-colors"
+          >
+            <span className="flex items-center gap-1.5 font-medium">
+              📞 Coordonnées de {otherParty.name || "votre contact"}
+            </span>
+            {showContact ? (
+              <ChevronUp className="w-3.5 h-3.5" />
+            ) : (
+              <ChevronDown className="w-3.5 h-3.5" />
+            )}
+          </button>
+          {showContact && (
+            <div className="px-4 py-3 bg-emerald-50/30">
+              <ContactReveal
+                isBookingConfirmed={true}
+                phone={otherParty.phone || undefined}
+                email={otherParty.email || undefined}
+                name={otherParty.name || undefined}
+              />
+            </div>
+          )}
+        </div>
+      )}
+      {!isBookingConfirmed && (
+        <div className="px-4 py-2 bg-neutral-50 border-b border-neutral-200 flex-shrink-0">
+          <div className="flex items-center gap-2 text-xs text-neutral-500">
+            <Lock className="w-3.5 h-3.5 text-neutral-400" />
+            <span>
+              Coordonnées protégées — débloquées après confirmation de
+              réservation
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* ---------------------------------------------------------------- */}
-      {/*  Messages                                                       */}
+      {/*  Messages — FIX #13: Date separators                            */}
       {/* ---------------------------------------------------------------- */}
       <div className="flex-1 overflow-y-auto px-4 py-6 bg-white">
-        {/* System message */}
+        {/* System header */}
         <div className="flex justify-center mb-6">
           <div className="bg-neutral-100 rounded-full px-4 py-1.5 flex items-center gap-2">
             <Info className="w-3.5 h-3.5 text-neutral-400" />
@@ -329,22 +466,53 @@ export default function MessagingPage() {
           </div>
         )}
 
-        {messages.map((msg) => (
-          <MessageBubble
-            key={msg.id}
-            content={msg.content}
-            timestamp={msg.created_at}
-            isSender={msg.sender === currentUserId}
-            senderName={msg.sender === currentUserId ? "Vous" : msg.sender_name}
-            isRead={msg.is_read}
-          />
-        ))}
+        {messages.map((msg, idx) => {
+          // FIX #13: Show date separator when day changes
+          const showDateSep =
+            idx === 0 ||
+            isDifferentDay(messages[idx - 1].created_at, msg.created_at);
+
+          return (
+            <React.Fragment key={msg.id}>
+              {showDateSep && (
+                <div className="flex items-center gap-3 my-4">
+                  <div className="flex-1 h-px bg-neutral-200" />
+                  <span className="text-xs text-neutral-400 font-medium px-2">
+                    {dateSeparatorLabel(msg.created_at)}
+                  </span>
+                  <div className="flex-1 h-px bg-neutral-200" />
+                </div>
+              )}
+
+              {msg.is_system ? (
+                /* System message — special styling */
+                <div className="flex justify-center mb-3">
+                  <div className="bg-neutral-50 border border-neutral-200 rounded-lg px-4 py-2 max-w-[80%]">
+                    <p className="text-xs text-neutral-600 whitespace-pre-wrap text-center">
+                      {msg.content}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <MessageBubble
+                  content={msg.content}
+                  timestamp={msg.created_at}
+                  isSender={msg.sender === currentUserId}
+                  senderName={
+                    msg.sender === currentUserId ? "Vous" : msg.sender_name
+                  }
+                  isRead={msg.is_read}
+                />
+              )}
+            </React.Fragment>
+          );
+        })}
 
         <div ref={messagesEndRef} />
       </div>
 
       {/* ---------------------------------------------------------------- */}
-      {/*  Bypass Warning                                                 */}
+      {/*  Bypass Warning                                                  */}
       {/* ---------------------------------------------------------------- */}
       {bypassWarning && (
         <div className="px-4 py-2 bg-amber-50 border-t border-amber-200 flex items-start gap-2 flex-shrink-0">
@@ -360,7 +528,7 @@ export default function MessagingPage() {
       )}
 
       {/* ---------------------------------------------------------------- */}
-      {/*  Input                                                          */}
+      {/*  Input                                                           */}
       {/* ---------------------------------------------------------------- */}
       {conversation?.is_locked ? (
         <div className="bg-neutral-50 border-t border-neutral-200 px-4 py-4 flex-shrink-0">

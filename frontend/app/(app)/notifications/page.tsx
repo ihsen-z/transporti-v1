@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Package,
   CreditCard,
@@ -11,12 +11,9 @@ import {
   Check,
   CheckCheck,
 } from "lucide-react";
-import {
-  mockNotifications,
-  formatTimeAgo,
-  getCategoryColor,
-} from "@/lib/notifications";
+import { formatTimeAgo, getCategoryColor } from "@/lib/notifications";
 import type { Notification } from "@/lib/notifications";
+import { getNotifications } from "@/lib/services/notifications";
 
 const categoryIcons = {
   PAYMENT: CreditCard,
@@ -28,9 +25,14 @@ const categoryIcons = {
 };
 
 export default function NotificationsPage() {
-  const [notifications, setNotifications] =
-    useState<Notification[]>(mockNotifications);
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [filter, setFilter] = useState<"all" | "unread">("all");
+
+  useEffect(() => {
+    getNotifications()
+      .then((result) => setNotifications(result.data))
+      .catch(() => {});
+  }, []);
 
   const filteredNotifications =
     filter === "unread"

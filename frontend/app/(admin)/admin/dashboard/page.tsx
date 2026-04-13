@@ -27,7 +27,6 @@ import {
   useSystemAlerts,
 } from "@/hooks/useAdminData";
 import LoadingState from "@/components/ui/LoadingState";
-import DataSourceBadge from "@/components/ui/DataSourceBadge";
 
 export default function AdminDashboardPage() {
   const { data: stats, loading: statsLoading, source } = useAdminStats();
@@ -233,8 +232,6 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
-
-      <DataSourceBadge source={source} />
     </div>
   );
 }

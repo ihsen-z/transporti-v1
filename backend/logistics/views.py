@@ -248,6 +248,22 @@ class OfferAcceptView(generics.GenericAPIView):
                 # Log error but don't fail the booking
                 escrow = None
 
+        # 5. Create conversation + system message (FIX #1 + #6)
+        try:
+            from messaging.services import get_or_create_conversation, send_system_message
+            get_or_create_conversation(job)
+            transporter_name = f"{offer.transporter.first_name} {offer.transporter.last_name}".strip()
+            send_system_message(
+                job,
+                f"✅ Offre acceptée — La mission est maintenant en cours.\n"
+                f"Transporteur : {transporter_name}\n"
+                f"Montant : {offer.total_price} TND ({payment_method})\n"
+                f"Vous pouvez désormais échanger librement.",
+                actor=request.user
+            )
+        except Exception:
+            pass  # Conversation failure must never block booking
+
         response_data = {
             'message': f'Offer accepted successfully ({payment_method}). Job is now IN_PROGRESS.',
             'payment_method': payment_method,
@@ -331,6 +347,15 @@ class JobCancelView(APIView):
         # Withdraw all offers
         job.offers.update(status=Offer.Status.EXPIRED)
         
+        # Auto-lock conversation if one exists (#7)
+        try:
+            from messaging.models import Conversation
+            conv = Conversation.objects.filter(job=job).first()
+            if conv:
+                conv.lock()
+        except Exception:
+            pass
+        
         return Response({'message': 'Job cancelled successfully.'})
 
 
@@ -354,6 +379,24 @@ class JobCompleteView(APIView):
             
         job.status = TransportJob.Status.COMPLETED
         job.save()
+        
+        # Auto-lock conversation (#7) + system message
+        try:
+            from messaging.models import Conversation
+            from messaging.services import send_system_message
+            conv = Conversation.objects.filter(job=job).first()
+            if conv:
+                conv.lock()
+                send_system_message(
+                    job=job,
+                    content=(
+                        "✅ Mission terminée — La livraison a été confirmée.\n"
+                        "La conversation est maintenant verrouillée.\n"
+                        "En cas de problème, vous pouvez ouvrir un litige."
+                    )
+                )
+        except Exception:
+            pass  # Don't block completion if messaging fails
         
         return Response({'message': 'Job marked as completed.'})
 

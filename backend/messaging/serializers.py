@@ -26,7 +26,6 @@ class MessageSerializer(serializers.ModelSerializer):
 class MessageCreateSerializer(serializers.Serializer):
     """Create a new message."""
     content = serializers.CharField(min_length=1, max_length=2000, required=True)
-    is_system = serializers.BooleanField(default=False, required=False)
 
 
 class ConversationSerializer(serializers.ModelSerializer):
@@ -50,10 +49,11 @@ class ConversationSerializer(serializers.ModelSerializer):
 class ConversationListSerializer(serializers.ModelSerializer):
     """
     Conversation serializer for the inbox listing.
-    Includes job details and the other party's name.
+    Uses annotation-based fields to avoid N+1 queries.
+    Requires queryset to be annotated with _last_message_*, _message_count, _unread_count.
     """
-    last_message = MessageSerializer(read_only=True)
-    message_count = serializers.IntegerField(read_only=True)
+    last_message = serializers.SerializerMethodField()
+    message_count = serializers.SerializerMethodField()
     unread_count = serializers.SerializerMethodField()
     job_title = serializers.SerializerMethodField()
     job_status = serializers.SerializerMethodField()
@@ -68,11 +68,28 @@ class ConversationListSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = fields
 
+    def get_last_message(self, obj) -> dict | None:
+        """Build last_message dict from annotations (no extra query)."""
+        msg_id = getattr(obj, '_last_message_id', None)
+        if not msg_id:
+            return None
+        return {
+            'id': msg_id,
+            'sender': getattr(obj, '_last_message_sender_id', None),
+            'sender_name': getattr(obj, '_last_message_sender_name', None) or 'System',
+            'content': getattr(obj, '_last_message_content', ''),
+            'is_system': getattr(obj, '_last_message_is_system', False),
+            'is_read': getattr(obj, '_last_message_is_read', False),
+            'created_at': getattr(obj, '_last_message_created_at', None),
+        }
+
+    def get_message_count(self, obj) -> int:
+        """Read from annotation (no extra query)."""
+        return getattr(obj, '_message_count', 0)
+
     def get_unread_count(self, obj) -> int:
-        request = self.context.get('request')
-        if not request or not request.user:
-            return 0
-        return obj.messages.filter(is_read=False).exclude(sender=request.user).count()
+        """Read from annotation (no extra query)."""
+        return getattr(obj, '_unread_count', 0)
 
     def get_job_title(self, obj) -> str:
         job = obj.job

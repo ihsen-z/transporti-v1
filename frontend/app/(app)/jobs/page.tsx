@@ -4,7 +4,6 @@ import { Package, Filter, Search, Plus } from "lucide-react";
 import JobCard from "@/components/dashboard/JobCard";
 import { useJobs } from "@/hooks/useJobs";
 import LoadingState from "@/components/ui/LoadingState";
-import DataSourceBadge from "@/components/ui/DataSourceBadge";
 
 export default function JobsListPage() {
   const { data: jobs, loading, source } = useJobs();
@@ -112,7 +111,6 @@ export default function JobsListPage() {
           ))}
         </div>
       )}
-      <DataSourceBadge source={source} />
     </div>
   );
 }

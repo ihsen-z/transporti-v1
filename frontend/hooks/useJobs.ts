@@ -1,19 +1,18 @@
-'use client';
+"use client";
 
-// Jobs Hook
-// Sprint 7.5 — API Transition Layer
+// Jobs Hook — Production, real API only
 
-import { useCallback } from 'react';
-import { useDataService } from './useDataService';
-import { getJobs, getJobById } from '@/lib/services/jobs';
-import { mockRecentJobs, type Job } from '@/lib/dashboard';
+import { useCallback } from "react";
+import { useDataService } from "./useDataService";
+import { getJobs, getJobById } from "@/lib/services/jobs";
+import { type Job } from "@/lib/dashboard";
 
 export function useJobs() {
-    const fetcher = useCallback(() => getJobs(), []);
-    return useDataService<Job[]>(fetcher, []);
+  const fetcher = useCallback(() => getJobs(), []);
+  return useDataService<Job[]>(fetcher, []);
 }
 
 export function useJobById(id: number) {
-    const fetcher = useCallback(() => getJobById(id), [id]);
-    return useDataService<Job | null>(fetcher, null);
+  const fetcher = useCallback(() => getJobById(id), [id]);
+  return useDataService<Job | null>(fetcher, null);
 }

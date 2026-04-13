@@ -16,7 +16,7 @@ from .services import (
     get_or_create_conversation, mark_messages_as_read
 )
 from logistics.models import TransportJob
-from transporti_core.throttling import BookingRateThrottle
+from transporti_core.throttling import MessageRateThrottle
 
 logger = logging.getLogger('transporti')
 
@@ -25,16 +25,65 @@ class UserConversationsView(generics.ListAPIView):
     """
     GET /api/conversations/ - List all conversations the current user participates in.
     Returns conversations ordered by most recent activity.
+    Optimized: uses Subquery to avoid N+1 queries on last_message, message_count, unread_count.
     """
     permission_classes = [IsAuthenticated]
     serializer_class = ConversationListSerializer
 
     def get_queryset(self):
+        from django.db.models import OuterRef, Subquery, Count, Q, IntegerField, TextField, DateTimeField
+        from django.db.models.functions import Coalesce
+
+        # Subquery for last message fields
+        last_msg_qs = Message.objects.filter(
+            conversation=OuterRef('pk')
+        ).order_by('-created_at')
+
         return (
             Conversation.objects
             .filter(participants=self.request.user)
             .select_related('job')
-            .prefetch_related('participants', 'messages')
+            .prefetch_related('participants')
+            .annotate(
+                # N+1 Fix #17: last_message fields via Subquery
+                _last_message_id=Subquery(
+                    last_msg_qs.values('id')[:1],
+                    output_field=IntegerField()
+                ),
+                _last_message_content=Subquery(
+                    last_msg_qs.values('content')[:1],
+                    output_field=TextField()
+                ),
+                _last_message_sender_name=Subquery(
+                    last_msg_qs.values('sender__first_name')[:1],
+                    output_field=TextField()
+                ),
+                _last_message_is_system=Subquery(
+                    last_msg_qs.values('is_system')[:1],
+                ),
+                _last_message_is_read=Subquery(
+                    last_msg_qs.values('is_read')[:1],
+                ),
+                _last_message_created_at=Subquery(
+                    last_msg_qs.values('created_at')[:1],
+                    output_field=DateTimeField()
+                ),
+                _last_message_sender_id=Subquery(
+                    last_msg_qs.values('sender_id')[:1],
+                    output_field=IntegerField()
+                ),
+                # N+1 Fix #18: message_count via annotation
+                _message_count=Count('messages'),
+                # N+1 Fix #3: unread_count via annotation
+                _unread_count=Count(
+                    'messages',
+                    filter=Q(
+                        messages__is_read=False
+                    ) & ~Q(
+                        messages__sender=self.request.user
+                    )
+                ),
+            )
             .order_by('-updated_at')
         )
 
@@ -50,7 +99,7 @@ class JobMessagesView(generics.GenericAPIView):
     POST /api/jobs/{job_id}/messages/ - Send a message
     """
     permission_classes = [IsAuthenticated]
-    throttle_classes = [BookingRateThrottle]
+    throttle_classes = [MessageRateThrottle]
     
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -62,6 +111,26 @@ class JobMessagesView(generics.GenericAPIView):
         job = get_object_or_404(TransportJob, id=job_id)
         
         try:
+            # FIX #5: Auto-create conversation if job is active and user is participant
+            conversation = None
+            try:
+                conversation = Conversation.objects.get(job=job)
+            except Conversation.DoesNotExist:
+                # Auto-create only if user is a participant in the job
+                from logistics.models import Offer
+                is_owner = job.owner_id == request.user.id
+                is_transporter = Offer.objects.filter(
+                    job=job, status='ACCEPTED', transporter=request.user
+                ).exists()
+                
+                if is_owner or is_transporter:
+                    conversation = get_or_create_conversation(job)
+                else:
+                    return Response(
+                        {'error': 'Aucune conversation trouvée pour cette mission.'},
+                        status=status.HTTP_404_NOT_FOUND
+                    )
+            
             messages = get_conversation_messages(
                 user=request.user,
                 job=job,
@@ -71,12 +140,7 @@ class JobMessagesView(generics.GenericAPIView):
             # Mark as read
             mark_messages_as_read(request.user, job)
             
-            # Get conversation info
-            try:
-                conversation = Conversation.objects.get(job=job)
-                conv_data = ConversationSerializer(conversation).data
-            except Conversation.DoesNotExist:
-                conv_data = None
+            conv_data = ConversationSerializer(conversation).data if conversation else None
             
             # Build job info for the chat header
             job_info = {
@@ -121,14 +185,13 @@ class JobMessagesView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         
         content = serializer.validated_data['content']
-        is_system = serializer.validated_data.get('is_system', False)
         
         try:
             message = send_message(
                 user=request.user,
                 job=job,
                 content=content,
-                is_system=is_system
+                is_system=False
             )
             
             return Response({

@@ -59,6 +59,24 @@ class DisputeCreateView(generics.CreateAPIView):
                 description=description
             )
             
+            # Auto-lock conversation during dispute (#7)
+            try:
+                from messaging.models import Conversation
+                from messaging.services import send_system_message
+                conv = Conversation.objects.filter(job=job).first()
+                if conv:
+                    conv.lock()
+                    send_system_message(
+                        job=job,
+                        content=(
+                            f"⚠️ Litige ouvert — {reason}\n"
+                            "La conversation est temporairement verrouillée "
+                            "pendant l'examen du litige par notre équipe."
+                        )
+                    )
+            except Exception:
+                pass
+            
             return Response({
                 'message': 'Dispute filed successfully.',
                 'dispute': DisputeDetailSerializer(dispute).data
@@ -178,6 +196,23 @@ class AdminDisputeResolveView(generics.GenericAPIView):
                 moderator=request.user, 
                 resolution_notes=resolution_notes
             )
+            
+            # Auto-unlock conversation after resolution (#7)
+            try:
+                from messaging.models import Conversation
+                from messaging.services import send_system_message
+                conv = Conversation.objects.filter(job=dispute.job).first()
+                if conv:
+                    conv.unlock()
+                    send_system_message(
+                        job=dispute.job,
+                        content=(
+                            "✅ Litige résolu — La conversation est à nouveau ouverte.\n"
+                            f"Résolution : {resolution_notes[:100]}"
+                        )
+                    )
+            except Exception:
+                pass
             
             return Response({
                 'message': 'Dispute resolved successfully.',

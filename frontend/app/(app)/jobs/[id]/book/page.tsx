@@ -1,13 +1,15 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { apiClient } from "@/lib/api/client";
 import { BookingSummary } from "@/components/booking/BookingSummary";
 import { PaymentMethodSelector } from "@/components/booking/PaymentMethodSelector";
 import { PaymentGateway } from "@/components/booking/PaymentGateway";
 import { EscrowBadge } from "@/components/booking/EscrowBadge";
+import LoadingState from "@/components/ui/LoadingState";
 import {
   ArrowLeft,
   CheckCircle2,
@@ -17,28 +19,27 @@ import {
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/*  Mock Data (until booking API wired)                                       */
+/*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
 
-const MOCK_JOB = {
-  id: 1,
-  job_type: "TRANSPORT" as const,
-  pickup_address: "Tunis — La Marsa, Rue du Lac",
-  dropoff_address: "Sousse Centre, Avenue Habib Bourguiba",
-  scheduled_time: "2026-02-12T10:00:00Z",
-  specifications: { weight_kg: 120, fragile: true },
-};
+interface JobData {
+  id: number;
+  job_type: "TRANSPORT" | "MOVING";
+  pickup_address: string;
+  dropoff_address: string;
+  scheduled_time: string;
+  specifications?: { weight_kg?: number; fragile?: boolean };
+}
 
-const MOCK_OFFER = {
-  id: 5,
-  total_price: 250,
-  commission_rate: 0.15,
-  transporter_name: "Mohamed Trabelsi",
-  transporter_rating: 4.6,
-  trust_badge: "VERIFIED",
-  message:
-    "Je peux transporter votre colis le jour même. Véhicule disponible immédiatement.",
-};
+interface OfferData {
+  id: number;
+  total_price: number;
+  commission_rate: number;
+  transporter_name: string;
+  transporter_rating: number;
+  trust_badge: string;
+  message?: string;
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Booking Page                                                              */
@@ -49,7 +50,13 @@ type BookingStep = "review" | "payment" | "confirm" | "success";
 export default function BookingPage() {
   const params = useParams();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user } = useAuth();
+
+  const jobId = Number(params.id);
+  const offerId = searchParams.get("offer")
+    ? Number(searchParams.get("offer"))
+    : undefined;
 
   const [step, setStep] = useState<BookingStep>("review");
   const [paymentMethod, setPaymentMethod] = useState<"DIGITAL" | "COD">(
@@ -57,23 +64,68 @@ export default function BookingPage() {
   );
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showGateway, setShowGateway] = useState(false);
+  const [job, setJob] = useState<JobData | null>(null);
+  const [offer, setOffer] = useState<OfferData | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // In production, fetch the job + accepted offer from the API
-  const job = MOCK_JOB;
-  const offer = MOCK_OFFER;
+  // Fetch job and offer data from API
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        const jobData = await apiClient.get<JobData>(`/api/jobs/${jobId}/`);
+        setJob(jobData);
+
+        if (offerId) {
+          const offerData = await apiClient.get<OfferData>(
+            `/api/jobs/${jobId}/offers/${offerId}/`,
+          );
+          setOffer(offerData);
+        }
+      } catch (err) {
+        console.error("Failed to fetch booking data:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [jobId, offerId]);
 
   async function handleConfirmBooking() {
     setIsSubmitting(true);
     try {
-      // POST to /api/bookings/ with { job_id, offer_id, payment_method }
-      // For now, simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      await apiClient.post(`/api/bookings/`, {
+        job_id: jobId,
+        offer_id: offerId,
+        payment_method: paymentMethod,
+      });
       setStep("success");
     } catch (error) {
       console.error("Booking failed:", error);
     } finally {
       setIsSubmitting(false);
     }
+  }
+
+  if (loading) {
+    return (
+      <div className="p-6 lg:p-8 max-w-2xl mx-auto">
+        <LoadingState variant="page" />
+      </div>
+    );
+  }
+
+  if (!job || !offer) {
+    return (
+      <div className="p-6 lg:p-8 max-w-2xl mx-auto text-center">
+        <p className="text-neutral-500">Données de réservation introuvables.</p>
+        <button
+          onClick={() => router.back()}
+          className="mt-4 text-brand-600 hover:underline"
+        >
+          Retour
+        </button>
+      </div>
+    );
   }
 
   if (step === "success") {

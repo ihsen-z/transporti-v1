@@ -6,7 +6,6 @@ import {
   LayoutDashboard,
   Truck,
   Bell,
-  Play,
   PlusCircle,
   Search,
   ShieldCheck,
@@ -37,7 +36,7 @@ export default function AppSidebar() {
   const transporterItems = [
     { href: "/jobs/browse", icon: Search, label: "Trouver une mission" },
     { href: "/offers", icon: FileText, label: "Mes offres" },
-    { href: "/messages/1", icon: MessageSquare, label: "Messages" },
+    { href: "/messages", icon: MessageSquare, label: "Messages" },
     { href: "/verification", icon: ShieldCheck, label: "Vérification" },
   ];
 
@@ -48,13 +47,6 @@ export default function AppSidebar() {
   } else if (role === "TRANSPORTER") {
     items = [...items, ...transporterItems];
   }
-
-  // Always include simulation for prototype
-  items.push({
-    href: "/simulation/delivery",
-    icon: Play,
-    label: "Simulation MVP",
-  });
 
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-neutral-200 h-screen fixed left-0 top-0 pt-0 z-sidebar">

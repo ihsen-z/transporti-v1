@@ -10,6 +10,7 @@ import {
   XCircle,
   Loader2,
 } from "lucide-react";
+import { apiClient } from "@/lib/api/client";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -17,6 +18,8 @@ import {
 
 interface PaymentGatewayProps {
   amount: number;
+  jobId?: number;
+  offerId?: number;
   onSuccess: (transactionId: string) => void;
   onCancel: () => void;
 }
@@ -57,6 +60,8 @@ const METHODS: {
 
 export function PaymentGateway({
   amount,
+  jobId,
+  offerId,
   onSuccess,
   onCancel,
 }: PaymentGatewayProps) {
@@ -65,6 +70,7 @@ export function PaymentGateway({
   const [cardNumber, setCardNumber] = useState("");
   const [cardExpiry, setCardExpiry] = useState("");
   const [cardCvv, setCardCvv] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
 
   const formatCardNumber = (v: string) => {
     const digits = v.replace(/\D/g, "").slice(0, 16);
@@ -79,19 +85,27 @@ export function PaymentGateway({
 
   const handlePay = async () => {
     setStatus("processing");
+    setErrorMessage("");
 
-    // Simulate payment processing (2s)
-    await new Promise((r) => setTimeout(r, 2000));
+    try {
+      const response = await apiClient.post<{
+        transaction_id: string;
+        status: string;
+      }>("/api/payments/process/", {
+        amount,
+        method,
+        job_id: jobId,
+        offer_id: offerId,
+      });
 
-    // Simulate 90% success rate for demo
-    const isSuccess = Math.random() > 0.1;
-
-    if (isSuccess) {
       setStatus("success");
-      const txnId = `TXN-${Date.now()}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+      const txnId = response.transaction_id || `TXN-${Date.now()}`;
       setTimeout(() => onSuccess(txnId), 1500);
-    } else {
+    } catch (error: any) {
       setStatus("error");
+      setErrorMessage(
+        error?.body?.detail || "Erreur lors du traitement du paiement.",
+      );
     }
   };
 
@@ -125,7 +139,8 @@ export function PaymentGateway({
           Paiement échoué
         </h3>
         <p className="text-sm text-neutral-500">
-          Une erreur est survenue lors du traitement. Veuillez réessayer.
+          {errorMessage ||
+            "Une erreur est survenue lors du traitement. Veuillez réessayer."}
         </p>
         <div className="flex gap-3 justify-center">
           <button

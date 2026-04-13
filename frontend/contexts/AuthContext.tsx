@@ -8,13 +8,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import {
-  type AuthUser,
-  type UserRole,
-  mockUsers,
-  getDefaultRedirect,
-} from "@/lib/auth";
-import { config } from "@/lib/config";
+import { type AuthUser, type UserRole, getDefaultRedirect } from "@/lib/auth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import {
   storeTokens,
@@ -80,7 +74,7 @@ interface AuthContextType {
   role: UserRole;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  /** Mock login — selects a role and loads mock user (existing behavior) */
+  /** @deprecated Use loginWithCredentials instead */
   login: (role: Exclude<UserRole, "guest">) => void;
   /** Real login — authenticates via backend API with email/password */
   loginWithCredentials: (
@@ -124,28 +118,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(savedUser);
         setRole(savedUser.role);
       } catch {
-        // Corrupted data, fall through to mock check
+        // Corrupted data, clear
+        localStorage.removeItem(USER_DATA_KEY);
       }
-    } else if (
-      savedRole &&
-      savedRole !== "guest" &&
-      mockUsers[savedRole as keyof typeof mockUsers]
-    ) {
-      // Backward compat: hydrate from old mock-only storage
-      setUser(mockUsers[savedRole as keyof typeof mockUsers]);
-      setRole(savedRole);
     }
 
     setIsInitialized(true);
   }, []);
 
-  /** Mock login — preserves existing behavior exactly */
+  /** @deprecated Use loginWithCredentials for real authentication */
   const login = useCallback((newRole: Exclude<UserRole, "guest">) => {
-    const mockUser = mockUsers[newRole];
-    setUser(mockUser);
-    setRole(newRole);
-    localStorage.setItem(STORAGE_KEY, newRole);
-    localStorage.setItem(USER_DATA_KEY, JSON.stringify(mockUser));
+    console.warn(
+      "[Transporti] login(role) is deprecated. Use loginWithCredentials() instead.",
+    );
   }, []);
 
   /** Real JWT login via backend API */

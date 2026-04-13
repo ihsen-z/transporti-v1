@@ -1,7 +1,9 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
+import { apiClient } from "@/lib/api/client";
+import { useToast } from "@/components/ui/Toast";
 import { OfferStatusCard } from "@/components/offers/OfferStatusCard";
 import {
   FileText,
@@ -11,78 +13,54 @@ import {
   AlertCircle,
   TrendingUp,
   DollarSign,
+  Loader2,
+  RefreshCw,
+  Undo2,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/*  Mock Data                                                                 */
+/*  Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-const MOCK_OFFERS = [
-  {
-    id: 1,
-    job_id: 10,
-    job_pickup: "Tunis — La Marsa",
-    job_dropoff: "Sousse Centre",
-    job_type: "MOVING" as const,
-    job_date: "2026-02-18T10:00:00Z",
-    price: 350,
-    commission_rate: 0.15,
-    status: "PENDING" as const,
-    valid_until: "2026-02-14T14:30:00Z",
-    message: "Disponible avec 2 aides pour le 18.",
-  },
-  {
-    id: 2,
-    job_id: 12,
-    job_pickup: "Sfax Port",
-    job_dropoff: "Tunis — Lac 2",
-    job_type: "TRANSPORT" as const,
-    job_date: "2026-02-20T08:00:00Z",
-    price: 180,
-    commission_rate: 0.15,
-    status: "PENDING" as const,
-    valid_until: "2026-02-15T08:00:00Z",
-  },
-  {
-    id: 3,
-    job_id: 8,
-    job_pickup: "Ariana — Ennasr",
-    job_dropoff: "Bizerte Ville",
-    job_type: "MOVING" as const,
-    job_date: "2026-02-10T09:00:00Z",
-    price: 420,
-    commission_rate: 0.15,
-    status: "ACCEPTED" as const,
-    valid_until: "2026-02-08T09:00:00Z",
-    client_name: "Leila Ben Ali",
-  },
-  {
-    id: 4,
-    job_id: 5,
-    job_pickup: "Monastir",
-    job_dropoff: "Mahdia",
-    job_type: "TRANSPORT" as const,
-    job_date: "2026-02-05T14:00:00Z",
-    price: 120,
-    commission_rate: 0.15,
-    status: "REJECTED" as const,
-    valid_until: "2026-02-03T14:00:00Z",
-  },
-  {
-    id: 5,
-    job_id: 3,
-    job_pickup: "Carthage",
-    job_dropoff: "Hammamet",
-    job_type: "TRANSPORT" as const,
-    job_date: "2026-01-28T11:00:00Z",
-    price: 150,
-    commission_rate: 0.15,
-    status: "EXPIRED" as const,
-    valid_until: "2026-01-26T11:00:00Z",
-  },
-];
+interface ApiOffer {
+  id: number;
+  job: number;
+  status: string;
+  total_price: string;
+  price_net: string;
+  commission_amount: string;
+  message: string;
+  job_pickup: string;
+  job_dropoff: string;
+  job_type: string;
+  job_date: string;
+  client_name: string;
+  valid_until: string;
+  created_at: string;
+}
 
-type TabFilter = "ALL" | "PENDING" | "ACCEPTED" | "REJECTED" | "EXPIRED";
+export interface MappedOffer {
+  id: number;
+  job_id: number;
+  job_pickup: string;
+  job_dropoff: string;
+  job_type: "TRANSPORT" | "MOVING" | "DELIVERY";
+  job_date: string;
+  price: number;
+  commission_rate: number;
+  status: "PENDING" | "ACCEPTED" | "REJECTED" | "EXPIRED" | "WITHDRAWN";
+  valid_until: string;
+  message?: string;
+  client_name?: string;
+}
+
+type TabFilter =
+  | "ALL"
+  | "PENDING"
+  | "ACCEPTED"
+  | "REJECTED"
+  | "EXPIRED"
+  | "WITHDRAWN";
 
 const TABS: { id: TabFilter; label: string; icon: React.ElementType }[] = [
   { id: "ALL", label: "Toutes", icon: FileText },
@@ -90,18 +68,130 @@ const TABS: { id: TabFilter; label: string; icon: React.ElementType }[] = [
   { id: "ACCEPTED", label: "Acceptées", icon: CheckCircle },
   { id: "REJECTED", label: "Refusées", icon: XCircle },
   { id: "EXPIRED", label: "Expirées", icon: AlertCircle },
+  { id: "WITHDRAWN", label: "Retirées", icon: Undo2 },
 ];
+
+/* -------------------------------------------------------------------------- */
+/*  Helpers                                                                    */
+/* -------------------------------------------------------------------------- */
+
+function mapApiOffer(o: ApiOffer): MappedOffer {
+  const totalPrice = parseFloat(o.total_price) || 0;
+  const commissionAmount = parseFloat(o.commission_amount) || 0;
+  const commissionRate = totalPrice > 0 ? commissionAmount / totalPrice : 0;
+
+  // Determine job type — handle DELIVERY as a distinct type
+  let jobType: MappedOffer["job_type"] = "TRANSPORT";
+  if (o.job_type === "MOVING") jobType = "MOVING";
+  else if (o.job_type === "DELIVERY") jobType = "DELIVERY";
+
+  return {
+    id: o.id,
+    job_id: o.job,
+    job_pickup: o.job_pickup || "—",
+    job_dropoff: o.job_dropoff || "—",
+    job_type: jobType,
+    job_date: o.job_date || o.created_at,
+    // FIX #4: Use total_price (what the client pays) as the "Prix proposé"
+    price: totalPrice,
+    commission_rate: commissionRate,
+    status: o.status as MappedOffer["status"],
+    valid_until: o.valid_until,
+    message: o.message || undefined,
+    client_name: o.client_name || undefined,
+  };
+}
+
+/** Truncate a long address to city-level for display */
+function shortAddress(addr: string, maxLen = 40): string {
+  if (!addr || addr === "—") return addr;
+  // If short enough, return as-is
+  if (addr.length <= maxLen) return addr;
+  // Try to cut at the first comma after a reasonable length
+  const parts = addr.split(",").map((p) => p.trim());
+  if (parts.length >= 2) {
+    const short = `${parts[0]}, ${parts[1]}`;
+    if (short.length <= maxLen) return short;
+    return parts[0].length <= maxLen ? parts[0] : addr.slice(0, maxLen) + "…";
+  }
+  return addr.slice(0, maxLen) + "…";
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Page Component                                                            */
 /* -------------------------------------------------------------------------- */
 
+const POLL_INTERVAL_MS = 30_000; // Auto-refresh every 30s
+
 export default function MyOffersPage() {
   const { user } = useAuth();
+  const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<TabFilter>("ALL");
-  const [offers, setOffers] = useState(MOCK_OFFERS);
+  const [offers, setOffers] = useState<MappedOffer[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
+  const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   const role = user?.role?.toUpperCase();
+
+  /* ── Fetch offers from API ─────────────────────────────────── */
+  const fetchOffers = useCallback(
+    async (silent = false) => {
+      try {
+        if (!silent) setRefreshing(true);
+        const data = await apiClient.get<ApiOffer[] | { results: ApiOffer[] }>(
+          "/api/offers/my/",
+        );
+        const list = Array.isArray(data) ? data : (data.results ?? []);
+        setOffers(list.map(mapApiOffer));
+      } catch (e: any) {
+        console.error("Failed to fetch offers:", e);
+        // FIX #16: Show toast instead of replacing entire page with error
+        if (!silent) {
+          showToast("error", "Impossible de charger vos offres. Réessayez.");
+        }
+      } finally {
+        setLoading(false);
+        setRefreshing(false);
+      }
+    },
+    [showToast],
+  );
+
+  useEffect(() => {
+    if (role === "TRANSPORTER") {
+      fetchOffers();
+      // FIX #18: Auto-polling every 30s for live updates
+      pollRef.current = setInterval(() => fetchOffers(true), POLL_INTERVAL_MS);
+      return () => {
+        if (pollRef.current) clearInterval(pollRef.current);
+      };
+    } else {
+      setLoading(false);
+    }
+  }, [role, fetchOffers]);
+
+  /* ── Withdraw offer via API ────────────────────────────────── */
+  const handleWithdraw = async (offerId: number) => {
+    if (!confirm("Êtes-vous sûr de vouloir retirer cette offre ?")) return;
+
+    setWithdrawingId(offerId);
+    try {
+      await apiClient.post(`/api/offers/${offerId}/withdraw/`, {});
+      showToast("success", "Offre retirée avec succès.");
+      await fetchOffers();
+    } catch (e: any) {
+      console.error("Withdraw failed:", e);
+      const msg =
+        e?.message?.includes("400") || e?.status === 400
+          ? "Cette offre ne peut plus être retirée."
+          : "Impossible de retirer cette offre.";
+      showToast("error", msg);
+    } finally {
+      setWithdrawingId(null);
+    }
+  };
 
   // Clients see a different view — redirect them to their jobs page
   if (role === "CLIENT") {
@@ -125,37 +215,66 @@ export default function MyOffersPage() {
     );
   }
 
+  // Loading state (initial only)
+  if (loading) {
+    return (
+      <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-neutral-900">Mes offres</h1>
+          <p className="text-neutral-500 mt-1">Chargement...</p>
+        </div>
+        <div className="flex items-center justify-center py-20">
+          <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
+        </div>
+      </div>
+    );
+  }
+
   // Filter offers
   const filtered =
     activeTab === "ALL" ? offers : offers.filter((o) => o.status === activeTab);
 
-  // Stats
+  // Stats — FIX #17: Exclude PENDING from acceptance rate divisor
   const pendingCount = offers.filter((o) => o.status === "PENDING").length;
   const acceptedCount = offers.filter((o) => o.status === "ACCEPTED").length;
+  const decidedOffers = offers.filter(
+    (o) => o.status !== "PENDING" && o.status !== "WITHDRAWN",
+  );
   const acceptanceRate =
-    offers.length > 0 ? Math.round((acceptedCount / offers.length) * 100) : 0;
+    decidedOffers.length > 0
+      ? Math.round((acceptedCount / decidedOffers.length) * 100)
+      : offers.length === 0
+        ? 0
+        : pendingCount === offers.length
+          ? -1
+          : 0; // -1 = "En attente"
+
+  // FIX #5: Gain potentiel = sum of price_net for PENDING offers
+  // Since price is now total_price, gain = total - commission = total * (1 - rate)
   const potentialEarnings = offers
     .filter((o) => o.status === "PENDING")
     .reduce((sum, o) => sum + o.price * (1 - o.commission_rate), 0);
 
-  const handleWithdraw = (offerId: number) => {
-    if (confirm("Êtes-vous sûr de vouloir retirer cette offre ?")) {
-      setOffers((prev) =>
-        prev.map((o) =>
-          o.id === offerId ? { ...o, status: "WITHDRAWN" as any } : o,
-        ),
-      );
-    }
-  };
-
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900">Mes offres</h1>
-        <p className="text-neutral-500 mt-1">
-          Suivez l&apos;état de vos offres soumises et gérez vos propositions.
-        </p>
+      <div className="flex items-center justify-between mb-8">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900">Mes offres</h1>
+          <p className="text-neutral-500 mt-1">
+            Suivez l&apos;état de vos offres soumises et gérez vos propositions.
+          </p>
+        </div>
+        <button
+          onClick={() => fetchOffers()}
+          disabled={refreshing}
+          className="p-2 text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 rounded-lg transition-colors disabled:opacity-50"
+          title="Rafraîchir"
+        >
+          <RefreshCw
+            className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
+          />
+        </button>
       </div>
 
       {/* Stats Grid */}
@@ -180,7 +299,7 @@ export default function MyOffersPage() {
             Taux acceptation
           </div>
           <p className="text-2xl font-bold text-accent-600">
-            {acceptanceRate}%
+            {acceptanceRate === -1 ? "—" : `${acceptanceRate}%`}
           </p>
         </div>
         <div className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all">
@@ -194,13 +313,21 @@ export default function MyOffersPage() {
         </div>
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — FIX #7: Added WITHDRAWN tab */}
       <div className="flex gap-1 bg-brand-600/5 rounded-xl p-1 mb-6 overflow-x-auto">
         {TABS.map((tab) => {
           const count =
             tab.id === "ALL"
               ? offers.length
               : offers.filter((o) => o.status === tab.id).length;
+          // Hide tabs with 0 items (except ALL and PENDING)
+          if (
+            count === 0 &&
+            tab.id !== "ALL" &&
+            tab.id !== "PENDING" &&
+            tab.id !== "ACCEPTED"
+          )
+            return null;
           return (
             <button
               key={tab.id}
@@ -242,13 +369,28 @@ export default function MyOffersPage() {
             <p className="text-sm text-neutral-400 mt-1">
               Parcourez les missions disponibles pour soumettre vos offres.
             </p>
+            {/* FIX #1: /search → /jobs/browse */}
+            <a
+              href="/jobs/browse"
+              className="inline-block mt-4 text-brand-600 hover:underline font-semibold text-sm"
+            >
+              Trouver une mission →
+            </a>
           </div>
         ) : (
           filtered.map((offer) => (
             <OfferStatusCard
               key={offer.id}
-              offer={offer}
+              offer={{
+                ...offer,
+                // FIX #14: Truncate long addresses for readability
+                job_pickup: shortAddress(offer.job_pickup),
+                job_dropoff: shortAddress(offer.job_dropoff),
+              }}
+              fullPickup={offer.job_pickup}
+              fullDropoff={offer.job_dropoff}
               onWithdraw={handleWithdraw}
+              isWithdrawing={withdrawingId === offer.id}
             />
           ))
         )}

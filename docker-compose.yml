@@ -65,9 +65,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_USE_BACKEND=true
       - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NEXT_PUBLIC_FALLBACK_TO_MOCK=true
       - NEXT_PUBLIC_API_TIMEOUT=5000
     volumes:
       - ./frontend:/app

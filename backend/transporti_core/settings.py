@@ -256,6 +256,7 @@ REST_FRAMEWORK = {
         'admin_auth': '5/10m',      # Admin login - strict rate limit (5 per 10 min)
         'booking': '20/minute',     # Offer/job creation rate limit
         'payment': '10/minute',     # Payment actions rate limit
+        'messaging': '60/minute',   # Messaging endpoints (polling support)
     },
 }
 

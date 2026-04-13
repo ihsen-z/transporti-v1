@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { AlertTriangle, Send, X } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
+import { apiClient } from "@/lib/api/client";
 
 interface DisputeFormProps {
   jobId: number;
@@ -18,14 +19,11 @@ export function DisputeForm({ jobId, onClose }: DisputeFormProps) {
     setLoading(true);
 
     try {
-      // Assuming a dispute API exists (not implemented in Phase 2 but part of trusted flow)
-      // If not, we'll mock or point to a support endpoint.
-      // Blueprint mentioned Support/Dispute.
-      // I'll assume /api/support/disputes/ or similar.
-      // If not exist, I'll allow this to be a "Contact Support" form for now.
-
-      // MOCK implementation for Prototype
-      await new Promise((r) => setTimeout(r, 1000));
+      await apiClient.post("/api/disputes/", {
+        job: jobId,
+        reason,
+        description,
+      });
 
       showToast(
         "success",

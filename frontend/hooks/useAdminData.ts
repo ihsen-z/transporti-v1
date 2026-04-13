@@ -1,8 +1,6 @@
 "use client";
 
-// Admin Data Hooks
-// Sprint 7.5 — API Transition Layer
-// Sprint 1 — Connected to real backend APIs
+// Admin Data Hooks — Production, real API only
 
 import { useCallback } from "react";
 import { useDataService } from "./useDataService";
@@ -23,12 +21,6 @@ import {
   type AdminTrustProfile,
 } from "@/lib/services/admin";
 import {
-  mockAdminStats,
-  mockAdminJobs,
-  mockAdminUsers,
-  mockAdminPayments,
-  mockActivityLogs,
-  mockSystemAlerts,
   type AdminStats,
   type AdminJob,
   type AdminUser,
@@ -37,9 +29,27 @@ import {
   type SystemAlert,
 } from "@/lib/admin";
 
+const emptyStats: AdminStats = {
+  totalUsers: 0,
+  activeUsers: 0,
+  totalTransporters: 0,
+  verifiedTransporters: 0,
+  activeJobs: 0,
+  completedJobs: 0,
+  pendingJobs: 0,
+  cancelledJobs: 0,
+  totalEscrow: 0,
+  pendingEscrow: 0,
+  blockedEscrow: 0,
+  releasedEscrow: 0,
+  platformRevenue: 0,
+  activeDisputes: 0,
+  avgTrustScore: 0,
+};
+
 export function useAdminStats() {
   const fetcher = useCallback(() => getAdminStats(), []);
-  return useDataService<AdminStats>(fetcher, mockAdminStats);
+  return useDataService<AdminStats>(fetcher, emptyStats);
 }
 
 export function useAdminJobs() {
