@@ -39,14 +39,26 @@ export default function AppHeader() {
 
   const unreadCount = getUnreadCount(notifications);
 
-  const handleMarkAsRead = (id: number) => {
+  const handleMarkAsRead = async (id: number) => {
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
     );
+    try {
+      await fetch("/api/notifications/" + id + "/read/", {
+        method: "POST",
+      }).catch(() => {});
+      // Also try via apiClient for auth
+      const { apiClient } = await import("@/lib/api/client");
+      apiClient.post(`/api/notifications/${id}/read/`).catch(() => {});
+    } catch {}
   };
 
-  const handleMarkAllAsRead = () => {
+  const handleMarkAllAsRead = async () => {
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
+    try {
+      const { apiClient } = await import("@/lib/api/client");
+      apiClient.post("/api/notifications/read-all/").catch(() => {});
+    } catch {}
   };
 
   const handleLogout = () => {

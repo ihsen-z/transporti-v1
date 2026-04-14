@@ -122,10 +122,10 @@ def _safe_notify(user, notification_type, title, message, metadata=None):
 def notify_offer_received(job, offer):
     """Notify client about new offer."""
     return _safe_notify(
-        user=job.client,
+        user=job.owner,
         notification_type=NotificationType.OFFER_RECEIVED,
-        title="New offer received",
-        message=f"You received a new offer of {offer.total_price} TND for your transport request.",
+        title="📦 Nouvelle offre reçue",
+        message=f"Vous avez reçu une offre de {offer.total_price} TND pour votre demande de transport.",
         metadata={
             'job_id': job.id,
             'offer_id': offer.id,
@@ -140,8 +140,8 @@ def notify_offer_accepted(offer):
     return _safe_notify(
         user=offer.transporter,
         notification_type=NotificationType.OFFER_ACCEPTED,
-        title="Offer accepted!",
-        message=f"Your offer of {offer.total_price} TND has been accepted.",
+        title="✅ Offre acceptée !",
+        message=f"Votre offre de {offer.total_price} TND a été acceptée. Préparez-vous pour la mission.",
         metadata={
             'job_id': offer.job_id,
             'offer_id': offer.id,
@@ -152,14 +152,14 @@ def notify_offer_accepted(offer):
 
 def notify_offer_rejected(offer, reason: str = ""):
     """Notify transporter their offer was rejected."""
-    msg = f"Your offer of {offer.total_price} TND was not accepted."
+    msg = f"Votre offre de {offer.total_price} TND n'a pas été retenue."
     if reason:
-        msg += f" Reason: {reason}"
+        msg += f" Raison : {reason}"
     
     return _safe_notify(
         user=offer.transporter,
         notification_type=NotificationType.OFFER_REJECTED,
-        title="Offer not accepted",
+        title="❌ Offre non retenue",
         message=msg,
         metadata={
             'job_id': offer.job_id,
@@ -183,8 +183,8 @@ def notify_escrow_released(escrow):
     return _safe_notify(
         user=transporter,
         notification_type=NotificationType.ESCROW_RELEASED,
-        title="Payment released",
-        message=f"Payment of {escrow.amount} TND has been released to you.",
+        title="💸 Paiement libéré",
+        message=f"Le paiement de {escrow.amount} TND a été libéré sur votre compte.",
         metadata={
             'job_id': job.id,
             'escrow_id': escrow.id,
@@ -200,8 +200,8 @@ def notify_escrow_refunded(escrow):
     return _safe_notify(
         user=job.client,
         notification_type=NotificationType.ESCROW_REFUNDED,
-        title="Payment refunded",
-        message=f"Your payment of {escrow.amount} TND has been refunded.",
+        title="💰 Remboursement effectué",
+        message=f"Votre paiement de {escrow.amount} TND a été remboursé.",
         metadata={
             'job_id': job.id,
             'escrow_id': escrow.id,
@@ -218,8 +218,8 @@ def notify_escrow_blocked(job, reason: str):
     notifications.append(_safe_notify(
         user=job.client,
         notification_type=NotificationType.ESCROW_BLOCKED,
-        title="Payment on hold",
-        message=f"Payment is blocked due to: {reason}",
+        title="⏸️ Paiement en attente",
+        message=f"Le paiement est bloqué : {reason}",
         metadata={'job_id': job.id, 'reason': reason}
     ))
     
@@ -229,8 +229,8 @@ def notify_escrow_blocked(job, reason: str):
         notifications.append(_safe_notify(
             user=transporter,
             notification_type=NotificationType.ESCROW_BLOCKED,
-            title="Payment on hold",
-            message=f"Payment release is blocked due to: {reason}",
+            title="⏸️ Paiement en attente",
+            message=f"La libération du paiement est bloquée : {reason}",
             metadata={'job_id': job.id, 'reason': reason}
         ))
     except AttributeError:
@@ -249,17 +249,17 @@ def notify_dispute_opened(dispute):
     job = dispute.job
     
     # Notify the other party
-    if dispute.opened_by == job.client:
+    if dispute.opened_by == job.owner:
         other_party = job.accepted_offer.transporter if hasattr(job, 'accepted_offer') else None
     else:
-        other_party = job.client
+        other_party = job.owner
     
     if other_party:
         notifications.append(_safe_notify(
             user=other_party,
             notification_type=NotificationType.DISPUTE_OPENED,
-            title="Dispute opened",
-            message="A dispute has been opened for your transport job.",
+            title="⚠️ Litige ouvert",
+            message="Un litige a été ouvert concernant votre mission de transport.",
             metadata={
                 'job_id': job.id,
                 'dispute_id': dispute.id,
@@ -275,13 +275,13 @@ def notify_dispute_resolved(dispute, resolution: str):
     notifications = []
     job = dispute.job
     
-    for user in [job.client, getattr(getattr(job, 'accepted_offer', None), 'transporter', None)]:
+    for user in [job.owner, getattr(getattr(job, 'accepted_offer', None), 'transporter', None)]:
         if user:
             notifications.append(_safe_notify(
                 user=user,
                 notification_type=NotificationType.DISPUTE_RESOLVED,
-                title="Dispute resolved",
-                message=f"The dispute has been resolved. Resolution: {resolution}",
+                title="✅ Litige résolu",
+                message=f"Le litige a été résolu. Résolution : {resolution}",
                 metadata={
                     'job_id': job.id,
                     'dispute_id': dispute.id,
@@ -303,8 +303,8 @@ def notify_review_received(review):
     return _safe_notify(
         user=review.target,
         notification_type=NotificationType.REVIEW_RECEIVED,
-        title="New review received",
-        message=f"You received a {rating_stars} review.",
+        title="⭐ Nouvel avis reçu",
+        message=f"Vous avez reçu un avis {rating_stars} sur votre profil.",
         metadata={
             'review_id': review.id,
             'job_id': review.job_id,
@@ -323,8 +323,8 @@ def notify_trust_blocked(user, action: str, reason: str):
     return _safe_notify(
         user=user,
         notification_type=NotificationType.TRUST_BLOCKED,
-        title="Action blocked",
-        message=f"Your action ({action}) was blocked: {reason}",
+        title="🚫 Action bloquée",
+        message=f"Votre action ({action}) a été bloquée : {reason}",
         metadata={
             'action': action,
             'reason': reason
@@ -337,8 +337,8 @@ def notify_trust_override_granted(user, scope: str, admin_note: str = ""):
     return _safe_notify(
         user=user,
         notification_type=NotificationType.TRUST_OVERRIDE_GRANTED,
-        title="Trust override granted",
-        message=f"An override has been granted for: {scope}",
+        title="🔓 Accès accordé",
+        message=f"Un accès spécial a été accordé pour : {scope}",
         metadata={
             'scope': scope,
             'admin_note': admin_note
@@ -352,16 +352,16 @@ def notify_verification_result(user, approved: bool, reason: str = ""):
         return _safe_notify(
             user=user,
             notification_type=NotificationType.VERIFICATION_APPROVED,
-            title="Verification approved",
-            message="Your account has been verified. You can now access all features.",
+            title="🛡️ Compte vérifié",
+            message="Votre compte a été vérifié. Vous pouvez maintenant accéder à toutes les fonctionnalités.",
             metadata={}
         )
     else:
         return _safe_notify(
             user=user,
             notification_type=NotificationType.VERIFICATION_REJECTED,
-            title="Verification not approved",
-            message=f"Your verification was not approved. {reason}",
+            title="⚠️ Vérification rejetée",
+            message=f"Votre vérification n'a pas été approuvée. {reason}",
             metadata={'reason': reason}
         )
 
@@ -375,10 +375,10 @@ def notify_job_completed(job):
     notifications = []
     
     notifications.append(_safe_notify(
-        user=job.client,
+        user=job.owner,
         notification_type=NotificationType.JOB_COMPLETED,
-        title="Job completed",
-        message="Your transport job has been completed.",
+        title="🎉 Mission terminée",
+        message="Votre transport a été livré avec succès. N'oubliez pas de laisser un avis !",
         metadata={'job_id': job.id}
     ))
     
@@ -387,11 +387,29 @@ def notify_job_completed(job):
         notifications.append(_safe_notify(
             user=transporter,
             notification_type=NotificationType.JOB_COMPLETED,
-            title="Job completed",
-            message="You have completed the transport job.",
+            title="🎉 Mission terminée",
+            message="Vous avez complété la mission de transport avec succès.",
             metadata={'job_id': job.id}
         ))
     except AttributeError:
         pass
     
     return notifications
+
+
+def notify_job_cancelled(job):
+    """Notify transporter about job cancellation."""
+    try:
+        accepted_offer = job.offers.filter(status='ACCEPTED').first()
+        if accepted_offer:
+            return _safe_notify(
+                user=accepted_offer.transporter,
+                notification_type=NotificationType.JOB_CANCELLED,
+                title="🚫 Mission annulée",
+                message="La mission de transport a été annulée par le client.",
+                metadata={'job_id': job.id}
+            )
+    except Exception:
+        pass
+    return None
+

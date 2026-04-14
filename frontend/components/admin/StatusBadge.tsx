@@ -26,14 +26,20 @@ export default function StatusBadge({
 // Pre-built badge variants for common statuses
 export function JobStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
+    DRAFT: "bg-neutral-100 text-neutral-600",
+    PUBLISHED: "bg-orange-100 text-orange-700",
     PENDING: "bg-orange-100 text-orange-700",
+    MATCHED: "bg-brand-600/10 text-brand-600",
     ACCEPTED: "bg-brand-600/10 text-brand-600",
     IN_PROGRESS: "bg-cyan-100 text-cyan-700",
     COMPLETED: "bg-green-100 text-green-700",
     CANCELLED: "bg-neutral-100 text-neutral-600",
   };
   const labels: Record<string, string> = {
+    DRAFT: "Brouillon",
+    PUBLISHED: "Publié",
     PENDING: "En attente",
+    MATCHED: "Matché",
     ACCEPTED: "Accepté",
     IN_PROGRESS: "En cours",
     COMPLETED: "Terminé",

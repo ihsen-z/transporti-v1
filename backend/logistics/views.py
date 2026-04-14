@@ -277,10 +277,17 @@ class OfferAcceptView(generics.GenericAPIView):
 
         # Send email notification to transporter
         try:
-            from notifications.emails import notify_offer_accepted
-            notify_offer_accepted(offer)
+            from notifications.emails import notify_offer_accepted as email_offer_accepted
+            email_offer_accepted(offer)
         except Exception:
             pass  # Email failure must never block business logic
+
+        # DB notification (P0 Fix — makes notifications page alive)
+        try:
+            from notifications.services import notify_offer_accepted as db_notify_accepted
+            db_notify_accepted(offer)
+        except Exception:
+            pass
 
         return Response(response_data)
 
@@ -356,6 +363,13 @@ class JobCancelView(APIView):
         except Exception:
             pass
         
+        # DB notification (P0 Fix)
+        try:
+            from notifications.services import notify_job_cancelled
+            notify_job_cancelled(job)
+        except Exception:
+            pass
+        
         return Response({'message': 'Job cancelled successfully.'})
 
 
@@ -397,6 +411,13 @@ class JobCompleteView(APIView):
                 )
         except Exception:
             pass  # Don't block completion if messaging fails
+        
+        # DB notification (P0 Fix)
+        try:
+            from notifications.services import notify_job_completed
+            notify_job_completed(job)
+        except Exception:
+            pass
         
         return Response({'message': 'Job marked as completed.'})
 

@@ -4,7 +4,7 @@ Sprint 2: Aggregation endpoints for admin dashboard.
 All views require ADMIN role.
 """
 import logging
-from django.db.models import Sum, Avg, Count, Q
+from django.db.models import Sum, Avg, Count, Q, Prefetch
 from django.utils import timezone
 from datetime import timedelta
 from rest_framework import generics
@@ -99,10 +99,107 @@ class AdminJobListView(generics.ListAPIView):
     """
     GET /api/admin/jobs/
     All jobs with client/transporter details.
+    Prefetches offers to eliminate N+1 queries.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
     serializer_class = AdminJobSerializer
-    queryset = TransportJob.objects.select_related('owner').order_by('-created_at')
+
+    def get_queryset(self):
+        return TransportJob.objects.select_related('owner').prefetch_related(
+            Prefetch(
+                'offers',
+                queryset=Offer.objects.select_related('transporter')
+            )
+        ).order_by('-created_at')
+
+
+class AdminJobDetailView(APIView):
+    """
+    GET /api/admin/jobs/<id>/
+    Detailed view of a single job for admin panel.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
+
+    def get(self, request, pk):
+        from logistics.serializers import TransportJobDetailSerializer, OfferDetailSerializer
+
+        job = TransportJob.objects.select_related('owner').prefetch_related(
+            Prefetch('offers', queryset=Offer.objects.select_related('transporter').order_by('-created_at'))
+        ).filter(pk=pk).first()
+
+        if not job:
+            return Response({'error': 'Job not found'}, status=404)
+
+        # Base job data
+        job_data = AdminJobSerializer(job).data
+
+        # All offers
+        offers = [
+            {
+                'id': o.id,
+                'transporter': f"{o.transporter.first_name} {o.transporter.last_name}".strip() or o.transporter.email,
+                'transporterEmail': o.transporter.email,
+                'totalPrice': float(o.total_price),
+                'priceNet': float(o.price_net) if o.price_net else None,
+                'commission': float(o.commission_amount) if o.commission_amount else None,
+                'status': o.status,
+                'message': o.message or '',
+                'createdAt': o.created_at.isoformat(),
+            }
+            for o in job.offers.all()
+        ]
+
+        # Escrow info
+        escrow_data = None
+        try:
+            from payments.models import EscrowTransaction
+            escrow = EscrowTransaction.objects.filter(booking_reference=job).first()
+            if escrow:
+                escrow_data = {
+                    'id': escrow.id,
+                    'amount': float(escrow.amount),
+                    'status': escrow.status,
+                    'createdAt': escrow.created_at.isoformat(),
+                }
+        except Exception:
+            pass
+
+        # Conversation info
+        conversation_data = None
+        try:
+            from messaging.models import Conversation, Message
+            conv = Conversation.objects.filter(job=job).first()
+            if conv:
+                msg_count = Message.objects.filter(conversation=conv).count()
+                conversation_data = {
+                    'id': conv.id,
+                    'isLocked': conv.is_locked,
+                    'messageCount': msg_count,
+                }
+        except Exception:
+            pass
+
+        # Disputes
+        disputes_data = []
+        try:
+            for d in Dispute.objects.filter(job=job).order_by('-created_at'):
+                disputes_data.append({
+                    'id': d.id,
+                    'reason': d.get_reason_display() if hasattr(d, 'get_reason_display') else d.reason,
+                    'status': d.status,
+                    'openedBy': d.opened_by.email,
+                    'createdAt': d.created_at.isoformat(),
+                })
+        except Exception:
+            pass
+
+        return Response({
+            **job_data,
+            'offers': offers,
+            'escrow': escrow_data,
+            'conversation': conversation_data,
+            'disputes': disputes_data,
+        })
 
 
 class AdminUserListView(generics.ListAPIView):

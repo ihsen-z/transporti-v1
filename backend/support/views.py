@@ -77,6 +77,13 @@ class DisputeCreateView(generics.CreateAPIView):
             except Exception:
                 pass
             
+            # DB notification (P0 Fix)
+            try:
+                from notifications.services import notify_dispute_opened
+                notify_dispute_opened(dispute)
+            except Exception:
+                pass
+            
             return Response({
                 'message': 'Dispute filed successfully.',
                 'dispute': DisputeDetailSerializer(dispute).data
@@ -211,6 +218,13 @@ class AdminDisputeResolveView(generics.GenericAPIView):
                             f"Résolution : {resolution_notes[:100]}"
                         )
                     )
+            except Exception:
+                pass
+            
+            # DB notification (P0 Fix)
+            try:
+                from notifications.services import notify_dispute_resolved
+                notify_dispute_resolved(dispute, resolution_notes)
             except Exception:
                 pass
             

@@ -176,6 +176,13 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         except Exception:
             pass  # Email failure must never block business logic
 
+        # DB notification (P0 Fix)
+        try:
+            from notifications.services import notify_offer_received as db_notify_offer
+            db_notify_offer(job, offer)
+        except Exception:
+            pass
+
         return offer
 
 

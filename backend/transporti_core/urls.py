@@ -9,7 +9,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from .views_admin import (
-    AdminStatsView, AdminJobListView, AdminUserListView,
+    AdminStatsView, AdminJobListView, AdminJobDetailView, AdminUserListView,
     AdminActivityView, AdminAlertsView,
 )
 
@@ -80,6 +80,7 @@ urlpatterns = [
     # Admin Panel API (Sprint 2)
     path('api/admin/stats/', AdminStatsView.as_view(), name='admin_stats'),
     path('api/admin/jobs/', AdminJobListView.as_view(), name='admin_jobs'),
+    path('api/admin/jobs/<int:pk>/', AdminJobDetailView.as_view(), name='admin_job_detail'),
     path('api/admin/users/', AdminUserListView.as_view(), name='admin_users'),
     path('api/admin/activity/', AdminActivityView.as_view(), name='admin_activity'),
     path('api/admin/alerts/', AdminAlertsView.as_view(), name='admin_alerts'),

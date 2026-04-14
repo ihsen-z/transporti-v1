@@ -30,7 +30,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class NotificationListSerializer(serializers.ModelSerializer):
-    """Compact serializer for notification lists."""
+    """Compact serializer for notification lists — includes message + metadata for frontend."""
     
     class Meta:
         model = Notification
@@ -39,7 +39,9 @@ class NotificationListSerializer(serializers.ModelSerializer):
             'category',
             'type',
             'title',
+            'message',
             'is_read',
+            'metadata',
             'created_at',
         ]
         read_only_fields = fields

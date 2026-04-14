@@ -16,6 +16,8 @@ import {
   Loader2,
   RefreshCw,
   Undo2,
+  Search,
+  ArrowRight,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -118,6 +120,42 @@ function shortAddress(addr: string, maxLen = 40): string {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  StatCard — Enhanced Stat with colored icon circle                          */
+/* -------------------------------------------------------------------------- */
+
+function StatCard({
+  icon: Icon,
+  label,
+  value,
+  iconColor,
+  valueColor,
+}: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  iconColor: string;
+  valueColor: string;
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-neutral-100 p-4 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-200 group">
+      <div className="flex items-center gap-3 mb-2">
+        <div
+          className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconColor} transition-transform group-hover:scale-110`}
+        >
+          <Icon className="w-4 h-4" />
+        </div>
+        <span className="text-xs font-medium text-neutral-500 uppercase tracking-wider">
+          {label}
+        </span>
+      </div>
+      <p className={`text-2xl font-bold ${valueColor} tracking-tight`}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Page Component                                                            */
 /* -------------------------------------------------------------------------- */
 
@@ -196,20 +234,23 @@ export default function MyOffersPage() {
   // Clients see a different view — redirect them to their jobs page
   if (role === "CLIENT") {
     return (
-      <div className="p-6 lg:p-8 max-w-4xl mx-auto text-center">
-        <FileText className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
+      <div className="p-6 lg:p-8 max-w-4xl mx-auto text-center py-20">
+        <div className="w-20 h-20 bg-brand-600/5 rounded-2xl flex items-center justify-center mx-auto mb-5">
+          <FileText className="w-10 h-10 text-brand-600" />
+        </div>
         <h1 className="text-2xl font-bold text-neutral-900 mb-2">
           Offres reçues
         </h1>
-        <p className="text-neutral-500">
+        <p className="text-neutral-500 max-w-md mx-auto">
           Consultez les offres reçues dans chaque annonce de votre espace « Mes
           Transports ».
         </p>
         <a
           href="/jobs"
-          className="inline-block mt-4 text-brand-600 hover:underline font-semibold"
+          className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
         >
-          Voir mes annonces →
+          Voir mes annonces
+          <ArrowRight className="w-4 h-4" />
         </a>
       </div>
     );
@@ -220,11 +261,15 @@ export default function MyOffersPage() {
     return (
       <div className="p-6 lg:p-8 max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900">Mes offres</h1>
+          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
+            Mes offres
+          </h1>
           <p className="text-neutral-500 mt-1">Chargement...</p>
         </div>
         <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
+          <div className="w-16 h-16 bg-brand-600/5 rounded-2xl flex items-center justify-center">
+            <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
+          </div>
         </div>
       </div>
     );
@@ -250,7 +295,6 @@ export default function MyOffersPage() {
           : 0; // -1 = "En attente"
 
   // FIX #5: Gain potentiel = sum of price_net for PENDING offers
-  // Since price is now total_price, gain = total - commission = total * (1 - rate)
   const potentialEarnings = offers
     .filter((o) => o.status === "PENDING")
     .reduce((sum, o) => sum + o.price * (1 - o.commission_rate), 0);
@@ -260,61 +304,59 @@ export default function MyOffersPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Mes offres</h1>
-          <p className="text-neutral-500 mt-1">
+          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
+            Mes offres
+          </h1>
+          <p className="text-neutral-500 mt-1 text-sm">
             Suivez l&apos;état de vos offres soumises et gérez vos propositions.
           </p>
         </div>
         <button
           onClick={() => fetchOffers()}
           disabled={refreshing}
-          className="p-2 text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 rounded-lg transition-colors disabled:opacity-50"
+          className="p-2.5 text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 rounded-xl transition-all disabled:opacity-50 group"
           title="Rafraîchir"
         >
           <RefreshCw
-            className={`w-5 h-5 ${refreshing ? "animate-spin" : ""}`}
+            className={`w-5 h-5 group-hover:rotate-180 transition-transform duration-500 ${refreshing ? "animate-spin" : ""}`}
           />
         </button>
       </div>
 
-      {/* Stats Grid */}
+      {/* Stats Grid — Enhanced V2 */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
-        <div className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all">
-          <div className="flex items-center gap-2 text-neutral-500 text-xs mb-1">
-            <FileText className="w-3.5 h-3.5" />
-            Total
-          </div>
-          <p className="text-2xl font-bold text-neutral-900">{offers.length}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all">
-          <div className="flex items-center gap-2 text-amber-500 text-xs mb-1">
-            <Clock className="w-3.5 h-3.5" />
-            En attente
-          </div>
-          <p className="text-2xl font-bold text-amber-600">{pendingCount}</p>
-        </div>
-        <div className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all">
-          <div className="flex items-center gap-2 text-accent-500 text-xs mb-1">
-            <TrendingUp className="w-3.5 h-3.5" />
-            Taux acceptation
-          </div>
-          <p className="text-2xl font-bold text-accent-600">
-            {acceptanceRate === -1 ? "—" : `${acceptanceRate}%`}
-          </p>
-        </div>
-        <div className="bg-white rounded-xl border border-neutral-100 p-4 shadow-sm hover:-translate-y-0.5 hover:shadow-md transition-all">
-          <div className="flex items-center gap-2 text-brand-600/60 text-xs mb-1">
-            <DollarSign className="w-3.5 h-3.5" />
-            Gain potentiel
-          </div>
-          <p className="text-2xl font-bold text-brand-600">
-            {potentialEarnings.toFixed(0)} TND
-          </p>
-        </div>
+        <StatCard
+          icon={FileText}
+          label="Total"
+          value={String(offers.length)}
+          iconColor="bg-brand-600/10 text-brand-600"
+          valueColor="text-neutral-900"
+        />
+        <StatCard
+          icon={Clock}
+          label="En attente"
+          value={String(pendingCount)}
+          iconColor="bg-amber-100 text-amber-600"
+          valueColor="text-amber-600"
+        />
+        <StatCard
+          icon={TrendingUp}
+          label="Taux accept."
+          value={acceptanceRate === -1 ? "—" : `${acceptanceRate}%`}
+          iconColor="bg-emerald-100 text-emerald-600"
+          valueColor="text-emerald-600"
+        />
+        <StatCard
+          icon={DollarSign}
+          label="Gain potentiel"
+          value={`${potentialEarnings.toFixed(0)} TND`}
+          iconColor="bg-brand-600/10 text-brand-600"
+          valueColor="text-brand-600"
+        />
       </div>
 
-      {/* Tabs — FIX #7: Added WITHDRAWN tab */}
-      <div className="flex gap-1 bg-brand-600/5 rounded-xl p-1 mb-6 overflow-x-auto">
+      {/* Tabs — Enhanced V2 with icon + count pill */}
+      <div className="flex gap-1 bg-brand-600/[0.03] rounded-2xl p-1.5 mb-6 overflow-x-auto">
         {TABS.map((tab) => {
           const count =
             tab.id === "ALL"
@@ -328,22 +370,25 @@ export default function MyOffersPage() {
             tab.id !== "ACCEPTED"
           )
             return null;
+          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold whitespace-nowrap transition-all ${
-                activeTab === tab.id
-                  ? "bg-white text-brand-600 shadow-sm"
-                  : "text-neutral-500 hover:text-neutral-700"
+              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
+                isActive
+                  ? "bg-white text-brand-600 shadow-sm ring-1 ring-brand-600/10"
+                  : "text-neutral-500 hover:text-neutral-700 hover:bg-white/50"
               }`}
             >
-              <tab.icon className="w-4 h-4" />
+              <tab.icon
+                className={`w-4 h-4 ${isActive ? "text-brand-600" : ""}`}
+              />
               {tab.label}
               <span
-                className={`text-xs px-1.5 py-0.5 rounded-full ${
-                  activeTab === tab.id
-                    ? "bg-accent-50 text-accent-600"
+                className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
+                  isActive
+                    ? "bg-accent-500/10 text-accent-600"
                     : "bg-neutral-200/70 text-neutral-500"
                 }`}
               >
@@ -357,41 +402,52 @@ export default function MyOffersPage() {
       {/* Offer List */}
       <div className="space-y-3">
         {filtered.length === 0 ? (
-          <div className="text-center py-16 bg-white rounded-xl border border-neutral-100 shadow-sm">
-            <FileText className="w-12 h-12 text-neutral-300 mx-auto mb-3" />
-            <p className="text-neutral-500 font-medium">
+          <div className="text-center py-20 bg-white rounded-2xl border border-neutral-100 shadow-sm">
+            <div className="relative w-20 h-20 mx-auto mb-5">
+              <div className="absolute inset-0 bg-gradient-to-br from-brand-600/10 to-accent-500/10 rounded-2xl rotate-6" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <Search className="w-10 h-10 text-brand-600 -rotate-6" />
+              </div>
+            </div>
+            <p className="text-neutral-700 font-semibold mb-1">
               Aucune offre{" "}
               {activeTab !== "ALL"
                 ? `${TABS.find((t) => t.id === activeTab)?.label.toLowerCase()}`
                 : ""}{" "}
               pour le moment.
             </p>
-            <p className="text-sm text-neutral-400 mt-1">
+            <p className="text-sm text-neutral-400 max-w-md mx-auto">
               Parcourez les missions disponibles pour soumettre vos offres.
             </p>
             {/* FIX #1: /search → /jobs/browse */}
             <a
               href="/jobs/browse"
-              className="inline-block mt-4 text-brand-600 hover:underline font-semibold text-sm"
+              className="inline-flex items-center gap-2 mt-5 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
-              Trouver une mission →
+              Trouver une mission
+              <ArrowRight className="w-4 h-4" />
             </a>
           </div>
         ) : (
-          filtered.map((offer) => (
-            <OfferStatusCard
+          filtered.map((offer, index) => (
+            <div
               key={offer.id}
-              offer={{
-                ...offer,
-                // FIX #14: Truncate long addresses for readability
-                job_pickup: shortAddress(offer.job_pickup),
-                job_dropoff: shortAddress(offer.job_dropoff),
-              }}
-              fullPickup={offer.job_pickup}
-              fullDropoff={offer.job_dropoff}
-              onWithdraw={handleWithdraw}
-              isWithdrawing={withdrawingId === offer.id}
-            />
+              className="animate-fade-in"
+              style={{ animationDelay: `${index * 60}ms` }}
+            >
+              <OfferStatusCard
+                offer={{
+                  ...offer,
+                  // FIX #14: Truncate long addresses for readability
+                  job_pickup: shortAddress(offer.job_pickup),
+                  job_dropoff: shortAddress(offer.job_dropoff),
+                }}
+                fullPickup={offer.job_pickup}
+                fullDropoff={offer.job_dropoff}
+                onWithdraw={handleWithdraw}
+                isWithdrawing={withdrawingId === offer.id}
+              />
+            </div>
           ))
         )}
       </div>
