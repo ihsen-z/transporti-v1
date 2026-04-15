@@ -59,7 +59,13 @@ class TransportJob(models.Model):
     # Location hints (visible to transporter for precise delivery)
     pickup_hint = models.TextField(blank=True, help_text="Location tip for pickup (floor, door code, landmark...)")
     dropoff_hint = models.TextField(blank=True, help_text="Location tip for dropoff (floor, door code, landmark...)")
-    
+
+    # Return Trip (transporter-created availability)
+    is_return_trip = models.BooleanField(default=False, db_index=True,
+        help_text="True if created by a transporter indicating return trip availability")
+    available_capacity = models.CharField(max_length=255, blank=True,
+        help_text="Available capacity description for return trips (e.g. '2 tonnes, camion bâché')")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

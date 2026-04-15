@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
+import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import { OfferStatusCard } from "@/components/offers/OfferStatusCard";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import {
   FileText,
   Clock,
@@ -18,6 +20,7 @@ import {
   Undo2,
   Search,
   ArrowRight,
+  Wallet,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -49,6 +52,8 @@ export interface MappedOffer {
   job_type: "TRANSPORT" | "MOVING" | "DELIVERY";
   job_date: string;
   price: number;
+  price_net: number;
+  commission_amount: number;
   commission_rate: number;
   status: "PENDING" | "ACCEPTED" | "REJECTED" | "EXPIRED" | "WITHDRAWN";
   valid_until: string;
@@ -79,13 +84,23 @@ const TABS: { id: TabFilter; label: string; icon: React.ElementType }[] = [
 
 function mapApiOffer(o: ApiOffer): MappedOffer {
   const totalPrice = parseFloat(o.total_price) || 0;
+  const priceNet = parseFloat(o.price_net) || 0;
   const commissionAmount = parseFloat(o.commission_amount) || 0;
   const commissionRate = totalPrice > 0 ? commissionAmount / totalPrice : 0;
 
-  // Determine job type — handle DELIVERY as a distinct type
+  // Determine job type
   let jobType: MappedOffer["job_type"] = "TRANSPORT";
   if (o.job_type === "MOVING") jobType = "MOVING";
   else if (o.job_type === "DELIVERY") jobType = "DELIVERY";
+
+  // FIX #3: Auto-detect expired offers on frontend
+  let status = o.status as MappedOffer["status"];
+  if (status === "PENDING" && o.valid_until) {
+    const deadline = new Date(o.valid_until);
+    if (deadline.getTime() < Date.now()) {
+      status = "EXPIRED";
+    }
+  }
 
   return {
     id: o.id,
@@ -94,10 +109,12 @@ function mapApiOffer(o: ApiOffer): MappedOffer {
     job_dropoff: o.job_dropoff || "—",
     job_type: jobType,
     job_date: o.job_date || o.created_at,
-    // FIX #4: Use total_price (what the client pays) as the "Prix proposé"
     price: totalPrice,
+    // FIX #5: Map price_net and commission_amount directly from API
+    price_net: priceNet,
+    commission_amount: commissionAmount,
     commission_rate: commissionRate,
-    status: o.status as MappedOffer["status"],
+    status,
     valid_until: o.valid_until,
     message: o.message || undefined,
     client_name: o.client_name || undefined,
@@ -107,9 +124,7 @@ function mapApiOffer(o: ApiOffer): MappedOffer {
 /** Truncate a long address to city-level for display */
 function shortAddress(addr: string, maxLen = 40): string {
   if (!addr || addr === "—") return addr;
-  // If short enough, return as-is
   if (addr.length <= maxLen) return addr;
-  // Try to cut at the first comma after a reasonable length
   const parts = addr.split(",").map((p) => p.trim());
   if (parts.length >= 2) {
     const short = `${parts[0]}, ${parts[1]}`;
@@ -120,7 +135,7 @@ function shortAddress(addr: string, maxLen = 40): string {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  StatCard — Enhanced Stat with colored icon circle                          */
+/*  StatCard — Enhanced with premium visual hierarchy                          */
 /* -------------------------------------------------------------------------- */
 
 function StatCard({
@@ -129,15 +144,23 @@ function StatCard({
   value,
   iconColor,
   valueColor,
+  highlight = false,
 }: {
   icon: React.ElementType;
   label: string;
   value: string;
   iconColor: string;
   valueColor: string;
+  highlight?: boolean;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 p-4 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-200 group">
+    <div
+      className={`rounded-2xl border p-4 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-200 group ${
+        highlight
+          ? "bg-gradient-to-br from-emerald-50 to-white border-emerald-200"
+          : "bg-white border-neutral-100"
+      }`}
+    >
       <div className="flex items-center gap-3 mb-2">
         <div
           className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconColor} transition-transform group-hover:scale-110`}
@@ -159,7 +182,7 @@ function StatCard({
 /*  Page Component                                                            */
 /* -------------------------------------------------------------------------- */
 
-const POLL_INTERVAL_MS = 30_000; // Auto-refresh every 30s
+const POLL_INTERVAL_MS = 30_000;
 
 export default function MyOffersPage() {
   const { user } = useAuth();
@@ -168,8 +191,13 @@ export default function MyOffersPage() {
   const [offers, setOffers] = useState<MappedOffer[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
-  const [withdrawingId, setWithdrawingId] = useState<number | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
+
+  // FIX #1: Modal state instead of native confirm()
+  const [withdrawTarget, setWithdrawTarget] = useState<MappedOffer | null>(
+    null,
+  );
+  const [withdrawing, setWithdrawing] = useState(false);
 
   const role = user?.role?.toUpperCase();
 
@@ -183,9 +211,8 @@ export default function MyOffersPage() {
         );
         const list = Array.isArray(data) ? data : (data.results ?? []);
         setOffers(list.map(mapApiOffer));
-      } catch (e: any) {
+      } catch (e: unknown) {
         console.error("Failed to fetch offers:", e);
-        // FIX #16: Show toast instead of replacing entire page with error
         if (!silent) {
           showToast("error", "Impossible de charger vos offres. Réessayez.");
         }
@@ -200,7 +227,6 @@ export default function MyOffersPage() {
   useEffect(() => {
     if (role === "TRANSPORTER") {
       fetchOffers();
-      // FIX #18: Auto-polling every 30s for live updates
       pollRef.current = setInterval(() => fetchOffers(true), POLL_INTERVAL_MS);
       return () => {
         if (pollRef.current) clearInterval(pollRef.current);
@@ -210,28 +236,44 @@ export default function MyOffersPage() {
     }
   }, [role, fetchOffers]);
 
-  /* ── Withdraw offer via API ────────────────────────────────── */
-  const handleWithdraw = async (offerId: number) => {
-    if (!confirm("Êtes-vous sûr de vouloir retirer cette offre ?")) return;
+  /* ── Withdraw — FIX #1: modal-based + FIX #2: parse error body ── */
+  const handleWithdrawRequest = (offer: MappedOffer) => {
+    setWithdrawTarget(offer);
+  };
 
-    setWithdrawingId(offerId);
+  const handleWithdrawConfirm = async () => {
+    if (!withdrawTarget) return;
+    setWithdrawing(true);
     try {
-      await apiClient.post(`/api/offers/${offerId}/withdraw/`, {});
+      await apiClient.post(`/api/offers/${withdrawTarget.id}/withdraw/`, {});
       showToast("success", "Offre retirée avec succès.");
+      setWithdrawTarget(null);
       await fetchOffers();
-    } catch (e: any) {
-      console.error("Withdraw failed:", e);
-      const msg =
-        e?.message?.includes("400") || e?.status === 400
-          ? "Cette offre ne peut plus être retirée."
-          : "Impossible de retirer cette offre.";
+    } catch (e: unknown) {
+      // FIX #2: Parse backend error body for meaningful messages
+      let msg = "Impossible de retirer cette offre.";
+      if (e instanceof ApiError) {
+        if (e.body?.error) {
+          msg = String(e.body.error);
+        } else if (e.status === 400) {
+          msg = "Cette offre ne peut plus être retirée.";
+        } else if (e.status >= 500) {
+          msg = "Erreur serveur. Veuillez réessayer.";
+        }
+      } else if (e instanceof TypeError) {
+        msg = "Erreur réseau. Vérifiez votre connexion.";
+      }
       showToast("error", msg);
     } finally {
-      setWithdrawingId(null);
+      setWithdrawing(false);
     }
   };
 
-  // Clients see a different view — redirect them to their jobs page
+  const handleWithdrawCancel = () => {
+    if (!withdrawing) setWithdrawTarget(null);
+  };
+
+  // Clients see a different view
   if (role === "CLIENT") {
     return (
       <div className="p-6 lg:p-8 max-w-4xl mx-auto text-center py-20">
@@ -245,18 +287,19 @@ export default function MyOffersPage() {
           Consultez les offres reçues dans chaque annonce de votre espace « Mes
           Transports ».
         </p>
-        <a
+        {/* FIX #12: Use <Link> instead of <a> */}
+        <Link
           href="/jobs"
           className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
         >
           Voir mes annonces
           <ArrowRight className="w-4 h-4" />
-        </a>
+        </Link>
       </div>
     );
   }
 
-  // Loading state (initial only)
+  // Loading state
   if (loading) {
     return (
       <div className="p-6 lg:p-8 max-w-4xl mx-auto">
@@ -279,7 +322,7 @@ export default function MyOffersPage() {
   const filtered =
     activeTab === "ALL" ? offers : offers.filter((o) => o.status === activeTab);
 
-  // Stats — FIX #17: Exclude PENDING from acceptance rate divisor
+  // Stats
   const pendingCount = offers.filter((o) => o.status === "PENDING").length;
   const acceptedCount = offers.filter((o) => o.status === "ACCEPTED").length;
   const decidedOffers = offers.filter(
@@ -292,15 +335,52 @@ export default function MyOffersPage() {
         ? 0
         : pendingCount === offers.length
           ? -1
-          : 0; // -1 = "En attente"
+          : 0;
 
-  // FIX #5: Gain potentiel = sum of price_net for PENDING offers
+  // FIX #5: Use price_net directly from API
   const potentialEarnings = offers
     .filter((o) => o.status === "PENDING")
-    .reduce((sum, o) => sum + o.price * (1 - o.commission_rate), 0);
+    .reduce((sum, o) => sum + o.price_net, 0);
+
+  // FIX #6: Confirmed earnings from accepted offers
+  const confirmedEarnings = offers
+    .filter((o) => o.status === "ACCEPTED")
+    .reduce((sum, o) => sum + o.price_net, 0);
 
   return (
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
+      {/* FIX #1: Premium Confirm Modal */}
+      <ConfirmModal
+        open={!!withdrawTarget}
+        title="Retirer cette offre ?"
+        message="Cette action est irréversible. L'offre ne sera plus visible par le client."
+        detail={
+          withdrawTarget && (
+            <div className="bg-neutral-50 rounded-xl border border-neutral-100 p-3 text-left text-sm">
+              <div className="flex items-center justify-between mb-1">
+                <span className="text-neutral-500">Trajet</span>
+                <span className="font-medium text-neutral-700 truncate ml-2 max-w-[200px]">
+                  {shortAddress(withdrawTarget.job_pickup, 20)} →{" "}
+                  {shortAddress(withdrawTarget.job_dropoff, 20)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-neutral-500">Montant</span>
+                <span className="font-bold text-neutral-900">
+                  {withdrawTarget.price.toFixed(0)} TND
+                </span>
+              </div>
+            </div>
+          )
+        }
+        confirmLabel="Retirer l'offre"
+        cancelLabel="Annuler"
+        confirmColor="red"
+        loading={withdrawing}
+        onConfirm={handleWithdrawConfirm}
+        onCancel={handleWithdrawCancel}
+      />
+
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
@@ -323,8 +403,8 @@ export default function MyOffersPage() {
         </button>
       </div>
 
-      {/* Stats Grid — Enhanced V2 */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
+      {/* Stats Grid — FIX #6: 5 stats with confirmed earnings highlighted */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
         <StatCard
           icon={FileText}
           label="Total"
@@ -353,23 +433,24 @@ export default function MyOffersPage() {
           iconColor="bg-brand-600/10 text-brand-600"
           valueColor="text-brand-600"
         />
+        {/* FIX #6: Confirmed earnings stat */}
+        <StatCard
+          icon={Wallet}
+          label="Gains confirmés"
+          value={`${confirmedEarnings.toFixed(0)} TND`}
+          iconColor="bg-emerald-100 text-emerald-600"
+          valueColor="text-emerald-700"
+          highlight
+        />
       </div>
 
-      {/* Tabs — Enhanced V2 with icon + count pill */}
+      {/* Tabs — FIX #9: Show all tabs even when count=0 */}
       <div className="flex gap-1 bg-brand-600/[0.03] rounded-2xl p-1.5 mb-6 overflow-x-auto">
         {TABS.map((tab) => {
           const count =
             tab.id === "ALL"
               ? offers.length
               : offers.filter((o) => o.status === tab.id).length;
-          // Hide tabs with 0 items (except ALL and PENDING)
-          if (
-            count === 0 &&
-            tab.id !== "ALL" &&
-            tab.id !== "PENDING" &&
-            tab.id !== "ACCEPTED"
-          )
-            return null;
           const isActive = activeTab === tab.id;
           return (
             <button
@@ -378,7 +459,9 @@ export default function MyOffersPage() {
               className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
                 isActive
                   ? "bg-white text-brand-600 shadow-sm ring-1 ring-brand-600/10"
-                  : "text-neutral-500 hover:text-neutral-700 hover:bg-white/50"
+                  : count === 0
+                    ? "text-neutral-300 hover:text-neutral-400 hover:bg-white/30"
+                    : "text-neutral-500 hover:text-neutral-700 hover:bg-white/50"
               }`}
             >
               <tab.icon
@@ -389,7 +472,9 @@ export default function MyOffersPage() {
                 className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                   isActive
                     ? "bg-accent-500/10 text-accent-600"
-                    : "bg-neutral-200/70 text-neutral-500"
+                    : count === 0
+                      ? "bg-neutral-100 text-neutral-300"
+                      : "bg-neutral-200/70 text-neutral-500"
                 }`}
               >
                 {count}
@@ -419,14 +504,14 @@ export default function MyOffersPage() {
             <p className="text-sm text-neutral-400 max-w-md mx-auto">
               Parcourez les missions disponibles pour soumettre vos offres.
             </p>
-            {/* FIX #1: /search → /jobs/browse */}
-            <a
+            {/* FIX #12: <a> → <Link> */}
+            <Link
               href="/jobs/browse"
               className="inline-flex items-center gap-2 mt-5 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
               Trouver une mission
               <ArrowRight className="w-4 h-4" />
-            </a>
+            </Link>
           </div>
         ) : (
           filtered.map((offer, index) => (
@@ -438,14 +523,13 @@ export default function MyOffersPage() {
               <OfferStatusCard
                 offer={{
                   ...offer,
-                  // FIX #14: Truncate long addresses for readability
                   job_pickup: shortAddress(offer.job_pickup),
                   job_dropoff: shortAddress(offer.job_dropoff),
                 }}
                 fullPickup={offer.job_pickup}
                 fullDropoff={offer.job_dropoff}
-                onWithdraw={handleWithdraw}
-                isWithdrawing={withdrawingId === offer.id}
+                onWithdraw={() => handleWithdrawRequest(offer)}
+                isWithdrawing={withdrawing && withdrawTarget?.id === offer.id}
               />
             </div>
           ))

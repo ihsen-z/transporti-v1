@@ -12,7 +12,8 @@ from .serializers import (
     TransportJobDetailSerializer, OfferCreateSerializer, 
     OfferListSerializer, OfferDetailSerializer,
     OfferAcceptSerializer,
-    TransportJobUpdateSerializer, TransporterProfileSerializer
+    TransportJobUpdateSerializer, TransporterProfileSerializer,
+    TransporterMissionSerializer, ReturnTripCreateSerializer
 )
 from users.permissions import RequireRole, RequireVerification
 
@@ -54,6 +55,53 @@ class JobMyListView(generics.ListAPIView):
         ).select_related('owner').prefetch_related('offers').order_by('-created_at')
 
 
+class TransporterJobListView(generics.ListAPIView):
+    """
+    GET /api/jobs/transporter/
+    Transporter views their assigned missions (jobs with ACCEPTED offers).
+    Also includes return trips they created.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+    serializer_class = TransporterMissionSerializer
+
+    def get_queryset(self):
+        user = self.request.user
+        # Jobs where transporter has an accepted offer
+        assigned = TransportJob.objects.filter(
+            offers__transporter=user,
+            offers__status='ACCEPTED'
+        )
+        # Return trips created by this transporter
+        return_trips = TransportJob.objects.filter(
+            owner=user,
+            is_return_trip=True
+        )
+        return (assigned | return_trips).select_related(
+            'owner'
+        ).prefetch_related('offers').distinct().order_by('-created_at')
+
+
+class ReturnTripCreateView(generics.CreateAPIView):
+    """
+    POST /api/jobs/return-trip/
+    Transporter creates a return trip availability.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+    serializer_class = ReturnTripCreateSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            job = serializer.save()
+            return Response({
+                'message': 'Return trip created successfully.',
+                'job': TransportJobDetailSerializer(job, context={'request': request}).data
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
 class JobPublicListView(generics.ListAPIView):
     """
     GET /api/jobs/public/
@@ -69,6 +117,12 @@ class JobPublicListView(generics.ListAPIView):
             status=TransportJob.Status.PUBLISHED,
             scheduled_time__gte=timezone.now()
         ).select_related('owner').prefetch_related('offers').order_by('-created_at')
+
+        # VISIBILITY: Transporters should NOT see other transporters' return trips
+        # Only CLIENT, ADMIN, and unauthenticated users can see return trip publications
+        user = self.request.user
+        if user.is_authenticated and hasattr(user, 'role') and user.role == 'TRANSPORTER':
+            queryset = queryset.filter(is_return_trip=False)
 
         # Apply Filters
         job_type = self.request.query_params.get('job_type')

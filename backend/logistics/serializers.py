@@ -370,3 +370,86 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
         from reviews.models import Review
         return Review.objects.filter(target=obj.user).count()
 
+
+# =============================================================================
+# TRANSPORTER MISSION SERIALIZERS
+# =============================================================================
+
+class TransporterMissionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for a transporter's assigned missions.
+    Shows the job + the transporter's accepted offer details.
+    """
+    client_name = serializers.SerializerMethodField()
+    offer_price = serializers.SerializerMethodField()
+    offer_price_net = serializers.SerializerMethodField()
+    offer_commission = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TransportJob
+        fields = [
+            'id', 'job_type', 'status',
+            'pickup_address', 'pickup_governorate',
+            'dropoff_address', 'dropoff_governorate',
+            'scheduled_time', 'description',
+            'client_name', 'offer_price', 'offer_price_net', 'offer_commission',
+            'is_return_trip', 'available_capacity',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = fields
+
+    def get_client_name(self, obj) -> str:
+        owner = obj.owner
+        name = f"{owner.first_name} {owner.last_name}".strip()
+        return name or owner.email.split('@')[0]
+
+    def _get_accepted_offer(self, obj):
+        """Get the accepted offer cached on the instance."""
+        if not hasattr(obj, '_cached_accepted_offer'):
+            request = self.context.get('request')
+            if request:
+                obj._cached_accepted_offer = obj.offers.filter(
+                    transporter=request.user, status='ACCEPTED'
+                ).first()
+            else:
+                obj._cached_accepted_offer = obj.accepted_offer
+        return obj._cached_accepted_offer
+
+    def get_offer_price(self, obj) -> float:
+        offer = self._get_accepted_offer(obj)
+        return float(offer.total_price) if offer else 0
+
+    def get_offer_price_net(self, obj) -> float:
+        offer = self._get_accepted_offer(obj)
+        return float(offer.price_net) if offer else 0
+
+    def get_offer_commission(self, obj) -> float:
+        offer = self._get_accepted_offer(obj)
+        return float(offer.commission_amount) if offer else 0
+
+
+class ReturnTripCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for transporters creating return trip availability.
+    Similar to TransportJobCreateSerializer but with is_return_trip flag.
+    """
+    class Meta:
+        model = TransportJob
+        fields = [
+            'job_type', 'pickup_address', 'pickup_governorate', 'pickup_lat', 'pickup_lng',
+            'dropoff_address', 'dropoff_governorate', 'dropoff_lat', 'dropoff_lng',
+            'scheduled_time', 'specifications', 'description',
+            'price_tnd_min', 'price_tnd_max',
+            'available_capacity',
+        ]
+
+    def validate_scheduled_time(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError("Scheduled time must be in the future.")
+        return value
+
+    def create(self, validated_data):
+        validated_data['owner'] = self.context['request'].user
+        validated_data['status'] = TransportJob.Status.PUBLISHED
+        validated_data['is_return_trip'] = True
+        return super().create(validated_data)

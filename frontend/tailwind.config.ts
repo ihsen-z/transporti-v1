@@ -204,6 +204,7 @@ const config: Config = {
         shimmer: "shimmer 1.5s ease-in-out infinite",
         "count-up": "countUp 0.4s ease-out both",
         "progress-fill": "progressFill 0.8s ease-out both",
+        "scale-in": "scaleIn 0.2s ease-out both",
       },
       keyframes: {
         fadeInUp: {
@@ -232,6 +233,10 @@ const config: Config = {
         },
         progressFill: {
           "0%": { width: "0%" },
+        },
+        scaleIn: {
+          "0%": { opacity: "0", transform: "scale(0.95)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
         },
       },
     },

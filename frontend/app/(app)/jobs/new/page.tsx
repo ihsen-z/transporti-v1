@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
@@ -22,12 +22,17 @@ const STEPS = [
 
 export default function NewJobPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isReturnTrip = searchParams.get("return_trip") === "true";
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(isReturnTrip ? 1 : 0); // skip type for return trips
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
   const [formData, setFormData] = useState({
-    job_type: null as "TRANSPORT" | "MOVING" | null,
+    job_type: (isReturnTrip ? "TRANSPORT" : null) as
+      | "TRANSPORT"
+      | "MOVING"
+      | null,
     pickup_address: "",
     pickup_governorate: "",
     pickup_lat: null as number | null,
@@ -44,6 +49,7 @@ export default function NewJobPage() {
     scheduled_time: "",
     price_tnd_min: "",
     price_tnd_max: "",
+    available_capacity: "", // For return trips only
   });
 
   const [validationError, setValidationError] = useState<string | null>(null);
@@ -110,10 +116,13 @@ export default function NewJobPage() {
       if (payload.dropoff_lng == null) delete payload.dropoff_lng;
 
       console.log("Submitting Job Data:", payload);
+
+      // Use different endpoint for return trips
+      const endpoint = isReturnTrip ? "/api/jobs/return-trip/" : "/api/jobs/";
       const data = await apiClient.post<{
         message: string;
         job: { id: number };
-      }>("/api/jobs/", payload);
+      }>(endpoint, payload);
 
       if (data && data.job) {
         router.push(`/jobs/${data.job.id}`);
@@ -241,6 +250,27 @@ export default function NewJobPage() {
                 />
               </div>
             </div>
+
+            {/* Available capacity for return trips */}
+            {isReturnTrip && (
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Capacité disponible
+                </label>
+                <input
+                  type="text"
+                  value={formData.available_capacity}
+                  onChange={(e) =>
+                    updateFormData({ available_capacity: e.target.value })
+                  }
+                  placeholder="Ex: 2 tonnes, camion bâché 12m³"
+                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
+                />
+                <p className="text-sm text-neutral-500 mt-1">
+                  Décrivez la capacité disponible pour attirer les bons clients.
+                </p>
+              </div>
+            )}
           </div>
         );
       case 4:
@@ -294,8 +324,21 @@ export default function NewJobPage() {
         {/* Content Card */}
         <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
           <h2 className="text-2xl font-bold text-neutral-900 mb-6">
-            {STEPS[currentStep].title}
+            {isReturnTrip && currentStep === 0
+              ? "Trajet retour"
+              : STEPS[currentStep].title}
           </h2>
+
+          {/* Return trip header info */}
+          {isReturnTrip && currentStep <= 1 && (
+            <div className="mb-6 bg-purple-50 border border-purple-200 rounded-xl p-4">
+              <p className="text-sm text-purple-700 font-medium">
+                🔄 Vous créez un <strong>trajet retour</strong> — les clients
+                qui cherchent un transport sur votre itinéraire pourront voir
+                votre disponibilité.
+              </p>
+            </div>
+          )}
 
           {renderStep()}
 

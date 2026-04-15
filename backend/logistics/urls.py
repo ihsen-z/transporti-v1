@@ -3,7 +3,8 @@ from .views import (
     JobCreateView, JobMyListView, JobPublicListView, JobDetailView, JobOffersView,
     OfferCreateView, OfferMyListView, OfferAcceptView,
     JobUpdateView, JobPublishView, JobCancelView, JobCompleteView,
-    OfferWithdrawView, TransporterProfileView
+    OfferWithdrawView, TransporterProfileView,
+    TransporterJobListView, ReturnTripCreateView
 )
 from .upload_views import PhotoUploadView
 
@@ -14,6 +15,8 @@ urlpatterns = [
     # Job endpoints
     path('jobs/', JobCreateView.as_view(), name='job_create'),
     path('jobs/my/', JobMyListView.as_view(), name='job_my_list'),
+    path('jobs/transporter/', TransporterJobListView.as_view(), name='transporter_job_list'),
+    path('jobs/return-trip/', ReturnTripCreateView.as_view(), name='return_trip_create'),
     path('jobs/public/', JobPublicListView.as_view(), name='job_public_list'),
     path('jobs/<int:job_id>/', JobDetailView.as_view(), name='job_detail'),
     path('jobs/<int:pk>/update/', JobUpdateView.as_view(), name='job_update'), # Explicit update endpoint

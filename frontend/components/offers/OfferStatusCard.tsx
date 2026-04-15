@@ -17,10 +17,12 @@ import {
   Banknote,
   Percent,
   Wallet,
+  Loader2,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
-/*  OfferStatusCard — Premium card for transporter's offer tracking (V2)      */
+/*  OfferStatusCard — Premium card for transporter's offer tracking (V3)      */
+/*  Fixes: #3 expired visual, #4 contacter link, #5 price_net direct          */
 /* -------------------------------------------------------------------------- */
 
 interface OfferStatusCardProps {
@@ -32,6 +34,8 @@ interface OfferStatusCardProps {
     job_type: "TRANSPORT" | "MOVING" | "DELIVERY";
     job_date: string;
     price: number;
+    price_net: number;
+    commission_amount: number;
     commission_rate: number;
     status: "PENDING" | "ACCEPTED" | "REJECTED" | "EXPIRED" | "WITHDRAWN";
     valid_until: string;
@@ -41,7 +45,8 @@ interface OfferStatusCardProps {
   /** Full un-truncated addresses for tooltip */
   fullPickup?: string;
   fullDropoff?: string;
-  onWithdraw?: (offerId: number) => void;
+  /** FIX #1: Now called without offerId — parent manages the modal target */
+  onWithdraw?: () => void;
   isWithdrawing?: boolean;
 }
 
@@ -83,7 +88,6 @@ const STATUS_CONFIG = {
   },
 };
 
-// FIX #6 + #15: Job type config with icons and colors
 const JOB_TYPE_CONFIG = {
   TRANSPORT: {
     label: "Transport",
@@ -115,30 +119,36 @@ export function OfferStatusCard({
     JOB_TYPE_CONFIG[offer.job_type] || JOB_TYPE_CONFIG.TRANSPORT;
   const TypeIcon = typeConfig.icon;
 
-  // FIX #4: price is now total_price, so commission + net are derived correctly
-  const commissionAmount = offer.price * offer.commission_rate;
-  const netEarning = offer.price - commissionAmount;
+  // FIX #5: Use price_net and commission_amount directly from API
+  const commissionAmount = offer.commission_amount;
+  const netEarning = offer.price_net;
 
   // Countdown for pending offers
   const deadline = new Date(offer.valid_until);
   const now = new Date();
-  const hoursLeft = Math.max(
-    0,
-    Math.floor((deadline.getTime() - now.getTime()) / (1000 * 60 * 60)),
-  );
+  const msLeft = deadline.getTime() - now.getTime();
+  const hoursLeft = Math.max(0, Math.floor(msLeft / (1000 * 60 * 60)));
   const isUrgent = hoursLeft < 6 && offer.status === "PENDING";
+  // FIX #3: Also detect if offer has expired but status wasn't updated yet
+  const isExpiredLocally = offer.status === "PENDING" && msLeft <= 0;
+  const effectiveStatus = isExpiredLocally ? "EXPIRED" : offer.status;
+  const effectiveConfig = isExpiredLocally
+    ? STATUS_CONFIG.EXPIRED
+    : STATUS_CONFIG[offer.status];
+  const EffectiveIcon = effectiveConfig.icon;
+
   const isMuted =
-    offer.status === "REJECTED" ||
-    offer.status === "EXPIRED" ||
-    offer.status === "WITHDRAWN";
+    effectiveStatus === "REJECTED" ||
+    effectiveStatus === "EXPIRED" ||
+    effectiveStatus === "WITHDRAWN";
 
   return (
     <div
       className={`
         group bg-white rounded-2xl border border-l-[3px] transition-all duration-200
-        ${config.borderAccent}
+        ${effectiveConfig.borderAccent}
         ${
-          offer.status === "ACCEPTED"
+          effectiveStatus === "ACCEPTED"
             ? "border-emerald-200 shadow-sm shadow-emerald-50 hover:shadow-md hover:shadow-emerald-100/50"
             : isMuted
               ? "border-neutral-200 opacity-70 hover:opacity-100"
@@ -175,29 +185,28 @@ export function OfferStatusCard({
                 year: "numeric",
               })}
             </span>
-            {/* FIX #6 + #15: Enhanced type badge with icon */}
             <span
-              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold ${typeConfig.className}`}
+              className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${typeConfig.className}`}
             >
               <TypeIcon className="w-3 h-3" />
               {typeConfig.label}
             </span>
-            {offer.client_name && offer.status !== "ACCEPTED" && (
+            {offer.client_name && effectiveStatus !== "ACCEPTED" && (
               <span className="text-neutral-400">pour {offer.client_name}</span>
             )}
           </div>
         </div>
 
-        {/* Status Badge */}
+        {/* Status Badge — FIX #3: use effective status for expired */}
         <span
-          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border flex-shrink-0 ${config.color}`}
+          className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border flex-shrink-0 ${effectiveConfig.color}`}
         >
-          <StatusIcon className="w-3.5 h-3.5" />
-          {config.label}
+          <EffectiveIcon className="w-3.5 h-3.5" />
+          {isExpiredLocally ? "Expirée" : effectiveConfig.label}
         </span>
       </div>
 
-      {/* FIX #10: Show transporter's message if present */}
+      {/* Show transporter's message if present */}
       {offer.message && (
         <div className="flex items-start gap-2 mb-3 px-3 py-2.5 bg-neutral-50 rounded-xl border border-neutral-100">
           <MessageCircle className="w-3.5 h-3.5 text-neutral-400 mt-0.5 flex-shrink-0" />
@@ -207,7 +216,7 @@ export function OfferStatusCard({
         </div>
       )}
 
-      {/* Price breakdown — Enhanced V2 with icons and visual separation */}
+      {/* Price breakdown — FIX #5: use price_net and commission_amount directly */}
       <div className="bg-neutral-50 rounded-xl p-3.5 mb-3 border border-neutral-100">
         <div className="grid grid-cols-3 gap-3">
           {/* Prix proposé */}
@@ -224,7 +233,7 @@ export function OfferStatusCard({
             </p>
           </div>
 
-          {/* Divider */}
+          {/* Commission */}
           <div className="border-x border-neutral-200 text-center">
             <div className="flex items-center justify-center gap-1 text-neutral-400 mb-1">
               <Percent className="w-3 h-3" />
@@ -257,7 +266,8 @@ export function OfferStatusCard({
       {/* Footer: Countdown / Client info / Actions */}
       <div className="flex items-center justify-between">
         <div>
-          {offer.status === "PENDING" && (
+          {/* FIX #3: Show "Expirée" label for locally detected expired offers */}
+          {effectiveStatus === "PENDING" && (
             <div
               className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg ${
                 isUrgent
@@ -273,8 +283,13 @@ export function OfferStatusCard({
                 : "Expiration imminente"}
             </div>
           )}
-          {/* FIX #19: Show client name for accepted offers */}
-          {offer.status === "ACCEPTED" && offer.client_name && (
+          {isExpiredLocally && (
+            <div className="inline-flex items-center gap-1.5 text-xs text-neutral-500 bg-neutral-100 px-2.5 py-1 rounded-lg font-medium">
+              <AlertCircle className="w-3.5 h-3.5" />
+              Offre expirée
+            </div>
+          )}
+          {effectiveStatus === "ACCEPTED" && offer.client_name && (
             <div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg">
               <CheckCircle className="w-3.5 h-3.5" />
               Client : {offer.client_name}
@@ -282,7 +297,7 @@ export function OfferStatusCard({
           )}
         </div>
 
-        {/* Action Buttons — Ghost style */}
+        {/* Action Buttons */}
         <div className="flex gap-1.5">
           <Link
             href={`/jobs/${offer.job_id}`}
@@ -291,9 +306,11 @@ export function OfferStatusCard({
             <Eye className="w-3.5 h-3.5" />
             Voir
           </Link>
-          {offer.status === "PENDING" && onWithdraw && (
+
+          {/* Withdraw button — only for truly PENDING (not locally expired) */}
+          {offer.status === "PENDING" && !isExpiredLocally && onWithdraw && (
             <button
-              onClick={() => onWithdraw(offer.id)}
+              onClick={onWithdraw}
               disabled={isWithdrawing}
               className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 border ${
                 isWithdrawing
@@ -301,16 +318,19 @@ export function OfferStatusCard({
                   : "text-red-500 border-red-200 hover:text-white hover:bg-red-500 hover:border-red-500"
               }`}
             >
-              <Undo2
-                className={`w-3.5 h-3.5 ${isWithdrawing ? "animate-spin" : ""}`}
-              />
-              {isWithdrawing ? "..." : "Retirer"}
+              {isWithdrawing ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Undo2 className="w-3.5 h-3.5" />
+              )}
+              {isWithdrawing ? "…" : "Retirer"}
             </button>
           )}
-          {/* FIX #3: Link to messages inbox (conversation is created on accept) */}
-          {offer.status === "ACCEPTED" && (
+
+          {/* FIX #4: Contacter link — always goes to messages inbox, not job-specific */}
+          {effectiveStatus === "ACCEPTED" && (
             <Link
-              href={`/messages/${offer.job_id}`}
+              href="/messages"
               className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-white hover:bg-emerald-500 px-3 py-1.5 rounded-lg transition-all duration-200 border border-emerald-200 hover:border-emerald-500"
             >
               <MessageCircle className="w-3.5 h-3.5" />
