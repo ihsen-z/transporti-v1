@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { getAccessToken } from "@/lib/api/tokenManager";
+import { config } from "@/lib/config";
 import {
   User,
   Mail,
@@ -89,6 +91,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [governorate, setGovernorate] = useState("Tunis");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   // Status indicators
   const [loading, setLoading] = useState(true);
@@ -127,6 +130,10 @@ export default function SettingsPage() {
       setLastName(u.last_name || "");
       setEmail(u.email || "");
       setPhone(u.phone || "");
+      // Load saved avatar
+      if ((u as any).avatar_url) {
+        setAvatarPreview((u as any).avatar_url);
+      }
     } catch (err) {
       // Fallback: use auth context data
       if (user) {
@@ -157,6 +164,7 @@ export default function SettingsPage() {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           phone: phone.trim() || null,
+          profile: { address_summary: governorate },
         },
       );
 
@@ -184,6 +192,45 @@ export default function SettingsPage() {
     }
   };
 
+  // ─── Change Password (real API) ─────────────────────────────────────
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwStatus, setPwStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  );
+  const [pwError, setPwError] = useState("");
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || newPassword !== confirmPassword)
+      return;
+    setPwSaving(true);
+    setPwStatus("idle");
+    setPwError("");
+
+    try {
+      await apiClient.post("/api/auth/change-password/", {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      setPwStatus("success");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPwStatus("idle"), 4000);
+    } catch (err) {
+      setPwStatus("error");
+      if (err instanceof ApiError && err.body) {
+        const msgs = Object.values(err.body).flat();
+        setPwError(String(msgs[0] || "Erreur lors du changement."));
+      } else {
+        setPwError("Erreur réseau. Veuillez réessayer.");
+      }
+      setTimeout(() => setPwStatus("idle"), 5000);
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  // ─── Save notification preferences (local for now) ────────────────────
   const handleSaveNotifications = () => {
     setSaveStatus("success");
     setTimeout(() => setSaveStatus("idle"), 2000);
@@ -261,13 +308,103 @@ export default function SettingsPage() {
                 <>
                   {/* Avatar */}
                   <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-2xl">
-                      {firstName?.[0]?.toUpperCase() || "U"}
+                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-2xl overflow-hidden relative">
+                      {avatarPreview ? (
+                        <img
+                          src={avatarPreview}
+                          alt="Avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        firstName?.[0]?.toUpperCase() || "U"
+                      )}
                     </div>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
-                      <Camera className="w-4 h-4" />
-                      Changer la photo
-                    </button>
+                    <div>
+                      <label
+                        htmlFor="avatar-upload"
+                        className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer"
+                      >
+                        <Camera className="w-4 h-4" />
+                        {avatarPreview
+                          ? "Changer la photo"
+                          : "Ajouter une photo"}
+                      </label>
+                      <input
+                        id="avatar-upload"
+                        type="file"
+                        accept="image/jpeg,image/png,image/webp"
+                        className="hidden"
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+
+                          if (file.size > 2 * 1024 * 1024) {
+                            setSaveStatus("error");
+                            setErrorMessage(
+                              "La photo ne doit pas dépasser 2 Mo.",
+                            );
+                            setTimeout(() => setSaveStatus("idle"), 4000);
+                            return;
+                          }
+
+                          // Show instant preview
+                          if (
+                            avatarPreview &&
+                            avatarPreview.startsWith("blob:")
+                          ) {
+                            URL.revokeObjectURL(avatarPreview);
+                          }
+                          const localPreview = URL.createObjectURL(file);
+                          setAvatarPreview(localPreview);
+
+                          // Upload to backend
+                          try {
+                            setSaving(true);
+                            const formData = new FormData();
+                            formData.append("avatar", file);
+
+                            const token = getAccessToken();
+                            const res = await fetch(
+                              `${config.API_BASE_URL}/api/auth/avatar/`,
+                              {
+                                method: "POST",
+                                headers: {
+                                  Authorization: `Bearer ${token}`,
+                                },
+                                body: formData,
+                              },
+                            );
+
+                            if (res.ok) {
+                              const data = await res.json();
+                              // Replace blob with server URL
+                              URL.revokeObjectURL(localPreview);
+                              setAvatarPreview(data.avatar_url);
+                              setSaveStatus("success");
+                              setTimeout(() => setSaveStatus("idle"), 3000);
+                            } else {
+                              const err = await res.json();
+                              setSaveStatus("error");
+                              setErrorMessage(
+                                err.error || "Erreur lors de l'upload.",
+                              );
+                              setTimeout(() => setSaveStatus("idle"), 4000);
+                            }
+                          } catch {
+                            setSaveStatus("error");
+                            setErrorMessage(
+                              "Erreur réseau. Veuillez réessayer.",
+                            );
+                            setTimeout(() => setSaveStatus("idle"), 4000);
+                          } finally {
+                            setSaving(false);
+                          }
+                        }}
+                      />
+                      <p className="text-xs text-neutral-400 mt-1">
+                        JPG, PNG, WebP. Max 2 Mo.
+                      </p>
+                    </div>
                   </div>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -539,17 +676,42 @@ export default function SettingsPage() {
                   </p>
                 )}
 
+              {/* Password status messages */}
+              {pwStatus === "success" && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  Mot de passe modifié avec succès !
+                </div>
+              )}
+              {pwStatus === "error" && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {pwError}
+                </div>
+              )}
+
               <button
-                onClick={handleSaveNotifications}
+                onClick={handleChangePassword}
                 disabled={
+                  pwSaving ||
                   !currentPassword ||
                   !newPassword ||
                   newPassword !== confirmPassword
                 }
                 className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Lock className="w-5 h-5" />
-                Mettre à jour le mot de passe
+                {pwSaving ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : pwStatus === "success" ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <Lock className="w-5 h-5" />
+                )}
+                {pwSaving
+                  ? "Mise à jour..."
+                  : pwStatus === "success"
+                    ? "Modifié !"
+                    : "Mettre à jour le mot de passe"}
               </button>
             </div>
           )}

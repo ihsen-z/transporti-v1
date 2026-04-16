@@ -46,7 +46,8 @@ class Profile(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     full_name = models.CharField(max_length=200, blank=True)
-    avatar_url = models.URLField(blank=True, help_text="Profile photo URL")
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, help_text="Profile photo file")
+    avatar_url = models.URLField(blank=True, help_text="Profile photo URL (legacy or external)")
     language_pref = models.CharField(
         max_length=5, default='fr',
         choices=[('fr', 'Français'), ('ar', 'العربية')]

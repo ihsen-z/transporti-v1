@@ -5,12 +5,19 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobFeedCard } from "@/components/jobs/JobFeedCard";
-import { Search, MapPin } from "lucide-react";
+import { Search, ChevronLeft, ChevronRight, SortAsc } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 export default function JobBrowsePage() {
   const { user, isLoading: authLoading } = useAuth();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [sortBy, setSortBy] = useState<"newest" | "price_asc" | "price_desc">(
+    "newest",
+  );
   const [filters, setFilters] = useState({
     job_type: "",
     pickup_governorate: "",
@@ -18,8 +25,12 @@ export default function JobBrowsePage() {
   });
 
   useEffect(() => {
-    fetchJobs();
+    setCurrentPage(1); // Reset page when filters change
   }, [filters]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [filters, currentPage, sortBy]);
 
   const fetchJobs = async () => {
     setLoading(true);
@@ -31,12 +42,34 @@ export default function JobBrowsePage() {
       if (filters.dropoff_governorate)
         queryParams.append("dropoff_governorate", filters.dropoff_governorate);
 
+      // Pagination
+      queryParams.append("page", String(currentPage));
+      queryParams.append("page_size", String(PAGE_SIZE));
+
+      // Sort
+      if (sortBy === "newest") queryParams.append("ordering", "-created_at");
+      else if (sortBy === "price_asc")
+        queryParams.append("ordering", "price_tnd_min");
+      else if (sortBy === "price_desc")
+        queryParams.append("ordering", "-price_tnd_min");
+
       const response = await apiClient.get<any>(
         `/api/jobs/public/?${queryParams.toString()}`,
       );
-      const jobsData =
-        response.results ?? (Array.isArray(response) ? response : []);
-      setJobs(jobsData);
+
+      if (response.results) {
+        // Paginated (DRF pagination)
+        setJobs(response.results);
+        setTotalCount(response.count || response.results.length);
+      } else if (Array.isArray(response)) {
+        // Non-paginated fallback
+        const start = (currentPage - 1) * PAGE_SIZE;
+        setJobs(response.slice(start, start + PAGE_SIZE));
+        setTotalCount(response.length);
+      } else {
+        setJobs([]);
+        setTotalCount(0);
+      }
     } catch (error) {
       console.error("Error fetching jobs:", error);
     } finally {
@@ -57,6 +90,8 @@ export default function JobBrowsePage() {
     );
   }
 
+  const totalPages = Math.ceil(totalCount / PAGE_SIZE);
+
   return (
     <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
@@ -69,12 +104,27 @@ export default function JobBrowsePage() {
           {/* Main Feed */}
           <div className="flex-1">
             <div className="mb-6 flex justify-between items-center">
-              <h1 className="text-2xl font-bold text-neutral-900">
-                Missions disponibles
-              </h1>
-              <span className="bg-brand-600/10 text-brand-700 text-xs px-2.5 py-0.5 rounded-full font-medium">
-                {jobs.length} résultats
-              </span>
+              <div>
+                <h1 className="text-2xl font-bold text-neutral-900">
+                  Missions disponibles
+                </h1>
+                <span className="text-sm text-neutral-500">
+                  {totalCount} résultat{totalCount > 1 ? "s" : ""}
+                </span>
+              </div>
+              {/* Sort Dropdown */}
+              <div className="flex items-center gap-2">
+                <SortAsc className="w-4 h-4 text-neutral-400" />
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as any)}
+                  className="text-sm border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700 focus:ring-2 focus:ring-brand-500 outline-none"
+                >
+                  <option value="newest">Plus récentes</option>
+                  <option value="price_asc">Prix croissant</option>
+                  <option value="price_desc">Prix décroissant</option>
+                </select>
+              </div>
             </div>
 
             {loading ? (
@@ -87,11 +137,62 @@ export default function JobBrowsePage() {
                 ))}
               </div>
             ) : jobs.length > 0 ? (
-              <div className="space-y-4">
-                {jobs.map((job) => (
-                  <JobFeedCard key={job.id} job={job} />
-                ))}
-              </div>
+              <>
+                <div className="space-y-4">
+                  {jobs.map((job) => (
+                    <JobFeedCard key={job.id} job={job} />
+                  ))}
+                </div>
+
+                {/* Pagination */}
+                {totalPages > 1 && (
+                  <div className="flex items-center justify-center gap-2 mt-8">
+                    <button
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronLeft className="w-5 h-5" />
+                    </button>
+
+                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
+                      let pageNum: number;
+                      if (totalPages <= 5) {
+                        pageNum = i + 1;
+                      } else if (currentPage <= 3) {
+                        pageNum = i + 1;
+                      } else if (currentPage >= totalPages - 2) {
+                        pageNum = totalPages - 4 + i;
+                      } else {
+                        pageNum = currentPage - 2 + i;
+                      }
+                      return (
+                        <button
+                          key={pageNum}
+                          onClick={() => setCurrentPage(pageNum)}
+                          className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
+                            currentPage === pageNum
+                              ? "bg-brand-600 text-white shadow-sm"
+                              : "border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+                          }`}
+                        >
+                          {pageNum}
+                        </button>
+                      );
+                    })}
+
+                    <button
+                      onClick={() =>
+                        setCurrentPage((p) => Math.min(totalPages, p + 1))
+                      }
+                      disabled={currentPage === totalPages}
+                      className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      <ChevronRight className="w-5 h-5" />
+                    </button>
+                  </div>
+                )}
+              </>
             ) : (
               <div className="bg-white rounded-xl p-12 text-center border">
                 <div className="mx-auto w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center mb-4">

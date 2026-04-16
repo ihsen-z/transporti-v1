@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
+from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
@@ -103,8 +104,20 @@ class ProfileView(APIView):
     PUT /api/auth/profile/ - Updates user profile (partial).
     """
     def get(self, request):
+        user_data = UserProfileSerializer(request.user).data
+        # Include avatar URL from profile
+        avatar_url = None
+        try:
+            profile = request.user.profile
+            if profile.avatar:
+                avatar_url = request.build_absolute_uri(profile.avatar.url)
+            elif profile.avatar_url:
+                avatar_url = profile.avatar_url
+        except Exception:
+            pass
+        user_data['avatar_url'] = avatar_url
         return Response({
-            'user': UserProfileSerializer(request.user).data
+            'user': user_data
         })
 
     def put(self, request):
@@ -127,3 +140,216 @@ class ProfileView(APIView):
             })
             
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ChangePasswordView(APIView):
+    """
+    POST /api/auth/change-password/
+    Allows authenticated users to change their password.
+    """
+    def post(self, request):
+        current_password = request.data.get('current_password', '')
+        new_password = request.data.get('new_password', '')
+
+        if not current_password or not new_password:
+            return Response(
+                {'error': 'Les champs mot de passe actuel et nouveau sont requis.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if not request.user.check_password(current_password):
+            return Response(
+                {'current_password': 'Le mot de passe actuel est incorrect.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError
+        try:
+            validate_password(new_password, request.user)
+        except ValidationError as e:
+            return Response(
+                {'new_password': list(e.messages)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        request.user.set_password(new_password)
+        request.user.save()
+
+        logger.info(f"PASSWORD_CHANGED: user_id={request.user.id}")
+
+        return Response({'message': 'Mot de passe modifié avec succès.'})
+
+
+class DashboardStatsView(APIView):
+    """
+    GET /api/auth/dashboard/
+    Returns role-aware dashboard stats from real data.
+    """
+    def get(self, request):
+        user = request.user
+
+        if user.role == 'CLIENT':
+            from logistics.models import TransportJob, TransportOffer
+            jobs = TransportJob.objects.filter(owner=user)
+            active_statuses = ['PUBLISHED', 'MATCHED', 'IN_PROGRESS']
+
+            active_jobs = jobs.filter(status__in=active_statuses).count()
+            completed_jobs = jobs.filter(status='COMPLETED').count()
+            total_offers = TransportOffer.objects.filter(job__owner=user).count()
+            pending_offers = TransportOffer.objects.filter(
+                job__owner=user, status='PENDING'
+            ).count()
+
+            recent_jobs = list(jobs.order_by('-created_at')[:5].values(
+                'id', 'job_type', 'status', 'pickup_address',
+                'dropoff_address', 'scheduled_time'
+            ))
+            # Add offer_count
+            for rj in recent_jobs:
+                rj['offer_count'] = TransportOffer.objects.filter(job_id=rj['id']).count()
+
+            return Response({
+                'role': 'CLIENT',
+                'stats': {
+                    'active_jobs': active_jobs,
+                    'total_offers_received': total_offers,
+                    'completed_jobs': completed_jobs,
+                    'pending_offers': pending_offers,
+                },
+                'recent_jobs': recent_jobs,
+            })
+
+        elif user.role == 'TRANSPORTER':
+            from logistics.models import TransportJob, TransportOffer
+            from django.db.models import Sum
+
+            my_offers = TransportOffer.objects.filter(transporter=user)
+            accepted_offers = my_offers.filter(status='ACCEPTED')
+            assigned_jobs = TransportJob.objects.filter(
+                offers__transporter=user,
+                offers__status='ACCEPTED'
+            ).distinct()
+
+            available_count = TransportJob.objects.filter(
+                status='PUBLISHED', is_return_trip=False
+            ).count()
+            active_offers = my_offers.filter(status__in=['PENDING', 'ACCEPTED']).count()
+            completed = assigned_jobs.filter(status='COMPLETED').count()
+            total_jobs = assigned_jobs.count() or 1
+            completion_rate = round((completed / total_jobs) * 100, 1) if total_jobs else 0
+
+            total_earnings = accepted_offers.aggregate(
+                total=Sum('price_net')
+            )['total'] or 0
+
+            # Verification status
+            verification_status = 'UNVERIFIED'
+            try:
+                verification_status = user.trust_profile.verification_status
+            except Exception:
+                pass
+
+            # Average rating
+            from reviews.models import Review
+            from django.db.models import Avg
+            avg_rating = Review.objects.filter(
+                reviewee=user, is_visible=True
+            ).aggregate(avg=Avg('rating'))['avg'] or 0
+
+            recent_missions = list(assigned_jobs.order_by('-created_at')[:5].values(
+                'id', 'job_type', 'status', 'pickup_address',
+                'dropoff_address', 'scheduled_time'
+            ))
+
+            return Response({
+                'role': 'TRANSPORTER',
+                'stats': {
+                    'available_missions': available_count,
+                    'active_offers': active_offers,
+                    'completed_jobs': completed,
+                    'total_earnings': float(total_earnings),
+                    'verification_status': verification_status,
+                    'average_rating': round(float(avg_rating), 1),
+                    'completion_rate': completion_rate,
+                },
+                'recent_jobs': recent_missions,
+            })
+
+        return Response({
+            'role': user.role,
+            'stats': {},
+            'recent_jobs': [],
+        })
+
+
+class AvatarUploadView(APIView):
+    """
+    POST /api/auth/avatar/
+    Upload or replace the user's profile avatar.
+    Accepts multipart/form-data with an 'avatar' file field.
+    """
+    parser_classes = [MultiPartParser, FormParser]
+
+    def post(self, request):
+        avatar_file = request.FILES.get('avatar')
+
+        if not avatar_file:
+            return Response(
+                {'error': 'Aucun fichier fourni. Envoyez un champ "avatar".'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate file type
+        allowed_types = ['image/jpeg', 'image/png', 'image/webp']
+        if avatar_file.content_type not in allowed_types:
+            return Response(
+                {'error': 'Format non supporté. Utilisez JPG, PNG ou WebP.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate file size (2 MB max)
+        max_size = 2 * 1024 * 1024
+        if avatar_file.size > max_size:
+            return Response(
+                {'error': 'Le fichier est trop volumineux. Maximum 2 Mo.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Get or create profile
+        from .models import Profile
+        profile, created = Profile.objects.get_or_create(user=request.user)
+
+        # Delete old avatar file if it exists
+        if profile.avatar:
+            try:
+                profile.avatar.delete(save=False)
+            except Exception:
+                pass
+
+        # Save new avatar
+        profile.avatar = avatar_file
+        profile.save()
+
+        # Build the full URL
+        avatar_url = request.build_absolute_uri(profile.avatar.url)
+
+        logger.info(f"AVATAR_UPLOADED: user_id={request.user.id}, size={avatar_file.size}")
+
+        return Response({
+            'avatar_url': avatar_url,
+            'message': 'Photo de profil mise à jour avec succès.',
+        })
+
+    def delete(self, request):
+        """DELETE /api/auth/avatar/ — Remove avatar."""
+        from .models import Profile
+        try:
+            profile = request.user.profile
+            if profile.avatar:
+                profile.avatar.delete(save=False)
+                profile.avatar = None
+                profile.save()
+            return Response({'message': 'Photo supprimée.'})
+        except Profile.DoesNotExist:
+            return Response({'error': 'Profil introuvable.'}, status=status.HTTP_404_NOT_FOUND)

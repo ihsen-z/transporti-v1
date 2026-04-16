@@ -22,6 +22,7 @@ import {
   CreditCard,
   ShieldCheck,
   AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -97,7 +98,7 @@ export default function JobDetailsPage() {
     );
 
   const isOwner = user?.id === job.owner?.id;
-  const isTransporter = user?.role === "transporter";
+  const isTransporter = user?.role?.toUpperCase() === "TRANSPORTER";
   const isVerified = user?.is_verified !== false;
   const showOfferForm =
     isTransporter && !isOwner && job.status === "PUBLISHED" && isVerified;
@@ -105,6 +106,9 @@ export default function JobDetailsPage() {
     isTransporter && !isOwner && job.status === "PUBLISHED" && !isVerified;
   const showOffersList =
     isOwner && (job.status === "PUBLISHED" || job.status === "IN_PROGRESS");
+  const showDisputeButton =
+    (job.status === "IN_PROGRESS" || job.status === "COMPLETED") &&
+    (isOwner || isTransporter);
 
   // Post-livraison logic
   const isCompleted = job.status === "COMPLETED";
@@ -377,6 +381,17 @@ export default function JobDetailsPage() {
                   </p>
                 </div>
               </div>
+            )}
+
+            {/* Dispute Button — visible on IN_PROGRESS or COMPLETED */}
+            {showDisputeButton && (
+              <Link
+                href={`/disputes`}
+                className="flex items-center justify-center gap-2 w-full py-3 border border-red-200 bg-red-50 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors"
+              >
+                <AlertTriangle className="w-4 h-4" />
+                Signaler un problème
+              </Link>
             )}
           </div>
         </div>

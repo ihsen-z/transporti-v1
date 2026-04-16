@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
   Truck,
@@ -12,61 +11,74 @@ import {
   FileText,
   MessageSquare,
   Settings,
+  HelpCircle,
+  RotateCcw,
+  Briefcase,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import NavItem from "./NavItem";
 import { SidebarLogo } from "@/components/brand/TransportiLogo";
 
 export default function AppSidebar() {
-  const pathname = usePathname();
   const { user } = useAuth();
+  const role = user?.role?.toUpperCase();
 
   const commonItems = [
     { href: "/dashboard", icon: LayoutDashboard, label: "Tableau de bord" },
-    { href: "/jobs", icon: Truck, label: "Mes Transports" },
+    {
+      href: "/jobs",
+      icon: Truck,
+      label: role === "TRANSPORTER" ? "Mes Missions" : "Mes Transports",
+    },
+    { href: "/messages", icon: MessageSquare, label: "Messages" },
     { href: "/notifications", icon: Bell, label: "Notifications" },
-    { href: "/settings", icon: Settings, label: "Paramètres" },
   ];
 
   const clientItems = [
     { href: "/jobs/new", icon: PlusCircle, label: "Publier une annonce" },
-    { href: "/messages", icon: MessageSquare, label: "Messages" },
   ];
 
   const transporterItems = [
     { href: "/jobs/browse", icon: Search, label: "Trouver une mission" },
     { href: "/offers", icon: FileText, label: "Mes offres" },
-    { href: "/messages", icon: MessageSquare, label: "Messages" },
+    { href: "/jobs/return-trip", icon: RotateCcw, label: "Trajet retour" },
     { href: "/verification", icon: ShieldCheck, label: "Vérification" },
   ];
 
-  let items = [...commonItems];
-  const role = user?.role?.toUpperCase();
+  const bottomItems = [
+    { href: "/help", icon: HelpCircle, label: "Centre d'aide" },
+    { href: "/settings", icon: Settings, label: "Paramètres" },
+  ];
+
+  let mainItems = [...commonItems];
   if (role === "CLIENT") {
-    items = [...clientItems, ...items];
+    mainItems = [...clientItems, ...mainItems];
   } else if (role === "TRANSPORTER") {
-    items = [...items, ...transporterItems];
+    mainItems = [...mainItems, ...transporterItems];
   }
 
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-neutral-200 h-screen fixed left-0 top-0 pt-0 z-sidebar">
       {/* Logo Area */}
       <div className="px-6 py-6 border-b border-neutral-100 h-16 flex items-center">
-        <Link href="/">
+        <Link href="/dashboard">
           <SidebarLogo />
         </Link>
       </div>
 
-      {/* Navigation */}
+      {/* Main Navigation */}
       <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
-        {items.map((item) => (
-          <NavItem
-            key={item.href}
-            {...item}
-            isActive={pathname === item.href}
-          />
+        {mainItems.map((item) => (
+          <NavItem key={item.href} {...item} />
         ))}
       </nav>
+
+      {/* Bottom Navigation */}
+      <div className="px-4 py-2 border-t border-neutral-100 space-y-1">
+        {bottomItems.map((item) => (
+          <NavItem key={item.href} {...item} />
+        ))}
+      </div>
 
       {/* Footer */}
       <div className="px-4 py-4 border-t border-neutral-100">
@@ -76,7 +88,11 @@ export default function AppSidebar() {
             {user?.first_name || user?.name || "Utilisateur"}
           </p>
           <p className="text-xs text-brand-600 font-medium">
-            {user?.role || "Guest"}
+            {role === "TRANSPORTER"
+              ? "Transporteur"
+              : role === "CLIENT"
+                ? "Client"
+                : user?.role || "Guest"}
           </p>
         </div>
       </div>
