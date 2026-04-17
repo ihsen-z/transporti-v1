@@ -162,3 +162,18 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
         profile.save()
         
         return instance
+
+
+class NotificationPreferenceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = None  # Set dynamically to avoid circular imports
+        fields = [
+            'email_enabled', 'push_enabled', 'sms_enabled',
+            'notify_new_offer', 'notify_offer_accepted',
+            'notify_job_completed', 'notify_new_message', 'notify_dispute',
+        ]
+
+    def __init__(self, *args, **kwargs):
+        from .models import NotificationPreference
+        self.Meta.model = NotificationPreference
+        super().__init__(*args, **kwargs)

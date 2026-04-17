@@ -1,64 +1,62 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { Menu, X, User, LogOut, Shield, ChevronDown } from "lucide-react";
 import TransportiLogo from "@/components/brand/TransportiLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
-import { getUnreadCount } from "@/lib/notifications";
-import { getNotifications } from "@/lib/services/notifications";
-import type { Notification } from "@/lib/notifications";
 import { useAuth } from "@/contexts/AuthContext";
+import { useNotifications } from "@/contexts/NotificationContext";
 import { useToast } from "@/components/ui/Toast";
 import { roleLabels, roleColors } from "@/lib/auth";
 
 export default function AppHeader() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
   const { user, role, isAdmin, logout } = useAuth();
+  const { notifications, unreadCount, markAsRead, markAllRead } =
+    useNotifications();
   const { showToast } = useToast();
   const router = useRouter();
+  const pathname = usePathname();
+  const notifRef = useRef<HTMLDivElement>(null);
+  const userMenuRef = useRef<HTMLDivElement>(null);
 
-  const fetchNotifications = useCallback(async () => {
-    try {
-      const result = await getNotifications();
-      setNotifications(result.data);
-    } catch (e) {
-      console.error("Failed to fetch notifications:", e);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchNotifications();
-    const interval = setInterval(fetchNotifications, 30000); // 30s poll
-    return () => clearInterval(interval);
-  }, [fetchNotifications]);
-
-  const unreadCount = getUnreadCount(notifications);
+  // Dynamic page title based on current route
+  const pageTitle = (() => {
+    const titles: Record<string, string> = {
+      "/dashboard": "Tableau de bord",
+      "/jobs": "Mes Transports",
+      "/jobs/new": "Nouveau Transport",
+      "/jobs/browse": "Missions Disponibles",
+      "/jobs/return-trip": "Trajet Retour",
+      "/offers": "Mes Offres",
+      "/messages": "Messages",
+      "/notifications": "Notifications",
+      "/settings": "Paramètres",
+      "/verification": "Vérification",
+      "/disputes": "Litiges",
+      "/help": "Centre d'aide",
+      "/admin/dashboard": "Administration",
+    };
+    return (
+      titles[pathname] ||
+      (pathname.startsWith("/jobs/")
+        ? "Détail Transport"
+        : pathname.startsWith("/admin/")
+          ? "Administration"
+          : "Transporti")
+    );
+  })();
 
   const handleMarkAsRead = async (id: number) => {
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
-    );
-    try {
-      await fetch("/api/notifications/" + id + "/read/", {
-        method: "POST",
-      }).catch(() => {});
-      // Also try via apiClient for auth
-      const { apiClient } = await import("@/lib/api/client");
-      apiClient.post(`/api/notifications/${id}/read/`).catch(() => {});
-    } catch {}
+    await markAsRead(id);
   };
 
   const handleMarkAllAsRead = async () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
-    try {
-      const { apiClient } = await import("@/lib/api/client");
-      apiClient.post("/api/notifications/read-all/").catch(() => {});
-    } catch {}
+    await markAllRead();
   };
 
   const handleLogout = () => {
@@ -66,6 +64,23 @@ export default function AppHeader() {
     showToast("success", "Déconnexion effectuée");
     router.push("/");
   };
+
+  // Click-outside handler: close dropdowns when clicking elsewhere
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (notifRef.current && !notifRef.current.contains(e.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+      if (
+        userMenuRef.current &&
+        !userMenuRef.current.contains(e.target as Node)
+      ) {
+        setIsUserMenuOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 lg:left-64 bg-white border-b border-neutral-200 z-fixed h-16">
@@ -80,7 +95,7 @@ export default function AppHeader() {
         {/* Desktop: Page Title & Role Badge */}
         <div className="hidden lg:flex items-center gap-3">
           <h1 className="text-lg font-semibold text-neutral-900">
-            Application
+            {pageTitle}
           </h1>
           <span
             className={`px-2.5 py-1 rounded-full text-xs font-medium ${roleColors[role]}`}
@@ -101,7 +116,7 @@ export default function AppHeader() {
         {/* Right Side Actions */}
         <div className="flex items-center gap-3">
           {/* Notifications */}
-          <div className="relative">
+          <div className="relative" ref={notifRef}>
             <NotificationBell
               unreadCount={unreadCount}
               onClick={() => setIsDropdownOpen(!isDropdownOpen)}
@@ -116,7 +131,7 @@ export default function AppHeader() {
           </div>
 
           {/* User Menu */}
-          <div className="relative">
+          <div className="relative" ref={userMenuRef}>
             <button
               onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
               className="flex items-center gap-2 px-3 py-1.5 bg-brand-600/10 text-brand-600 rounded-full hover:bg-brand-600/15 transition-colors"

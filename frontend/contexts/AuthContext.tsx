@@ -8,6 +8,7 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
+import { useRouter } from "next/navigation";
 import { type AuthUser, type UserRole, getDefaultRedirect } from "@/lib/auth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import {
@@ -15,6 +16,7 @@ import {
   clearTokens,
   hasTokens,
   getAccessToken,
+  sessionEvents,
   type TokenPair,
 } from "@/lib/api/tokenManager";
 
@@ -103,6 +105,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole>("guest");
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // Load persisted auth on mount
   useEffect(() => {
@@ -125,6 +128,27 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     setIsInitialized(true);
   }, []);
+
+  // Listen for session-expired events from tokenManager
+  // This handles the case where the refresh token expires (after 7 days)
+  // and the user is silently logged out with a redirect to /login
+  useEffect(() => {
+    if (!sessionEvents) return;
+    const events = sessionEvents;
+
+    const handleSessionExpired = () => {
+      setUser(null);
+      setRole("guest");
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(USER_DATA_KEY);
+      router.push("/login?expired=true");
+    };
+
+    events.addEventListener("session-expired", handleSessionExpired);
+    return () => {
+      events.removeEventListener("session-expired", handleSessionExpired);
+    };
+  }, [router]);
 
   /** @deprecated Use loginWithCredentials for real authentication */
   const login = useCallback((newRole: Exclude<UserRole, "guest">) => {

@@ -67,7 +67,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
           type="button"
           onClick={() => onChange(star)}
           className={`focus:outline-none transition-colors ${
-            star <= value ? "text-yellow-400" : "text-neutral-300"
+            star <= value ? "text-amber-400" : "text-neutral-300"
           }`}
         >
           <Star
@@ -132,7 +132,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full p-3 border rounded-lg h-24 focus:ring-2 focus:ring-yellow-400"
+            className="w-full p-3 border rounded-xl h-24 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none"
             placeholder="Partagez votre expérience..."
           />
         </div>
@@ -140,7 +140,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-3 bg-neutral-900 text-white rounded-lg font-bold hover:bg-neutral-800 flex items-center justify-center gap-2"
+          className="w-full py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-colors flex items-center justify-center gap-2"
         >
           {loading ? (
             "Envoi..."

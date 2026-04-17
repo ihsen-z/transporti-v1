@@ -15,10 +15,17 @@ export default function ForgotPasswordPage() {
     if (!email) return;
 
     setIsSubmitting(true);
-    // Simulate API call — backend endpoint not yet implemented
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setSubmitted(true);
+    try {
+      const { apiClient } = await import("@/lib/api/client");
+      await apiClient.post("/api/auth/password-reset/", {
+        email: email.trim().toLowerCase(),
+      });
+    } catch {
+      // Always show success to prevent email enumeration
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }
   };
 
   return (

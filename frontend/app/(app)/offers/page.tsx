@@ -7,6 +7,7 @@ import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import { OfferStatusCard } from "@/components/offers/OfferStatusCard";
 import ConfirmModal from "@/components/ui/ConfirmModal";
+import Pagination, { paginateArray } from "@/components/ui/Pagination";
 import {
   FileText,
   Clock,
@@ -192,6 +193,8 @@ export default function MyOffersPage() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
+  const [offerPage, setOfferPage] = useState(1);
+  const OFFER_PAGE_SIZE = 10;
 
   // FIX #1: Modal state instead of native confirm()
   const [withdrawTarget, setWithdrawTarget] = useState<MappedOffer | null>(
@@ -321,6 +324,13 @@ export default function MyOffersPage() {
   // Filter offers
   const filtered =
     activeTab === "ALL" ? offers : offers.filter((o) => o.status === activeTab);
+
+  // Reset page when tab changes
+  useEffect(() => {
+    setOfferPage(1);
+  }, [activeTab]);
+
+  const paginatedOffers = paginateArray(filtered, offerPage, OFFER_PAGE_SIZE);
 
   // Stats
   const pendingCount = offers.filter((o) => o.status === "PENDING").length;
@@ -514,7 +524,7 @@ export default function MyOffersPage() {
             </Link>
           </div>
         ) : (
-          filtered.map((offer, index) => (
+          paginatedOffers.map((offer, index) => (
             <div
               key={offer.id}
               className="animate-fade-in"
@@ -535,6 +545,14 @@ export default function MyOffersPage() {
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={offerPage}
+        totalItems={filtered.length}
+        pageSize={OFFER_PAGE_SIZE}
+        onPageChange={setOfferPage}
+      />
     </div>
   );
 }

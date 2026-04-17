@@ -134,6 +134,13 @@ export default function SettingsPage() {
       if ((u as any).avatar_url) {
         setAvatarPreview((u as any).avatar_url);
       }
+      // Load profile fields
+      if ((u as any).address_summary) {
+        setGovernorate((u as any).address_summary);
+      }
+      if ((u as any).language_pref) {
+        setLanguage((u as any).language_pref);
+      }
     } catch (err) {
       // Fallback: use auth context data
       if (user) {
@@ -149,6 +156,21 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchProfile();
+    // Fetch notification preferences from backend
+    apiClient
+      .get<{ data: any }>("/api/auth/notification-preferences/")
+      .then((res) => {
+        const d = res.data;
+        if (d) {
+          setNotifEmail(d.email_enabled ?? true);
+          setNotifPush(d.push_enabled ?? true);
+          setNotifSms(d.sms_enabled ?? false);
+          setNotifNewOffer(d.notify_new_offer ?? true);
+          setNotifBooking(d.notify_offer_accepted ?? true);
+          setNotifMessage(d.notify_new_message ?? true);
+        }
+      })
+      .catch(() => {}); // Fail silently — defaults remain
   }, [fetchProfile]);
 
   // ─── Save profile to API ──────────────────────────────────────────────
@@ -230,10 +252,29 @@ export default function SettingsPage() {
     }
   };
 
-  // ─── Save notification preferences (local for now) ────────────────────
-  const handleSaveNotifications = () => {
-    setSaveStatus("success");
-    setTimeout(() => setSaveStatus("idle"), 2000);
+  // ─── Save notification preferences (real API) ────────────────────
+  const [notifSaving, setNotifSaving] = useState(false);
+  const handleSaveNotifications = async () => {
+    setNotifSaving(true);
+    setSaveStatus("idle");
+    try {
+      await apiClient.put("/api/auth/notification-preferences/", {
+        email_enabled: notifEmail,
+        push_enabled: notifPush,
+        sms_enabled: notifSms,
+        notify_new_offer: notifNewOffer,
+        notify_offer_accepted: notifBooking,
+        notify_new_message: notifMessage,
+      });
+      setSaveStatus("success");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } catch {
+      setSaveStatus("error");
+      setErrorMessage("Erreur lors de la sauvegarde des préférences.");
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    } finally {
+      setNotifSaving(false);
+    }
   };
 
   const Toggle = ({

@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,30 +12,14 @@ import {
   FileText,
   PlusCircle,
 } from "lucide-react";
-import { getNotifications } from "@/lib/services/notifications";
-import { getUnreadCount } from "@/lib/notifications";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 export default function BottomNav() {
   const pathname = usePathname();
   const { user } = useAuth();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { unreadCount } = useNotifications();
   const role = user?.role?.toUpperCase();
-
-  const fetchCount = useCallback(async () => {
-    try {
-      const result = await getNotifications();
-      setUnreadCount(getUnreadCount(result.data));
-    } catch (e) {
-      // silent fail
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCount();
-    const interval = setInterval(fetchCount, 60000); // 60s instead of 30s for perf
-    return () => clearInterval(interval);
-  }, [fetchCount]);
 
   // Role-aware nav items
   const navItems =
@@ -56,7 +39,12 @@ export default function BottomNav() {
             label: "Notifs",
             badge: unreadCount,
           },
-          { href: "/settings", icon: Settings, label: "Profil", badge: 0 },
+          {
+            href: "/messages",
+            icon: MessageSquare,
+            label: "Messages",
+            badge: 0,
+          },
         ]
       : [
           {

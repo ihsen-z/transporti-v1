@@ -4,10 +4,12 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
+import type { JobDetail } from "@/lib/types/jobs";
 import { JobPreview } from "@/components/jobs/JobPreview";
 import { OfferForm } from "@/components/offers/OfferForm";
 import { OfferList } from "@/components/offers/OfferList";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
+import StatusBadge from "@/components/ui/StatusBadge";
 import { useToast } from "@/components/ui/Toast";
 import {
   BadgeCheck,
@@ -30,7 +32,7 @@ export default function JobDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
-  const [job, setJob] = useState<any>(null);
+  const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const { showToast } = useToast();
@@ -45,8 +47,8 @@ export default function JobDetailsPage() {
 
   const fetchJob = async () => {
     try {
-      const data = await apiClient.get(`/api/jobs/${jobId}/`);
-      setJob(data);
+      const data = await apiClient.get<JobDetail>(`/api/jobs/${jobId}/`);
+      setJob(data as JobDetail);
     } catch (error) {
       console.error("Error fetching job:", error);
     } finally {
@@ -65,7 +67,7 @@ export default function JobDetailsPage() {
     setConfirming(true);
     try {
       await apiClient.post("/api/payments/confirm-completion/", {
-        job_id: job.id,
+        job_id: job!.id,
       });
       showToast(
         "success",
@@ -99,7 +101,7 @@ export default function JobDetailsPage() {
 
   const isOwner = user?.id === job.owner?.id;
   const isTransporter = user?.role?.toUpperCase() === "TRANSPORTER";
-  const isVerified = user?.is_verified !== false;
+  const isVerified = user?.is_verified === true;
   const showOfferForm =
     isTransporter && !isOwner && job.status === "PUBLISHED" && isVerified;
   const showVerificationGate =
@@ -261,7 +263,11 @@ export default function JobDetailsPage() {
                   <BadgeCheck className="w-5 h-5 text-purple-600" />
                   Offres reçues
                 </h3>
-                <OfferList jobId={job.id} isJobOwner={isOwner} />
+                <OfferList
+                  jobId={job.id}
+                  isJobOwner={isOwner}
+                  onOfferAccepted={fetchJob}
+                />
               </div>
             )}
 
@@ -386,7 +392,7 @@ export default function JobDetailsPage() {
             {/* Dispute Button — visible on IN_PROGRESS or COMPLETED */}
             {showDisputeButton && (
               <Link
-                href={`/disputes`}
+                href={`/disputes?job=${job.id}`}
                 className="flex items-center justify-center gap-2 w-full py-3 border border-red-200 bg-red-50 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors"
               >
                 <AlertTriangle className="w-4 h-4" />
@@ -397,27 +403,5 @@ export default function JobDetailsPage() {
         </div>
       </div>
     </div>
-  );
-}
-
-/* Status Badge */
-function StatusBadge({ status }: { status: string }) {
-  const config: Record<string, { bg: string; label: string }> = {
-    DRAFT: { bg: "bg-neutral-100 text-neutral-700", label: "Brouillon" },
-    PUBLISHED: { bg: "bg-green-100 text-green-800", label: "Publiée" },
-    MATCHED: { bg: "bg-purple-100 text-purple-800", label: "Attribuée" },
-    IN_PROGRESS: { bg: "bg-brand-600/10 text-brand-700", label: "En cours" },
-    COMPLETED: { bg: "bg-emerald-100 text-emerald-800", label: "Terminée" },
-    CANCELLED: { bg: "bg-red-100 text-red-700", label: "Annulée" },
-    DISPUTED: { bg: "bg-orange-100 text-orange-800", label: "Litige" },
-  };
-  const c = config[status] || {
-    bg: "bg-neutral-100 text-neutral-600",
-    label: status,
-  };
-  return (
-    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${c.bg}`}>
-      {c.label}
-    </span>
   );
 }

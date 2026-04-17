@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   Truck,
   Package,
@@ -87,36 +88,6 @@ function StatCard({
       <p className="text-3xl font-bold text-neutral-900">{value}</p>
       <p className="text-sm text-neutral-500 mt-1">{label}</p>
     </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
-/*  Status Badge                                                              */
-/* -------------------------------------------------------------------------- */
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    DRAFT: "bg-neutral-100 text-neutral-600",
-    PUBLISHED: "bg-brand-600/5 text-brand-600",
-    MATCHED: "bg-purple-50 text-purple-700",
-    IN_PROGRESS: "bg-amber-50 text-amber-700",
-    COMPLETED: "bg-emerald-50 text-emerald-700",
-    CANCELLED: "bg-red-50 text-red-700",
-  };
-  const labels: Record<string, string> = {
-    DRAFT: "Brouillon",
-    PUBLISHED: "Publiée",
-    MATCHED: "Attribuée",
-    IN_PROGRESS: "En cours",
-    COMPLETED: "Terminée",
-    CANCELLED: "Annulée",
-  };
-  return (
-    <span
-      className={`text-xs font-medium px-2.5 py-1 rounded-full ${styles[status] || "bg-neutral-100 text-neutral-600"}`}
-    >
-      {labels[status] || status}
-    </span>
   );
 }
 

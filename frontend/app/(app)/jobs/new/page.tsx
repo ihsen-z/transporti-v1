@@ -115,8 +115,6 @@ export default function NewJobPage() {
       if (payload.dropoff_lat == null) delete payload.dropoff_lat;
       if (payload.dropoff_lng == null) delete payload.dropoff_lng;
 
-      console.log("Submitting Job Data:", payload);
-
       // Use different endpoint for return trips
       const endpoint = isReturnTrip ? "/api/jobs/return-trip/" : "/api/jobs/";
       const data = await apiClient.post<{

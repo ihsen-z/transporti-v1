@@ -97,3 +97,29 @@ class AuthAudit(models.Model):
         if self.pk:
             raise ValueError("AuthAudit entries cannot be modified.")
         super().save(*args, **kwargs)
+
+
+class NotificationPreference(models.Model):
+    """
+    User notification preferences (email, push, per-event toggles).
+    Auto-created on first access via get_or_create in the view.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_prefs')
+    
+    # Channel toggles
+    email_enabled = models.BooleanField(default=True)
+    push_enabled = models.BooleanField(default=True)
+    sms_enabled = models.BooleanField(default=False)
+    
+    # Per-event toggles
+    notify_new_offer = models.BooleanField(default=True)
+    notify_offer_accepted = models.BooleanField(default=True)
+    notify_job_completed = models.BooleanField(default=True)
+    notify_new_message = models.BooleanField(default=True)
+    notify_dispute = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"NotifPrefs: {self.user.email}"

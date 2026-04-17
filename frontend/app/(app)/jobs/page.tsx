@@ -30,6 +30,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import LoadingState from "@/components/ui/LoadingState";
+import Pagination, { paginateArray } from "@/components/ui/Pagination";
 import type { TransporterMission } from "@/lib/services/jobs";
 
 /* -------------------------------------------------------------------------- */
@@ -332,6 +333,8 @@ function TransporterMissionsView() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<MissionFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   const fetchMissions = useCallback(
     async (silent = false) => {
@@ -384,6 +387,13 @@ function TransporterMissionsView() {
 
     return list;
   }, [missions, activeTab, searchQuery]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery]);
+
+  const paginatedMissions = paginateArray(filtered, currentPage, PAGE_SIZE);
 
   // Stats
   const inProgressCount = missions.filter(
@@ -579,7 +589,7 @@ function TransporterMissionsView() {
             </div>
           </div>
         ) : (
-          filtered.map((mission, index) => (
+          paginatedMissions.map((mission, index) => (
             <div
               key={mission.id}
               className="animate-fade-in"
@@ -590,6 +600,14 @@ function TransporterMissionsView() {
           ))
         )}
       </div>
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={currentPage}
+        totalItems={filtered.length}
+        pageSize={PAGE_SIZE}
+        onPageChange={setCurrentPage}
+      />
     </div>
   );
 }
@@ -600,6 +618,8 @@ function TransporterMissionsView() {
 
 function ClientJobsView() {
   const { data: jobs, loading } = useJobs();
+  const [clientPage, setClientPage] = useState(1);
+  const CLIENT_PAGE_SIZE = 10;
 
   if (loading) {
     return (
@@ -677,11 +697,19 @@ function ClientJobsView() {
         </div>
       ) : (
         <div className="space-y-4">
-          {jobs.map((job) => (
+          {paginateArray(jobs, clientPage, CLIENT_PAGE_SIZE).map((job) => (
             <JobCard key={job.id} job={job} />
           ))}
         </div>
       )}
+
+      {/* Pagination */}
+      <Pagination
+        currentPage={clientPage}
+        totalItems={jobs.length}
+        pageSize={CLIENT_PAGE_SIZE}
+        onPageChange={setClientPage}
+      />
     </div>
   );
 }

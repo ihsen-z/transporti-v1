@@ -2,13 +2,31 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ToastProvider } from "@/components/ui/Toast";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Transporti V1 - La logistique réinventée",
-  description: "Plateforme de transport en Tunisie. Simple, rapide, fiable.",
+  title: {
+    default: "Transporti — La logistique réinventée",
+    template: "%s | Transporti",
+  },
+  description:
+    "Plateforme de transport en Tunisie. Trouvez un transporteur fiable en quelques clics. Simple, rapide, sécurisé.",
+  keywords: [
+    "transport",
+    "Tunisie",
+    "logistique",
+    "déménagement",
+    "livraison",
+    "transporteur",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "fr_TN",
+    siteName: "Transporti",
+  },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -27,7 +45,9 @@ export default function RootLayout({
     <html lang="fr">
       <body className={inter.className}>
         <AuthProvider>
-          <ToastProvider>{children}</ToastProvider>
+          <NotificationProvider>
+            <ToastProvider>{children}</ToastProvider>
+          </NotificationProvider>
         </AuthProvider>
       </body>
     </html>

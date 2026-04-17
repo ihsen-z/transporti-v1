@@ -13,11 +13,16 @@ import {
 interface OfferListProps {
   jobId: number;
   isJobOwner: boolean;
+  onOfferAccepted?: () => void;
 }
 
 const COD_MAX_TND = 300;
 
-export function OfferList({ jobId, isJobOwner }: OfferListProps) {
+export function OfferList({
+  jobId,
+  isJobOwner,
+  onOfferAccepted,
+}: OfferListProps) {
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
@@ -64,7 +69,7 @@ export function OfferList({ jobId, isJobOwner }: OfferListProps) {
           : "Offre acceptée ! Paiement sécurisé activé.",
       );
       fetchOffers();
-      window.location.reload();
+      onOfferAccepted?.();
     } catch (error) {
       if (error instanceof ApiError && error.body) {
         const msg =

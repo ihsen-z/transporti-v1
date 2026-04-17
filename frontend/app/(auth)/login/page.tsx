@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
@@ -18,6 +18,16 @@ export default function LoginPage() {
   const { showToast } = useToast();
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Show session expired toast when redirected from session guard
+  useEffect(() => {
+    if (searchParams.get("expired") === "true") {
+      showToast(
+        "warning",
+        "Votre session a expiré. Veuillez vous reconnecter.",
+      );
+    }
+  }, [searchParams, showToast]);
 
   const handleRealLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -165,15 +175,15 @@ export default function LoginPage() {
             <div className="flex-grow border-t border-neutral-200"></div>
           </div>
 
-          {/* Social Login Buttons */}
+          {/* Social Login Buttons — Coming Soon */}
           <div className="grid grid-cols-2 gap-3 pt-2 pb-4">
             <button
               type="button"
-              onClick={() => handleSocialLogin("google")}
-              className="flex items-center justify-center gap-2 px-4 py-3 border border-neutral-300 rounded-xl font-medium text-sm text-neutral-700 hover:bg-neutral-50 hover:border-neutral-400 transition-all hover:shadow-sm"
+              disabled
+              className="relative flex items-center justify-center gap-2 px-4 py-3 border border-neutral-200 rounded-xl font-medium text-sm text-neutral-400 bg-neutral-50 cursor-not-allowed"
             >
               <svg
-                className="w-5 h-5"
+                className="w-5 h-5 opacity-40"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -195,14 +205,17 @@ export default function LoginPage() {
                 />
               </svg>
               Google
+              <span className="absolute -top-2 -right-2 text-[10px] bg-brand-600/10 text-brand-600 px-1.5 py-0.5 rounded-full font-semibold">
+                Bientôt
+              </span>
             </button>
             <button
               type="button"
-              onClick={() => handleSocialLogin("facebook")}
-              className="flex items-center justify-center gap-2 px-4 py-3 border border-neutral-300 rounded-xl font-medium text-sm text-neutral-700 hover:bg-neutral-50 hover:border-neutral-400 transition-all hover:shadow-sm"
+              disabled
+              className="relative flex items-center justify-center gap-2 px-4 py-3 border border-neutral-200 rounded-xl font-medium text-sm text-neutral-400 bg-neutral-50 cursor-not-allowed"
             >
               <svg
-                className="w-5 h-5"
+                className="w-5 h-5 opacity-40"
                 viewBox="0 0 24 24"
                 xmlns="http://www.w3.org/2000/svg"
               >
@@ -212,6 +225,9 @@ export default function LoginPage() {
                 />
               </svg>
               Facebook
+              <span className="absolute -top-2 -right-2 text-[10px] bg-brand-600/10 text-brand-600 px-1.5 py-0.5 rounded-full font-semibold">
+                Bientôt
+              </span>
             </button>
           </div>
         </div>

@@ -60,7 +60,7 @@ export default function AppSidebar() {
   return (
     <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-neutral-200 h-screen fixed left-0 top-0 pt-0 z-sidebar">
       {/* Logo Area */}
-      <div className="px-6 py-6 border-b border-neutral-100 h-16 flex items-center">
+      <div className="px-6 py-4 border-b border-neutral-100 h-16 flex items-center overflow-hidden">
         <Link href="/dashboard">
           <SidebarLogo />
         </Link>
