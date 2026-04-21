@@ -328,6 +328,8 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     """
     first_name = serializers.CharField(source='user.first_name')
     last_name = serializers.CharField(source='user.last_name')
+    email = serializers.EmailField(source='user.email', read_only=True)
+    phone = serializers.CharField(source='user.phone', read_only=True)
     avatar_url = serializers.CharField(source='user.profile.avatar_url', read_only=True)
     joined_at = serializers.DateTimeField(source='user.date_joined', read_only=True)
     
@@ -350,7 +352,8 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
         from trust.models import TrustProfile
         model = TrustProfile
         fields = [
-            'first_name', 'last_name', 'avatar_url', 'joined_at',
+            'first_name', 'last_name', 'email', 'phone',
+            'avatar_url', 'joined_at',
             'is_verified', 'trust_score', 
             'vehicle_type', 'vehicle_capacity_kg', 'vehicle_photos',
             'service_areas', 'specializations',
@@ -370,6 +373,58 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
         from reviews.models import Review
         return Review.objects.filter(target=obj.user).count()
 
+
+class TransporterProfileEditSerializer(serializers.Serializer):
+    """
+    Serializer for transporters editing their own profile.
+    Handles both User fields and TrustProfile fields.
+    """
+    # User fields
+    first_name = serializers.CharField(max_length=150, required=False)
+    last_name = serializers.CharField(max_length=150, required=False)
+    email = serializers.EmailField(max_length=254, required=False)
+    phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+
+    # TrustProfile fields
+    vehicle_type = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    vehicle_capacity_kg = serializers.DecimalField(
+        max_digits=8, decimal_places=1, required=False, allow_null=True
+    )
+    service_areas = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        allow_empty=True
+    )
+    specializations = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        allow_empty=True
+    )
+    vehicle_photos = serializers.ListField(
+        child=serializers.URLField(),
+        required=False,
+        allow_empty=True
+    )
+
+    VALID_GOVERNORATES = [
+        'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan',
+        'Bizerte', 'Béja', 'Jendouba', 'Le Kef', 'Siliana', 'Sousse',
+        'Monastir', 'Mahdia', 'Sfax', 'Kairouan', 'Kasserine', 'Sidi Bouzid',
+        'Gabès', 'Médenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kébili',
+    ]
+
+    def validate_service_areas(self, value):
+        invalid = [v for v in value if v not in self.VALID_GOVERNORATES]
+        if invalid:
+            raise serializers.ValidationError(
+                f"Gouvernorats invalides: {', '.join(invalid)}"
+            )
+        return value
+
+    def validate_vehicle_capacity_kg(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("La capacité doit être positive.")
+        return value
 
 # =============================================================================
 # TRANSPORTER MISSION SERIALIZERS

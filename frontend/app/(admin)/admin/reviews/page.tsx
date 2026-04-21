@@ -20,6 +20,7 @@ import {
   User,
   MessageSquare,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Config                                                                     */
@@ -58,6 +59,7 @@ export default function AdminReviewsPage() {
   );
   const [actionLoading, setActionLoading] = useState(false);
   const { showToast } = useToast();
+  const { t } = useI18n();
 
   const {
     data: allReviews,
@@ -231,11 +233,11 @@ export default function AdminReviewsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">
-            Modération des avis
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            {t.reviews.title}
           </h1>
-          <p className="text-neutral-500">
-            Avis signalés pour contenu abusif ou frauduleux
+          <p className="text-neutral-500 dark:text-neutral-400">
+            {t.reviews.subtitle}
           </p>
         </div>
         {/* Source Badge */}
@@ -255,9 +257,11 @@ export default function AdminReviewsPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
+        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
-          <p className="text-neutral-500">Chargement des avis...</p>
+          <p className="text-neutral-500 dark:text-neutral-400">
+            Chargement des avis...
+          </p>
         </div>
       )}
 
@@ -287,12 +291,12 @@ export default function AdminReviewsPage() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
                       ? "bg-brand-600 text-white shadow-sm"
-                      : "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200"
+                      : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
                   }`}
                 >
                   {tab.label}
                   <span
-                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
+                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
                   >
                     {count}
                   </span>
@@ -302,22 +306,28 @@ export default function AdminReviewsPage() {
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-4">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
-                <span className="text-neutral-500">Total:</span>
-                <span className="ml-2 font-semibold text-neutral-900">
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Total:
+                </span>
+                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
                   {allReviews.length}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Visibles:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Visibles:
+                </span>
                 <span className="ml-2 font-semibold text-green-600">
                   {allReviews.filter((r) => !r.isHidden).length}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Masqués:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Masqués:
+                </span>
                 <span className="ml-2 font-semibold text-red-600">
                   {allReviews.filter((r) => r.isHidden).length}
                 </span>
@@ -337,7 +347,7 @@ export default function AdminReviewsPage() {
       {/* Detail Drawer */}
       {selectedReview && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-          <div className="bg-white w-full max-w-lg h-full overflow-y-auto shadow-2xl">
+          <div className="bg-white dark:bg-[#1e293b] w-full max-w-lg h-full overflow-y-auto shadow-2xl">
             <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
               <h2 className="text-lg font-bold text-neutral-900">
                 Avis #{selectedReview.id}

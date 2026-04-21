@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { ArrowRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { AuthLogo } from "@/components/brand/TransportiLogo";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth, getDefaultRedirect } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 
 export default function LoginPage() {
@@ -43,7 +43,9 @@ export default function LoginPage() {
 
     if (result.success) {
       showToast("success", "Connexion réussie !");
-      const redirectTo = searchParams.get("redirect") || "/dashboard";
+      const userRole = result.role || "client";
+      const redirectTo =
+        searchParams.get("redirect") || getDefaultRedirect(userRole);
       router.push(redirectTo);
     } else {
       setError(result.error || "Email ou mot de passe incorrect.");

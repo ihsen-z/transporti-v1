@@ -95,6 +95,103 @@ class AdminStatsView(APIView):
         })
 
 
+class AdminJobCancelView(APIView):
+    """
+    POST /api/admin/jobs/<id>/cancel/
+    Admin cancels a job with mandatory reason.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+
+    def post(self, request, pk):
+        from rest_framework import status as drf_status
+        job = TransportJob.objects.filter(pk=pk).first()
+        if not job:
+            return Response({'error': 'Job introuvable.'}, status=drf_status.HTTP_404_NOT_FOUND)
+
+        if job.status == 'CANCELLED':
+            return Response({'error': 'Ce job est déjà annulé.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        if job.status == 'COMPLETED':
+            return Response({'error': 'Impossible d\'annuler un job terminé.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        reason = request.data.get('reason', '').strip()
+        if not reason:
+            return Response({'error': 'La raison est obligatoire.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        old_status = job.status
+        job.status = 'CANCELLED'
+        job.save(update_fields=['status', 'updated_at'])
+
+        # Audit trail
+        try:
+            from admin_audit.services import log_admin_action
+            log_admin_action(
+                request, 'JOB_CANCELLED', 'job', job.id,
+                target_label=f'Job #{job.id} annulé ({old_status} → CANCELLED)',
+                details={'reason': reason, 'old_status': old_status},
+            )
+        except Exception:
+            pass
+
+        return Response({
+            'message': f'Job #{job.id} annulé avec succès.',
+            'status': 'CANCELLED',
+        })
+
+
+class AdminJobForceStatusView(APIView):
+    """
+    PATCH /api/admin/jobs/<id>/status/
+    Admin forces a status change with mandatory reason.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+
+    ALLOWED_TRANSITIONS = {
+        'DRAFT', 'PUBLISHED', 'MATCHED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED', 'DISPUTED',
+    }
+
+    def patch(self, request, pk):
+        from rest_framework import status as drf_status
+        job = TransportJob.objects.filter(pk=pk).first()
+        if not job:
+            return Response({'error': 'Job introuvable.'}, status=drf_status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get('status', '').strip().upper()
+        reason = request.data.get('reason', '').strip()
+
+        if not new_status or new_status not in self.ALLOWED_TRANSITIONS:
+            return Response(
+                {'error': f'Statut invalide. Valeurs autorisées: {", ".join(sorted(self.ALLOWED_TRANSITIONS))}'},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not reason:
+            return Response({'error': 'La raison est obligatoire.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        if job.status == new_status:
+            return Response({'error': f'Le job est déjà en statut {new_status}.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        old_status = job.status
+        job.status = new_status
+        job.save(update_fields=['status', 'updated_at'])
+
+        # Audit trail
+        try:
+            from admin_audit.services import log_admin_action
+            log_admin_action(
+                request, 'JOB_STATUS_FORCED', 'job', job.id,
+                target_label=f'Job #{job.id} : {old_status} → {new_status}',
+                details={'reason': reason, 'old_status': old_status, 'new_status': new_status},
+            )
+        except Exception:
+            pass
+
+        return Response({
+            'message': f'Job #{job.id} mis à jour : {old_status} → {new_status}.',
+            'status': new_status,
+        })
+
+
 class AdminJobListView(generics.ListAPIView):
     """
     GET /api/admin/jobs/
@@ -202,18 +299,57 @@ class AdminJobDetailView(APIView):
         })
 
 
-class AdminUserListView(generics.ListAPIView):
+class AdminUserListView(APIView):
     """
     GET /api/admin/users/
     All non-admin users with trust/activity info.
+    Supports: ?page=1&page_size=20&role=CLIENT&search=ahmed
+    Sprint 3 R7: Server-side pagination + R6: search/filter.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
-    serializer_class = AdminUserSerializer
 
-    def get_queryset(self):
-        return User.objects.exclude(
+    def get(self, request):
+        queryset = User.objects.exclude(
             role__in=['ADMIN', 'MODERATOR']
         ).select_related('trust_profile').order_by('-date_joined')
+
+        # Filter by role
+        role = request.query_params.get('role')
+        if role and role in ('CLIENT', 'TRANSPORTER'):
+            queryset = queryset.filter(role=role)
+
+        # Search by name, email, or ID
+        search = request.query_params.get('search', '').strip()
+        if search:
+            queryset = queryset.filter(
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search) |
+                Q(id__icontains=search) if search.isdigit() else
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+            )
+
+        total_count = queryset.count()
+
+        # Pagination
+        page = max(1, int(request.query_params.get('page', 1)))
+        page_size = min(100, max(1, int(request.query_params.get('page_size', 50))))
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        users = queryset[start:end]
+        serializer = AdminUserSerializer(users, many=True)
+
+        import math
+        return Response({
+            'results': serializer.data,
+            'count': total_count,
+            'page': page,
+            'pageSize': page_size,
+            'totalPages': math.ceil(total_count / page_size) if total_count > 0 else 1,
+        })
 
 
 class AdminActivityView(APIView):

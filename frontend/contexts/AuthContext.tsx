@@ -82,7 +82,7 @@ interface AuthContextType {
   loginWithCredentials: (
     email: string,
     password: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  ) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   /** Real register — creates account via backend API */
   registerWithCredentials: (
     payload: RegisterPayload,
@@ -162,7 +162,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (
       email: string,
       password: string,
-    ): Promise<{ success: boolean; error?: string }> => {
+    ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
       setIsLoading(true);
       try {
         const data = await apiClient.post<AuthApiResponse>(
@@ -181,7 +181,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(STORAGE_KEY, authUser.role);
         localStorage.setItem(USER_DATA_KEY, JSON.stringify(authUser));
 
-        return { success: true };
+        return { success: true, role: authUser.role };
       } catch (err) {
         if (err instanceof ApiError && err.body) {
           const messages = Object.values(err.body).flat();

@@ -124,7 +124,7 @@ class Review(models.Model):
         # Reviewer must be participant
         if self.reviewer:
             if self.role == ReviewRole.CLIENT:
-                if self.job and self.reviewer != self.job.client:
+                if self.job and self.reviewer != self.job.owner:
                     raise ValidationError("Only the job client can leave a CLIENT review.")
             elif self.role == ReviewRole.TRANSPORTER:
                 if self.job and hasattr(self.job, 'accepted_offer'):

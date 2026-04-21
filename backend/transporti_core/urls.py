@@ -11,7 +11,14 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from .views_admin import (
     AdminStatsView, AdminJobListView, AdminJobDetailView, AdminUserListView,
     AdminActivityView, AdminAlertsView,
+    AdminJobCancelView, AdminJobForceStatusView,
 )
+from .views_admin_users import (
+    AdminUserSuspendView, AdminUserActivateView,
+    AdminUserResetPasswordView, AdminUserDetailView,
+)
+from admin_audit.views import AdminAuditLogView
+from .views_admin_export import AdminExportUsersCSV, AdminExportJobsCSV
 
 
 def health_check(request):
@@ -81,9 +88,24 @@ urlpatterns = [
     path('api/admin/stats/', AdminStatsView.as_view(), name='admin_stats'),
     path('api/admin/jobs/', AdminJobListView.as_view(), name='admin_jobs'),
     path('api/admin/jobs/<int:pk>/', AdminJobDetailView.as_view(), name='admin_job_detail'),
+    path('api/admin/jobs/<int:pk>/cancel/', AdminJobCancelView.as_view(), name='admin_job_cancel'),
+    path('api/admin/jobs/<int:pk>/status/', AdminJobForceStatusView.as_view(), name='admin_job_force_status'),
     path('api/admin/users/', AdminUserListView.as_view(), name='admin_users'),
     path('api/admin/activity/', AdminActivityView.as_view(), name='admin_activity'),
     path('api/admin/alerts/', AdminAlertsView.as_view(), name='admin_alerts'),
+
+    # Admin User Management (Sprint 1 R2)
+    path('api/admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin_user_detail'),
+    path('api/admin/users/<int:user_id>/suspend/', AdminUserSuspendView.as_view(), name='admin_user_suspend'),
+    path('api/admin/users/<int:user_id>/activate/', AdminUserActivateView.as_view(), name='admin_user_activate'),
+    path('api/admin/users/<int:user_id>/reset-password/', AdminUserResetPasswordView.as_view(), name='admin_user_reset_password'),
+
+    # Admin Audit Trail (Sprint 2 R8)
+    path('api/admin/audit-log/', AdminAuditLogView.as_view(), name='admin_audit_log'),
+
+    # Admin Export CSV (Sprint 3 R6)
+    path('api/admin/users/export/', AdminExportUsersCSV.as_view(), name='admin_users_export'),
+    path('api/admin/jobs/export/', AdminExportJobsCSV.as_view(), name='admin_jobs_export'),
 ]
 
 # Serve media files in development

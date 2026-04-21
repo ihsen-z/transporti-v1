@@ -105,10 +105,15 @@ class PaymentWebhookView(APIView):
     POST /api/payments/webhook/
     Callback from payment gateway when payment status changes.
     No authentication (called by gateway server).
+    HMAC-SHA256 signature validation (Sprint 2 R4).
     """
     permission_classes = []  # Public endpoint
 
     def post(self, request):
+        # R4: Verify webhook signature before processing
+        from .webhook_security import verify_webhook_signature
+        verify_webhook_signature(request)
+
         gateway_ref = request.data.get('payment_ref') or request.data.get('paymentRef', '')
         payment_status = request.data.get('status', 'pending')
 

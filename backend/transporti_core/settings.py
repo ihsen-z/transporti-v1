@@ -100,6 +100,7 @@ INSTALLED_APPS = [
     'messaging',
     'analytics',
     'realtime_api',
+    'admin_audit',
 ]
 
 MIDDLEWARE = [
@@ -115,6 +116,22 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'transporti_core.urls'
+
+# =============================================================================
+# CORS CONFIGURATION
+# =============================================================================
+
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in
+    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+    if origin.strip()
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_EXPOSE_HEADERS = [
+    'Content-Disposition',
+]
 
 TEMPLATES = [
     {
@@ -400,6 +417,10 @@ KONNECT_API_URL = os.environ.get(
 
 # COD threshold — above this amount, digital payment is mandatory
 COD_MAX_AMOUNT = Decimal(os.environ.get('COD_MAX_AMOUNT', '300'))
+
+# Webhook signature validation (Sprint 2 R4)
+# MUST be set in production to prevent forged webhook calls
+PAYMENT_WEBHOOK_SECRET = os.environ.get('PAYMENT_WEBHOOK_SECRET', '')
 
 
 # =============================================================================

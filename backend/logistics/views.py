@@ -13,7 +13,8 @@ from .serializers import (
     OfferListSerializer, OfferDetailSerializer,
     OfferAcceptSerializer,
     TransportJobUpdateSerializer, TransporterProfileSerializer,
-    TransporterMissionSerializer, ReturnTripCreateSerializer
+    TransporterMissionSerializer, ReturnTripCreateSerializer,
+    TransporterProfileEditSerializer
 )
 from users.permissions import RequireRole, RequireVerification
 
@@ -508,3 +509,72 @@ class TransporterProfileView(generics.RetrieveAPIView):
         from trust.models import TrustProfile
         user_id = self.kwargs['user_id']
         return get_object_or_404(TrustProfile, user_id=user_id)
+
+
+class TransporterProfileEditView(APIView):
+    """
+    GET  /api/transporter/profile/me/  — Returns own profile data.
+    PATCH /api/transporter/profile/me/ — Updates own profile.
+    Only accessible to authenticated transporters.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'TRANSPORTER':
+            return Response(
+                {'error': 'Réservé aux transporteurs.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        from trust.models import TrustProfile
+        trust_profile = get_object_or_404(TrustProfile, user=request.user)
+        serializer = TransporterProfileSerializer(trust_profile)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        if request.user.role != 'TRANSPORTER':
+            return Response(
+                {'error': 'Réservé aux transporteurs.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = TransporterProfileEditSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        data = serializer.validated_data
+        user = request.user
+
+        # Validate email uniqueness if changed
+        if 'email' in data and data['email'] != user.email:
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            if User.objects.filter(email=data['email']).exclude(id=user.id).exists():
+                return Response(
+                    {'email': ['Cet email est déjà utilisé par un autre compte.']},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+        # Update User fields
+        user_fields = ['first_name', 'last_name', 'phone', 'email']
+        user_changed = False
+        for field in user_fields:
+            if field in data:
+                setattr(user, field, data[field])
+                user_changed = True
+        if user_changed:
+            user.save()
+
+        # Update TrustProfile fields
+        from trust.models import TrustProfile
+        trust_profile = get_object_or_404(TrustProfile, user=user)
+        profile_fields = ['vehicle_type', 'vehicle_capacity_kg', 'service_areas', 'specializations', 'vehicle_photos']
+        for field in profile_fields:
+            if field in data:
+                setattr(trust_profile, field, data[field])
+        trust_profile.save()
+
+        # Return updated profile
+        return Response({
+            'message': 'Profil mis à jour avec succès.',
+            'profile': TransporterProfileSerializer(trust_profile).data
+        })

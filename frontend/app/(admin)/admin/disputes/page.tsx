@@ -25,6 +25,7 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Status Config                                                              */
@@ -70,6 +71,7 @@ export default function AdminDisputesPage() {
     source,
     refetch,
   } = useAdminDisputes();
+  const { t } = useI18n();
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [selectedDispute, setSelectedDispute] = useState<BackendDispute | null>(
     null,
@@ -326,9 +328,11 @@ export default function AdminDisputesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Litiges</h1>
-          <p className="text-neutral-500">
-            Résolution des conflits entre clients et transporteurs
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            {t.disputes.title}
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400">
+            {t.disputes.subtitle}
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -374,12 +378,12 @@ export default function AdminDisputesPage() {
               className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                 isActive
                   ? "bg-brand-600 text-white shadow-sm"
-                  : "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200"
+                  : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
               }`}
             >
               {tab.label}
               <span
-                className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
+                className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
               >
                 {count}
               </span>
@@ -389,21 +393,27 @@ export default function AdminDisputesPage() {
       </div>
 
       {/* Stats Bar */}
-      <div className="bg-white rounded-xl border border-neutral-200 p-4">
+      <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
         <div className="flex flex-wrap gap-6 text-sm">
           <div>
-            <span className="text-neutral-500">Total:</span>
-            <span className="ml-2 font-semibold text-neutral-900">
+            <span className="text-neutral-500 dark:text-neutral-400">
+              Total:
+            </span>
+            <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
               {filtered.length}
             </span>
           </div>
           <div>
-            <span className="text-neutral-500">Ouverts:</span>
+            <span className="text-neutral-500 dark:text-neutral-400">
+              Ouverts:
+            </span>
             <span className="ml-2 font-semibold text-red-600">{openCount}</span>
           </div>
           <div>
-            <span className="text-neutral-500">En investigation:</span>
-            <span className="ml-2 font-semibold text-brand-600">
+            <span className="text-neutral-500 dark:text-neutral-400">
+              En investigation:
+            </span>
+            <span className="ml-2 font-semibold text-brand-600 dark:text-brand-400">
               {investigatingCount}
             </span>
           </div>
