@@ -125,6 +125,11 @@ class JobPublicListView(generics.ListAPIView):
         if user.is_authenticated and hasattr(user, 'role') and user.role == 'TRANSPORTER':
             queryset = queryset.filter(is_return_trip=False)
 
+        # Filter by return trip flag (e.g. ?is_return_trip=true)
+        is_return = self.request.query_params.get('is_return_trip')
+        if is_return is not None:
+            queryset = queryset.filter(is_return_trip=is_return.lower() in ('true', '1'))
+
         # Apply Filters
         job_type = self.request.query_params.get('job_type')
         if job_type:

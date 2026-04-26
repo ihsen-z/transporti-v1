@@ -37,6 +37,7 @@ export default function AppSidebar() {
 
   const clientItems = [
     { href: "/jobs/new", icon: PlusCircle, label: "Publier une annonce" },
+    { href: "/jobs/return-trips", icon: RotateCcw, label: "Trajets retour" },
   ];
 
   const transporterItems = [

@@ -40,7 +40,10 @@ class TransportJobListSerializer(serializers.ModelSerializer):
         model = TransportJob
         fields = [
             'id', 'job_type', 'status', 'pickup_address', 'dropoff_address',
+            'pickup_governorate', 'dropoff_governorate',
             'scheduled_time', 'specifications', 'owner_name', 'offer_count',
+            'price_tnd_min', 'price_tnd_max',
+            'is_return_trip', 'available_capacity',
             'created_at'
         ]
         read_only_fields = fields
