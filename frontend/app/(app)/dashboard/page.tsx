@@ -20,6 +20,7 @@ import {
   AlertCircle,
   BarChart3,
   Loader2,
+  RotateCcw,
 } from "lucide-react";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
@@ -263,13 +264,25 @@ function TransporterDashboard({
             {stats.available_missions} missions disponibles dans votre zone.
             Soumettez vos offres dès maintenant.
           </p>
-          <Link
-            href="/jobs/browse"
-            className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
-          >
-            <Search className="w-5 h-5" />
-            Parcourir les missions
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link
+              href="/jobs/browse"
+              className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
+            >
+              <Search className="w-5 h-5" />
+              Parcourir les missions
+            </Link>
+            <Link
+              href="/jobs/return-trip"
+              className="inline-flex items-center gap-2 text-white px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-lg"
+              style={{
+                background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
+              }}
+            >
+              <RotateCcw className="w-5 h-5" />
+              Proposer un trajet retour
+            </Link>
+          </div>
         </div>
       </div>
 

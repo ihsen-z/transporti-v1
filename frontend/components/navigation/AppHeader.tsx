@@ -3,7 +3,15 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { Menu, X, User, LogOut, Shield, ChevronDown } from "lucide-react";
+import {
+  Menu,
+  X,
+  User,
+  UserCircle,
+  LogOut,
+  Shield,
+  ChevronDown,
+} from "lucide-react";
 import TransportiLogo from "@/components/brand/TransportiLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
@@ -37,6 +45,7 @@ export default function AppHeader() {
       "/notifications": "Notifications",
       "/settings": "Paramètres",
       "/verification": "Vérification",
+      "/profile": "Mon profil",
       "/disputes": "Litiges",
       "/help": "Centre d'aide",
       "/admin/dashboard": "Administration",
@@ -151,10 +160,24 @@ export default function AppHeader() {
             {isUserMenuOpen && (
               <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-neutral-200 overflow-hidden z-50">
                 <div className="p-3 bg-neutral-50 border-b border-neutral-200">
-                  <p className="font-medium text-neutral-900">{user?.name}</p>
-                  <p className="text-xs text-neutral-500">{user?.email}</p>
+                  <Link
+                    href={`/profile/${user?.id || ""}`}
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="block hover:opacity-80 transition-opacity"
+                  >
+                    <p className="font-medium text-neutral-900">{user?.name}</p>
+                    <p className="text-xs text-neutral-500">{user?.email}</p>
+                  </Link>
                 </div>
                 <div className="p-2">
+                  <Link
+                    href={`/profile/${user?.id || ""}`}
+                    onClick={() => setIsUserMenuOpen(false)}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
+                  >
+                    <UserCircle className="w-4 h-4" />
+                    Mon profil
+                  </Link>
                   <Link
                     href="/settings"
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"

@@ -527,7 +527,7 @@ class TransporterProfileEditView(APIView):
             )
         from trust.models import TrustProfile
         trust_profile = get_object_or_404(TrustProfile, user=request.user)
-        serializer = TransporterProfileSerializer(trust_profile)
+        serializer = TransporterProfileSerializer(trust_profile, context={'request': request})
         return Response(serializer.data)
 
     def patch(self, request):
@@ -576,5 +576,5 @@ class TransporterProfileEditView(APIView):
         # Return updated profile
         return Response({
             'message': 'Profil mis à jour avec succès.',
-            'profile': TransporterProfileSerializer(trust_profile).data
+            'profile': TransporterProfileSerializer(trust_profile, context={'request': request}).data
         })

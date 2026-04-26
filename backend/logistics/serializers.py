@@ -330,7 +330,7 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     last_name = serializers.CharField(source='user.last_name')
     email = serializers.EmailField(source='user.email', read_only=True)
     phone = serializers.CharField(source='user.phone', read_only=True)
-    avatar_url = serializers.CharField(source='user.profile.avatar_url', read_only=True)
+    avatar_url = serializers.SerializerMethodField()
     joined_at = serializers.DateTimeField(source='user.date_joined', read_only=True)
     
     # Trust Profile Fields
@@ -360,6 +360,23 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
             'completion_rate', 'total_jobs_completed',
             'rating', 'review_count'
         ]
+
+    def get_avatar_url(self, obj) -> str:
+        """Return avatar URL from ImageField or legacy URLField."""
+        try:
+            profile = obj.user.profile
+            # Prefer the ImageField (actual uploaded file)
+            if profile.avatar and hasattr(profile.avatar, 'url'):
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(profile.avatar.url)
+                return profile.avatar.url
+            # Fallback to legacy URLField
+            if profile.avatar_url:
+                return profile.avatar_url
+        except Exception:
+            pass
+        return ''
 
     def get_rating(self, obj) -> float:
         from reviews.models import Review

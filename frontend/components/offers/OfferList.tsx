@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { OfferCard } from "./OfferCard";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
@@ -23,6 +24,7 @@ export function OfferList({
   isJobOwner,
   onOfferAccepted,
 }: OfferListProps) {
+  const router = useRouter();
   const [offers, setOffers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedOffer, setSelectedOffer] = useState<any>(null);
@@ -70,6 +72,8 @@ export function OfferList({
       );
       fetchOffers();
       onOfferAccepted?.();
+      // Redirect to booking page
+      router.push(`/booking/${jobId}`);
     } catch (error) {
       if (error instanceof ApiError && error.body) {
         const msg =

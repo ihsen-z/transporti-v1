@@ -14,6 +14,7 @@ import {
   HelpCircle,
   RotateCcw,
   Briefcase,
+  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import NavItem from "./NavItem";
@@ -82,19 +83,23 @@ export default function AppSidebar() {
 
       {/* Footer */}
       <div className="px-4 py-4 border-t border-neutral-100">
-        <div className="px-4 py-3 bg-neutral-50 rounded-lg">
-          <p className="text-xs text-neutral-500 mb-1">Connecté en tant que</p>
-          <p className="text-sm font-bold text-neutral-900 truncate">
-            {user?.first_name || user?.name || "Utilisateur"}
-          </p>
-          <p className="text-xs text-brand-600 font-medium">
-            {role === "TRANSPORTER"
-              ? "Transporteur"
-              : role === "CLIENT"
-                ? "Client"
-                : user?.role || "Guest"}
-          </p>
-        </div>
+        <Link href={`/profile/${user?.id || ""}`}>
+          <div className="px-4 py-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer">
+            <p className="text-xs text-neutral-500 mb-1">
+              Connecté en tant que
+            </p>
+            <p className="text-sm font-bold text-neutral-900 truncate">
+              {user?.first_name || user?.name || "Utilisateur"}
+            </p>
+            <p className="text-xs text-brand-600 font-medium">
+              {role === "TRANSPORTER"
+                ? "Transporteur"
+                : role === "CLIENT"
+                  ? "Client"
+                  : user?.role || "Guest"}
+            </p>
+          </div>
+        </Link>
       </div>
     </aside>
   );

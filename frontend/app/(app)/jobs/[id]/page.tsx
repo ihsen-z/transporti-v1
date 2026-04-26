@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import type { JobDetail } from "@/lib/types/jobs";
@@ -25,6 +25,8 @@ import {
   ShieldCheck,
   AlertCircle,
   AlertTriangle,
+  Wallet,
+  FileText,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -32,10 +34,30 @@ export default function JobDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const searchParams = useSearchParams();
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const { showToast } = useToast();
+
+  // Handle payment gateway return
+  useEffect(() => {
+    const paymentStatus = searchParams?.get("payment");
+    if (paymentStatus === "success") {
+      showToast(
+        "success",
+        "Paiement effectué avec succès ! Votre escrow est actif.",
+      );
+      // Clean URL
+      router.replace(`/jobs/${jobId}`, { scroll: false });
+    } else if (paymentStatus === "failed") {
+      showToast(
+        "error",
+        "Le paiement a échoué. Veuillez réessayer depuis votre réservation.",
+      );
+      router.replace(`/jobs/${jobId}`, { scroll: false });
+    }
+  }, [searchParams]);
 
   const jobId = params?.id
     ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id)
@@ -271,6 +293,34 @@ export default function JobDetailsPage() {
               </div>
             )}
 
+            {/* Trust & Security Banner */}
+            <div className="bg-white rounded-xl shadow-sm p-4 border border-neutral-200">
+              <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-green-600" />
+                Confiance & Sécurité
+              </h3>
+              <ul className="space-y-2">
+                <li className="flex items-start gap-2 text-xs text-neutral-600">
+                  <ShieldCheck className="w-3.5 h-3.5 text-green-500 flex-shrink-0 mt-0.5" />
+                  <span>Transporteurs vérifiés (CIN, patente, assurance)</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs text-neutral-600">
+                  <Wallet className="w-3.5 h-3.5 text-brand-600 flex-shrink-0 mt-0.5" />
+                  <span>
+                    Paiement sécurisé par escrow — libéré après confirmation
+                  </span>
+                </li>
+                <li className="flex items-start gap-2 text-xs text-neutral-600">
+                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <span>Résolution de litiges sous 24-48h</span>
+                </li>
+                <li className="flex items-start gap-2 text-xs text-neutral-600">
+                  <Star className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <span>Avis authentiques de clients vérifiés</span>
+                </li>
+              </ul>
+            </div>
+
             {/* In Progress Status */}
             {job.status === "IN_PROGRESS" && (
               <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-brand-700">
@@ -282,7 +332,7 @@ export default function JobDetailsPage() {
                   Le transporteur a été assigné. Coordonnez-vous via la
                   messagerie.
                 </p>
-                <div className="mt-4">
+                <div className="mt-3 space-y-2">
                   <button
                     onClick={() => router.push(`/messages/${job.id}`)}
                     className="w-full py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2"
@@ -290,6 +340,13 @@ export default function JobDetailsPage() {
                     <MessageSquare className="w-4 h-4" />
                     Ouvrir la messagerie
                   </button>
+                  <Link
+                    href={`/booking/${job.id}`}
+                    className="w-full py-2 border border-brand-600/30 text-brand-700 rounded-lg font-medium hover:bg-brand-600/5 flex items-center justify-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Voir la réservation
+                  </Link>
                 </div>
               </div>
             )}
