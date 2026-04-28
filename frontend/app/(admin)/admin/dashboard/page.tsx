@@ -41,7 +41,11 @@ import { useI18n } from "@/lib/i18n";
 /* -------------------------------------------------------------------------- */
 
 function DashboardContent() {
-  const { data: stats, loading: statsLoading, source } = useAdminStats();
+  const {
+    data: stats,
+    loading: statsLoading,
+    source: _source,
+  } = useAdminStats();
   const {
     data: allJobs,
     loading: jobsLoading,
@@ -105,7 +109,7 @@ function DashboardContent() {
       key: "price",
       header: t.jobs.amount,
       render: (job: AdminJob) => (
-        <span className="font-medium">{formatCurrency(job.price)}</span>
+        <span className="font-medium">{formatCurrency(job.price ?? 0)}</span>
       ),
     },
   ];

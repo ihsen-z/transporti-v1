@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Send, CheckCircle, AlertTriangle, XCircle } from "lucide-react";
+import { Send, CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
 
 interface OfferFormProps {
@@ -21,6 +21,16 @@ export function OfferForm({
   const [commission, setCommission] = useState(0);
   const [total, setTotal] = useState(0);
 
+  // Active offers tracking (L1 — max 3 offers UX)
+  const MAX_ACTIVE_OFFERS = 3;
+  const [activeOfferCount, setActiveOfferCount] = useState<number | null>(null);
+  const isAtLimit =
+    activeOfferCount !== null && activeOfferCount >= MAX_ACTIVE_OFFERS;
+  const isNearLimit =
+    activeOfferCount !== null &&
+    activeOfferCount >= MAX_ACTIVE_OFFERS - 1 &&
+    !isAtLimit;
+
   // UI Feedback state (replaces alert())
   const [feedback, setFeedback] = useState<{
     type: FeedbackType;
@@ -36,6 +46,24 @@ export function OfferForm({
   const commissionRate =
     COMMISSION_RATES[jobType || "DEFAULT"] || COMMISSION_RATES.DEFAULT;
   const commissionPct = Math.round(commissionRate * 100);
+
+  // Fetch active offer count on mount (L1 pre-check)
+  useEffect(() => {
+    const fetchActiveOffers = async () => {
+      try {
+        const data = await apiClient.get<{ results?: { status: string }[] }>(
+          "/api/offers/?status=PENDING&page_size=10",
+        );
+        const results =
+          (data as { results?: { status: string }[] }).results || [];
+        setActiveOfferCount(results.length);
+      } catch (_err) {
+        // Non-blocking: if fetch fails, allow form submission and let backend validate
+        setActiveOfferCount(null);
+      }
+    };
+    fetchActiveOffers();
+  }, []);
 
   useEffect(() => {
     const net = parseFloat(priceNet) || 0;
@@ -127,10 +155,50 @@ export function OfferForm({
 
   return (
     <div className="bg-white border rounded-xl p-6 shadow-sm">
-      <h3 className="text-lg font-bold text-neutral-900 mb-4 flex items-center gap-2">
-        <Send className="w-5 h-5 text-brand-600" />
-        Faire une offre
-      </h3>
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+          <Send className="w-5 h-5 text-brand-600" />
+          Faire une offre
+        </h3>
+        {activeOfferCount !== null && (
+          <span
+            className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
+              isAtLimit
+                ? "bg-red-100 text-red-700"
+                : isNearLimit
+                  ? "bg-amber-100 text-amber-700"
+                  : "bg-green-100 text-green-700"
+            }`}
+          >
+            {activeOfferCount}/{MAX_ACTIVE_OFFERS} offres actives
+          </span>
+        )}
+      </div>
+
+      {/* L1: Limit warning banner */}
+      {isAtLimit && (
+        <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-800 border border-red-200 flex items-start gap-2 text-sm">
+          <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <div>
+            <p className="font-semibold">
+              Limite atteinte ({MAX_ACTIVE_OFFERS}/{MAX_ACTIVE_OFFERS})
+            </p>
+            <p>
+              Vous avez déjà {MAX_ACTIVE_OFFERS} offres actives. Retirez une
+              offre existante avant d&apos;en soumettre une nouvelle.
+            </p>
+          </div>
+        </div>
+      )}
+      {isNearLimit && (
+        <div className="mb-4 p-3 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-start gap-2 text-sm">
+          <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <span>
+            Attention : il vous reste <strong>1 offre disponible</strong> sur{" "}
+            {MAX_ACTIVE_OFFERS}.
+          </span>
+        </div>
+      )}
 
       {/* Inline feedback banner */}
       {feedback.type && (
@@ -208,7 +276,7 @@ export function OfferForm({
 
         <button
           type="submit"
-          disabled={loading || !priceNet}
+          disabled={loading || !priceNet || isAtLimit}
           className="w-full py-3 bg-brand-600 text-white rounded-lg font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors"
         >
           {loading ? "Envoi en cours..." : "Envoyer mon offre"}

@@ -583,3 +583,60 @@ class TransporterProfileEditView(APIView):
             'message': 'Profil mis à jour avec succès.',
             'profile': TransporterProfileSerializer(trust_profile, context={'request': request}).data
         })
+
+
+# =============================================================================
+# PRICE ESTIMATION (L5 — Public endpoint)
+# =============================================================================
+
+class PriceEstimateView(APIView):
+    """
+    POST /api/jobs/estimate-price/
+    Public endpoint - returns estimated price range based on coordinates and job type.
+    No authentication required.
+    """
+    permission_classes = []  # Public access
+
+    def post(self, request):
+        from .pricing import estimate_price
+
+        pickup_lat = request.data.get('pickup_lat')
+        pickup_lng = request.data.get('pickup_lng')
+        dropoff_lat = request.data.get('dropoff_lat')
+        dropoff_lng = request.data.get('dropoff_lng')
+        job_type = request.data.get('job_type', 'TRANSPORT')
+
+        # Validate required fields
+        missing = []
+        for field_name, val in [('pickup_lat', pickup_lat), ('pickup_lng', pickup_lng),
+                                 ('dropoff_lat', dropoff_lat), ('dropoff_lng', dropoff_lng)]:
+            if val is None:
+                missing.append(field_name)
+
+        if missing:
+            return Response(
+                {'error': f"Missing required fields: {', '.join(missing)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Validate job_type
+        valid_types = ['TRANSPORT', 'MOVING']
+        if job_type not in valid_types:
+            return Response(
+                {'error': f"Invalid job_type. Must be one of: {', '.join(valid_types)}"},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        result = estimate_price(
+            pickup_lat=pickup_lat,
+            pickup_lng=pickup_lng,
+            dropoff_lat=dropoff_lat,
+            dropoff_lng=dropoff_lng,
+            job_type=job_type,
+        )
+
+        if result.get('error'):
+            return Response(result, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response(result, status=status.HTTP_200_OK)
+

@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  AlertCircle,
+  Lightbulb,
+  MapPin,
+} from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import { JobTypeSelector } from "@/components/jobs/JobTypeSelector";
@@ -53,6 +60,66 @@ export default function NewJobPage() {
   });
 
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // L5: Price estimation state
+  const [priceEstimate, setPriceEstimate] = useState<{
+    min: number;
+    max: number;
+    distance_km: number;
+    grid_source: string;
+  } | null>(null);
+  const [estimateLoading, setEstimateLoading] = useState(false);
+
+  // L5: Fetch price estimate when coordinates and job_type are set
+  useEffect(() => {
+    const { pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, job_type } =
+      formData;
+    if (pickup_lat && pickup_lng && dropoff_lat && dropoff_lng && job_type) {
+      const fetchEstimate = async () => {
+        setEstimateLoading(true);
+        try {
+          const result = await apiClient.post<{
+            min: number;
+            max: number;
+            distance_km: number;
+            grid_source: string;
+          }>("/api/jobs/estimate-price/", {
+            pickup_lat,
+            pickup_lng,
+            dropoff_lat,
+            dropoff_lng,
+            job_type,
+          });
+          const estimate = result as {
+            min: number;
+            max: number;
+            distance_km: number;
+            grid_source: string;
+          };
+          setPriceEstimate(estimate);
+          // Pre-fill budget if empty
+          if (!formData.price_tnd_min && !formData.price_tnd_max) {
+            updateFormData({
+              price_tnd_min: String(estimate.min),
+              price_tnd_max: String(estimate.max),
+            });
+          }
+        } catch (_err) {
+          // Non-blocking
+          setPriceEstimate(null);
+        } finally {
+          setEstimateLoading(false);
+        }
+      };
+      fetchEstimate();
+    }
+  }, [
+    formData.pickup_lat,
+    formData.pickup_lng,
+    formData.dropoff_lat,
+    formData.dropoff_lng,
+    formData.job_type,
+  ]);
 
   const handleNext = () => {
     setValidationError(null);
@@ -218,6 +285,27 @@ export default function NewJobPage() {
               )}
             </div>
 
+            {/* L5: Price estimation badge */}
+            {priceEstimate && (
+              <div className="p-3 bg-accent-50 border border-accent-200 rounded-xl flex items-center gap-3 text-sm">
+                <Lightbulb className="w-5 h-5 text-accent-600 flex-shrink-0" />
+                <div>
+                  <span className="font-semibold text-accent-800">
+                    Prix estimé : {priceEstimate.min} – {priceEstimate.max} TND
+                  </span>
+                  <span className="text-accent-600 ml-2 inline-flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    {priceEstimate.distance_km} km
+                  </span>
+                </div>
+              </div>
+            )}
+            {estimateLoading && (
+              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-500 animate-pulse">
+                Calcul de l&apos;estimation en cours...
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -229,7 +317,9 @@ export default function NewJobPage() {
                   onChange={(e) =>
                     updateFormData({ price_tnd_min: e.target.value })
                   }
-                  placeholder="Optionnel"
+                  placeholder={
+                    priceEstimate ? String(priceEstimate.min) : "Optionnel"
+                  }
                   className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
               </div>
@@ -243,7 +333,9 @@ export default function NewJobPage() {
                   onChange={(e) =>
                     updateFormData({ price_tnd_max: e.target.value })
                   }
-                  placeholder="Optionnel"
+                  placeholder={
+                    priceEstimate ? String(priceEstimate.max) : "Optionnel"
+                  }
                   className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
               </div>

@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
 import {
   Menu,
-  X,
   User,
   UserCircle,
   LogOut,
@@ -15,10 +14,12 @@ import {
 import TransportiLogo from "@/components/brand/TransportiLogo";
 import NotificationBell from "@/components/notifications/NotificationBell";
 import NotificationDropdown from "@/components/notifications/NotificationDropdown";
+import LanguageSwitcher from "@/components/ui/LanguageSwitcher";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNotifications } from "@/contexts/NotificationContext";
 import { useToast } from "@/components/ui/Toast";
 import { roleLabels, roleColors } from "@/lib/auth";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 export default function AppHeader() {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -27,35 +28,37 @@ export default function AppHeader() {
   const { notifications, unreadCount, markAsRead, markAllRead } =
     useNotifications();
   const { showToast } = useToast();
+  const { t } = useAppI18n();
   const router = useRouter();
   const pathname = usePathname();
   const notifRef = useRef<HTMLDivElement>(null);
   const userMenuRef = useRef<HTMLDivElement>(null);
 
-  // Dynamic page title based on current route
+  // Dynamic page title based on current route — now i18n
   const pageTitle = (() => {
     const titles: Record<string, string> = {
-      "/dashboard": "Tableau de bord",
-      "/jobs": "Mes Transports",
-      "/jobs/new": "Nouveau Transport",
-      "/jobs/browse": "Missions Disponibles",
-      "/jobs/return-trip": "Trajet Retour",
-      "/offers": "Mes Offres",
-      "/messages": "Messages",
-      "/notifications": "Notifications",
-      "/settings": "Paramètres",
-      "/verification": "Vérification",
-      "/profile": "Mon profil",
-      "/disputes": "Litiges",
-      "/help": "Centre d'aide",
-      "/admin/dashboard": "Administration",
+      "/dashboard": t.header.pageTitles.dashboard,
+      "/jobs": t.header.pageTitles.jobs,
+      "/jobs/new": t.header.pageTitles.jobsNew,
+      "/jobs/browse": t.header.pageTitles.jobsBrowse,
+      "/jobs/return-trip": t.header.pageTitles.jobsReturnTrip,
+      "/jobs/return-trips": t.header.pageTitles.jobsReturnTrips,
+      "/offers": t.header.pageTitles.offers,
+      "/messages": t.header.pageTitles.messages,
+      "/notifications": t.header.pageTitles.notifications,
+      "/settings": t.header.pageTitles.settings,
+      "/verification": t.header.pageTitles.verification,
+      "/profile": t.header.pageTitles.profile,
+      "/disputes": t.header.pageTitles.disputes,
+      "/help": t.header.pageTitles.help,
+      "/admin/dashboard": t.header.pageTitles.admin,
     };
     return (
       titles[pathname] ||
       (pathname.startsWith("/jobs/")
-        ? "Détail Transport"
+        ? t.header.pageTitles.jobDetail
         : pathname.startsWith("/admin/")
-          ? "Administration"
+          ? t.header.pageTitles.admin
           : "Transporti")
     );
   })();
@@ -70,7 +73,7 @@ export default function AppHeader() {
 
   const handleLogout = () => {
     logout();
-    showToast("success", "Déconnexion effectuée");
+    showToast("success", t.header.logoutSuccess);
     router.push("/");
   };
 
@@ -124,6 +127,9 @@ export default function AppHeader() {
 
         {/* Right Side Actions */}
         <div className="flex items-center gap-3">
+          {/* Language Switcher */}
+          <LanguageSwitcher />
+
           {/* Notifications */}
           <div className="relative" ref={notifRef}>
             <NotificationBell
@@ -151,7 +157,7 @@ export default function AppHeader() {
                 </span>
               </div>
               <span className="hidden sm:block text-sm font-medium max-w-[100px] truncate">
-                {user?.name || "Utilisateur"}
+                {user?.name || t.nav.user}
               </span>
               <ChevronDown className="w-4 h-4" />
             </button>
@@ -176,21 +182,21 @@ export default function AppHeader() {
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
                   >
                     <UserCircle className="w-4 h-4" />
-                    Mon profil
+                    {t.header.myProfile}
                   </Link>
                   <Link
                     href="/settings"
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
                   >
                     <User className="w-4 h-4" />
-                    Paramètres
+                    {t.nav.settings}
                   </Link>
                   <Link
                     href="/help"
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
                   >
                     <Menu className="w-4 h-4" />
-                    Centre d&apos;aide
+                    {t.nav.helpCenter}
                   </Link>
                   <div className="border-t border-neutral-100 my-1" />
                   <button
@@ -198,7 +204,7 @@ export default function AppHeader() {
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                   >
                     <LogOut className="w-4 h-4" />
-                    Déconnexion
+                    {t.header.logout}
                   </button>
                 </div>
               </div>

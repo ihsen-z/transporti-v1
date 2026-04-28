@@ -1,0 +1,11 @@
+# Transporti V1 — Scheduled Tasks (Cron)
+# Install: crontab /app/crontab
+
+# Expire stale PENDING offers every 30 minutes
+*/30 * * * * cd /app && python manage.py expire_stale_offers >> /var/log/cron.log 2>&1
+
+# Auto-release escrow for completed jobs every 4 hours
+0 */4 * * * cd /app && python manage.py auto_release_escrow >> /var/log/cron.log 2>&1
+
+# Auto-reveal stale reviews (7-day blind period) once daily at 3 AM
+0 3 * * * cd /app && python manage.py reveal_stale_reviews >> /var/log/cron.log 2>&1

@@ -79,6 +79,32 @@ services:
         npm run dev
       "
 
+  # ── Scheduler (Periodic Tasks) ──────────────────────────
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: transporti_scheduler
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://transporti:transporti_dev@db:5432/transporti_v1
+      - SECRET_KEY=django-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-secret-key-2026
+      - JWT_SECRET_KEY=jwt-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-jwt-key-2026
+      - DEBUG=True
+      - ENV=development
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '⏳ Waiting for backend migrations...' &&
+        sleep 10 &&
+        echo '🕐 Starting scheduler...' &&
+        python manage.py run_scheduled_tasks
+      "
+
 volumes:
   pgdata:
   backend_media:

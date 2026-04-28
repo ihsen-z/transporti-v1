@@ -142,3 +142,52 @@ class Offer(models.Model):
 
     def __str__(self):
         return f"Offer #{self.id} for Job #{self.job_id} ({self.status})"
+
+
+class PricingGrid(models.Model):
+    """
+    Configurable pricing grid for automatic price estimation.
+    Managed via Django admin — no code change needed to adjust tariffs.
+    
+    FORMULA: base_rate + (distance_km × per_km_rate)
+    RANGE:   [max(min_price, base*0.8), base * max_multiplier]
+    """
+    job_type = models.CharField(
+        max_length=20, choices=TransportJob.JobType.choices,
+        unique=True, db_index=True,
+        help_text="Type de job (TRANSPORT ou MOVING)"
+    )
+    base_rate = models.DecimalField(
+        max_digits=8, decimal_places=2, default=10,
+        validators=[MinValueValidator(0)],
+        help_text="Tarif de base fixe (TND)"
+    )
+    per_km_rate = models.DecimalField(
+        max_digits=6, decimal_places=3, default=0.350,
+        validators=[MinValueValidator(0)],
+        help_text="Tarif par km (TND/km)"
+    )
+    min_price = models.DecimalField(
+        max_digits=8, decimal_places=2, default=25,
+        validators=[MinValueValidator(0)],
+        help_text="Prix minimum garanti (TND)"
+    )
+    max_multiplier = models.DecimalField(
+        max_digits=4, decimal_places=2, default=1.50,
+        validators=[MinValueValidator(1)],
+        help_text="Multiplicateur pour borne haute (ex: 1.5 = +50%)"
+    )
+    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='pricing_updates'
+    )
+
+    class Meta:
+        verbose_name = "Grille tarifaire"
+        verbose_name_plural = "Grilles tarifaires"
+        ordering = ['job_type']
+
+    def __str__(self):
+        return f"Tarif {self.job_type}: {self.base_rate} TND + {self.per_km_rate}/km"

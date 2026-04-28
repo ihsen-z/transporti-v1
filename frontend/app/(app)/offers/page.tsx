@@ -239,6 +239,11 @@ export default function MyOffersPage() {
     }
   }, [role, fetchOffers]);
 
+  // Reset page when tab changes — must be before early returns
+  useEffect(() => {
+    setOfferPage(1);
+  }, [activeTab]);
+
   /* ── Withdraw — FIX #1: modal-based + FIX #2: parse error body ── */
   const handleWithdrawRequest = (offer: MappedOffer) => {
     setWithdrawTarget(offer);
@@ -324,11 +329,6 @@ export default function MyOffersPage() {
   // Filter offers
   const filtered =
     activeTab === "ALL" ? offers : offers.filter((o) => o.status === activeTab);
-
-  // Reset page when tab changes
-  useEffect(() => {
-    setOfferPage(1);
-  }, [activeTab]);
 
   const paginatedOffers = paginateArray(filtered, offerPage, OFFER_PAGE_SIZE);
 

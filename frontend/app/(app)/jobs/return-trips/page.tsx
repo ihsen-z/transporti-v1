@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import { JobFeedCard } from "@/components/jobs/JobFeedCard";
@@ -46,6 +47,7 @@ const GOVERNORATES = [
 
 export default function ReturnTripsPage() {
   const { user, isLoading: authLoading } = useAuth();
+  const { t } = useAppI18n();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
@@ -107,7 +109,8 @@ export default function ReturnTripsPage() {
     }
   };
 
-  if (authLoading) return <div className="p-8 text-center">Chargement...</div>;
+  if (authLoading)
+    return <div className="p-8 text-center">{t.common.loading}</div>;
 
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
@@ -122,10 +125,10 @@ export default function ReturnTripsPage() {
             </div>
             <div>
               <h1 className="text-2xl font-bold text-neutral-900">
-                Trajets retour disponibles
+                {t.returnTrips.title}
               </h1>
               <p className="text-sm text-neutral-500">
-                Profitez des camions qui rentrent à vide — tarifs réduits !
+                {t.returnTrips.subtitle}
               </p>
             </div>
           </div>
@@ -135,17 +138,15 @@ export default function ReturnTripsPage() {
             <div className="flex flex-wrap items-center gap-6 text-sm">
               <div className="flex items-center gap-2 text-purple-700">
                 <TrendingDown className="w-4 h-4" />
-                <span className="font-medium">
-                  Jusqu&apos;à -40% vs prix standard
-                </span>
+                <span className="font-medium">{t.returnTrips.discount}</span>
               </div>
               <div className="flex items-center gap-2 text-purple-700">
                 <Truck className="w-4 h-4" />
-                <span>Transporteurs vérifiés</span>
+                <span>{t.returnTrips.verified}</span>
               </div>
               <div className="flex items-center gap-2 text-purple-700">
                 <MapPin className="w-4 h-4" />
-                <span>Toute la Tunisie</span>
+                <span>{t.returnTrips.allTunisia}</span>
               </div>
             </div>
           </div>
@@ -157,12 +158,12 @@ export default function ReturnTripsPage() {
             <div className="bg-white rounded-xl border border-neutral-200 p-5 sticky top-20">
               <h3 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
                 <Search className="w-4 h-4" />
-                Filtrer
+                {t.returnTrips.filter}
               </h3>
               <div className="space-y-4">
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    Départ
+                    {t.returnTrips.departure}
                   </label>
                   <select
                     value={filters.pickup_governorate}
@@ -174,7 +175,7 @@ export default function ReturnTripsPage() {
                     }
                     className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none transition-shadow"
                   >
-                    <option value="">Tous les gouvernorats</option>
+                    <option value="">{t.returnTrips.allGovernorates}</option>
                     {GOVERNORATES.map((g) => (
                       <option key={g} value={g}>
                         {g}
@@ -184,7 +185,7 @@ export default function ReturnTripsPage() {
                 </div>
                 <div>
                   <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    Destination
+                    {t.returnTrips.destination}
                   </label>
                   <select
                     value={filters.dropoff_governorate}
@@ -196,7 +197,7 @@ export default function ReturnTripsPage() {
                     }
                     className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none transition-shadow"
                   >
-                    <option value="">Tous les gouvernorats</option>
+                    <option value="">{t.returnTrips.allGovernorates}</option>
                     {GOVERNORATES.map((g) => (
                       <option key={g} value={g}>
                         {g}
@@ -215,7 +216,7 @@ export default function ReturnTripsPage() {
                     }
                     className="text-sm text-purple-600 hover:text-purple-800 font-medium transition-colors"
                   >
-                    Réinitialiser les filtres
+                    {t.returnTrips.resetFilters}
                   </button>
                 )}
               </div>
@@ -226,8 +227,10 @@ export default function ReturnTripsPage() {
           <div className="flex-1 animate-fade-in-up delay-200">
             <div className="mb-6 flex justify-between items-center">
               <span className="text-sm text-neutral-500">
-                {totalCount} trajet{totalCount > 1 ? "s" : ""} retour disponible
-                {totalCount > 1 ? "s" : ""}
+                {totalCount}{" "}
+                {totalCount > 1
+                  ? t.returnTrips.countPlural
+                  : t.returnTrips.count}
               </span>
               <div className="flex items-center gap-2">
                 <SortAsc className="w-4 h-4 text-neutral-400" />
@@ -236,9 +239,13 @@ export default function ReturnTripsPage() {
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="text-sm border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700 focus:ring-2 focus:ring-purple-500 outline-none"
                 >
-                  <option value="newest">Plus récentes</option>
-                  <option value="price_asc">Prix croissant</option>
-                  <option value="price_desc">Prix décroissant</option>
+                  <option value="newest">{t.returnTrips.sortNewest}</option>
+                  <option value="price_asc">
+                    {t.returnTrips.sortPriceAsc}
+                  </option>
+                  <option value="price_desc">
+                    {t.returnTrips.sortPriceDesc}
+                  </option>
                 </select>
               </div>
             </div>
@@ -315,11 +322,10 @@ export default function ReturnTripsPage() {
                   <RotateCcw className="w-8 h-8 text-purple-400" />
                 </div>
                 <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-                  Aucun trajet retour disponible
+                  {t.returnTrips.noTrips}
                 </h3>
                 <p className="text-neutral-500 max-w-md mx-auto">
-                  Les transporteurs n&apos;ont pas encore publié de trajets
-                  retour. Revenez plus tard ou publiez votre propre annonce.
+                  {t.returnTrips.noTripsDesc}
                 </p>
               </div>
             )}

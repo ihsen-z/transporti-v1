@@ -13,43 +13,46 @@ import {
   Settings,
   HelpCircle,
   RotateCcw,
-  Briefcase,
-  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import NavItem from "./NavItem";
 import { SidebarLogo } from "@/components/brand/TransportiLogo";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import type { LucideIcon } from "lucide-react";
 
 export default function AppSidebar() {
   const { user } = useAuth();
+  const { t } = useAppI18n();
   const role = user?.role?.toUpperCase();
 
-  const commonItems = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Tableau de bord" },
+  type NavItemDef = { href: string; icon: LucideIcon; label: string };
+
+  const commonItems: NavItemDef[] = [
+    { href: "/dashboard", icon: LayoutDashboard, label: t.nav.dashboard },
     {
       href: "/jobs",
       icon: Truck,
-      label: role === "TRANSPORTER" ? "Mes Missions" : "Mes Transports",
+      label: role === "TRANSPORTER" ? t.nav.myMissions : t.nav.myTransports,
     },
-    { href: "/messages", icon: MessageSquare, label: "Messages" },
-    { href: "/notifications", icon: Bell, label: "Notifications" },
+    { href: "/messages", icon: MessageSquare, label: t.nav.messages },
+    { href: "/notifications", icon: Bell, label: t.nav.notifications },
   ];
 
-  const clientItems = [
-    { href: "/jobs/new", icon: PlusCircle, label: "Publier une annonce" },
-    { href: "/jobs/return-trips", icon: RotateCcw, label: "Trajets retour" },
+  const clientItems: NavItemDef[] = [
+    { href: "/jobs/new", icon: PlusCircle, label: t.nav.publishAd },
+    { href: "/jobs/return-trips", icon: RotateCcw, label: t.nav.returnTrips },
   ];
 
-  const transporterItems = [
-    { href: "/jobs/browse", icon: Search, label: "Trouver une mission" },
-    { href: "/offers", icon: FileText, label: "Mes offres" },
-    { href: "/jobs/return-trip", icon: RotateCcw, label: "Trajet retour" },
-    { href: "/verification", icon: ShieldCheck, label: "Vérification" },
+  const transporterItems: NavItemDef[] = [
+    { href: "/jobs/browse", icon: Search, label: t.nav.findMission },
+    { href: "/offers", icon: FileText, label: t.nav.myOffers },
+    { href: "/jobs/return-trip", icon: RotateCcw, label: t.nav.returnTrip },
+    { href: "/verification", icon: ShieldCheck, label: t.nav.verification },
   ];
 
-  const bottomItems = [
-    { href: "/help", icon: HelpCircle, label: "Centre d'aide" },
-    { href: "/settings", icon: Settings, label: "Paramètres" },
+  const bottomItems: NavItemDef[] = [
+    { href: "/help", icon: HelpCircle, label: t.nav.helpCenter },
+    { href: "/settings", icon: Settings, label: t.nav.settings },
   ];
 
   let mainItems = [...commonItems];
@@ -86,17 +89,15 @@ export default function AppSidebar() {
       <div className="px-4 py-4 border-t border-neutral-100">
         <Link href={`/profile/${user?.id || ""}`}>
           <div className="px-4 py-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer">
-            <p className="text-xs text-neutral-500 mb-1">
-              Connecté en tant que
-            </p>
+            <p className="text-xs text-neutral-500 mb-1">{t.nav.connectedAs}</p>
             <p className="text-sm font-bold text-neutral-900 truncate">
-              {user?.first_name || user?.name || "Utilisateur"}
+              {user?.first_name || user?.name || t.nav.user}
             </p>
             <p className="text-xs text-brand-600 font-medium">
               {role === "TRANSPORTER"
-                ? "Transporteur"
+                ? t.nav.transporter
                 : role === "CLIENT"
-                  ? "Client"
+                  ? t.nav.client
                   : user?.role || "Guest"}
             </p>
           </div>
