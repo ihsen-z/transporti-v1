@@ -157,9 +157,9 @@ class JobDetailView(APIView):
     def get(self, request, job_id):
         job = get_object_or_404(TransportJob.objects.select_related('owner'), id=job_id)
 
-        # Client: must own the job
+        # Client: must own the job OR job is PUBLISHED (return trips from transporters)
         if request.user.role == 'CLIENT':
-            if job.owner != request.user:
+            if job.owner != request.user and job.status != TransportJob.Status.PUBLISHED:
                 return Response(
                     {'error': 'You do not own this job.'},
                     status=status.HTTP_403_FORBIDDEN

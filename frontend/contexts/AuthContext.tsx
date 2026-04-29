@@ -31,7 +31,7 @@ interface AuthApiResponse {
     first_name: string;
     last_name: string;
     is_phone_verified: boolean;
-    verification_status: string | null;
+    verification_status: string | null; // 'VERIFIED' | 'PENDING' | 'UNVERIFIED' | 'REJECTED' | null
   };
   tokens: TokenPair;
 }
@@ -68,6 +68,7 @@ function toAuthUser(apiUser: AuthApiResponse["user"]): AuthUser {
     email: apiUser.email,
     phone: apiUser.phone,
     role: mapBackendRole(apiUser.role),
+    is_verified: apiUser.verification_status === "VERIFIED",
   };
 }
 
@@ -127,6 +128,43 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     setIsInitialized(true);
+  }, []);
+
+  // Hydrate fresh verification status from backend on mount
+  // This ensures is_verified stays current even if admin verified the transporter
+  // after their last login session
+  useEffect(() => {
+    if (typeof window === "undefined" || !hasTokens()) return;
+
+    const hydrateProfile = async () => {
+      try {
+        const data = await apiClient.get<{
+          user: AuthApiResponse["user"] & { avatar_url?: string };
+        }>("/api/auth/profile/");
+        if (data?.user) {
+          const freshVerified = data.user.verification_status === "VERIFIED";
+          setUser((prev) => {
+            if (!prev) return prev;
+            const updated: AuthUser = {
+              ...prev,
+              is_verified: freshVerified,
+              first_name: data.user.first_name || prev.first_name,
+              last_name: data.user.last_name || prev.last_name,
+              name:
+                `${data.user.first_name || ""} ${data.user.last_name || ""}`.trim() ||
+                prev.name,
+              email: data.user.email || prev.email,
+              phone: data.user.phone || prev.phone,
+            };
+            localStorage.setItem(USER_DATA_KEY, JSON.stringify(updated));
+            return updated;
+          });
+        }
+      } catch {
+        // Non-blocking: if profile fetch fails, keep cached data
+      }
+    };
+    hydrateProfile();
   }, []);
 
   // Listen for session-expired events from tokenManager

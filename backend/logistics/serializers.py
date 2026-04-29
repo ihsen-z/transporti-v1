@@ -73,6 +73,7 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
             'scheduled_time', 'specifications', 'description', 'photos',
             'price_tnd_min', 'price_tnd_max', 'owner',
             'pickup_hint', 'dropoff_hint',
+            'is_return_trip', 'available_capacity',
             'accepted_transporter', 'has_reviewed', 'client_confirmed',
             'created_at', 'updated_at'
         ]

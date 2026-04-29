@@ -226,14 +226,14 @@ class DashboardStatsView(APIView):
         user = request.user
 
         if user.role == 'CLIENT':
-            from logistics.models import TransportJob, TransportOffer
+            from logistics.models import TransportJob, Offer
             jobs = TransportJob.objects.filter(owner=user)
             active_statuses = ['PUBLISHED', 'MATCHED', 'IN_PROGRESS']
 
             active_jobs = jobs.filter(status__in=active_statuses).count()
             completed_jobs = jobs.filter(status='COMPLETED').count()
-            total_offers = TransportOffer.objects.filter(job__owner=user).count()
-            pending_offers = TransportOffer.objects.filter(
+            total_offers = Offer.objects.filter(job__owner=user).count()
+            pending_offers = Offer.objects.filter(
                 job__owner=user, status='PENDING'
             ).count()
 
@@ -243,7 +243,7 @@ class DashboardStatsView(APIView):
             ))
             # Add offer_count
             for rj in recent_jobs:
-                rj['offer_count'] = TransportOffer.objects.filter(job_id=rj['id']).count()
+                rj['offer_count'] = Offer.objects.filter(job_id=rj['id']).count()
 
             return Response({
                 'role': 'CLIENT',
@@ -257,10 +257,10 @@ class DashboardStatsView(APIView):
             })
 
         elif user.role == 'TRANSPORTER':
-            from logistics.models import TransportJob, TransportOffer
+            from logistics.models import TransportJob, Offer
             from django.db.models import Sum
 
-            my_offers = TransportOffer.objects.filter(transporter=user)
+            my_offers = Offer.objects.filter(transporter=user)
             accepted_offers = my_offers.filter(status='ACCEPTED')
             assigned_jobs = TransportJob.objects.filter(
                 offers__transporter=user,
@@ -290,7 +290,7 @@ class DashboardStatsView(APIView):
             from reviews.models import Review
             from django.db.models import Avg
             avg_rating = Review.objects.filter(
-                reviewee=user, is_visible=True
+                target=user
             ).aggregate(avg=Avg('rating'))['avg'] or 0
 
             recent_missions = list(assigned_jobs.order_by('-created_at')[:5].values(

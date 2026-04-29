@@ -27,6 +27,9 @@ import {
   AlertTriangle,
   Wallet,
   FileText,
+  RotateCcw,
+  UserCheck,
+  Package,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -122,8 +125,12 @@ export default function JobDetailsPage() {
     );
 
   const isOwner = user?.id === job.owner?.id;
+  const isClient = user?.role?.toUpperCase() === "CLIENT";
   const isTransporter = user?.role?.toUpperCase() === "TRANSPORTER";
   const isVerified = user?.is_verified === true;
+  const isReturnTrip = (job as any).is_return_trip === true;
+  const isClientViewingReturnTrip =
+    isClient && !isOwner && isReturnTrip && job.status === "PUBLISHED";
   const showOfferForm =
     isTransporter && !isOwner && job.status === "PUBLISHED" && isVerified;
   const showVerificationGate =
@@ -290,6 +297,74 @@ export default function JobDetailsPage() {
                   isJobOwner={isOwner}
                   onOfferAccepted={fetchJob}
                 />
+              </div>
+            )}
+
+            {/* Return Trip CTA for Clients */}
+            {isClientViewingReturnTrip && (
+              <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-5 animate-fade-in-up">
+                <div className="flex items-center gap-2 mb-3">
+                  <div className="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center">
+                    <RotateCcw className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-purple-900">
+                      Trajet retour disponible
+                    </h3>
+                    <p className="text-xs text-purple-600">
+                      Tarif réduit — camion sur le retour
+                    </p>
+                  </div>
+                </div>
+
+                {/* Transporter Info */}
+                <div className="bg-white rounded-lg p-3 mb-3 border border-purple-100">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-600/10 flex items-center justify-center text-purple-600 font-bold text-sm">
+                      {(job.owner?.name || job.owner?.first_name || "T")[0]}
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-neutral-900">
+                        {job.owner?.name ||
+                          `${job.owner?.first_name || "Transporteur"}`}
+                      </p>
+                      <div className="flex items-center gap-1 text-xs text-neutral-500">
+                        <UserCheck className="w-3 h-3 text-green-500" />
+                        Transporteur vérifié
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Capacity Info */}
+                {(job as any).available_capacity && (
+                  <div className="flex items-center gap-2 text-sm text-purple-700 mb-3">
+                    <Package className="w-4 h-4" />
+                    <span>Capacité : {(job as any).available_capacity}</span>
+                  </div>
+                )}
+
+                {/* Price */}
+                {(job.price_tnd_min || job.price_tnd_max) && (
+                  <div className="text-center bg-white rounded-lg py-2 px-3 mb-3 border border-purple-100">
+                    <p className="text-xs text-neutral-500">Prix indicatif</p>
+                    <p className="text-xl font-bold text-purple-700">
+                      {String(job.price_tnd_min || "0")} -{" "}
+                      {String(job.price_tnd_max || "?")} TND
+                    </p>
+                  </div>
+                )}
+
+                <Link
+                  href={`/messages?contact=${job.owner?.id}&subject=Trajet retour #${job.id}`}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20"
+                >
+                  <MessageSquare className="w-5 h-5" />
+                  Contacter le transporteur
+                </Link>
+                <p className="text-xs text-purple-500 text-center mt-2">
+                  Discutez des détails avant de réserver
+                </p>
               </div>
             )}
 

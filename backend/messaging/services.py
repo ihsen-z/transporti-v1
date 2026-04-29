@@ -25,12 +25,13 @@ logger = logging.getLogger('transporti')
 
 # Regex patterns for detecting contact info bypass attempts
 PHONE_PATTERNS = [
-    r'\b\d{2}[\s.-]?\d{3}[\s.-]?\d{3}\b',  # TN format: 12 345 678
-    r'\b\d{8}\b',  # 8 digits
+    r'\b\d{2}[\s.-]\d{3}[\s.-]\d{3}\b',  # TN format: 12 345 678 (with separators)
+    r'(?<![.,\d])\b\d{8}\b(?!\s*(?:tnd|dt|dinars?|€|\$))',  # 8 digits (exclude amounts like 10000000 TND)
     r'\b\+\d{1,3}[\s.-]?\d{2,4}[\s.-]?\d{3,4}[\s.-]?\d{3,4}\b',  # International
     r'\b\d{3}[\s.-]?\d{3}[\s.-]?\d{4}\b',  # US format
     r'(?:zero|one|two|three|four|five|six|seven|eight|nine)(?:\s+(?:zero|one|two|three|four|five|six|seven|eight|nine)){6,}',  # Spelled numbers
 ]
+
 
 EMAIL_PATTERNS = [
     r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}',  # Standard email
