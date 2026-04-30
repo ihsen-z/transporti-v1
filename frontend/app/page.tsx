@@ -72,7 +72,7 @@ export default function Home() {
                 {/* CTA Buttons */}
                 <div className="flex flex-wrap gap-3">
                   <Link
-                    href="/jobs/new"
+                    href="/login?redirect=/jobs/new"
                     className="group bg-cta-500 hover:bg-cta-600 text-white font-semibold px-8 py-3.5 rounded-lg shadow-lg transition-all hover:scale-105 hover:shadow-xl flex items-center gap-2 animate-pulse-glow"
                     id="hero-cta-publish"
                   >
@@ -482,7 +482,7 @@ export default function Home() {
               <p className="text-xl text-primary-100 mb-8">{l.ctaSubtitle}</p>
               <div className="flex flex-wrap justify-center gap-4">
                 <Link
-                  href="/jobs/new"
+                  href="/login?redirect=/jobs/new"
                   className="group inline-flex items-center gap-2 bg-cta-500 hover:bg-cta-600 text-white font-semibold px-10 py-4 rounded-lg shadow-xl text-lg transition-all hover:scale-105 hover:shadow-2xl animate-bounce-gentle"
                   id="footer-cta-publish"
                 >

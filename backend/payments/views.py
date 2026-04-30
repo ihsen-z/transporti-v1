@@ -4,11 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-from .models import EscrowTransaction, CommissionLedger
+from .models import EscrowTransaction, CommissionLedger, Booking
 from .serializers import (
     EscrowReleaseSerializer, CommissionSettleSerializer,
     ConfirmCompletionSerializer, EscrowDetailSerializer,
-    CommissionLedgerDetailSerializer
+    CommissionLedgerDetailSerializer, BookingDetailSerializer
 )
 from .services import release_escrow_on_completion, settle_commission_debt, create_escrow_on_booking
 from .gateway import get_payment_gateway
@@ -181,6 +181,72 @@ class ConfirmCompletionView(generics.GenericAPIView):
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+# =============================================================================
+# JOB-SCOPED BOOKING & ESCROW ENDPOINTS (F2)
+# =============================================================================
+
+class JobBookingDetailView(APIView):
+    """
+    GET /api/jobs/{job_id}/booking/
+    Returns the booking for a specific job.
+    Accessible only to the job owner (client) or the accepted transporter.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id)
+
+        # Authorization: must be job owner or accepted transporter
+        is_owner = job.owner == request.user
+        accepted_offer = job.offers.filter(status='ACCEPTED').first()
+        is_transporter = accepted_offer and accepted_offer.transporter == request.user
+
+        if not is_owner and not is_transporter:
+            return Response(
+                {'error': 'Access denied.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            booking = Booking.objects.get(job=job)
+        except Booking.DoesNotExist:
+            return Response(
+                {'error': 'No booking found for this job.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(BookingDetailSerializer(booking).data)
+
+
+class JobEscrowDetailView(APIView):
+    """
+    GET /api/jobs/{job_id}/escrow/
+    Returns escrow transactions for a specific job.
+    Accessible only to the job owner (client) or the accepted transporter.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id)
+
+        # Authorization: must be job owner or accepted transporter
+        is_owner = job.owner == request.user
+        accepted_offer = job.offers.filter(status='ACCEPTED').first()
+        is_transporter = accepted_offer and accepted_offer.transporter == request.user
+
+        if not is_owner and not is_transporter:
+            return Response(
+                {'error': 'Access denied.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        escrows = EscrowTransaction.objects.filter(
+            booking_reference=job
+        ).order_by('-created_at')
+
+        return Response(EscrowDetailSerializer(escrows, many=True).data)
 
 
 # =============================================================================

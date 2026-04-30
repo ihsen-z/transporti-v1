@@ -9,6 +9,7 @@ from .views import (
     ClientProfileView, ClientProfileEditView
 )
 from .upload_views import PhotoUploadView
+from payments.views import JobBookingDetailView, JobEscrowDetailView
 
 urlpatterns = [
     # Photo upload
@@ -28,6 +29,8 @@ urlpatterns = [
     path('jobs/<int:job_id>/cancel/', JobCancelView.as_view(), name='job_cancel'),
     path('jobs/<int:job_id>/complete/', JobCompleteView.as_view(), name='job_complete'),
     path('jobs/<int:job_id>/book-return/', BookReturnTripView.as_view(), name='book_return_trip'),
+    path('jobs/<int:job_id>/booking/', JobBookingDetailView.as_view(), name='job_booking_detail'),
+    path('jobs/<int:job_id>/escrow/', JobEscrowDetailView.as_view(), name='job_escrow_detail'),
     
     # Offer endpoints
     path('offers/', OfferCreateView.as_view(), name='offer_create'),

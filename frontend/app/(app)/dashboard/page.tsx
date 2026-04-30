@@ -21,6 +21,7 @@ import {
   BarChart3,
   Loader2,
   RotateCcw,
+  HelpCircle,
 } from "lucide-react";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 
@@ -544,6 +545,16 @@ export default function DashboardPage() {
           </p>
         </div>
       )}
+      {/* Help Center Quick Access (N5) */}
+      <div className="mt-6 text-center">
+        <Link
+          href="/help"
+          className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-brand-600 transition-colors"
+        >
+          <HelpCircle className="w-4 h-4" />
+          Besoin d&apos;aide ? Consultez le centre d&apos;aide
+        </Link>
+      </div>
     </div>
   );
 }

@@ -81,7 +81,16 @@ class TransportJob(models.Model):
 
     @property
     def accepted_offer(self):
-        """Returns the ACCEPTED offer for this job, or None."""
+        """Returns the ACCEPTED offer for this job, or None.
+        Optimized: uses prefetch cache if offers were prefetched.
+        """
+        # Use prefetch cache if available (avoids N+1 queries in list views)
+        if 'offers' in getattr(self, '_prefetched_objects_cache', {}):
+            for offer in self.offers.all():
+                if offer.status == 'ACCEPTED':
+                    return offer
+            return None
+        # Fallback: direct DB query (single-object views)
         return self.offers.filter(status='ACCEPTED').first()
 
 

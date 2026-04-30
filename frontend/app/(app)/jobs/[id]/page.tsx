@@ -30,6 +30,7 @@ import {
   RotateCcw,
   UserCheck,
   Package,
+  XCircle,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -41,6 +42,7 @@ export default function JobDetailsPage() {
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const [cancelling, setCancelling] = useState(false);
   const { showToast } = useToast();
 
   // Return trip booking state
@@ -152,6 +154,33 @@ export default function JobDetailsPage() {
     }
   };
 
+  const handleCancelJob = async () => {
+    if (
+      !confirm(
+        "Êtes-vous sûr de vouloir annuler cette mission ? Cette action est irréversible.",
+      )
+    ) {
+      return;
+    }
+    setCancelling(true);
+    try {
+      await apiClient.post(`/api/jobs/${job!.id}/cancel/`, {});
+      showToast("success", "Mission annulée avec succès.");
+      fetchJob();
+    } catch (error) {
+      if (error instanceof ApiError && error.body) {
+        showToast(
+          "error",
+          (error.body as any)?.error || "Erreur lors de l'annulation.",
+        );
+      } else {
+        showToast("error", "Une erreur est survenue.");
+      }
+    } finally {
+      setCancelling(false);
+    }
+  };
+
   if (loading)
     return (
       <div className="p-8 text-center text-neutral-500">Chargement...</div>
@@ -176,6 +205,10 @@ export default function JobDetailsPage() {
     isTransporter && !isOwner && job.status === "PUBLISHED" && !isVerified;
   const showOffersList =
     isOwner && (job.status === "PUBLISHED" || job.status === "IN_PROGRESS");
+  const showCancelButton =
+    isOwner &&
+    isClient &&
+    (job.status === "PUBLISHED" || job.status === "MATCHED");
   const showDisputeButton =
     (job.status === "IN_PROGRESS" || job.status === "COMPLETED") &&
     (isOwner || isTransporter);
@@ -735,6 +768,24 @@ export default function JobDetailsPage() {
                   </p>
                 </div>
               </div>
+            )}
+
+            {/* Cancel Button — visible on PUBLISHED/MATCHED for client owner */}
+            {showCancelButton && (
+              <button
+                onClick={handleCancelJob}
+                disabled={cancelling}
+                className="flex items-center justify-center gap-2 w-full py-3 border border-neutral-300 bg-white text-neutral-700 rounded-xl text-sm font-semibold hover:bg-neutral-50 hover:border-neutral-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {cancelling ? (
+                  "Annulation..."
+                ) : (
+                  <>
+                    <XCircle className="w-4 h-4" />
+                    Annuler cette mission
+                  </>
+                )}
+              </button>
             )}
 
             {/* Dispute Button — visible on IN_PROGRESS or COMPLETED */}

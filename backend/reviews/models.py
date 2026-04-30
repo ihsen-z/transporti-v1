@@ -204,10 +204,11 @@ class Review(models.Model):
             if ReviewRole.CLIENT in roles_submitted and ReviewRole.TRANSPORTER in roles_submitted:
                 # Both parties submitted — reveal all
                 unrevealed = reviews.filter(is_revealed=False)
-                if unrevealed.exists():
+                reveal_count = unrevealed.count()
+                if reveal_count > 0:
                     unrevealed.update(is_revealed=True, revealed_at=tz.now())
                     logger.info(
-                        f"REVIEWS_REVEALED: job_id={self.job_id}, count={unrevealed.count()}, trigger=both_submitted"
+                        f"REVIEWS_REVEALED: job_id={self.job_id}, count={reveal_count}, trigger=both_submitted"
                     )
         except Exception as e:
             logger.error(f"REVIEW_REVEAL_FAILED: job_id={self.job_id}, error={str(e)}")

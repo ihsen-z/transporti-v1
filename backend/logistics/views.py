@@ -251,9 +251,17 @@ class OfferAcceptView(generics.GenericAPIView):
 
         payment_method = serializer.validated_data.get('payment_method', 'DIGITAL')
 
-        # Get offer and verify ownership
-        offer = get_object_or_404(Offer, id=offer_id)
-        job = offer.job
+        # Get offer with row lock to prevent race conditions
+        try:
+            offer = Offer.objects.select_for_update().get(id=offer_id)
+        except Offer.DoesNotExist:
+            return Response(
+                {'error': 'Offer not found.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        # Lock the job row as well
+        job = TransportJob.objects.select_for_update().get(id=offer.job_id)
 
         # Verify client owns the job
         if job.owner != request.user:
