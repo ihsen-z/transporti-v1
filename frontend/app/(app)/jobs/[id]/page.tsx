@@ -43,6 +43,14 @@ export default function JobDetailsPage() {
   const [confirming, setConfirming] = useState(false);
   const { showToast } = useToast();
 
+  // Return trip booking state
+  const [showBookingModal, setShowBookingModal] = useState(false);
+  const [bookingPrice, setBookingPrice] = useState("");
+  const [bookingPayment, setBookingPayment] = useState<"DIGITAL" | "COD">(
+    "DIGITAL",
+  );
+  const [bookingLoading, setBookingLoading] = useState(false);
+
   // Handle payment gateway return
   useEffect(() => {
     const paymentStatus = searchParams?.get("payment");
@@ -110,6 +118,37 @@ export default function JobDetailsPage() {
       }
     } finally {
       setConfirming(false);
+    }
+  };
+
+  const handleBookReturnTrip = async () => {
+    if (!bookingPrice || parseFloat(bookingPrice) <= 0) {
+      showToast("error", "Veuillez saisir un prix valide.");
+      return;
+    }
+    setBookingLoading(true);
+    try {
+      await apiClient.post(`/api/jobs/${job!.id}/book-return/`, {
+        proposed_price: bookingPrice,
+        payment_method: bookingPayment,
+      });
+      showToast(
+        "success",
+        "🚀 Trajet retour réservé avec succès ! La mission est en cours.",
+      );
+      setShowBookingModal(false);
+      fetchJob();
+    } catch (error) {
+      if (error instanceof ApiError && error.body) {
+        showToast(
+          "error",
+          (error.body as any)?.error || "Erreur lors de la réservation.",
+        );
+      } else {
+        showToast("error", "Une erreur est survenue.");
+      }
+    } finally {
+      setBookingLoading(false);
     }
   };
 
@@ -355,16 +394,193 @@ export default function JobDetailsPage() {
                   </div>
                 )}
 
+                {/* Primary CTA — Réserver */}
+                <button
+                  onClick={() => {
+                    setBookingPrice(String(job.price_tnd_min || ""));
+                    setBookingPayment("DIGITAL");
+                    setShowBookingModal(true);
+                  }}
+                  className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20 mb-2"
+                >
+                  <Truck className="w-5 h-5" />
+                  Réserver ce trajet
+                </button>
+
+                {/* Secondary CTA — Contacter */}
                 <Link
                   href={`/messages?contact=${job.owner?.id}&subject=Trajet retour #${job.id}`}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20"
+                  className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-purple-300 text-purple-700 rounded-xl font-medium hover:bg-purple-50 transition-colors"
                 >
-                  <MessageSquare className="w-5 h-5" />
+                  <MessageSquare className="w-4 h-4" />
                   Contacter le transporteur
                 </Link>
-                <p className="text-xs text-purple-500 text-center mt-2">
-                  Discutez des détails avant de réserver
+                <p className="text-xs text-purple-500 text-center mt-2 flex items-center justify-center gap-1">
+                  <ShieldCheck className="w-3 h-3" />
+                  Paiement sécurisé par escrow
                 </p>
+              </div>
+            )}
+
+            {/* Booking Confirmation Modal */}
+            {showBookingModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
+                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-fade-in-up">
+                  {/* Modal Header */}
+                  <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
+                        <RotateCcw className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-white">
+                          Confirmer la réservation
+                        </h3>
+                        <p className="text-sm text-purple-200">
+                          Trajet retour #{job.id}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Modal Body */}
+                  <div className="px-6 py-5 space-y-4">
+                    {/* Route summary */}
+                    <div className="bg-neutral-50 rounded-xl p-4">
+                      <div className="flex items-center gap-3 text-sm">
+                        <div className="flex flex-col items-center">
+                          <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
+                          <div className="w-0.5 h-5 bg-neutral-300 my-0.5" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
+                        </div>
+                        <div className="space-y-2">
+                          <p className="font-medium text-neutral-900">
+                            {job.pickup_address}
+                          </p>
+                          <p className="font-medium text-neutral-900">
+                            {job.dropoff_address}
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Price input (negotiable) */}
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
+                        Votre prix proposé (TND)
+                      </label>
+                      <div className="relative">
+                        <input
+                          type="number"
+                          min="1"
+                          step="0.01"
+                          value={bookingPrice}
+                          onChange={(e) => setBookingPrice(e.target.value)}
+                          className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-lg font-bold text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
+                          placeholder="Ex: 100"
+                        />
+                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-neutral-400">
+                          TND
+                        </span>
+                      </div>
+                      <p className="text-xs text-neutral-500 mt-1">
+                        Prix indicatif du transporteur :{" "}
+                        {String(job.price_tnd_min || "—")} TND
+                      </p>
+                    </div>
+
+                    {/* Payment method */}
+                    <div>
+                      <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
+                        Mode de paiement
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => setBookingPayment("DIGITAL")}
+                          className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                            bookingPayment === "DIGITAL"
+                              ? "border-purple-500 bg-purple-50 text-purple-700"
+                              : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
+                          }`}
+                        >
+                          <CreditCard className="w-4 h-4" />
+                          Paiement sécurisé
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setBookingPayment("COD")}
+                          className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                            bookingPayment === "COD"
+                              ? "border-purple-500 bg-purple-50 text-purple-700"
+                              : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
+                          }`}
+                        >
+                          <Wallet className="w-4 h-4" />À la livraison
+                        </button>
+                      </div>
+                      {bookingPayment === "COD" &&
+                        parseFloat(bookingPrice) > 300 && (
+                          <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+                            <AlertCircle className="w-3 h-3" />
+                            Maximum 300 TND pour le paiement à la livraison
+                          </p>
+                        )}
+                    </div>
+                  </div>
+
+                  {/* Modal Footer */}
+                  <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex gap-3">
+                    <button
+                      onClick={() => setShowBookingModal(false)}
+                      disabled={bookingLoading}
+                      className="flex-1 py-3 border-2 border-neutral-200 text-neutral-700 rounded-xl font-medium hover:bg-neutral-100 transition-colors"
+                    >
+                      Annuler
+                    </button>
+                    <button
+                      onClick={handleBookReturnTrip}
+                      disabled={
+                        bookingLoading ||
+                        !bookingPrice ||
+                        parseFloat(bookingPrice) <= 0 ||
+                        (bookingPayment === "COD" &&
+                          parseFloat(bookingPrice) > 300)
+                      }
+                      className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {bookingLoading ? (
+                        <span className="flex items-center gap-2">
+                          <svg
+                            className="animate-spin h-4 w-4"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                              fill="none"
+                            />
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                            />
+                          </svg>
+                          Réservation...
+                        </span>
+                      ) : (
+                        <>
+                          <CheckCircle className="w-4 h-4" />
+                          Confirmer
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </div>
               </div>
             )}
 

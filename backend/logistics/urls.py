@@ -4,7 +4,8 @@ from .views import (
     OfferCreateView, OfferMyListView, OfferAcceptView,
     JobUpdateView, JobPublishView, JobCancelView, JobCompleteView,
     OfferWithdrawView, TransporterProfileView, TransporterProfileEditView,
-    TransporterJobListView, ReturnTripCreateView, PriceEstimateView
+    TransporterJobListView, ReturnTripCreateView, PriceEstimateView,
+    BookReturnTripView
 )
 from .upload_views import PhotoUploadView
 
@@ -25,6 +26,7 @@ urlpatterns = [
     path('jobs/<int:job_id>/publish/', JobPublishView.as_view(), name='job_publish'),
     path('jobs/<int:job_id>/cancel/', JobCancelView.as_view(), name='job_cancel'),
     path('jobs/<int:job_id>/complete/', JobCompleteView.as_view(), name='job_complete'),
+    path('jobs/<int:job_id>/book-return/', BookReturnTripView.as_view(), name='book_return_trip'),
     
     # Offer endpoints
     path('offers/', OfferCreateView.as_view(), name='offer_create'),
