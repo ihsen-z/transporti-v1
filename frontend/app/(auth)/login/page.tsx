@@ -54,12 +54,8 @@ export default function LoginPage() {
     setIsLoading(false);
   };
 
-  const handleSocialLogin = (provider: "google" | "facebook") => {
-    showToast(
-      "info",
-      `Connexion via ${provider === "google" ? "Google" : "Facebook"} bientôt disponible.`,
-    );
-  };
+  // Social login (Google/Facebook) — disabled for V1, will be implemented in V2.
+  // Buttons are rendered as disabled with "Bientôt" labels in the UI below.
 
   return (
     <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">

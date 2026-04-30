@@ -285,13 +285,15 @@ export default function MessagesInboxPage() {
           fetchConversations(true);
         }
       };
+      // FIX A3: Use named ref for focus listener to enable proper cleanup
+      const handleFocus = () => fetchConversations(true);
       document.addEventListener("visibilitychange", handleVisibility);
-      window.addEventListener("focus", () => fetchConversations(true));
+      window.addEventListener("focus", handleFocus);
 
       return () => {
         if (pollRef.current) clearInterval(pollRef.current);
         document.removeEventListener("visibilitychange", handleVisibility);
-        window.removeEventListener("focus", () => fetchConversations(true));
+        window.removeEventListener("focus", handleFocus);
       };
     }
   }, [isAuthenticated, fetchConversations]);

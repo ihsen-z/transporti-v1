@@ -34,6 +34,7 @@ import {
   Upload,
 } from "lucide-react";
 import Link from "next/link";
+import ClientProfilePage from "./ClientProfilePage";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -261,13 +262,38 @@ const VEHICLE_TYPES = [
   "Autre",
 ];
 
-export default function TransporterProfilePage() {
+/* -------------------------------------------------------------------------- */
+/*  Smart Profile Router — detects role and renders the right profile          */
+/* -------------------------------------------------------------------------- */
+
+export default function ProfilePage() {
   const params = useParams();
-  const router = useRouter();
   const { user } = useAuth();
   const userId = params?.userId ? String(params.userId) : null;
 
+  // Determine profile type
+  const isOwner = user?.id !== undefined && userId === String(user.id);
+  const userRole = user?.role?.toUpperCase();
+
+  // If the current user is a CLIENT viewing their own profile, show client profile
+  if (isOwner && userRole === "CLIENT" && userId) {
+    return <ClientProfilePage userId={userId} />;
+  }
+
+  // For non-owner views or transporter profiles, render the transporter profile page
+  return <TransporterProfileContent userId={userId} />;
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Transporter Profile Content                                                */
+/* -------------------------------------------------------------------------- */
+
+function TransporterProfileContent({ userId }: { userId: string | null }) {
+  const router = useRouter();
+  const { user } = useAuth();
+
   const [transporter, setTransporter] = useState<TransporterData | null>(null);
+  const [isClientProfile, setIsClientProfile] = useState(false);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -450,12 +476,22 @@ export default function TransporterProfilePage() {
         reviewsData.results ?? (Array.isArray(reviewsData) ? reviewsData : []);
       setReviews(reviewsList);
     } catch (e: any) {
+      // If 404 on transporter profile, this may be a client — switch to client view
+      if (e?.message?.includes("404")) {
+        setIsClientProfile(true);
+        return;
+      }
       console.error("Error fetching profile:", e);
       setError(e?.message || "Profil introuvable.");
     } finally {
       setLoading(false);
     }
   };
+
+  // Fallback to client profile if transporter profile returned 404
+  if (isClientProfile && userId) {
+    return <ClientProfilePage userId={userId} />;
+  }
 
   if (loading) {
     return (

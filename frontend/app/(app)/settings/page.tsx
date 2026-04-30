@@ -277,6 +277,26 @@ export default function SettingsPage() {
     }
   };
 
+  // ─── Save language/currency preferences ───────────────────────────
+  const [prefsSaving, setPrefsSaving] = useState(false);
+  const handleSavePreferences = async () => {
+    setPrefsSaving(true);
+    setSaveStatus("idle");
+    try {
+      await apiClient.put("/api/auth/profile/", {
+        profile: { language_pref: language },
+      });
+      setSaveStatus("success");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } catch {
+      setSaveStatus("error");
+      setErrorMessage("Erreur lors de la sauvegarde des préférences.");
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    } finally {
+      setPrefsSaving(false);
+    }
+  };
+
   const Toggle = ({
     checked,
     onChange,
@@ -797,15 +817,22 @@ export default function SettingsPage() {
               </div>
 
               <button
-                onClick={handleSaveNotifications}
-                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors"
+                onClick={handleSavePreferences}
+                disabled={prefsSaving}
+                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {saveStatus === "success" ? (
+                {prefsSaving ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : saveStatus === "success" ? (
                   <CheckCircle className="w-5 h-5" />
                 ) : (
                   <Save className="w-5 h-5" />
                 )}
-                {saveStatus === "success" ? "Sauvegardé !" : "Sauvegarder"}
+                {prefsSaving
+                  ? "Sauvegarde..."
+                  : saveStatus === "success"
+                    ? "Sauvegardé !"
+                    : "Sauvegarder"}
               </button>
             </div>
           )}

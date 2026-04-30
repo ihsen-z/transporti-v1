@@ -2,9 +2,10 @@ import logging
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.conf import settings as django_settings
 
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
 from transporti_core.throttling import AuthRateThrottle
@@ -103,6 +104,7 @@ class ProfileView(APIView):
     GET /api/auth/profile/ - Returns current user profile.
     PUT /api/auth/profile/ - Updates user profile (partial).
     """
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         user_data = UserProfileSerializer(request.user).data
         # Include avatar URL from profile
@@ -419,8 +421,9 @@ class PasswordResetRequestView(APIView):
             user = User.objects.get(email=email)
             uid = urlsafe_base64_encode(force_bytes(user.pk))
             token = default_token_generator.make_token(user)
-            # V1: Log to console. Production: send via email service
-            reset_link = f"http://localhost:3000/reset-password?uid={uid}&token={token}"
+            # Use configurable FRONTEND_URL (defaults to localhost:3000 in dev)
+            frontend_url = getattr(django_settings, 'FRONTEND_URL', 'http://localhost:3000')
+            reset_link = f"{frontend_url}/reset-password?uid={uid}&token={token}"
             logger.info(f"PASSWORD_RESET_REQUESTED: email={email}, link={reset_link}")
         except User.DoesNotExist:
             # Silent — no information leak

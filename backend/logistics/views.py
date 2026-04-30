@@ -14,7 +14,8 @@ from .serializers import (
     OfferAcceptSerializer,
     TransportJobUpdateSerializer, TransporterProfileSerializer,
     TransporterMissionSerializer, ReturnTripCreateSerializer,
-    TransporterProfileEditSerializer
+    TransporterProfileEditSerializer,
+    ClientProfileSerializer
 )
 from users.permissions import RequireRole, RequireVerification
 
@@ -783,3 +784,76 @@ class PriceEstimateView(APIView):
 
         return Response(result, status=status.HTTP_200_OK)
 
+
+# =============================================================================
+# CLIENT PROFILE VIEWS
+# =============================================================================
+
+class ClientProfileView(generics.RetrieveAPIView):
+    """
+    GET /api/client/profile/{user_id}/
+    Public client profile (read-only).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        user_obj = get_object_or_404(User, id=user_id, role='CLIENT')
+        serializer = ClientProfileSerializer(user_obj, context={'request': request})
+        return Response(serializer.data)
+
+
+class ClientProfileEditView(APIView):
+    """
+    GET  /api/client/profile/me/  — Returns own client profile data.
+    PATCH /api/client/profile/me/ — Updates own client profile.
+    Only accessible to authenticated clients.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.role != 'CLIENT':
+            return Response(
+                {'error': 'Réservé aux clients.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        serializer = ClientProfileSerializer(request.user, context={'request': request})
+        return Response(serializer.data)
+
+    def patch(self, request):
+        if request.user.role != 'CLIENT':
+            return Response(
+                {'error': 'Réservé aux clients.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        user = request.user
+        data = request.data
+
+        # Update User fields
+        user_fields = ['first_name', 'last_name', 'phone', 'email']
+        user_changed = False
+        for field in user_fields:
+            if field in data:
+                setattr(user, field, data[field])
+                user_changed = True
+        if user_changed:
+            user.save()
+
+        # Update Profile fields
+        profile_fields = ['bio', 'address_summary']
+        try:
+            profile = user.profile
+        except Exception:
+            from users.models import Profile
+            profile = Profile.objects.create(user=user)
+        for field in profile_fields:
+            if field in data:
+                setattr(profile, field, data[field])
+        profile.save()
+
+        # Return updated profile
+        return Response({
+            'message': 'Profil mis à jour avec succès.',
+            'profile': ClientProfileSerializer(user, context={'request': request}).data
+        })

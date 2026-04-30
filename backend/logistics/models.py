@@ -16,6 +16,7 @@ class TransportJob(models.Model):
     class JobType(models.TextChoices):
         TRANSPORT = 'TRANSPORT', 'Transport'
         MOVING = 'MOVING', 'Moving (Déménagement)'
+        DELIVERY = 'DELIVERY', 'Delivery (Livraison)'
 
     # Ownership
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='jobs')

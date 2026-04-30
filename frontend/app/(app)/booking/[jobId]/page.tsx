@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
@@ -85,11 +85,7 @@ export default function BookingPage() {
   const [loading, setLoading] = useState(true);
   const [initiatingPayment, setInitiatingPayment] = useState(false);
 
-  useEffect(() => {
-    if (jobId) fetchAll();
-  }, [jobId]);
-
-  const fetchAll = async () => {
+  const fetchAll = useCallback(async () => {
     setLoading(true);
     try {
       // Fetch job details
@@ -125,7 +121,11 @@ export default function BookingPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [jobId]);
+
+  useEffect(() => {
+    if (jobId) fetchAll();
+  }, [jobId, fetchAll]);
 
   /* ---- Initiate Digital Payment ---- */
   const handleInitiatePayment = async () => {

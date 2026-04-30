@@ -529,3 +529,84 @@ class ReturnTripCreateSerializer(serializers.ModelSerializer):
         validated_data['status'] = TransportJob.Status.PUBLISHED
         validated_data['is_return_trip'] = True
         return super().create(validated_data)
+
+
+class ClientProfileSerializer(serializers.Serializer):
+    """
+    Public profile for clients.
+    Returns user info + activity stats.
+    """
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.EmailField()
+    phone = serializers.CharField(allow_blank=True, allow_null=True)
+    avatar_url = serializers.SerializerMethodField()
+    joined_at = serializers.DateTimeField(source='date_joined')
+    role = serializers.CharField()
+    bio = serializers.SerializerMethodField()
+    address_summary = serializers.SerializerMethodField()
+
+    # Computed stats
+    total_jobs_posted = serializers.SerializerMethodField()
+    completed_jobs = serializers.SerializerMethodField()
+    active_jobs = serializers.SerializerMethodField()
+    total_offers_received = serializers.SerializerMethodField()
+
+    # Reviews
+    rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+
+    def get_avatar_url(self, obj) -> str:
+        try:
+            profile = obj.profile
+            if profile.avatar and hasattr(profile.avatar, 'url'):
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(profile.avatar.url)
+                return profile.avatar.url
+            if profile.avatar_url:
+                return profile.avatar_url
+        except Exception:
+            pass
+        return ''
+
+    def get_bio(self, obj) -> str:
+        try:
+            return obj.profile.bio or ''
+        except Exception:
+            return ''
+
+    def get_address_summary(self, obj) -> str:
+        try:
+            return obj.profile.address_summary or ''
+        except Exception:
+            return ''
+
+    def get_total_jobs_posted(self, obj) -> int:
+        return TransportJob.objects.filter(owner=obj).count()
+
+    def get_completed_jobs(self, obj) -> int:
+        return TransportJob.objects.filter(
+            owner=obj, status='COMPLETED'
+        ).count()
+
+    def get_active_jobs(self, obj) -> int:
+        return TransportJob.objects.filter(
+            owner=obj, status__in=['PUBLISHED', 'MATCHED', 'IN_PROGRESS']
+        ).count()
+
+    def get_total_offers_received(self, obj) -> int:
+        from logistics.models import Offer
+        return Offer.objects.filter(job__owner=obj).count()
+
+    def get_rating(self, obj) -> float:
+        from reviews.models import Review
+        from django.db.models import Avg
+        avg = Review.objects.filter(
+            target=obj
+        ).aggregate(avg=Avg('rating'))['avg']
+        return round(float(avg), 1) if avg else 0.0
+
+    def get_review_count(self, obj) -> int:
+        from reviews.models import Review
+        return Review.objects.filter(target=obj).count()
