@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import DataTable from "@/components/admin/DataTable";
+import Pagination from "@/components/admin/Pagination";
 import {
   UserStatusBadge,
   RoleBadge,
@@ -99,16 +100,20 @@ function ActionModal({
 
   return (
     <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+      <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-neutral-200 dark:border-neutral-700">
         {/* Header */}
-        <div className="flex items-center gap-3 p-6 border-b border-neutral-200">
-          <div className="p-2 bg-neutral-100 rounded-xl">{c.icon}</div>
+        <div className="flex items-center gap-3 p-6 border-b border-neutral-200 dark:border-neutral-700">
+          <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+            {c.icon}
+          </div>
           <div className="flex-1">
-            <h3 className="font-bold text-lg text-neutral-900">{c.title}</h3>
+            <h3 className="font-bold text-lg text-neutral-900 dark:text-white">
+              {c.title}
+            </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-neutral-400" />
           </button>
@@ -116,20 +121,20 @@ function ActionModal({
 
         {/* Body */}
         <div className="p-6 space-y-4">
-          <p className="text-sm text-neutral-600 leading-relaxed">
+          <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
             {c.description}
           </p>
 
           {c.showReason && (
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
+              <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1">
                 Raison (optionnel)
               </label>
               <textarea
                 value={reason}
                 onChange={(e) => onReasonChange(e.target.value)}
                 rows={2}
-                className="w-full px-3 py-2 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
+                className="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-600 rounded-xl text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500 focus:border-brand-500"
                 placeholder="Raison de la suspension..."
               />
             </div>
@@ -137,11 +142,11 @@ function ActionModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-100 bg-neutral-50">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-100 dark:border-neutral-700 bg-neutral-50 dark:bg-[#0f172a]">
           <button
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2.5 text-sm font-medium text-neutral-600 bg-white border border-neutral-300 rounded-xl hover:bg-neutral-50 transition-colors"
+            className="px-4 py-2.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-[#1e293b] border border-neutral-300 dark:border-neutral-600 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
           >
             Annuler
           </button>
@@ -268,16 +273,16 @@ function UserDetailDrawer({
         onClick={onClose}
       />
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-white z-50 shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+      <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-white dark:bg-[#1e293b] z-50 shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
         {/* Header */}
-        <div className="sticky top-0 bg-white border-b border-neutral-100 px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+        <div className="sticky top-0 bg-white dark:bg-[#1e293b] border-b border-neutral-100 dark:border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
+          <h2 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
             <Eye className="w-5 h-5 text-brand-600" />
             Profil Utilisateur
           </h2>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
+            className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
             <X className="w-5 h-5 text-neutral-400" />
           </button>
@@ -297,7 +302,7 @@ function UserDetailDrawer({
                 {(detail.name?.[0] || detail.email[0]).toUpperCase()}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-neutral-900">
+                <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
                   {detail.name}
                 </h3>
                 <p className="text-sm text-neutral-500">{detail.email}</p>
@@ -488,14 +493,65 @@ function UserDetailDrawer({
 export default function AdminUsersPage() {
   const [filter, setFilter] = useState<RoleFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
-  const { data: allUsers, source, loading, error, refetch } = useAdminUsers();
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 25;
   const { t } = useI18n();
+
+  // Server-side paginated fetch
+  const [allUsers, setAllUsers] = useState<AdminUser[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchUsers = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("page_size", String(PAGE_SIZE));
+      if (filter !== "ALL") params.set("role", filter);
+      if (searchQuery.trim()) params.set("search", searchQuery.trim());
+
+      const response = await apiClient.get<any>(
+        `/api/admin/users/?${params.toString()}`,
+      );
+      setAllUsers(response.results || []);
+      setTotalPages(response.totalPages || 1);
+      setTotalCount(response.count || 0);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Erreur de chargement"));
+    } finally {
+      setLoading(false);
+    }
+  }, [page, filter, searchQuery]);
+
+  useEffect(() => {
+    fetchUsers();
+  }, [fetchUsers]);
+
+  // Reset page on filter/search change
+  const handleFilterChange = (newFilter: RoleFilter) => {
+    setFilter(newFilter);
+    setPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
+
+  const refetch = fetchUsers;
 
   const roleTabs: { value: RoleFilter; label: string }[] = [
     { value: "ALL", label: t.users.all },
     { value: "CLIENT", label: t.users.clients },
     { value: "TRANSPORTER", label: t.users.transporters },
   ];
+
+  // Use the server-filtered data directly (no client-side filtering needed)
+  const filteredUsers = allUsers;
 
   // Action state
   const [modalAction, setModalAction] = useState<ModalAction>(null);
@@ -511,18 +567,8 @@ export default function AdminUsersPage() {
   // R5: Detail drawer state
   const [detailUserId, setDetailUserId] = useState<number | null>(null);
 
-  // Filter by role then by search query (R3)
-  const filteredUsers = allUsers
-    .filter((user) => (filter === "ALL" ? true : user.role === filter))
-    .filter((user) => {
-      if (!searchQuery.trim()) return true;
-      const q = searchQuery.toLowerCase();
-      return (
-        user.name.toLowerCase().includes(q) ||
-        user.email.toLowerCase().includes(q) ||
-        String(user.id).includes(q)
-      );
-    });
+  // Source indicator (always API now)
+  const source = "api" as const;
 
   // Open action modal
   const openAction = useCallback((action: ModalAction, user: AdminUser) => {
@@ -825,13 +871,13 @@ export default function AdminUsersPage() {
                 const isActive = filter === tab.value;
                 const count =
                   tab.value === "ALL"
-                    ? allUsers.length
+                    ? totalCount
                     : allUsers.filter((u) => u.role === tab.value).length;
 
                 return (
                   <button
                     key={tab.value}
-                    onClick={() => setFilter(tab.value)}
+                    onClick={() => handleFilterChange(tab.value)}
                     className={`
                       px-4 py-2 rounded-lg text-sm font-medium transition-all
                       ${
@@ -858,13 +904,13 @@ export default function AdminUsersPage() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={t.users.searchPlaceholder}
                 className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
               />
               {searchQuery && (
                 <button
-                  onClick={() => setSearchQuery("")}
+                  onClick={() => handleSearchChange("")}
                   className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-neutral-100 rounded"
                 >
                   <X className="w-3.5 h-3.5 text-neutral-400" />
@@ -920,6 +966,15 @@ export default function AdminUsersPage() {
                 ? `Aucun utilisateur trouvé pour "${searchQuery}"`
                 : "Aucun utilisateur trouvé pour ce filtre"
             }
+          />
+
+          {/* U1: Server-side Pagination */}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={totalCount}
+            pageSize={PAGE_SIZE}
           />
         </>
       )}

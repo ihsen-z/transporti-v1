@@ -167,6 +167,10 @@ class AdminUserSerializer(serializers.ModelSerializer):
             return 'NEW'
 
     def get_jobsCompleted(self, obj) -> int:
+        """Read from queryset annotation to avoid N+1 queries."""
+        if hasattr(obj, '_jobs_completed_count'):
+            return obj._jobs_completed_count
+        # Fallback for single-object serialization (e.g., detail view)
         if obj.role == 'CLIENT':
             return TransportJob.objects.filter(owner=obj, status='COMPLETED').count()
         elif obj.role == 'TRANSPORTER':
@@ -178,6 +182,10 @@ class AdminUserSerializer(serializers.ModelSerializer):
         return 0
 
     def get_jobsActive(self, obj) -> int:
+        """Read from queryset annotation to avoid N+1 queries."""
+        if hasattr(obj, '_jobs_active_count'):
+            return obj._jobs_active_count
+        # Fallback for single-object serialization (e.g., detail view)
         active_statuses = ['PUBLISHED', 'MATCHED', 'IN_PROGRESS']
         if obj.role == 'CLIENT':
             return TransportJob.objects.filter(owner=obj, status__in=active_statuses).count()
@@ -203,7 +211,15 @@ class AdminUserSerializer(serializers.ModelSerializer):
         if obj.role != 'TRANSPORTER':
             return None
         from payments.models import EscrowTransaction
+        # Get job IDs where this transporter has an accepted offer
+        accepted_job_ids = Offer.objects.filter(
+            transporter=obj,
+            status='ACCEPTED'
+        ).values_list('job_id', flat=True)
+        # Sum only the released escrows for those specific jobs
         total = EscrowTransaction.objects.filter(
-            booking_reference__escrow_transactions__status='RELEASED',
+            booking_reference_id__in=accepted_job_ids,
+            status='RELEASED'
         ).aggregate(total=Sum('amount'))['total']
         return float(total) if total else 0
+

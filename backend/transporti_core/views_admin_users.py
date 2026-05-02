@@ -12,6 +12,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.throttling import ScopedRateThrottle
 
 from users.models import User
 from users.permissions import RequireRole
@@ -26,6 +27,8 @@ class AdminUserSuspendView(APIView):
     Deactivates a user account. Admin-only.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'admin_action'
 
     def patch(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
@@ -79,6 +82,8 @@ class AdminUserActivateView(APIView):
     Reactivates a suspended user account. Admin-only.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'admin_action'
 
     def patch(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
@@ -116,6 +121,8 @@ class AdminUserResetPasswordView(APIView):
     Generates a temporary password and forces change on next login. Admin-only.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'admin_action'
 
     def post(self, request, user_id):
         user = get_object_or_404(User, id=user_id)
@@ -154,12 +161,17 @@ class AdminUserResetPasswordView(APIView):
         except Exception:
             email_sent = False
 
-        return Response({
+        # S1: Only return temp password in DEBUG mode for security
+        from django.conf import settings as django_settings
+        response_data = {
             'message': f"Mot de passe de {user.email} réinitialisé.",
             'userId': user.id,
-            'temporaryPassword': temp_password,
             'emailSent': email_sent,
-        })
+        }
+        if django_settings.DEBUG:
+            response_data['temporaryPassword'] = temp_password
+
+        return Response(response_data)
 
 
 class AdminUserDetailView(APIView):
@@ -238,4 +250,73 @@ class AdminUserDetailView(APIView):
             'jobs': jobs_data,
             'disputes': disputes_data,
             'reviews': reviews_data,
+        })
+
+
+class AdminUserWarnView(APIView):
+    """
+    POST /api/admin/users/<id>/warn/
+    R1: Send a warning to user via email + in-app notification.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'admin_action'
+
+    def post(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+
+        # Prevent warning admins
+        if user.role in ('ADMIN', 'MODERATOR'):
+            return Response(
+                {'error': 'Impossible d\'avertir un administrateur.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        reason = request.data.get('reason', '').strip()
+        if not reason:
+            return Response(
+                {'error': 'La raison de l\'avertissement est obligatoire.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # In-app notification
+        notification_sent = False
+        try:
+            from notifications.models import Notification
+            Notification.objects.create(
+                user=user,
+                title='Avertissement administratif',
+                message=f'Vous avez reçu un avertissement : {reason}',
+                notification_type='WARNING',
+            )
+            notification_sent = True
+        except Exception as e:
+            logger.warning(f"In-app notification failed for warn user #{user.id}: {e}")
+
+        # Email notification
+        email_sent = False
+        try:
+            from notifications.emails import send_warning_email
+            send_warning_email(user, reason)
+            email_sent = True
+        except Exception as e:
+            logger.warning(f"Email warning failed for user #{user.id}: {e}")
+
+        # Audit trail
+        log_admin_action(
+            request, 'USER_WARNED', 'user', user.id,
+            target_label=user.email,
+            details={'reason': reason, 'notification_sent': notification_sent, 'email_sent': email_sent}
+        )
+
+        logger.info(
+            f"ADMIN_ACTION: user_warned | admin={request.user.email} "
+            f"| target={user.email} (ID:{user.id}) | reason={reason}"
+        )
+
+        return Response({
+            'message': f"Avertissement envoyé à {user.email}.",
+            'userId': user.id,
+            'notificationSent': notification_sent,
+            'emailSent': email_sent,
         })

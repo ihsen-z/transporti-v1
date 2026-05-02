@@ -3,7 +3,10 @@ Admin Export Views — Transporti V1
 Sprint 3 R6: CSV export for users and jobs.
 """
 import csv
+import logging
 from io import StringIO
+
+logger = logging.getLogger(__name__)
 
 from django.http import HttpResponse
 from django.db.models import Q
@@ -80,8 +83,8 @@ class AdminExportUsersCSV(APIView):
             trust_score = 50
             try:
                 trust_score = user.trust_profile.trust_score
-            except Exception:
-                pass
+            except Exception as e:
+                logger.warning(f"Export: Failed to get trust_score for user {user.id}: {e}")
 
             writer.writerow([
                 user.id,
@@ -100,11 +103,11 @@ class AdminExportUsersCSV(APIView):
         try:
             from admin_audit.services import log_admin_action
             log_admin_action(
-                request, 'USER_SUSPENDED', 'export', 0,
+                request, 'USERS_EXPORTED', 'export', 0,
                 target_label=f'Export CSV utilisateurs ({queryset.count()} lignes)',
             )
-        except Exception:
-            pass
+        except Exception as e:
+            logger.warning(f"Export: Failed to log audit action: {e}")
 
         return response
 

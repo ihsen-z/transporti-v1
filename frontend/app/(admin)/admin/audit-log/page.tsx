@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Pagination from "@/components/admin/Pagination";
 import {
   ScrollText,
   Filter,
@@ -111,6 +112,8 @@ export default function AdminAuditLogPage() {
   const [actionFilter, setActionFilter] = useState("");
   const [daysFilter, setDaysFilter] = useState("30");
   const { t } = useI18n();
+  const [page, setPage] = useState(1);
+  const pageSize = 20;
 
   const fetchData = useCallback(async () => {
     setLoading(true);
@@ -132,6 +135,11 @@ export default function AdminAuditLogPage() {
   }, [fetchData]);
 
   const entries = data?.entries || [];
+  const totalPages = Math.ceil(entries.length / pageSize);
+  const paginatedEntries = entries.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
+  );
 
   return (
     <div className="space-y-6">
@@ -243,7 +251,7 @@ export default function AdminAuditLogPage() {
               </p>
             </div>
           ) : (
-            entries.map((entry) => (
+            paginatedEntries.map((entry) => (
               <div
                 key={entry.id}
                 className={`bg-white dark:bg-[#1e293b] rounded-xl border p-4 hover:shadow-sm transition-shadow ${
@@ -325,6 +333,17 @@ export default function AdminAuditLogPage() {
             ))
           )}
         </div>
+      )}
+
+      {/* Pagination */}
+      {!loading && !error && entries.length > pageSize && (
+        <Pagination
+          page={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          totalItems={entries.length}
+          pageSize={pageSize}
+        />
       )}
     </div>
   );

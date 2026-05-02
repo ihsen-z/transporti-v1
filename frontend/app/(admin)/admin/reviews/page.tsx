@@ -8,6 +8,7 @@ import { formatTimeAgoShort } from "@/lib/admin";
 import { useAdminReviews } from "@/hooks/useAdminData";
 import {
   toggleReviewVisibility,
+  warnUser,
   type BackendReview,
   type BackendReviewAbuseLog,
 } from "@/lib/services/admin";
@@ -97,11 +98,36 @@ export default function AdminReviewsPage() {
     }
   };
 
-  const handleWarnUser = (reviewerEmail: string) => {
-    showToast(
-      "info",
-      `⚠️ Avertissement envoyé à ${reviewerEmail} (fonctionnalité à venir)`,
-    );
+  // R1: Warn user state
+  const [warnModalOpen, setWarnModalOpen] = useState(false);
+  const [warnTarget, setWarnTarget] = useState<{
+    email: string;
+    userId?: number;
+  } | null>(null);
+  const [warnReason, setWarnReason] = useState("");
+  const [warnLoading, setWarnLoading] = useState(false);
+
+  const handleWarnUser = (reviewerEmail: string, userId?: number) => {
+    setWarnTarget({ email: reviewerEmail, userId });
+    setWarnReason("");
+    setWarnModalOpen(true);
+  };
+
+  const confirmWarnUser = async () => {
+    if (!warnTarget?.userId || !warnReason.trim()) return;
+    setWarnLoading(true);
+    try {
+      const res = await warnUser(warnTarget.userId, warnReason);
+      showToast("success", res.message);
+      setWarnModalOpen(false);
+    } catch (err) {
+      showToast(
+        "error",
+        `Erreur: ${err instanceof Error ? err.message : "Erreur inconnue"}`,
+      );
+    } finally {
+      setWarnLoading(false);
+    }
   };
 
   const columns = [
@@ -128,7 +154,7 @@ export default function AdminReviewsPage() {
             />
           </div>
           <div>
-            <p className="text-sm font-medium text-neutral-900">
+            <p className="text-sm font-medium text-neutral-900 dark:text-white">
               {r.reviewerName}
             </p>
             <p className="text-xs text-neutral-400">
@@ -348,13 +374,13 @@ export default function AdminReviewsPage() {
       {selectedReview && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
           <div className="bg-white dark:bg-[#1e293b] w-full max-w-lg h-full overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-neutral-900">
+            <div className="p-6 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
                 Avis #{selectedReview.id}
               </h2>
               <button
                 onClick={() => setSelectedReview(null)}
-                className="text-neutral-400 hover:text-neutral-600 text-xl"
+                className="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 text-xl"
               >
                 ×
               </button>
@@ -364,7 +390,7 @@ export default function AdminReviewsPage() {
               {/* Rating */}
               <div className="flex items-center gap-3">
                 <StarDisplay rating={selectedReview.rating} />
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-lg font-bold text-neutral-900 dark:text-white">
                   {selectedReview.rating}/5
                 </span>
                 <StatusBadge
@@ -379,18 +405,22 @@ export default function AdminReviewsPage() {
 
               {/* Parties */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-neutral-50 rounded-xl p-3">
-                  <p className="text-xs text-neutral-500 mb-1">Auteur</p>
-                  <p className="font-medium text-neutral-900 text-sm">
+                <div className="bg-neutral-50 dark:bg-[#0f172a] rounded-xl p-3">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                    Auteur
+                  </p>
+                  <p className="font-medium text-neutral-900 dark:text-white text-sm">
                     {selectedReview.reviewerName}
                   </p>
                   <p className="text-xs text-neutral-400">
                     {selectedReview.reviewerEmail}
                   </p>
                 </div>
-                <div className="bg-neutral-50 rounded-xl p-3">
-                  <p className="text-xs text-neutral-500 mb-1">Cible</p>
-                  <p className="font-medium text-neutral-900 text-sm">
+                <div className="bg-neutral-50 dark:bg-[#0f172a] rounded-xl p-3">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                    Cible
+                  </p>
+                  <p className="font-medium text-neutral-900 dark:text-white text-sm">
                     {selectedReview.targetName}
                   </p>
                   <p className="text-xs text-neutral-400">
@@ -404,7 +434,7 @@ export default function AdminReviewsPage() {
                 <p className="text-xs text-neutral-500 mb-2 flex items-center gap-1">
                   <MessageSquare className="w-3 h-3" /> Commentaire
                 </p>
-                <p className="text-sm text-neutral-700 bg-neutral-50 rounded-xl p-4 italic">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-[#0f172a] rounded-xl p-4 italic">
                   &ldquo;{selectedReview.comment}&rdquo;
                 </p>
               </div>
@@ -433,7 +463,7 @@ export default function AdminReviewsPage() {
                         (log: BackendReviewAbuseLog, idx: number) => (
                           <div
                             key={idx}
-                            className="bg-white border border-neutral-100 rounded-xl p-3"
+                            className="bg-white dark:bg-[#1e293b] border border-neutral-100 dark:border-neutral-700 rounded-xl p-3"
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <StatusBadge
@@ -491,6 +521,47 @@ export default function AdminReviewsPage() {
                   Avertir l&apos;auteur
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* R1: Warn User Modal */}
+      {warnModalOpen && warnTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                  Avertir l&apos;utilisateur
+                </h3>
+                <p className="text-sm text-neutral-500">{warnTarget.email}</p>
+              </div>
+            </div>
+            <textarea
+              value={warnReason}
+              onChange={(e) => setWarnReason(e.target.value)}
+              placeholder="Raison de l'avertissement (obligatoire)..."
+              rows={3}
+              className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:ring-2 focus:ring-orange-500 resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => setWarnModalOpen(false)}
+                className="flex-1 px-4 py-2.5 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-xl font-medium hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmWarnUser}
+                disabled={!warnReason.trim() || warnLoading}
+                className="flex-1 px-4 py-2.5 bg-orange-600 text-white rounded-xl font-medium hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {warnLoading ? "Envoi..." : "Envoyer l'avertissement"}
+              </button>
             </div>
           </div>
         </div>

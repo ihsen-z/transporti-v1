@@ -12,10 +12,12 @@ from .views_admin import (
     AdminStatsView, AdminJobListView, AdminJobDetailView, AdminUserListView,
     AdminActivityView, AdminAlertsView,
     AdminJobCancelView, AdminJobForceStatusView,
+    AdminEscrowReleaseView, AdminEscrowRefundView,
 )
 from .views_admin_users import (
     AdminUserSuspendView, AdminUserActivateView,
     AdminUserResetPasswordView, AdminUserDetailView,
+    AdminUserWarnView,
 )
 from admin_audit.views import AdminAuditLogView
 from .views_admin_export import AdminExportUsersCSV, AdminExportJobsCSV
@@ -99,6 +101,7 @@ urlpatterns = [
     path('api/admin/users/<int:user_id>/suspend/', AdminUserSuspendView.as_view(), name='admin_user_suspend'),
     path('api/admin/users/<int:user_id>/activate/', AdminUserActivateView.as_view(), name='admin_user_activate'),
     path('api/admin/users/<int:user_id>/reset-password/', AdminUserResetPasswordView.as_view(), name='admin_user_reset_password'),
+    path('api/admin/users/<int:user_id>/warn/', AdminUserWarnView.as_view(), name='admin_user_warn'),
 
     # Admin Audit Trail (Sprint 2 R8)
     path('api/admin/audit-log/', AdminAuditLogView.as_view(), name='admin_audit_log'),
@@ -106,6 +109,10 @@ urlpatterns = [
     # Admin Export CSV (Sprint 3 R6)
     path('api/admin/users/export/', AdminExportUsersCSV.as_view(), name='admin_users_export'),
     path('api/admin/jobs/export/', AdminExportJobsCSV.as_view(), name='admin_jobs_export'),
+
+    # Admin Escrow Management (P1)
+    path('api/admin/escrow/<int:pk>/release/', AdminEscrowReleaseView.as_view(), name='admin_escrow_release'),
+    path('api/admin/escrow/<int:pk>/refund/', AdminEscrowRefundView.as_view(), name='admin_escrow_refund'),
 ]
 
 # Serve media files in development

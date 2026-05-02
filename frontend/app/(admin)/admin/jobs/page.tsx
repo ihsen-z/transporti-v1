@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -15,12 +15,14 @@ import {
   X,
   Loader2,
   AlertTriangle,
+  Download,
 } from "lucide-react";
 import DataTable from "@/components/admin/DataTable";
+import Pagination from "@/components/admin/Pagination";
 import { JobStatusBadge } from "@/components/admin/StatusBadge";
-import { useAdminJobs } from "@/hooks/useAdminData";
 import { formatCurrency, formatDate, type AdminJob } from "@/lib/admin";
 import { cancelJob, forceJobStatus } from "@/lib/services/admin";
+import { apiClient } from "@/lib/api/client";
 import { useI18n } from "@/lib/i18n";
 
 type StatusFilter =
@@ -43,8 +45,56 @@ export default function AdminJobsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("created_at");
   const [sortDir, setSortDir] = useState<SortDir>("desc");
-  const { data: allJobs, loading, error, refetch } = useAdminJobs();
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalCount, setTotalCount] = useState(0);
+  const PAGE_SIZE = 25;
   const { t } = useI18n();
+
+  // Server-side paginated fetch
+  const [allJobs, setAllJobs] = useState<AdminJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+
+  const fetchJobs = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const params = new URLSearchParams();
+      params.set("page", String(page));
+      params.set("page_size", String(PAGE_SIZE));
+      if (filter !== "ALL") params.set("status", filter);
+      if (searchQuery.trim()) params.set("search", searchQuery.trim());
+
+      const response = await apiClient.get<any>(
+        `/api/admin/jobs/?${params.toString()}`,
+      );
+      setAllJobs(response.results || []);
+      setTotalPages(response.totalPages || 1);
+      setTotalCount(response.count || 0);
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error("Erreur de chargement"));
+    } finally {
+      setLoading(false);
+    }
+  }, [page, filter, searchQuery]);
+
+  useEffect(() => {
+    fetchJobs();
+  }, [fetchJobs]);
+
+  const refetch = fetchJobs;
+
+  // Reset page on filter/search change
+  const handleFilterChange = (newFilter: StatusFilter) => {
+    setFilter(newFilter);
+    setPage(1);
+  };
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value);
+    setPage(1);
+  };
 
   const statusTabs: { value: StatusFilter; label: string }[] = [
     { value: "ALL", label: t.jobs.all },
@@ -98,30 +148,12 @@ export default function AdminJobsPage() {
     );
   };
 
-  /* ---- Filtered + Sorted jobs ---- */
+  /* ---- Sorted jobs (client-side sort on server-filtered page) ---- */
   const filteredJobs = useMemo(() => {
-    let jobs =
-      filter === "ALL"
-        ? allJobs
-        : allJobs.filter((job) => job.status === filter);
+    let jobs = [...allJobs];
 
-    // Search filter
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase();
-      jobs = jobs.filter(
-        (job) =>
-          (job.title || "").toLowerCase().includes(q) ||
-          (job.clientName || "").toLowerCase().includes(q) ||
-          (job.transporterName || "").toLowerCase().includes(q) ||
-          (job.clientEmail || "").toLowerCase().includes(q) ||
-          (job.cityFrom || "").toLowerCase().includes(q) ||
-          (job.cityTo || "").toLowerCase().includes(q) ||
-          String(job.id).includes(q),
-      );
-    }
-
-    // Sort
-    jobs = [...jobs].sort((a, b) => {
+    // Client-side sort only (filtering is server-side now)
+    jobs.sort((a, b) => {
       let cmp = 0;
       switch (sortKey) {
         case "id":
@@ -142,7 +174,7 @@ export default function AdminJobsPage() {
     });
 
     return jobs;
-  }, [allJobs, filter, searchQuery, sortKey, sortDir]);
+  }, [allJobs, sortKey, sortDir]);
 
   /* ---- Navigate to job detail ---- */
   const handleRowClick = (job: AdminJob) => {
@@ -376,14 +408,51 @@ export default function AdminJobsPage() {
         </div>
       )}
 
-      {/* Page Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
-          {t.jobs.title}
-        </h1>
-        <p className="text-neutral-500 dark:text-neutral-400">
-          {t.jobs.subtitle}
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            {t.jobs.title}
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400">
+            {t.jobs.subtitle}
+          </p>
+        </div>
+        <button
+          onClick={() => {
+            const rows = filteredJobs.map((j) => ({
+              ID: j.id,
+              Titre: j.title || "",
+              Client: j.clientName || "",
+              Transporteur: j.transporterName || "",
+              Statut: j.status,
+              Montant: j.price ?? 0,
+              Offres: j.offer_count ?? 0,
+              Date: j.created_at ? formatDate(j.created_at) : "",
+            }));
+            const headers = Object.keys(rows[0] || {}).join(",");
+            const csv = [
+              headers,
+              ...rows.map((r) =>
+                Object.values(r)
+                  .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+                  .join(","),
+              ),
+            ].join("\n");
+            const blob = new Blob(["\uFEFF" + csv], {
+              type: "text/csv;charset=utf-8;",
+            });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `jobs_export_${new Date().toISOString().slice(0, 10)}.csv`;
+            a.click();
+            URL.revokeObjectURL(url);
+          }}
+          className="flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 transition-colors"
+        >
+          <Download className="w-4 h-4" />
+          Export CSV
+        </button>
       </div>
 
       {/* Loading State */}
@@ -413,13 +482,13 @@ export default function AdminJobsPage() {
                 const isActive = filter === tab.value;
                 const count =
                   tab.value === "ALL"
-                    ? allJobs.length
+                    ? totalCount
                     : allJobs.filter((j) => j.status === tab.value).length;
 
                 return (
                   <button
                     key={tab.value}
-                    onClick={() => setFilter(tab.value)}
+                    onClick={() => handleFilterChange(tab.value)}
                     className={`
                       px-4 py-2 rounded-lg text-sm font-medium transition-all
                       ${
@@ -446,7 +515,7 @@ export default function AdminJobsPage() {
               <input
                 type="text"
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={t.jobs.searchPlaceholder}
                 className="pl-9 pr-4 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 w-full sm:w-80"
               />
@@ -494,6 +563,15 @@ export default function AdminJobsPage() {
             data={filteredJobs}
             onRowClick={handleRowClick}
             emptyMessage="Aucun job trouvé pour ce filtre"
+          />
+
+          {/* J1: Server-side Pagination */}
+          <Pagination
+            page={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={totalCount}
+            pageSize={PAGE_SIZE}
           />
         </>
       )}

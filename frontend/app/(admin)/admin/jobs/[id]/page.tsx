@@ -153,13 +153,15 @@ export default function AdminJobDetailPage() {
       <div className="space-y-4">
         <button
           onClick={() => router.back()}
-          className="flex items-center gap-2 text-neutral-600 hover:text-brand-600 transition-colors"
+          className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-brand-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" /> Retour
         </button>
-        <div className="bg-red-50 border border-red-200 rounded-xl p-6 text-center">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
           <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <p className="text-red-700">{error || "Job introuvable"}</p>
+          <p className="text-red-700 dark:text-red-300">
+            {error || "Job introuvable"}
+          </p>
         </div>
       </div>
     );
@@ -172,18 +174,18 @@ export default function AdminJobDetailPage() {
         <div className="flex items-center gap-4">
           <button
             onClick={() => router.push("/admin/jobs")}
-            className="p-2 text-neutral-500 hover:text-brand-600 hover:bg-neutral-100 rounded-lg transition-colors"
+            className="p-2 text-neutral-500 hover:text-brand-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
             <ArrowLeft className="w-5 h-5" />
           </button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-neutral-900">
+              <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
                 {job.title || `Job #${job.id}`}
               </h1>
               <JobStatusBadge status={job.status} />
             </div>
-            <p className="text-neutral-500 text-sm mt-1">
+            <p className="text-neutral-500 dark:text-neutral-400 text-sm mt-1">
               Job #{job.id} • Créé le {formatDate(job.created_at)}
             </p>
           </div>
@@ -195,44 +197,46 @@ export default function AdminJobDetailPage() {
         {/* Left: Main info */}
         <div className="lg:col-span-2 space-y-6">
           {/* Route + Transport */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-6">
-            <h2 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-brand-600" />
               Itinéraire
             </h2>
             <div className="grid grid-cols-2 gap-6">
               <div>
-                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">
+                <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">
                   Départ
                 </p>
-                <p className="font-medium text-neutral-900">
+                <p className="font-medium text-neutral-900 dark:text-white">
                   {job.cityFrom || "-"}
                 </p>
-                <p className="text-sm text-neutral-600">{job.pickup || "-"}</p>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
+                  {job.pickup || "-"}
+                </p>
               </div>
               <div>
-                <p className="text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1">
+                <p className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-1">
                   Arrivée
                 </p>
-                <p className="font-medium text-neutral-900">
+                <p className="font-medium text-neutral-900 dark:text-white">
                   {job.cityTo || "-"}
                 </p>
-                <p className="text-sm text-neutral-600">
+                <p className="text-sm text-neutral-600 dark:text-neutral-400">
                   {job.delivery || "-"}
                 </p>
               </div>
             </div>
-            <div className="mt-4 pt-4 border-t border-neutral-100">
+            <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
               <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 text-neutral-400" />
-                  <span className="text-neutral-600">
+                  <span className="text-neutral-600 dark:text-neutral-400">
                     {job.job_type || "Standard"}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="w-4 h-4 text-neutral-400" />
-                  <span className="text-neutral-600">
+                  <span className="text-neutral-600 dark:text-neutral-400">
                     {formatDate(job.created_at)}
                   </span>
                 </div>
@@ -241,8 +245,8 @@ export default function AdminJobDetailPage() {
           </div>
 
           {/* Offers */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-6">
-            <h2 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
               <Truck className="w-5 h-5 text-brand-600" />
               Offres ({job.offers?.length || 0})
             </h2>
@@ -264,11 +268,11 @@ export default function AdminJobDetailPage() {
                   >
                     <div className="flex items-center justify-between mb-2">
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-neutral-100 rounded-full flex items-center justify-center">
+                        <div className="w-8 h-8 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center">
                           <User className="w-4 h-4 text-neutral-500" />
                         </div>
                         <div>
-                          <p className="font-medium text-neutral-900 text-sm">
+                          <p className="font-medium text-neutral-900 dark:text-white text-sm">
                             {offer.transporter}
                           </p>
                           <p className="text-xs text-neutral-400">
@@ -277,7 +281,7 @@ export default function AdminJobDetailPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span className="font-bold text-neutral-900">
+                        <span className="font-bold text-neutral-900 dark:text-white">
                           {formatCurrency(offer.totalPrice)}
                         </span>
                         <StatusBadge
@@ -292,7 +296,7 @@ export default function AdminJobDetailPage() {
                       </div>
                     </div>
                     {offer.message && (
-                      <p className="text-sm text-neutral-600 mt-2 pl-11 italic">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2 pl-11 italic">
                         &ldquo;{offer.message}&rdquo;
                       </p>
                     )}
@@ -325,7 +329,7 @@ export default function AdminJobDetailPage() {
                   >
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="font-medium text-neutral-900 text-sm">
+                        <p className="font-medium text-neutral-900 dark:text-white text-sm">
                           {dispute.reason}
                         </p>
                         <p className="text-xs text-neutral-500">
@@ -352,8 +356,8 @@ export default function AdminJobDetailPage() {
         {/* Right: Sidebar */}
         <div className="space-y-6">
           {/* Client card */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-6">
-            <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Client
             </h3>
             <div className="flex items-center gap-3">
@@ -361,17 +365,19 @@ export default function AdminJobDetailPage() {
                 <User className="w-5 h-5 text-brand-600" />
               </div>
               <div>
-                <p className="font-semibold text-neutral-900">
+                <p className="font-semibold text-neutral-900 dark:text-white">
                   {job.clientName}
                 </p>
-                <p className="text-sm text-neutral-500">{job.clientEmail}</p>
+                <p className="text-sm text-neutral-500 dark:text-neutral-400">
+                  {job.clientEmail}
+                </p>
               </div>
             </div>
           </div>
 
           {/* Transporter card */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-6">
-            <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Transporteur
             </h3>
             {job.transporterName ? (
@@ -380,10 +386,10 @@ export default function AdminJobDetailPage() {
                   <Truck className="w-5 h-5 text-green-600" />
                 </div>
                 <div>
-                  <p className="font-semibold text-neutral-900">
+                  <p className="font-semibold text-neutral-900 dark:text-white">
                     {job.transporterName}
                   </p>
-                  <p className="text-sm text-neutral-500">
+                  <p className="text-sm text-neutral-500 dark:text-neutral-400">
                     {job.transporterEmail}
                   </p>
                 </div>
@@ -394,14 +400,14 @@ export default function AdminJobDetailPage() {
           </div>
 
           {/* Payment/Escrow card */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-6">
-            <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Paiement
             </h3>
             <div className="space-y-3">
               <div className="flex items-center justify-between">
                 <span className="text-neutral-600 text-sm">Montant</span>
-                <span className="font-bold text-neutral-900 text-lg">
+                <span className="font-bold text-neutral-900 dark:text-white text-lg">
                   {formatCurrency(job.price || 0)}
                 </span>
               </div>
@@ -415,7 +421,7 @@ export default function AdminJobDetailPage() {
                     <span className="text-neutral-600 text-sm">
                       Montant escrow
                     </span>
-                    <span className="font-medium text-neutral-900">
+                    <span className="font-medium text-neutral-900 dark:text-white">
                       {formatCurrency(job.escrow.amount)}
                     </span>
                   </div>
@@ -430,8 +436,8 @@ export default function AdminJobDetailPage() {
           </div>
 
           {/* Conversation card */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-6">
-            <h3 className="text-sm font-semibold text-neutral-500 uppercase tracking-wider mb-3">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Conversation
             </h3>
             {job.conversation ? (
@@ -440,7 +446,7 @@ export default function AdminJobDetailPage() {
                   <span className="text-neutral-600 text-sm flex items-center gap-1.5">
                     <MessageSquare className="w-4 h-4" /> Messages
                   </span>
-                  <span className="font-semibold text-neutral-900">
+                  <span className="font-semibold text-neutral-900 dark:text-white">
                     {job.conversation.messageCount}
                   </span>
                 </div>
