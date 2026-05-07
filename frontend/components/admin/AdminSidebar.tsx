@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -13,6 +15,8 @@ import {
   AlertTriangle,
   Star,
   ScrollText,
+  Menu,
+  X,
 } from "lucide-react";
 import { AdminSidebarLogo } from "../brand/TransportiLogo";
 import { useI18n } from "@/lib/i18n";
@@ -20,6 +24,12 @@ import { useI18n } from "@/lib/i18n";
 export default function AdminSidebar() {
   const pathname = usePathname();
   const { t, isRTL } = useI18n();
+  const [mobileOpen, setMobileOpen] = useState(false);
+
+  // Close mobile menu on route change
+  useEffect(() => {
+    setMobileOpen(false);
+  }, [pathname]);
 
   const navItems = [
     {
@@ -42,10 +52,8 @@ export default function AdminSidebar() {
 
   const BackIcon = isRTL ? ChevronRight : ChevronLeft;
 
-  return (
-    <aside
-      className={`hidden lg:flex flex-col fixed top-0 h-screen w-64 bg-brand-600 dark:bg-[#0c1f4d] text-white z-40 transition-colors duration-300 ${isRTL ? "right-0" : "left-0"}`}
-    >
+  const sidebarContent = (
+    <>
       {/* Logo / Brand */}
       <div className="p-6 border-b border-white/10">
         <AdminSidebarLogo />
@@ -86,6 +94,52 @@ export default function AdminSidebar() {
           {t.sidebar.backToApp}
         </Link>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger button */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className={`lg:hidden fixed top-4 ${isRTL ? 'right-4' : 'left-4'} z-50 p-2 rounded-lg bg-brand-600 text-white shadow-lg hover:bg-brand-700 transition-colors`}
+        aria-label="Open menu"
+      >
+        <Menu className="w-5 h-5" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="lg:hidden fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar (slide-in) */}
+      <aside
+        className={`lg:hidden fixed top-0 h-screen w-64 bg-brand-600 dark:bg-[#0c1f4d] text-white z-[60] transition-transform duration-300 flex flex-col
+          ${isRTL ? 'right-0' : 'left-0'}
+          ${mobileOpen ? 'translate-x-0' : (isRTL ? 'translate-x-full' : '-translate-x-full')}
+        `}
+      >
+        {/* Close button */}
+        <button
+          onClick={() => setMobileOpen(false)}
+          className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} p-2 rounded-lg hover:bg-white/10 transition-colors`}
+          aria-label="Close menu"
+        >
+          <X className="w-5 h-5" />
+        </button>
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop sidebar (always visible) */}
+      <aside
+        className={`hidden lg:flex flex-col fixed top-0 h-screen w-64 bg-brand-600 dark:bg-[#0c1f4d] text-white z-40 transition-colors duration-300 ${isRTL ? "right-0" : "left-0"}`}
+      >
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

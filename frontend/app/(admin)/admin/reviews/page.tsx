@@ -55,6 +55,7 @@ type FilterTab = "ALL" | "VISIBLE" | "HIDDEN";
 
 export default function AdminReviewsPage() {
   const [filter, setFilter] = useState<FilterTab>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedReview, setSelectedReview] = useState<BackendReview | null>(
     null,
   );
@@ -76,12 +77,24 @@ export default function AdminReviewsPage() {
     { value: "HIDDEN", label: "Masqués" },
   ];
 
-  const filtered =
+  const statusFiltered =
     filter === "ALL"
       ? allReviews
       : filter === "VISIBLE"
         ? allReviews.filter((r) => !r.isHidden)
         : allReviews.filter((r) => r.isHidden);
+
+  const filtered = searchQuery.trim()
+    ? statusFiltered.filter((r) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          String(r.id).includes(q) ||
+          (r.reviewerName || "").toLowerCase().includes(q) ||
+          (r.targetName || "").toLowerCase().includes(q) ||
+          (r.comment || "").toLowerCase().includes(q)
+        );
+      })
+    : statusFiltered;
 
   const handleToggleVisibility = async (id: number) => {
     setActionLoading(true);
@@ -300,35 +313,48 @@ export default function AdminReviewsPage() {
 
       {!loading && (
         <>
-          {/* Filter Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {filterTabs.map((tab) => {
-              const isActive = filter === tab.value;
-              const count =
-                tab.value === "ALL"
-                  ? allReviews.length
-                  : tab.value === "VISIBLE"
-                    ? allReviews.filter((r) => !r.isHidden).length
-                    : allReviews.filter((r) => r.isHidden).length;
-              return (
-                <button
-                  key={tab.value}
-                  onClick={() => setFilter(tab.value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-brand-600 text-white shadow-sm"
-                      : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
-                  }`}
-                >
-                  {tab.label}
-                  <span
-                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
+          {/* Filter Tabs + Search */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex flex-wrap gap-2 flex-1">
+              {filterTabs.map((tab) => {
+                const isActive = filter === tab.value;
+                const count =
+                  tab.value === "ALL"
+                    ? allReviews.length
+                    : tab.value === "VISIBLE"
+                      ? allReviews.filter((r) => !r.isHidden).length
+                      : allReviews.filter((r) => r.isHidden).length;
+                return (
+                  <button
+                    key={tab.value}
+                    onClick={() => setFilter(tab.value)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? "bg-brand-600 text-white shadow-sm"
+                        : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
+                    }`}
                   >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+                    {tab.label}
+                    <span
+                      className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {/* Search */}
+            <div className="relative">
+              <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Rechercher un avis..."
+                className="pl-9 pr-4 py-2 bg-white dark:bg-[#0f172a] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 w-full sm:w-64"
+              />
+            </div>
           </div>
 
           {/* Stats Bar */}

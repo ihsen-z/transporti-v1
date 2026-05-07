@@ -154,26 +154,58 @@ export default function AdminAuditLogPage() {
             {t.audit.subtitle}
           </p>
         </div>
-        {data && (
-          <div className="flex items-center gap-4">
-            <div className="text-right">
-              <p className="text-2xl font-bold text-neutral-900 dark:text-white">
-                {data.totalCount}
-              </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {t.audit.totalActions}
-              </p>
-            </div>
-            <div className="text-right">
-              <p className="text-2xl font-bold text-brand-600 dark:text-brand-400">
-                {data.todayCount}
-              </p>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                {t.audit.today}
-              </p>
-            </div>
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          {/* CSV Export */}
+          <button
+            onClick={() => {
+              if (!entries.length) return;
+              const headers = ["Date", "Admin", "Email", "Action", "Cible", "ID Cible", "Détails", "IP"];
+              const rows = entries.map(e => [
+                formatDateTime(e.createdAt),
+                e.adminName,
+                e.adminEmail,
+                e.actionLabel,
+                e.targetLabel,
+                String(e.targetId),
+                JSON.stringify(e.details || {}),
+                e.ipAddress || "",
+              ]);
+              const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+              const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement("a");
+              a.href = url;
+              a.download = `audit-log-${new Date().toISOString().slice(0, 10)}.csv`;
+              a.click();
+              URL.revokeObjectURL(url);
+            }}
+            disabled={!entries.length}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            Export CSV
+          </button>
+          {data && (
+            <>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
+                  {data.totalCount}
+                </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {t.audit.totalActions}
+                </p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl font-bold text-brand-600 dark:text-brand-400">
+                  {data.todayCount}
+                </p>
+                <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                  {t.audit.today}
+                </p>
+              </div>
+            </>
+          )}
+        </div>
       </div>
 
       {/* Filters */}

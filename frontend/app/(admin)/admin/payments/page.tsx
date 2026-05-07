@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   CreditCard,
   Clock,
@@ -15,13 +15,18 @@ import {
   RotateCcw,
   X,
   ShieldCheck,
+  Search,
 } from "lucide-react";
 import StatCard from "@/components/admin/StatCard";
 import DataTable from "@/components/admin/DataTable";
+import Pagination from "@/components/admin/Pagination";
 import { PaymentStatusBadge } from "@/components/admin/StatusBadge";
 import { useAdminPayments, useAdminStats } from "@/hooks/useAdminData";
 import { formatCurrency, formatDate, type AdminPayment } from "@/lib/admin";
 import { releaseEscrow, refundEscrow } from "@/lib/services/admin";
+import { useI18n } from "@/lib/i18n";
+
+type PaymentStatusFilter = "ALL" | "HELD" | "RELEASED" | "REFUNDED" | "BLOCKED" | "PENDING";
 
 export default function AdminPaymentsPage() {
   const {
@@ -48,11 +53,46 @@ export default function AdminPaymentsPage() {
   const [escrowSuccess, setEscrowSuccess] = useState<string | null>(null);
   const [escrowError, setEscrowError] = useState<string | null>(null);
 
+  // Search, filter, pagination state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<PaymentStatusFilter>("ALL");
+  const [page, setPage] = useState(1);
+  const pageSize = 15;
+  const { t } = useI18n();
+
   const loading = loadingPayments || loadingStats;
 
   // Group payments by status
   const heldPayments = payments.filter((p) => p.status === "HELD");
   const blockedPayments = payments.filter((p) => p.status === "BLOCKED");
+
+  // Filtered + searched payments
+  const filteredPayments = useMemo(() => {
+    let result = [...payments];
+    if (statusFilter !== "ALL") {
+      result = result.filter((p) => p.status === statusFilter);
+    }
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (p) =>
+          (p.clientName || "").toLowerCase().includes(q) ||
+          (p.transporterName || "").toLowerCase().includes(q) ||
+          String(p.id).includes(q) ||
+          String(p.jobId).includes(q)
+      );
+    }
+    return result;
+  }, [payments, statusFilter, searchQuery]);
+
+  const totalPages = Math.ceil(filteredPayments.length / pageSize);
+  const paginatedPayments = filteredPayments.slice((page - 1) * pageSize, page * pageSize);
+
+  // Reset page when filter changes
+  const handleStatusFilter = (f: PaymentStatusFilter) => {
+    setStatusFilter(f);
+    setPage(1);
+  };
 
   // --- Escrow action handlers ---
   const openEscrowModal = (
@@ -329,8 +369,6 @@ export default function AdminPaymentsPage() {
           value={formatCurrency(stats.platformRevenue)}
           subtitle="Commission 10%"
           icon={DollarSign}
-          trend="up"
-          trendValue="+8.5%"
           color="accent"
         />
       </div>
@@ -401,11 +439,74 @@ export default function AdminPaymentsPage() {
         <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
           Toutes les Transactions
         </h2>
+
+        {/* Search + Status Filters */}
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
+          {/* Search */}
+          <div className="relative flex-1 max-w-md">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <input
+              type="text"
+              placeholder={t.payments?.searchPlaceholder || "Rechercher..."}
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+              className="w-full pl-10 pr-4 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 transition-colors"
+            />
+          </div>
+
+          {/* Status Filter Tabs */}
+          <div className="flex flex-wrap gap-2">
+            {([
+              { key: "ALL", label: t.payments?.allStatuses || "Tous" },
+              { key: "HELD", label: t.payments?.heldFilter || "En attente" },
+              { key: "RELEASED", label: t.payments?.releasedFilter || "Libérés" },
+              { key: "REFUNDED", label: t.payments?.refundedFilter || "Remboursés" },
+              { key: "BLOCKED", label: "Bloqués" },
+            ] as { key: PaymentStatusFilter; label: string }[]).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => handleStatusFilter(tab.key)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                  statusFilter === tab.key
+                    ? "bg-brand-600 text-white"
+                    : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
+                }`}
+              >
+                {tab.label}
+                {tab.key !== "ALL" && (
+                  <span className="ml-1.5 opacity-70">
+                    ({payments.filter((p) => p.status === tab.key).length})
+                  </span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Summary bar */}
+        <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+          <span>{t.payments?.displayed || "Affichées"}: {filteredPayments.length}</span>
+          <span>{t.payments?.totalValue || "Valeur totale"}: {formatCurrency(filteredPayments.reduce((s, p) => s + p.amount, 0))}</span>
+        </div>
+
         <DataTable
           columns={columns}
-          data={payments}
+          data={paginatedPayments}
           emptyMessage="Aucune transaction trouvée"
         />
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="mt-4">
+            <Pagination
+              page={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              totalItems={filteredPayments.length}
+              pageSize={pageSize}
+            />
+          </div>
+        )}
       </div>
 
       {/* Admin Escrow Info */}

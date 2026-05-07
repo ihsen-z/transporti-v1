@@ -78,6 +78,7 @@ export default function AdminDisputesPage() {
     null,
   );
   const [actionLoading, setActionLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
   const [feedback, setFeedback] = useState<{
     type: "success" | "error";
     message: string;
@@ -94,8 +95,21 @@ export default function AdminDisputesPage() {
     { value: "RESOLVED", label: "Résolus" },
   ];
 
-  const filtered =
+  const statusFiltered =
     filter === "ALL" ? disputes : disputes.filter((d) => d.status === filter);
+
+  const filtered = searchQuery.trim()
+    ? statusFiltered.filter((d) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          String(d.id).includes(q) ||
+          (d.reason || "").toLowerCase().includes(q) ||
+          (d.opened_by_name || "").toLowerCase().includes(q) ||
+          (d.resolved_by_name || "").toLowerCase().includes(q) ||
+          (d.description || "").toLowerCase().includes(q)
+        );
+      })
+    : statusFiltered;
 
   const openCount = disputes.filter((d) => d.status === "OPEN").length;
   const investigatingCount = disputes.filter(
@@ -371,33 +385,46 @@ export default function AdminDisputesPage() {
         </div>
       </div>
 
-      {/* Filter Tabs */}
-      <div className="flex flex-wrap gap-2">
-        {filterTabs.map((tab) => {
-          const isActive = filter === tab.value;
-          const count =
-            tab.value === "ALL"
-              ? disputes.length
-              : disputes.filter((d) => d.status === tab.value).length;
-          return (
-            <button
-              key={tab.value}
-              onClick={() => setFilter(tab.value)}
-              className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                isActive
-                  ? "bg-brand-600 text-white shadow-sm"
-                  : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
-              }`}
-            >
-              {tab.label}
-              <span
-                className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
+      {/* Filter Tabs + Search */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex flex-wrap gap-2 flex-1">
+          {filterTabs.map((tab) => {
+            const isActive = filter === tab.value;
+            const count =
+              tab.value === "ALL"
+                ? disputes.length
+                : disputes.filter((d) => d.status === tab.value).length;
+            return (
+              <button
+                key={tab.value}
+                onClick={() => setFilter(tab.value)}
+                className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  isActive
+                    ? "bg-brand-600 text-white shadow-sm"
+                    : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
+                }`}
               >
-                {count}
-              </span>
-            </button>
-          );
-        })}
+                {tab.label}
+                <span
+                  className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
+                >
+                  {count}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Search */}
+        <div className="relative">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Rechercher un litige..."
+            className="pl-9 pr-4 py-2 bg-white dark:bg-[#0f172a] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 w-full sm:w-64"
+          />
+        </div>
       </div>
 
       {/* Stats Bar */}

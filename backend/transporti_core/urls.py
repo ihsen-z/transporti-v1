@@ -17,7 +17,7 @@ from .views_admin import (
 from .views_admin_users import (
     AdminUserSuspendView, AdminUserActivateView,
     AdminUserResetPasswordView, AdminUserDetailView,
-    AdminUserWarnView,
+    AdminUserWarnView, AdminUserEditView,
 )
 from admin_audit.views import AdminAuditLogView
 from .views_admin_export import AdminExportUsersCSV, AdminExportJobsCSV
@@ -102,6 +102,7 @@ urlpatterns = [
     path('api/admin/users/<int:user_id>/activate/', AdminUserActivateView.as_view(), name='admin_user_activate'),
     path('api/admin/users/<int:user_id>/reset-password/', AdminUserResetPasswordView.as_view(), name='admin_user_reset_password'),
     path('api/admin/users/<int:user_id>/warn/', AdminUserWarnView.as_view(), name='admin_user_warn'),
+    path('api/admin/users/<int:user_id>/edit/', AdminUserEditView.as_view(), name='admin_user_edit'),
 
     # Admin Audit Trail (Sprint 2 R8)
     path('api/admin/audit-log/', AdminAuditLogView.as_view(), name='admin_audit_log'),

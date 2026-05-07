@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Users,
   Truck,
@@ -13,6 +13,16 @@ import {
 import Link from "next/link";
 import StatCard from "@/components/admin/StatCard";
 import DataTable from "@/components/admin/DataTable";
+import dynamic from "next/dynamic";
+
+const RevenueChart = dynamic(() => import("@/components/admin/RevenueChart"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[250px] flex items-center justify-center text-neutral-400">
+      Chargement du graphique...
+    </div>
+  ),
+});
 import { JobStatusBadge } from "@/components/admin/StatusBadge";
 import {
   formatCurrency,
@@ -45,33 +55,38 @@ function DashboardContent() {
     data: stats,
     loading: statsLoading,
     source: _source,
+    refetch: refetchStats,
   } = useAdminStats();
   const {
     data: allJobs,
     loading: jobsLoading,
     refetch: refetchJobs,
   } = useAdminJobs();
-  const { data: activityLogs } = useActivityLogs();
-  const { data: systemAlerts } = useSystemAlerts();
+  const { data: activityLogs, refetch: refetchActivity } = useActivityLogs();
+  const { data: systemAlerts, refetch: refetchAlerts } = useSystemAlerts();
 
   const { prefs, isWidgetVisible } = useDashboardConfig();
   const { t, locale } = useI18n();
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [chartDays, setChartDays] = useState(30);
 
   const loading = statsLoading || jobsLoading;
 
-  // Auto-refresh logic
+  // Auto-refresh ALL dashboard widgets
   useEffect(() => {
     if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
     if (prefs.autoRefresh && prefs.refreshInterval > 0) {
       refreshTimerRef.current = setInterval(() => {
+        refetchStats();
         refetchJobs();
+        refetchActivity();
+        refetchAlerts();
       }, prefs.refreshInterval * 1000);
     }
     return () => {
       if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
     };
-  }, [prefs.autoRefresh, prefs.refreshInterval, refetchJobs]);
+  }, [prefs.autoRefresh, prefs.refreshInterval, refetchStats, refetchJobs, refetchActivity, refetchAlerts]);
 
   if (loading) {
     return <LoadingState variant="page" />;
@@ -248,6 +263,49 @@ function DashboardContent() {
           ))}
         </div>
       )}
+
+      {/* Revenue Chart — D4 + D2 Date Range */}
+      {isWidgetVisible("section-jobs") && (
+        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 transition-colors duration-300">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+            <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+              {locale === "ar" ? "تحليل الإيرادات" : "Analyse des revenus"}
+            </h2>
+            <div className="flex gap-1.5 bg-neutral-100 dark:bg-[#0f172a] rounded-lg p-1">
+              {[
+                { days: 7, label: "7j" },
+                { days: 30, label: "30j" },
+                { days: 90, label: "90j" },
+                { days: 365, label: "1an" },
+              ].map((range) => (
+                <button
+                  key={range.days}
+                  onClick={() => setChartDays(range.days)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                    chartDays === range.days
+                      ? "bg-brand-600 text-white shadow-sm"
+                      : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
+                  }`}
+                >
+                  {range.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400 mb-3">
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+              {locale === "ar" ? "الإيرادات" : "Revenu brut"}
+            </span>
+            <span className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              {locale === "ar" ? "العمولة" : "Commission (10%)"}
+            </span>
+          </div>
+          <RevenueChart days={chartDays} jobs={allJobs} />
+        </div>
+      )}
+
 
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">

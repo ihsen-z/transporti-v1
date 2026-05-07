@@ -320,3 +320,69 @@ class AdminUserWarnView(APIView):
             'notificationSent': notification_sent,
             'emailSent': email_sent,
         })
+
+
+class AdminUserEditView(APIView):
+    """
+    PATCH /api/admin/users/<id>/edit/
+    Allows admin to edit basic user fields: first_name, last_name, phone, role.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+    throttle_classes = [ScopedRateThrottle]
+    throttle_scope = 'admin_action'
+
+    EDITABLE_FIELDS = ['first_name', 'last_name', 'phone', 'role']
+    VALID_ROLES = ['CLIENT', 'TRANSPORTER']  # Cannot promote to ADMIN via this endpoint
+
+    def patch(self, request, user_id):
+        user = get_object_or_404(User, id=user_id)
+
+        # Prevent editing admins
+        if user.role in ('ADMIN', 'MODERATOR') and user.id != request.user.id:
+            return Response(
+                {'error': 'Impossible de modifier un autre administrateur.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        changes = {}
+        for field in self.EDITABLE_FIELDS:
+            if field in request.data:
+                new_val = request.data[field]
+
+                # Validate role
+                if field == 'role' and new_val not in self.VALID_ROLES:
+                    return Response(
+                        {'error': f"Rôle invalide: {new_val}. Valeurs acceptées: {', '.join(self.VALID_ROLES)}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+                old_val = getattr(user, field, None)
+                if str(new_val) != str(old_val):
+                    setattr(user, field, new_val)
+                    changes[field] = {'old': str(old_val), 'new': str(new_val)}
+
+        if not changes:
+            return Response(
+                {'error': 'Aucune modification détectée.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.save(update_fields=list(changes.keys()) + ['updated_at'])
+
+        # Audit trail
+        log_admin_action(
+            request, 'USER_EDITED', 'user', user.id,
+            target_label=user.email,
+            details={'changes': changes}
+        )
+
+        logger.info(
+            f"ADMIN_ACTION: user_edited | admin={request.user.email} "
+            f"| target={user.email} (ID:{user.id}) | changes={changes}"
+        )
+
+        return Response({
+            'message': f"Utilisateur {user.email} modifié avec succès.",
+            'userId': user.id,
+            'changes': changes,
+        })

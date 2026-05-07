@@ -19,6 +19,7 @@ import {
   suspendUser,
   activateUser,
   resetUserPassword,
+  editUser,
 } from "@/lib/services/admin";
 import {
   Search,
@@ -34,6 +35,12 @@ import {
   Briefcase,
   MessageSquare,
   Star,
+  Pencil,
+  Loader2,
+  Save,
+  CheckSquare,
+  Square,
+  MinusSquare,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { useI18n } from "@/lib/i18n";
@@ -246,12 +253,19 @@ interface UserDetail {
 function UserDetailDrawer({
   userId,
   onClose,
+  onUserUpdated,
 }: {
   userId: number | null;
   onClose: () => void;
+  onUserUpdated?: () => void;
 }) {
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", role: "" });
+  const [editLoading, setEditLoading] = useState(false);
+  const [editSuccess, setEditSuccess] = useState<string | null>(null);
+  const [editError, setEditError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -280,12 +294,34 @@ function UserDetailDrawer({
             <Eye className="w-5 h-5 text-brand-600" />
             Profil Utilisateur
           </h2>
-          <button
-            onClick={onClose}
-            className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5 text-neutral-400" />
-          </button>
+          <div className="flex items-center gap-2">
+            {detail && !isEditing && (
+              <button
+                onClick={() => {
+                  const nameParts = (detail.name || "").split(" ");
+                  setEditForm({
+                    first_name: nameParts[0] || "",
+                    last_name: nameParts.slice(1).join(" ") || "",
+                    phone: detail.phone || "",
+                    role: detail.role || "CLIENT",
+                  });
+                  setIsEditing(true);
+                  setEditSuccess(null);
+                  setEditError(null);
+                }}
+                className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors text-brand-600"
+                title="Modifier"
+              >
+                <Pencil className="w-4 h-4" />
+              </button>
+            )}
+            <button
+              onClick={onClose}
+              className="p-2 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+            >
+              <X className="w-5 h-5 text-neutral-400" />
+            </button>
+          </div>
         </div>
 
         {loading && (
@@ -328,6 +364,96 @@ function UserDetailDrawer({
                 </div>
               </div>
             </div>
+
+            {/* Edit Form */}
+            {isEditing && (
+              <div className="bg-brand-50 dark:bg-brand-900/20 rounded-xl border border-brand-200 dark:border-brand-800 p-4 space-y-3">
+                <h4 className="text-sm font-bold text-brand-800 dark:text-brand-300 flex items-center gap-2">
+                  <Pencil className="w-3.5 h-3.5" />
+                  Modifier l'utilisateur
+                </h4>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Prénom</label>
+                    <input
+                      type="text"
+                      value={editForm.first_name}
+                      onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })}
+                      className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Nom</label>
+                    <input
+                      type="text"
+                      value={editForm.last_name}
+                      onChange={(e) => setEditForm({ ...editForm, last_name: e.target.value })}
+                      className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Téléphone</label>
+                  <input
+                    type="text"
+                    value={editForm.phone}
+                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Rôle</label>
+                  <select
+                    value={editForm.role}
+                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                    className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
+                  >
+                    <option value="CLIENT">Client</option>
+                    <option value="TRANSPORTER">Transporteur</option>
+                  </select>
+                </div>
+                {editError && (
+                  <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg p-2">{editError}</p>
+                )}
+                {editSuccess && (
+                  <p className="text-xs text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg p-2">{editSuccess}</p>
+                )}
+                <div className="flex items-center justify-end gap-2 pt-1">
+                  <button
+                    onClick={() => { setIsEditing(false); setEditError(null); }}
+                    disabled={editLoading}
+                    className="px-3 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={async () => {
+                      setEditLoading(true);
+                      setEditError(null);
+                      try {
+                        const result = await editUser(detail.id, editForm);
+                        setEditSuccess(result.message);
+                        setIsEditing(false);
+                        // Refresh detail
+                        const refreshed = await apiClient.get<UserDetail>(`/api/admin/users/${detail.id}/`);
+                        setDetail(refreshed);
+                        onUserUpdated?.();
+                      } catch (err: any) {
+                        setEditError(err?.message || "Erreur lors de la modification");
+                      } finally {
+                        setEditLoading(false);
+                      }
+                    }}
+                    disabled={editLoading}
+                    className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50"
+                  >
+                    {editLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    Enregistrer
+                  </button>
+                </div>
+              </div>
+            )}
+
 
             {/* Info Grid */}
             <div className="grid grid-cols-2 gap-4">
@@ -567,6 +693,55 @@ export default function AdminUsersPage() {
   // R5: Detail drawer state
   const [detailUserId, setDetailUserId] = useState<number | null>(null);
 
+  // U5: Bulk selection state
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkLoading, setBulkLoading] = useState(false);
+
+  const toggleSelect = useCallback((id: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const toggleSelectAll = useCallback(() => {
+    if (selectedIds.size === filteredUsers.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredUsers.map((u) => u.id)));
+    }
+  }, [selectedIds.size, filteredUsers]);
+
+  const handleBulkAction = useCallback(
+    async (action: "suspend" | "activate") => {
+      if (selectedIds.size === 0) return;
+      setBulkLoading(true);
+      let successCount = 0;
+      let failCount = 0;
+      for (const id of Array.from(selectedIds)) {
+        try {
+          if (action === "suspend") {
+            await suspendUser(id, "Bulk admin action");
+          } else {
+            await activateUser(id);
+          }
+          successCount++;
+        } catch {
+          failCount++;
+        }
+      }
+      setBulkLoading(false);
+      setSelectedIds(new Set());
+      setResultBanner({
+        message: `✅ ${successCount} utilisateur(s) ${action === "suspend" ? "suspendu(s)" : "activé(s)"}${failCount > 0 ? ` — ${failCount} échec(s)` : ""}`,
+      });
+      refetch();
+    },
+    [selectedIds, refetch],
+  );
+
   // Source indicator (always API now)
   const source = "api" as const;
 
@@ -614,6 +789,43 @@ export default function AdminUsersPage() {
   }, [modalAction, selectedUser, actionReason, refetch]);
 
   const columns = [
+    {
+      key: "select",
+      header: (
+        <button
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            toggleSelectAll();
+          }}
+          className="p-0.5 text-neutral-400 hover:text-brand-600 transition-colors"
+          title={selectedIds.size === filteredUsers.length ? "Tout désélectionner" : "Tout sélectionner"}
+        >
+          {selectedIds.size === 0 ? (
+            <Square className="w-4 h-4" />
+          ) : selectedIds.size === filteredUsers.length ? (
+            <CheckSquare className="w-4 h-4 text-brand-600" />
+          ) : (
+            <MinusSquare className="w-4 h-4 text-brand-600" />
+          )}
+        </button>
+      ),
+      width: "w-10",
+      render: (user: AdminUser) => (
+        <button
+          onClick={(e: React.MouseEvent) => {
+            e.stopPropagation();
+            toggleSelect(user.id);
+          }}
+          className="p-0.5 text-neutral-300 hover:text-brand-600 transition-colors"
+        >
+          {selectedIds.has(user.id) ? (
+            <CheckSquare className="w-4 h-4 text-brand-600" />
+          ) : (
+            <Square className="w-4 h-4" />
+          )}
+        </button>
+      ),
+    },
     {
       key: "id",
       header: "ID",
@@ -968,6 +1180,39 @@ export default function AdminUsersPage() {
             }
           />
 
+          {/* U5: Bulk Action Bar */}
+          {selectedIds.size > 0 && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-5 py-3 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-2xl">
+              <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
+                {selectedIds.size} sélectionné{selectedIds.size > 1 ? "s" : ""}
+              </span>
+              <div className="w-px h-6 bg-neutral-200 dark:bg-neutral-700" />
+              <button
+                onClick={() => handleBulkAction("suspend")}
+                disabled={bulkLoading}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50"
+              >
+                {bulkLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
+                Suspendre
+              </button>
+              <button
+                onClick={() => handleBulkAction("activate")}
+                disabled={bulkLoading}
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors disabled:opacity-50"
+              >
+                {bulkLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                Activer
+              </button>
+              <button
+                onClick={() => setSelectedIds(new Set())}
+                className="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700 transition-colors"
+                title="Annuler la sélection"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
           {/* U1: Server-side Pagination */}
           <Pagination
             page={page}
@@ -997,6 +1242,7 @@ export default function AdminUsersPage() {
       <UserDetailDrawer
         userId={detailUserId}
         onClose={() => setDetailUserId(null)}
+        onUserUpdated={() => fetchUsers()}
       />
     </div>
   );
