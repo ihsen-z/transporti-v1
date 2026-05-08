@@ -21,7 +21,9 @@ import {
   Globe,
   Loader2,
   AlertCircle,
+  Pencil,
 } from "lucide-react";
+import Link from "next/link";
 
 /* -------------------------------------------------------------------------- */
 /*  Settings Page — Real API integration                                       */
@@ -351,12 +353,20 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="flex-1">
-          {/* Profile Tab */}
           {activeTab === "profile" && (
             <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-neutral-900">
-                Informations personnelles
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-neutral-900">
+                  Informations personnelles
+                </h2>
+                <Link
+                  href={`/profile/${user?.id || ""}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Modifier mon profil
+                </Link>
+              </div>
 
               {loading ? (
                 <div className="flex items-center justify-center py-12">
@@ -366,10 +376,10 @@ export default function SettingsPage() {
                   </span>
                 </div>
               ) : (
-                <>
-                  {/* Avatar */}
+                <div className="space-y-4">
+                  {/* Avatar + Name */}
                   <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-2xl overflow-hidden relative">
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden">
                       {avatarPreview ? (
                         <img
                           src={avatarPreview}
@@ -381,196 +391,29 @@ export default function SettingsPage() {
                       )}
                     </div>
                     <div>
-                      <label
-                        htmlFor="avatar-upload"
-                        className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors cursor-pointer"
-                      >
-                        <Camera className="w-4 h-4" />
-                        {avatarPreview
-                          ? "Changer la photo"
-                          : "Ajouter une photo"}
-                      </label>
-                      <input
-                        id="avatar-upload"
-                        type="file"
-                        accept="image/jpeg,image/png,image/webp"
-                        className="hidden"
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          if (!file) return;
-
-                          if (file.size > 2 * 1024 * 1024) {
-                            setSaveStatus("error");
-                            setErrorMessage(
-                              "La photo ne doit pas dépasser 2 Mo.",
-                            );
-                            setTimeout(() => setSaveStatus("idle"), 4000);
-                            return;
-                          }
-
-                          // Show instant preview
-                          if (
-                            avatarPreview &&
-                            avatarPreview.startsWith("blob:")
-                          ) {
-                            URL.revokeObjectURL(avatarPreview);
-                          }
-                          const localPreview = URL.createObjectURL(file);
-                          setAvatarPreview(localPreview);
-
-                          // Upload to backend
-                          try {
-                            setSaving(true);
-                            const formData = new FormData();
-                            formData.append("avatar", file);
-
-                            const token = getAccessToken();
-                            const res = await fetch(
-                              `${config.API_BASE_URL}/api/auth/avatar/`,
-                              {
-                                method: "POST",
-                                headers: {
-                                  Authorization: `Bearer ${token}`,
-                                },
-                                body: formData,
-                              },
-                            );
-
-                            if (res.ok) {
-                              const data = await res.json();
-                              // Replace blob with server URL
-                              URL.revokeObjectURL(localPreview);
-                              setAvatarPreview(data.avatar_url);
-                              setSaveStatus("success");
-                              setTimeout(() => setSaveStatus("idle"), 3000);
-                            } else {
-                              const err = await res.json();
-                              setSaveStatus("error");
-                              setErrorMessage(
-                                err.error || "Erreur lors de l'upload.",
-                              );
-                              setTimeout(() => setSaveStatus("idle"), 4000);
-                            }
-                          } catch {
-                            setSaveStatus("error");
-                            setErrorMessage(
-                              "Erreur réseau. Veuillez réessayer.",
-                            );
-                            setTimeout(() => setSaveStatus("idle"), 4000);
-                          } finally {
-                            setSaving(false);
-                          }
-                        }}
-                      />
-                      <p className="text-xs text-neutral-400 mt-1">
-                        JPG, PNG, WebP. Max 2 Mo.
+                      <p className="text-lg font-semibold text-neutral-900">
+                        {firstName} {lastName}
                       </p>
+                      <p className="text-sm text-neutral-500">{email}</p>
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {/* Info Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-100">
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Prénom
-                      </label>
-                      <input
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Votre prénom"
-                        className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
-                      />
+                      <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Téléphone</p>
+                      <p className="text-sm text-neutral-800">{phone || "Non renseigné"}</p>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Nom
-                      </label>
-                      <input
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Votre nom"
-                        className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
-                      />
+                      <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Gouvernorat</p>
+                      <p className="text-sm text-neutral-800">{governorate || "Non renseigné"}</p>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      <Mail className="w-4 h-4 inline mr-1" /> Email
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      disabled
-                      className="w-full p-3 border border-neutral-200 rounded-xl text-sm bg-neutral-50 text-neutral-500 cursor-not-allowed"
-                    />
-                    <p className="text-xs text-neutral-400 mt-1">
-                      L&apos;email ne peut pas être modifié.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      <Phone className="w-4 h-4 inline mr-1" /> Téléphone
-                    </label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+216 XX XXX XXX"
-                      className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      <MapPin className="w-4 h-4 inline mr-1" /> Gouvernorat
-                    </label>
-                    <select
-                      value={governorate}
-                      onChange={(e) => setGovernorate(e.target.value)}
-                      className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
-                    >
-                      {GOVERNORATES.map((g) => (
-                        <option key={g} value={g}>
-                          {g}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Save status messages */}
-                  {saveStatus === "success" && (
-                    <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                      Profil mis à jour avec succès !
-                    </div>
-                  )}
-                  {saveStatus === "error" && (
-                    <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      {errorMessage}
-                    </div>
-                  )}
-
-                  <button
-                    onClick={handleSaveProfile}
-                    disabled={saving || !firstName.trim() || !lastName.trim()}
-                    className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {saving ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : saveStatus === "success" ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      <Save className="w-5 h-5" />
-                    )}
-                    {saving
-                      ? "Sauvegarde..."
-                      : saveStatus === "success"
-                        ? "Sauvegardé !"
-                        : "Sauvegarder"}
-                  </button>
-                </>
+                  <p className="text-xs text-neutral-400 mt-4">
+                    Pour modifier vos informations, cliquez sur &quot;Modifier mon profil&quot; ci-dessus.
+                  </p>
+                </div>
               )}
             </div>
           )}

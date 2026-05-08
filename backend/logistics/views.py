@@ -15,7 +15,7 @@ from .serializers import (
     TransportJobUpdateSerializer, TransporterProfileSerializer,
     TransporterMissionSerializer, ReturnTripCreateSerializer,
     TransporterProfileEditSerializer,
-    ClientProfileSerializer
+    ClientProfileSerializer, ClientProfileUpdateSerializer
 )
 from users.permissions import RequireRole, RequireVerification
 
@@ -657,15 +657,30 @@ class TransporterProfileView(generics.RetrieveAPIView):
     """
     GET /api/transporter/profile/{user_id}/
     Public profile for transporters.
+    Masks email/phone for non-owners (SEC-T2).
+    Optimized with annotated query (PERF-T1).
     """
     permission_classes = [IsAuthenticated]
     serializer_class = TransporterProfileSerializer
-    lookup_field = 'user_id' # Looking up via User ID, not TrustProfile ID directly
-    
-    def get_object(self):
+
+    def get(self, request, user_id):
         from trust.models import TrustProfile
-        user_id = self.kwargs['user_id']
-        return get_object_or_404(TrustProfile, user_id=user_id)
+        from django.db.models import Avg, Count
+        # Single annotated query — replaces 4+ individual queries (PERF-T1)
+        trust_profile = TrustProfile.objects.select_related(
+            'user', 'user__profile'
+        ).annotate(
+            _avg_rating=Avg('user__received_reviews__rating'),
+            _review_count=Count('user__received_reviews', distinct=True),
+        ).filter(user_id=user_id).first()
+        if not trust_profile:
+            return Response({'error': 'Profil introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        is_owner = request.user.id == trust_profile.user_id
+        serializer = TransporterProfileSerializer(
+            trust_profile,
+            context={'request': request, 'is_owner': is_owner}
+        )
+        return Response(serializer.data)
 
 
 class TransporterProfileEditView(APIView):
@@ -684,7 +699,10 @@ class TransporterProfileEditView(APIView):
             )
         from trust.models import TrustProfile
         trust_profile = get_object_or_404(TrustProfile, user=request.user)
-        serializer = TransporterProfileSerializer(trust_profile, context={'request': request})
+        serializer = TransporterProfileSerializer(
+            trust_profile,
+            context={'request': request, 'is_owner': True}
+        )
         return Response(serializer.data)
 
     def patch(self, request):
@@ -701,18 +719,8 @@ class TransporterProfileEditView(APIView):
         data = serializer.validated_data
         user = request.user
 
-        # Validate email uniqueness if changed
-        if 'email' in data and data['email'] != user.email:
-            from django.contrib.auth import get_user_model
-            User = get_user_model()
-            if User.objects.filter(email=data['email']).exclude(id=user.id).exists():
-                return Response(
-                    {'email': ['Cet email est déjà utilisé par un autre compte.']},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-        # Update User fields
-        user_fields = ['first_name', 'last_name', 'phone', 'email']
+        # Update User fields (email excluded — SEC-T1)
+        user_fields = ['first_name', 'last_name', 'phone']
         user_changed = False
         for field in user_fields:
             if field in data:
@@ -733,7 +741,10 @@ class TransporterProfileEditView(APIView):
         # Return updated profile
         return Response({
             'message': 'Profil mis à jour avec succès.',
-            'profile': TransporterProfileSerializer(trust_profile, context={'request': request}).data
+            'profile': TransporterProfileSerializer(
+                trust_profile,
+                context={'request': request, 'is_owner': True}
+            ).data
         })
 
 
@@ -801,14 +812,30 @@ class ClientProfileView(generics.RetrieveAPIView):
     """
     GET /api/client/profile/{user_id}/
     Public client profile (read-only).
+    Masks email/phone for non-owners.
     """
     permission_classes = [IsAuthenticated]
 
     def get(self, request, user_id):
         from django.contrib.auth import get_user_model
+        from django.db.models import Count, Q, Avg
         User = get_user_model()
-        user_obj = get_object_or_404(User, id=user_id, role='CLIENT')
-        serializer = ClientProfileSerializer(user_obj, context={'request': request})
+        # Single annotated query — replaces 6 individual queries (BL3)
+        user_obj = User.objects.filter(id=user_id, role='CLIENT').select_related('profile').annotate(
+            _total_jobs_posted=Count('jobs', distinct=True),
+            _completed_jobs=Count('jobs', filter=Q(jobs__status='COMPLETED'), distinct=True),
+            _active_jobs=Count('jobs', filter=Q(jobs__status__in=['PUBLISHED', 'MATCHED', 'IN_PROGRESS']), distinct=True),
+            _total_offers_received=Count('jobs__offers', distinct=True),
+            _avg_rating=Avg('received_reviews__rating'),
+            _review_count=Count('received_reviews', distinct=True),
+        ).first()
+        if not user_obj:
+            return Response({'error': 'Profil introuvable.'}, status=status.HTTP_404_NOT_FOUND)
+        is_owner = request.user.id == user_obj.id
+        serializer = ClientProfileSerializer(
+            user_obj,
+            context={'request': request, 'is_owner': is_owner}
+        )
         return Response(serializer.data)
 
 
@@ -817,6 +844,7 @@ class ClientProfileEditView(APIView):
     GET  /api/client/profile/me/  — Returns own client profile data.
     PATCH /api/client/profile/me/ — Updates own client profile.
     Only accessible to authenticated clients.
+    Email is NOT editable here — requires a separate verified flow.
     """
     permission_classes = [IsAuthenticated]
 
@@ -826,7 +854,10 @@ class ClientProfileEditView(APIView):
                 {'error': 'Réservé aux clients.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        serializer = ClientProfileSerializer(request.user, context={'request': request})
+        serializer = ClientProfileSerializer(
+            request.user,
+            context={'request': request, 'is_owner': True}
+        )
         return Response(serializer.data)
 
     def patch(self, request):
@@ -835,15 +866,23 @@ class ClientProfileEditView(APIView):
                 {'error': 'Réservé aux clients.'},
                 status=status.HTTP_403_FORBIDDEN
             )
-        user = request.user
-        data = request.data
 
-        # Update User fields
-        user_fields = ['first_name', 'last_name', 'phone', 'email']
+        # Validate input with dedicated serializer (BL1/SEC3)
+        update_serializer = ClientProfileUpdateSerializer(data=request.data)
+        if not update_serializer.is_valid():
+            return Response(
+                {'errors': update_serializer.errors},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        validated = update_serializer.validated_data
+        user = request.user
+
+        # Update User fields (email excluded — SEC1/BL2)
+        user_fields = ['first_name', 'last_name', 'phone']
         user_changed = False
         for field in user_fields:
-            if field in data:
-                setattr(user, field, data[field])
+            if field in validated:
+                setattr(user, field, validated[field])
                 user_changed = True
         if user_changed:
             user.save()
@@ -856,12 +895,34 @@ class ClientProfileEditView(APIView):
             from users.models import Profile
             profile = Profile.objects.create(user=user)
         for field in profile_fields:
-            if field in data:
-                setattr(profile, field, data[field])
+            if field in validated:
+                setattr(profile, field, validated[field])
         profile.save()
 
         # Return updated profile
         return Response({
             'message': 'Profil mis à jour avec succès.',
-            'profile': ClientProfileSerializer(user, context={'request': request}).data
+            'profile': ClientProfileSerializer(
+                user,
+                context={'request': request, 'is_owner': True}
+            ).data
         })
+
+
+class UserRoleView(APIView):
+    """
+    GET /api/user/{user_id}/role/
+    Lightweight endpoint to determine user role for profile routing (P3).
+    Avoids double API calls (transporter 404 → client fallback).
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, user_id):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        user_obj = get_object_or_404(User, id=user_id)
+        return Response({
+            'id': user_obj.id,
+            'role': user_obj.role,
+        })
+

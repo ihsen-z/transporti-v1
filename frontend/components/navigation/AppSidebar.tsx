@@ -14,6 +14,7 @@ import {
   HelpCircle,
   RotateCcw,
   AlertTriangle,
+  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import NavItem from "./NavItem";
@@ -30,6 +31,11 @@ export default function AppSidebar() {
 
   const commonItems: NavItemDef[] = [
     { href: "/dashboard", icon: LayoutDashboard, label: t.nav.dashboard },
+    {
+      href: `/profile/${user?.id || ""}`,
+      icon: UserCircle,
+      label: t.nav.myProfile || "Mon Profil",
+    },
     {
       href: "/jobs",
       icon: Truck,

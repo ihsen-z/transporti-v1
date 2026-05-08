@@ -332,8 +332,8 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     """
     first_name = serializers.CharField(source='user.first_name')
     last_name = serializers.CharField(source='user.last_name')
-    email = serializers.EmailField(source='user.email', read_only=True)
-    phone = serializers.CharField(source='user.phone', read_only=True)
+    email = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
     avatar_url = serializers.SerializerMethodField()
     joined_at = serializers.DateTimeField(source='user.date_joined', read_only=True)
     
@@ -347,8 +347,10 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     specializations = serializers.JSONField(read_only=True)
     completion_rate = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
     total_jobs_completed = serializers.IntegerField(read_only=True)
+    avg_response_time_min = serializers.IntegerField(source='response_time_avg_minutes', read_only=True)
+    insurance_valid_until = serializers.DateField(read_only=True)
     
-    # Reviews (Summary)
+    # Reviews (Summary) — annotation-aware (PERF-T1)
     rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
 
@@ -362,20 +364,43 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
             'vehicle_type', 'vehicle_capacity_kg', 'vehicle_photos',
             'service_areas', 'specializations',
             'completion_rate', 'total_jobs_completed',
+            'avg_response_time_min', 'insurance_valid_until',
             'rating', 'review_count'
         ]
+
+    def _is_owner(self) -> bool:
+        """Check if the requesting user is the profile owner."""
+        return self.context.get('is_owner', False)
+
+    def get_email(self, obj) -> str:
+        """Full email for owner, masked for others (SEC-T2)."""
+        if self._is_owner():
+            return obj.user.email
+        email = obj.user.email or ''
+        if '@' in email:
+            local, domain = email.split('@', 1)
+            masked_local = local[0] + '***' if local else '***'
+            return f"{masked_local}@{domain}"
+        return '***'
+
+    def get_phone(self, obj) -> str:
+        """Full phone for owner, masked for others (SEC-T2)."""
+        if self._is_owner():
+            return obj.user.phone or ''
+        phone = obj.user.phone or ''
+        if len(phone) >= 4:
+            return phone[:4] + ' XX XXX ' + phone[-2:]
+        return '***' if phone else ''
 
     def get_avatar_url(self, obj) -> str:
         """Return avatar URL from ImageField or legacy URLField."""
         try:
             profile = obj.user.profile
-            # Prefer the ImageField (actual uploaded file)
             if profile.avatar and hasattr(profile.avatar, 'url'):
                 request = self.context.get('request')
                 if request:
                     return request.build_absolute_uri(profile.avatar.url)
                 return profile.avatar.url
-            # Fallback to legacy URLField
             if profile.avatar_url:
                 return profile.avatar_url
         except Exception:
@@ -383,6 +408,9 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
         return ''
 
     def get_rating(self, obj) -> float:
+        """Annotation-aware rating (PERF-T1)."""
+        if hasattr(obj, '_avg_rating'):
+            return round(float(obj._avg_rating), 1) if obj._avg_rating else 0.0
         from reviews.models import Review
         from django.db.models import Avg
         avg = Review.objects.filter(
@@ -391,6 +419,9 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
         return round(float(avg), 1) if avg else 0.0
 
     def get_review_count(self, obj) -> int:
+        """Annotation-aware review count (PERF-T1)."""
+        if hasattr(obj, '_review_count'):
+            return obj._review_count
         from reviews.models import Review
         return Review.objects.filter(target=obj.user).count()
 
@@ -399,12 +430,18 @@ class TransporterProfileEditSerializer(serializers.Serializer):
     """
     Serializer for transporters editing their own profile.
     Handles both User fields and TrustProfile fields.
+    Email is NOT included — email changes require a separate verified flow (SEC-T1).
     """
-    # User fields
-    first_name = serializers.CharField(max_length=150, required=False)
-    last_name = serializers.CharField(max_length=150, required=False)
-    email = serializers.EmailField(max_length=254, required=False)
-    phone = serializers.CharField(max_length=20, required=False, allow_blank=True)
+    # User fields (email excluded — SEC-T1)
+    first_name = serializers.CharField(min_length=2, max_length=150, required=False)
+    last_name = serializers.CharField(min_length=2, max_length=150, required=False)
+    phone = serializers.RegexField(
+        regex=r'^\+?216?\d{8}$',
+        max_length=20,
+        required=False,
+        allow_blank=True,
+        error_messages={'invalid': 'Format téléphone invalide. Exemple: +21612345678'}
+    )
 
     # TrustProfile fields
     vehicle_type = serializers.CharField(max_length=50, required=False, allow_blank=True)
@@ -531,15 +568,34 @@ class ReturnTripCreateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
+class ClientProfileUpdateSerializer(serializers.Serializer):
+    """
+    Validation serializer for PATCH /api/client/profile/me/.
+    Email is NOT included — email changes require a separate verified flow.
+    """
+    first_name = serializers.CharField(min_length=2, max_length=50, required=False)
+    last_name = serializers.CharField(min_length=2, max_length=50, required=False)
+    phone = serializers.RegexField(
+        regex=r'^\+?216?\d{8}$',
+        max_length=20,
+        required=False,
+        allow_blank=True,
+        error_messages={'invalid': 'Format téléphone invalide. Exemple: +21612345678'}
+    )
+    bio = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    address_summary = serializers.CharField(max_length=255, required=False, allow_blank=True)
+
+
 class ClientProfileSerializer(serializers.Serializer):
     """
     Public profile for clients.
     Returns user info + activity stats.
+    Masks email/phone for non-owners (privacy protection).
     """
     first_name = serializers.CharField()
     last_name = serializers.CharField()
-    email = serializers.EmailField()
-    phone = serializers.CharField(allow_blank=True, allow_null=True)
+    email = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
     avatar_url = serializers.SerializerMethodField()
     joined_at = serializers.DateTimeField(source='date_joined')
     role = serializers.CharField()
@@ -555,6 +611,33 @@ class ClientProfileSerializer(serializers.Serializer):
     # Reviews
     rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
+
+    # Trust Score (visible by both client and transporters — BL5)
+    client_trust_score = serializers.SerializerMethodField()
+
+    def _is_owner(self) -> bool:
+        """Check if the requesting user is the profile owner."""
+        return self.context.get('is_owner', False)
+
+    def get_email(self, obj) -> str:
+        """Full email for owner, masked for others."""
+        if self._is_owner():
+            return obj.email
+        email = obj.email or ''
+        if '@' in email:
+            local, domain = email.split('@', 1)
+            masked_local = local[0] + '***' if local else '***'
+            return f"{masked_local}@{domain}"
+        return '***'
+
+    def get_phone(self, obj) -> str:
+        """Full phone for owner, masked for others."""
+        if self._is_owner():
+            return obj.phone or ''
+        phone = obj.phone or ''
+        if len(phone) >= 4:
+            return phone[:4] + ' XX XXX ' + phone[-2:]
+        return '***' if phone else ''
 
     def get_avatar_url(self, obj) -> str:
         try:
@@ -583,23 +666,34 @@ class ClientProfileSerializer(serializers.Serializer):
             return ''
 
     def get_total_jobs_posted(self, obj) -> int:
+        # Use pre-computed annotation if available (from view queryset)
+        if hasattr(obj, '_total_jobs_posted'):
+            return obj._total_jobs_posted
         return TransportJob.objects.filter(owner=obj).count()
 
     def get_completed_jobs(self, obj) -> int:
+        if hasattr(obj, '_completed_jobs'):
+            return obj._completed_jobs
         return TransportJob.objects.filter(
             owner=obj, status='COMPLETED'
         ).count()
 
     def get_active_jobs(self, obj) -> int:
+        if hasattr(obj, '_active_jobs'):
+            return obj._active_jobs
         return TransportJob.objects.filter(
             owner=obj, status__in=['PUBLISHED', 'MATCHED', 'IN_PROGRESS']
         ).count()
 
     def get_total_offers_received(self, obj) -> int:
+        if hasattr(obj, '_total_offers_received'):
+            return obj._total_offers_received
         from logistics.models import Offer
         return Offer.objects.filter(job__owner=obj).count()
 
     def get_rating(self, obj) -> float:
+        if hasattr(obj, '_avg_rating'):
+            return round(float(obj._avg_rating), 1) if obj._avg_rating else 0.0
         from reviews.models import Review
         from django.db.models import Avg
         avg = Review.objects.filter(
@@ -608,5 +702,12 @@ class ClientProfileSerializer(serializers.Serializer):
         return round(float(avg), 1) if avg else 0.0
 
     def get_review_count(self, obj) -> int:
+        if hasattr(obj, '_review_count'):
+            return obj._review_count
         from reviews.models import Review
         return Review.objects.filter(target=obj).count()
+
+    def get_client_trust_score(self, obj) -> dict:
+        """Compute client trust score (visible by both owner and visitors)."""
+        from trust.client_trust import compute_client_trust_score
+        return compute_client_trust_score(obj)

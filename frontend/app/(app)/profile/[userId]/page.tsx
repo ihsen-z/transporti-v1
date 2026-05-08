@@ -271,16 +271,56 @@ export default function ProfilePage() {
   const { user } = useAuth();
   const userId = params?.userId ? String(params.userId) : null;
 
-  // Determine profile type
+  // Determine profile type via role check
   const isOwner = user?.id !== undefined && userId === String(user.id);
   const userRole = user?.role?.toUpperCase();
 
-  // If the current user is a CLIENT viewing their own profile, show client profile
-  if (isOwner && userRole === "CLIENT" && userId) {
+  const [targetRole, setTargetRole] = useState<string | null>(null);
+  const [roleLoading, setRoleLoading] = useState(true);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    // If viewing own profile, we already know the role
+    if (isOwner && userRole) {
+      setTargetRole(userRole);
+      setRoleLoading(false);
+      return;
+    }
+
+    // For other users, call the lightweight role endpoint
+    const fetchRole = async () => {
+      try {
+        const data = await apiClient.get<{ id: number; role: string }>(
+          `/api/user/${userId}/role/`,
+        );
+        setTargetRole(data.role?.toUpperCase() || "CLIENT");
+      } catch {
+        // Fallback: default to CLIENT if role endpoint fails
+        setTargetRole("CLIENT");
+      } finally {
+        setRoleLoading(false);
+      }
+    };
+    fetchRole();
+  }, [userId, isOwner, userRole]);
+
+  if (roleLoading || !userId) {
+    return (
+      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-3" />
+          <p className="text-neutral-500">Chargement du profil...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (targetRole === "CLIENT") {
     return <ClientProfilePage userId={userId} />;
   }
 
-  // For non-owner views or transporter profiles, render the transporter profile page
+  // For TRANSPORTER or any other role
   return <TransporterProfileContent userId={userId} />;
 }
 
@@ -293,7 +333,6 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
   const { user } = useAuth();
 
   const [transporter, setTransporter] = useState<TransporterData | null>(null);
-  const [isClientProfile, setIsClientProfile] = useState(false);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -310,13 +349,13 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
   // Edit form state
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editVehicleType, setEditVehicleType] = useState("");
   const [editCapacity, setEditCapacity] = useState("");
   const [editAreas, setEditAreas] = useState<string[]>([]);
   const [editSpecs, setEditSpecs] = useState<string[]>([]);
   const [newSpec, setNewSpec] = useState("");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Avatar upload
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -333,7 +372,6 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
     if (!transporter) return;
     setEditFirstName(transporter.first_name);
     setEditLastName(transporter.last_name);
-    setEditEmail(transporter.email || "");
     setEditPhone(transporter.phone || "");
     setEditVehicleType(transporter.vehicle_type || "");
     setEditCapacity(
@@ -348,14 +386,27 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
     setNewSpec("");
     setEditing(true);
     setSaveMsg(null);
+    setFormErrors({});
   }, [transporter]);
 
   const cancelEditing = () => {
+    if (editFirstName !== transporter?.first_name || editLastName !== transporter?.last_name || editPhone !== (transporter?.phone || '')) {
+      if (!window.confirm('Vous avez des modifications non sauvegardées. Quitter sans enregistrer ?')) return;
+    }
     setEditing(false);
     setAvatarCropSrc(null);
     setVehicleCropSrc(null);
     setSaveMsg(null);
+    setFormErrors({});
   };
+
+  // Warn on page leave with unsaved changes (UX-T3)
+  useEffect(() => {
+    if (!editing) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [editing]);
 
   /* --- Avatar upload flow --- */
   const handleAvatarFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -421,14 +472,30 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
     }
   };
 
+  /* --- Form validation (UX-T1) --- */
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (editFirstName.trim().length < 2) errors.first_name = "Minimum 2 caractères.";
+    if (editLastName.trim().length < 2) errors.last_name = "Minimum 2 caractères.";
+    if (editPhone.trim() && !/^\+?216?\d{8}$/.test(editPhone.trim())) {
+      errors.phone = "Format invalide. Ex: +21612345678";
+    }
+    if (editCapacity.trim()) {
+      const cap = parseFloat(editCapacity);
+      if (isNaN(cap) || cap <= 0) errors.capacity = "La capacité doit être positive.";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSave = async () => {
+    if (!validateForm()) return;
     setSaving(true);
     setSaveMsg(null);
     try {
       const payload: Record<string, unknown> = {
         first_name: editFirstName.trim(),
         last_name: editLastName.trim(),
-        email: editEmail.trim(),
         phone: editPhone.trim(),
         vehicle_type: editVehicleType,
         service_areas: editAreas,
@@ -449,8 +516,9 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
     } catch (e: any) {
       const errBody = e?.body;
       const msg =
-        errBody?.email?.[0] ||
         errBody?.phone?.[0] ||
+        errBody?.first_name?.[0] ||
+        errBody?.last_name?.[0] ||
         e?.message ||
         "Erreur de sauvegarde.";
       setSaveMsg({ type: "err", text: msg });
@@ -476,22 +544,12 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
         reviewsData.results ?? (Array.isArray(reviewsData) ? reviewsData : []);
       setReviews(reviewsList);
     } catch (e: any) {
-      // If 404 on transporter profile, this may be a client — switch to client view
-      if (e?.message?.includes("404")) {
-        setIsClientProfile(true);
-        return;
-      }
       console.error("Error fetching profile:", e);
       setError(e?.message || "Profil introuvable.");
     } finally {
       setLoading(false);
     }
   };
-
-  // Fallback to client profile if transporter profile returned 404
-  if (isClientProfile && userId) {
-    return <ClientProfilePage userId={userId} />;
-  }
 
   if (loading) {
     return (
@@ -590,7 +648,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
       {/* Back + Edit buttons */}
       <div className="flex items-center justify-between mb-6">
         <button
-          onClick={() => router.back()}
+          onClick={() => window.history.length > 1 ? router.back() : router.push('/dashboard')}
           className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
@@ -652,11 +710,11 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                 </div>
               )}
 
-              <div className="relative z-10 flex items-center gap-5">
+              <div className="relative z-10 flex flex-col items-center sm:flex-row sm:items-center gap-5">
                 {/* Avatar — clickable in edit mode */}
                 <div className="relative flex-shrink-0">
                   <div
-                    className={`w-20 h-20 rounded-2xl bg-white/10 border-2 border-white/20 flex items-center justify-center overflow-hidden shadow-xl ${editing ? "cursor-pointer group" : ""}`}
+                    className={`w-20 h-20 rounded-full bg-white/10 border-4 border-white/30 flex items-center justify-center overflow-hidden shadow-xl ${editing ? "cursor-pointer group" : ""}`}
                     onClick={() => editing && avatarInputRef.current?.click()}
                   >
                     {(editing ? editAvatarUrl : t.avatar_url) ? (
@@ -671,7 +729,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                       </span>
                     )}
                     {editing && (
-                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-2xl">
+                      <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                         {avatarUploading ? (
                           <Loader2 className="w-6 h-6 text-white animate-spin" />
                         ) : (
@@ -717,23 +775,23 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                     <div className="flex flex-wrap gap-2 mt-2">
                       <div className="flex items-center gap-1.5">
                         <Mail className="w-3.5 h-3.5 text-white/50" />
-                        <input
-                          value={editEmail}
-                          onChange={(e) => setEditEmail(e.target.value)}
-                          type="email"
-                          className="px-2 py-1 rounded-lg bg-white/15 border border-white/20 text-white text-xs w-44 placeholder:text-white/30"
-                          placeholder="email@exemple.com"
-                        />
+                        <span className="px-2 py-1 rounded-lg bg-white/10 text-white/60 text-xs italic">
+                          {t.email || "—"}
+                        </span>
+                        <span className="text-[9px] text-white/30 font-medium">Non modifiable</span>
                       </div>
-                      <div className="flex items-center gap-1.5">
-                        <Phone className="w-3.5 h-3.5 text-white/50" />
-                        <input
-                          value={editPhone}
-                          onChange={(e) => setEditPhone(e.target.value)}
-                          type="tel"
-                          className="px-2 py-1 rounded-lg bg-white/15 border border-white/20 text-white text-xs w-36 placeholder:text-white/30"
-                          placeholder="+216 XX XXX XXX"
-                        />
+                      <div className="flex flex-col">
+                        <div className="flex items-center gap-1.5">
+                          <Phone className="w-3.5 h-3.5 text-white/50" />
+                          <input
+                            value={editPhone}
+                            onChange={(e) => { setEditPhone(e.target.value); setFormErrors((p) => ({...p, phone: ''})); }}
+                            type="tel"
+                            className={`px-2 py-1 rounded-lg bg-white/15 border text-white text-xs w-36 placeholder:text-white/30 ${formErrors.phone ? 'border-red-400' : 'border-white/20'}`}
+                            placeholder="+216 XX XXX XXX"
+                          />
+                        </div>
+                        {formErrors.phone && <span className="text-red-300 text-[10px] mt-0.5 ml-5">{formErrors.phone}</span>}
                       </div>
                     </div>
                   )}
@@ -845,7 +903,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                                     )
                                   : setEditAreas([...editAreas, gov])
                               }
-                              className={`text-[10px] px-2 py-1 rounded-full border transition-all ${
+                              className={`text-xs px-2.5 py-1.5 rounded-full border transition-all ${
                                 selected
                                   ? "bg-accent-500/80 border-accent-400 text-white font-semibold"
                                   : "bg-white/5 border-white/15 text-white/50 hover:bg-white/10"

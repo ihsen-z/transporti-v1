@@ -11,6 +11,7 @@ import {
   Search,
   FileText,
   PlusCircle,
+  UserCircle,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useNotifications } from "@/contexts/NotificationContext";
@@ -45,6 +46,7 @@ export default function BottomNav() {
             label: "Messages",
             badge: 0,
           },
+          { href: `/profile/${user?.id || ""}`, icon: UserCircle, label: "Profil", badge: 0 },
         ]
       : [
           {
@@ -66,7 +68,7 @@ export default function BottomNav() {
             label: "Notifs",
             badge: unreadCount,
           },
-          { href: "/settings", icon: Settings, label: "Profil", badge: 0 },
+          { href: `/profile/${user?.id || ""}`, icon: UserCircle, label: "Profil", badge: 0 },
         ];
 
   return (

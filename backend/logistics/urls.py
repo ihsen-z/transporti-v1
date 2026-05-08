@@ -6,7 +6,8 @@ from .views import (
     OfferWithdrawView, TransporterProfileView, TransporterProfileEditView,
     TransporterJobListView, ReturnTripCreateView, PriceEstimateView,
     BookReturnTripView,
-    ClientProfileView, ClientProfileEditView
+    ClientProfileView, ClientProfileEditView,
+    UserRoleView
 )
 from .upload_views import PhotoUploadView
 from payments.views import JobBookingDetailView, JobEscrowDetailView
@@ -45,4 +46,7 @@ urlpatterns = [
     # Client Profiles
     path('client/profile/me/', ClientProfileEditView.as_view(), name='client_profile_edit'),
     path('client/profile/<int:user_id>/', ClientProfileView.as_view(), name='client_profile'),
+
+    # User Role (lightweight — for profile routing)
+    path('user/<int:user_id>/role/', UserRoleView.as_view(), name='user_role'),
 ]

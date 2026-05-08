@@ -22,6 +22,7 @@ import {
   Star,
   FileText,
   Upload,
+  MessageCircle,
   User as UserIcon,
 } from "lucide-react";
 import Link from "next/link";
@@ -46,6 +47,20 @@ interface ClientData {
   total_offers_received: number;
   rating: number;
   review_count: number;
+  client_trust_score?: {
+    score: number;
+    label: string;
+    breakdown: Record<string, number>;
+  };
+}
+
+interface ReviewData {
+  id: number;
+  rating: number | null;
+  comment: string;
+  reviewer_name: string;
+  reviewer_avatar: string | null;
+  created_at: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -85,6 +100,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
   const { user } = useAuth();
 
   const [client, setClient] = useState<ClientData | null>(null);
+  const [reviews, setReviews] = useState<ReviewData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -100,10 +116,10 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
   // Edit form state
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
-  const [editEmail, setEditEmail] = useState("");
   const [editPhone, setEditPhone] = useState("");
   const [editBio, setEditBio] = useState("");
   const [editAddress, setEditAddress] = useState("");
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
 
   // Avatar upload
   const avatarInputRef = useRef<HTMLInputElement>(null);
@@ -116,10 +132,15 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
     setLoading(true);
     setError(null);
     try {
-      const data = await apiClient.get<ClientData>(
-        `/api/client/profile/${userId}/`,
-      );
+      const [data, reviewsData] = await Promise.all([
+        apiClient.get<ClientData>(
+          `/api/client/profile/${userId}/`,
+        ),
+        apiClient.get<any>(`/api/reviews/user/${userId}/`).catch(() => []),
+      ]);
       setClient(data);
+      const reviewsList = reviewsData?.results ?? (Array.isArray(reviewsData) ? reviewsData : []);
+      setReviews(reviewsList);
     } catch (e: any) {
       console.error("Error fetching client profile:", e);
       setError(e?.message || "Profil introuvable.");
@@ -137,11 +158,11 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
     if (!client) return;
     setEditFirstName(client.first_name);
     setEditLastName(client.last_name);
-    setEditEmail(client.email || "");
     setEditPhone(client.phone || "");
     setEditBio(client.bio || "");
     setEditAddress(client.address_summary || "");
     setEditAvatarUrl(client.avatar_url || null);
+    setFormErrors({});
     setEditing(true);
     setSaveMsg(null);
   }, [client]);
@@ -184,15 +205,28 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
     }
   };
 
+  /* --- Validation --- */
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+    if (editFirstName.trim().length < 2) errors.first_name = "Le prénom doit contenir au moins 2 caractères.";
+    if (editLastName.trim().length < 2) errors.last_name = "Le nom doit contenir au moins 2 caractères.";
+    if (editPhone.trim() && !/^\+?216?\d{8}$/.test(editPhone.trim())) {
+      errors.phone = "Format invalide. Exemple: +21612345678";
+    }
+    if (editBio.trim().length > 500) errors.bio = "La bio ne doit pas dépasser 500 caractères.";
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   /* --- Save --- */
   const handleSave = async () => {
+    if (!validateForm()) return;
     setSaving(true);
     setSaveMsg(null);
     try {
       const payload: Record<string, unknown> = {
         first_name: editFirstName.trim(),
         last_name: editLastName.trim(),
-        email: editEmail.trim(),
         phone: editPhone.trim(),
         bio: editBio.trim(),
         address_summary: editAddress.trim(),
@@ -206,11 +240,14 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
       setSaveMsg({ type: "ok", text: "Profil enregistré avec succès !" });
       setTimeout(() => setSaveMsg(null), 3000);
     } catch (err: any) {
-      const msg =
-        typeof err?.message === "string"
-          ? err.message
-          : "Erreur lors de la sauvegarde.";
-      setSaveMsg({ type: "err", text: msg });
+      const errBody = err?.body;
+      if (errBody?.errors) {
+        const msgs = Object.values(errBody.errors).flat();
+        setSaveMsg({ type: "err", text: String(msgs[0] || "Erreur de validation.") });
+      } else {
+        const msg = typeof err?.message === "string" ? err.message : "Erreur lors de la sauvegarde.";
+        setSaveMsg({ type: "err", text: msg });
+      }
     } finally {
       setSaving(false);
     }
@@ -360,17 +397,17 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                     <img
                       src={avatarSrc}
                       alt={fullName}
-                      className="w-24 h-24 rounded-2xl object-cover border-4 border-white/30 shadow-lg"
+                      className="w-24 h-24 rounded-full object-cover border-4 border-white/30 shadow-lg"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl font-bold border-4 border-white/30 shadow-lg">
+                    <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl font-bold border-4 border-white/30 shadow-lg">
                       {initials}
                     </div>
                   )}
                   {editing && (
                     <button
                       onClick={() => avatarInputRef.current?.click()}
-                      className="absolute inset-0 rounded-2xl bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
+                      className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center"
                     >
                       {avatarUploading ? (
                         <Loader2 className="w-6 h-6 text-white animate-spin" />
@@ -417,12 +454,8 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                       <>
                         <div className="flex items-center gap-1.5">
                           <Mail className="w-4 h-4 flex-shrink-0" />
-                          <input
-                            type="email"
-                            value={editEmail}
-                            onChange={(e) => setEditEmail(e.target.value)}
-                            className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded border border-white/30 text-white placeholder-white/60 text-sm focus:outline-none focus:ring-1 focus:ring-white/50"
-                          />
+                          <span className="text-sm text-white/70">{c.email}</span>
+                          <span className="text-[10px] bg-white/15 px-1.5 py-0.5 rounded text-white/50">Non modifiable</span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Phone className="w-4 h-4 flex-shrink-0" />
@@ -430,9 +463,11 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                             type="tel"
                             value={editPhone}
                             onChange={(e) => setEditPhone(e.target.value)}
-                            className="bg-white/20 backdrop-blur-sm px-2 py-1 rounded border border-white/30 text-white placeholder-white/60 text-sm focus:outline-none focus:ring-1 focus:ring-white/50"
+                            placeholder="+21612345678"
+                            className={`bg-white/20 backdrop-blur-sm px-2 py-1 rounded border text-white placeholder-white/60 text-sm focus:outline-none focus:ring-1 focus:ring-white/50 ${formErrors.phone ? 'border-red-300' : 'border-white/30'}`}
                           />
                         </div>
+                        {formErrors.phone && <p className="text-xs text-red-200 mt-1">{formErrors.phone}</p>}
                       </>
                     ) : (
                       <>
@@ -562,6 +597,80 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
               </div>
             </div>
           </div>
+
+          {/* Reviews Section */}
+          <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
+            <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-amber-500" />
+              Avis reçus
+              {c.review_count > 0 && (
+                <span className="ml-auto text-sm font-medium text-neutral-400">
+                  {c.review_count} avis
+                </span>
+              )}
+            </h3>
+            {reviews.length > 0 ? (
+              <div className="space-y-4">
+                {reviews.slice(0, 5).map((r) => {
+                  const initials = r.reviewer_name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2);
+                  const dateLabel = (() => {
+                    try {
+                      return new Date(r.created_at).toLocaleDateString("fr-TN", {
+                        day: "numeric",
+                        month: "short",
+                        year: "numeric",
+                      });
+                    } catch {
+                      return r.created_at;
+                    }
+                  })();
+                  return (
+                    <div key={r.id} className="border border-neutral-100 rounded-xl p-4 hover:shadow-sm transition-shadow">
+                      <div className="flex items-start justify-between mb-2">
+                        <div className="flex items-center gap-3">
+                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                            {initials}
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-neutral-800">{r.reviewer_name}</p>
+                            <div className="flex items-center gap-0.5 mt-0.5">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`w-3 h-3 ${
+                                    star <= (r.rating || 0)
+                                      ? "text-amber-400 fill-amber-400"
+                                      : "text-neutral-200"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <span className="text-xs text-neutral-400">{dateLabel}</span>
+                      </div>
+                      {r.comment && (
+                        <p className="text-sm text-neutral-600 leading-relaxed ml-12">
+                          &ldquo;{r.comment}&rdquo;
+                        </p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <MessageCircle className="w-8 h-8 text-neutral-200 mx-auto mb-2" />
+                <p className="text-sm text-neutral-400">Aucun avis pour le moment.</p>
+              </div>
+            )}
+          </div>
+
         </div>
 
         {/* ===== RIGHT COLUMN — Stats ===== */}
@@ -631,6 +740,94 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
               </div>
             </div>
           </div>
+
+          {/* Trust Score Badge (visible by both owner and visitors) */}
+          {c.client_trust_score && (
+            <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
+              <h3 className="text-base font-semibold text-neutral-900 mb-3 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+                Score de confiance
+              </h3>
+              <div className="flex items-center gap-4">
+                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold border-4 ${
+                  c.client_trust_score.score >= 80 ? 'border-emerald-400 text-emerald-600 bg-emerald-50' :
+                  c.client_trust_score.score >= 60 ? 'border-amber-400 text-amber-600 bg-amber-50' :
+                  c.client_trust_score.score >= 40 ? 'border-orange-400 text-orange-600 bg-orange-50' :
+                  'border-neutral-300 text-neutral-500 bg-neutral-50'
+                }`}>
+                  {c.client_trust_score.score}
+                </div>
+                <div>
+                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
+                    c.client_trust_score.label === 'excellent' ? 'bg-emerald-100 text-emerald-700' :
+                    c.client_trust_score.label === 'good' ? 'bg-amber-100 text-amber-700' :
+                    c.client_trust_score.label === 'average' ? 'bg-orange-100 text-orange-700' :
+                    'bg-neutral-100 text-neutral-600'
+                  }`}>
+                    {c.client_trust_score.label === 'excellent' ? 'Excellent' :
+                     c.client_trust_score.label === 'good' ? 'Bon' :
+                     c.client_trust_score.label === 'average' ? 'Moyen' : 'Nouveau'}
+                  </span>
+                  <p className="text-xs text-neutral-400 mt-1">sur 100 points</p>
+                </div>
+              </div>
+              {/* Mini progress bar */}
+              <div className="mt-3 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    c.client_trust_score.score >= 80 ? 'bg-emerald-500' :
+                    c.client_trust_score.score >= 60 ? 'bg-amber-500' :
+                    c.client_trust_score.score >= 40 ? 'bg-orange-500' :
+                    'bg-neutral-400'
+                  }`}
+                  style={{ width: `${c.client_trust_score.score}%` }}
+                />
+              </div>
+            </div>
+          )}
+
+          {/* Profile Completeness (owner only, hidden at 100%) */}
+          {isOwner && !editing && (() => {
+            const checks = [
+              { label: "Photo de profil", done: !!c.avatar_url, weight: 20 },
+              { label: "Bio renseignée", done: !!(c.bio && c.bio.length > 10), weight: 20 },
+              { label: "Adresse renseignée", done: !!c.address_summary, weight: 15 },
+              { label: "Téléphone renseigné", done: !!c.phone, weight: 15 },
+              { label: "Un transport complété", done: c.completed_jobs > 0, weight: 15 },
+              { label: "Un avis reçu", done: c.review_count > 0, weight: 15 },
+            ];
+            const pct = checks.reduce((sum, ch) => sum + (ch.done ? ch.weight : 0), 0);
+            if (pct >= 100) return null;
+            const missing = checks.filter((ch) => !ch.done);
+            return (
+              <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
+                <h3 className="text-base font-semibold text-neutral-900 mb-3 flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                  Complétude du profil
+                </h3>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex-1 h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  <span className="text-sm font-bold text-amber-600">{pct}%</span>
+                </div>
+                {missing.length > 0 && (
+                  <div className="space-y-1.5">
+                    <p className="text-xs text-neutral-400 mb-1">Suggestions :</p>
+                    {missing.slice(0, 3).map((m) => (
+                      <p key={m.label} className="text-xs text-neutral-600 flex items-center gap-1.5">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                        {m.label}
+                      </p>
+                    ))}
+                  </div>
+                )}
+              </div>
+            );
+          })()}
 
           {/* Quick Actions for Owner */}
           {isOwner && !editing && (

@@ -31,6 +31,7 @@ import {
   UserCheck,
   Package,
   XCircle,
+  ArrowRight,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -311,7 +312,10 @@ export default function JobDetailsPage() {
 
             {/* Client Info Card (for transporters) */}
             {isTransporter && job.owner && (
-              <div className="bg-white rounded-xl shadow-sm p-4 border border-neutral-200">
+              <Link
+                href={`/profile/${job.owner.id}`}
+                className="block bg-white rounded-xl shadow-sm p-4 border border-neutral-200 hover:border-brand-300 hover:shadow-md transition-all group"
+              >
                 <h3 className="text-sm font-semibold text-neutral-700 mb-3">
                   Client
                 </h3>
@@ -319,8 +323,8 @@ export default function JobDetailsPage() {
                   <div className="w-10 h-10 rounded-full bg-brand-600/10 flex items-center justify-center text-brand-600 font-bold text-sm">
                     {(job.owner.first_name || job.owner.name?.[0] || "C")[0]}
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-neutral-900">
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-neutral-900 group-hover:text-brand-600 transition-colors">
                       {job.owner.name ||
                         `${job.owner.first_name || "Client"} ${(job.owner.last_name || "")[0]}.`}
                     </p>
@@ -332,8 +336,9 @@ export default function JobDetailsPage() {
                       </div>
                     )}
                   </div>
+                  <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-brand-500 transition-colors" />
                 </div>
-              </div>
+              </Link>
             )}
 
             {/* Route Estimation */}
