@@ -67,6 +67,9 @@ class TransportJob(models.Model):
     available_capacity = models.CharField(max_length=255, blank=True,
         help_text="Available capacity description for return trips (e.g. '2 tonnes, camion bâché')")
 
+    # Analytics
+    view_count = models.PositiveIntegerField(default=0, help_text="Number of times the job detail page was viewed by non-owners")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -201,3 +204,65 @@ class PricingGrid(models.Model):
 
     def __str__(self):
         return f"Tarif {self.job_type}: {self.base_rate} TND + {self.per_km_rate}/km"
+
+
+class FavoriteTransporter(models.Model):
+    """
+    P2-09: Client can favorite transporters for quick access.
+    Simple junction table — one record per (client, transporter) pair.
+    """
+    client = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='favorite_transporters',
+        limit_choices_to={'role': 'CLIENT'}
+    )
+    transporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='favorited_by',
+        limit_choices_to={'role': 'TRANSPORTER'}
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('client', 'transporter')
+        verbose_name = "Transporteur favori"
+        verbose_name_plural = "Transporteurs favoris"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.client} ♥ {self.transporter}"
+
+
+class CounterOffer(models.Model):
+    """
+    P2-05: Structured counter-offer from client to transporter.
+    Client proposes a new price on a PENDING offer.
+    Transporter can ACCEPT (updates original offer price) or REJECT.
+    """
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'En attente'
+        ACCEPTED = 'ACCEPTED', 'Acceptée'
+        REJECTED = 'REJECTED', 'Refusée'
+        EXPIRED = 'EXPIRED', 'Expirée'
+
+    offer = models.ForeignKey(
+        Offer, on_delete=models.CASCADE, related_name='counter_offers'
+    )
+    proposed_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text="New total price proposed by client"
+    )
+    message = models.TextField(blank=True, help_text="Optional justification from client")
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Contre-offre"
+        verbose_name_plural = "Contre-offres"
+
+    def __str__(self):
+        return f"CounterOffer #{self.id} on Offer #{self.offer_id}: {self.proposed_price} TND ({self.status})"

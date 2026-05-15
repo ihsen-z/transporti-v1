@@ -244,6 +244,7 @@ export default function BookingPage() {
     ? parseFloat(booking.commission_rate) * 100
     : 15;
   const commissionAmount = (price * commissionRate) / 100;
+  const netTransporteur = price - commissionAmount;
   const isDigital = booking?.payment_method === "DIGITAL";
   const isCOD = booking?.payment_method === "COD";
   const needsPayment =
@@ -373,12 +374,20 @@ export default function BookingPage() {
                   Commission plateforme ({commissionRate.toFixed(0)}%)
                 </span>
                 <span className="text-neutral-500">
-                  {commissionAmount.toFixed(2)} TND
+                  - {commissionAmount.toFixed(2)} TND
+                </span>
+              </div>
+              <div className="flex justify-between text-sm">
+                <span className="text-neutral-600 font-medium">
+                  Net transporteur
+                </span>
+                <span className="font-semibold text-brand-600">
+                  {netTransporteur.toFixed(2)} TND
                 </span>
               </div>
               <div className="border-t border-neutral-100 pt-3 flex justify-between">
                 <span className="font-semibold text-neutral-900">
-                  Total à payer
+                  Total à payer (Client)
                 </span>
                 <span className="text-xl font-bold text-brand-600">
                   {price.toFixed(2)} TND
@@ -457,10 +466,46 @@ export default function BookingPage() {
                         escrow.status}
                     </span>
                   </div>
-                  <p className="text-xs text-neutral-500 mt-2">
-                    Montant : {escrow.amount} TND · Créé le{" "}
-                    {formatDate(escrow.created_at)}
+                  <p className="text-xs text-neutral-500 mt-2 mb-4">
+                    Montant : {escrow.amount} TND
                   </p>
+                  
+                  {/* Timeline */}
+                  <div className="space-y-3 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-neutral-200 before:to-transparent">
+                    {/* Booking Created */}
+                    {booking?.created_at && (
+                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                        <div className="flex items-center justify-center w-4 h-4 rounded-full border-2 border-white bg-neutral-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2" />
+                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="font-medium text-xs text-neutral-900">Réservation créée</div>
+                            <time className="text-[10px] font-medium text-neutral-500">{formatDate(booking.created_at)}</time>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {/* Escrow Initiated/Held */}
+                    {escrow?.created_at && (
+                      <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                        <div className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "HELD" || escrow.status === "RELEASED" ? "bg-green-500" : "bg-neutral-300"}`} />
+                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
+                          <div className="flex items-center justify-between mb-1">
+                            <div className="font-medium text-xs text-neutral-900">Fonds sécurisés</div>
+                            <time className="text-[10px] font-medium text-neutral-500">{formatDate(escrow.created_at)}</time>
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                    {/* Escrow Released */}
+                    <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                      <div className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "RELEASED" ? "bg-blue-500" : "bg-neutral-300"}`} />
+                      <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
+                        <div className="flex items-center justify-between mb-1">
+                          <div className="font-medium text-xs text-neutral-900">Fonds libérés</div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ) : (
                 <div className="p-4 rounded-xl border border-amber-200 bg-amber-50">

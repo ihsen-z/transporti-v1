@@ -4,7 +4,7 @@ import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ToastProvider } from "@/components/ui/Toast";
-import { DevNavWrapper } from "@/components/dev/DevNavWrapper";
+
 import { AppI18nProvider } from "@/lib/i18n/useAppI18n";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -51,7 +51,6 @@ export default function RootLayout({
             <NotificationProvider>
               <ToastProvider>
                 {children}
-                <DevNavWrapper />
               </ToastProvider>
             </NotificationProvider>
           </AuthProvider>

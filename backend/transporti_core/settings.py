@@ -22,18 +22,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY SETTINGS
 # =============================================================================
 
-# SECURITY: Load from environment variable, fail if not set in production
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-only-replace-in-production')
-
-# SECURITY: Separate JWT signing key
-JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)
+# SECURITY: Environment detection (must be FIRST for production guards)
+ENV = os.environ.get('ENV', os.environ.get('DJANGO_ENV', 'development')).lower()
+IS_PRODUCTION = ENV in ('production', 'prod', 'live')
 
 # SECURITY: Debug mode - defaults to False for production safety
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-# SECURITY: Environment detection
-ENV = os.environ.get('ENV', os.environ.get('DJANGO_ENV', 'development')).lower()
-IS_PRODUCTION = ENV in ('production', 'prod', 'live')
+# SECURITY: Load from environment variable, fail if not set in production
+_default_key = 'django-insecure-dev-only-replace-in-production'
+SECRET_KEY = os.environ.get('SECRET_KEY', _default_key)
+
+# SECURITY: BLOCK startup if using default key in production
+if IS_PRODUCTION and SECRET_KEY == _default_key:
+    raise RuntimeError(
+        "CRITICAL: SECRET_KEY is using the default insecure value. "
+        "Set a strong SECRET_KEY in your environment variables before deploying."
+    )
+
+# SECURITY: Separate JWT signing key — also crash if default in production
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)
+if IS_PRODUCTION and JWT_SECRET_KEY == _default_key:
+    raise RuntimeError(
+        "CRITICAL: JWT_SECRET_KEY is using the default insecure value. "
+        "Set a strong JWT_SECRET_KEY in your environment variables before deploying."
+    )
 
 # SECURITY: Allowed hosts from environment
 ALLOWED_HOSTS = [
@@ -123,7 +136,7 @@ ROOT_URLCONF = 'transporti_core.urls'
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip() for origin in
-    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173').split(',')
     if origin.strip()
 ]
 
@@ -293,13 +306,42 @@ SPECTACULAR_SETTINGS = {
 
 
 # =============================================================================
-# CORS (Production-safe configuration)
+# CORS — NOTE: Primary CORS config is defined above (L120-134)
+# Duplicate block removed during Go-Live Phase 1 audit (2026-05-15)
 # =============================================================================
 
-# Load from environment, with safe defaults
-_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173')
-CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
-CORS_ALLOW_CREDENTIALS = True
+
+# =============================================================================
+# CACHE CONFIGURATION (Phase 2 Go-Live audit)
+# =============================================================================
+
+_redis_url = os.environ.get('REDIS_URL', '')
+
+if _redis_url:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': _redis_url,
+            'TIMEOUT': 300,  # 5 min default
+            'KEY_PREFIX': 'transporti',
+            'OPTIONS': {
+                'db': 0,
+            },
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'transporti-v1-cache',
+            'TIMEOUT': 300,
+        }
+    }
+
+# Cache TTLs for business logic (seconds)
+CACHE_TTL_PROFILE = 120       # 2 min — profile annotations (Avg, Count)
+CACHE_TTL_PRICING = 600       # 10 min — pricing grid
+CACHE_TTL_DASHBOARD = 60      # 1 min — dashboard stats
 
 
 # =============================================================================

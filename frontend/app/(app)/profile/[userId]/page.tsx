@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import ClientProfilePage from "./ClientProfilePage";
+import ReviewCard from "@/components/reviews/ReviewCard";
+import type { ReviewData } from "@/components/reviews/ReviewCard";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -60,17 +62,6 @@ interface TransporterData {
   insurance_valid_until?: string;
   vehicle_photos?: string[];
   avatar_url?: string;
-}
-
-interface ReviewData {
-  id: number;
-  rating: number | null;
-  comment: string;
-  aspects: Record<string, number>;
-  reviewer_name: string;
-  reviewer_avatar: string | null;
-  is_revealed: boolean;
-  created_at: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -129,92 +120,7 @@ function TrustBadge({
   );
 }
 
-/* -------------------------------------------------------------------------- */
-/*  Review Card                                                                */
-/* -------------------------------------------------------------------------- */
 
-const ASPECT_LABELS: Record<string, string> = {
-  punctuality: "Ponctualité",
-  care: "Soin",
-  communication: "Communication",
-};
-
-function ReviewCard({ review }: { review: ReviewData }) {
-  const r = review;
-  const initials = r.reviewer_name
-    .split(" ")
-    .map((n) => n[0])
-    .join("")
-    .toUpperCase()
-    .slice(0, 2);
-
-  const dateLabel = (() => {
-    try {
-      return new Date(r.created_at).toLocaleDateString("fr-TN", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-      });
-    } catch {
-      return r.created_at;
-    }
-  })();
-
-  return (
-    <div className="bg-white rounded-xl border border-neutral-100 p-5 shadow-sm hover:shadow-md transition-shadow">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-600 to-brand-800 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
-            {initials}
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-neutral-900">
-              {r.reviewer_name}
-            </p>
-            <div className="flex items-center gap-0.5 mt-0.5">
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Star
-                  key={star}
-                  className={`w-3.5 h-3.5 ${
-                    star <= (r.rating || 0)
-                      ? "text-amber-400 fill-amber-400"
-                      : "text-neutral-200"
-                  }`}
-                />
-              ))}
-            </div>
-          </div>
-        </div>
-        <span className="text-xs text-neutral-400">{dateLabel}</span>
-      </div>
-
-      {/* Comment */}
-      {r.comment && (
-        <p className="text-sm text-neutral-600 mb-3 leading-relaxed">
-          &ldquo;{r.comment}&rdquo;
-        </p>
-      )}
-
-      {/* Aspect pills */}
-      {r.aspects && Object.entries(r.aspects).some(([, v]) => v && v > 0) && (
-        <div className="flex flex-wrap gap-2">
-          {Object.entries(r.aspects).map(([key, value]) => {
-            if (!value || value === 0) return null;
-            return (
-              <span
-                key={key}
-                className="inline-flex items-center gap-1 px-2.5 py-1 bg-brand-600/5 text-brand-700 rounded-lg text-xs font-semibold"
-              >
-                {ASPECT_LABELS[key] || key}: {value}/5
-              </span>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
-}
 
 /* -------------------------------------------------------------------------- */
 /*  Public Profile Page — Matching reference design                           */
@@ -307,10 +213,40 @@ export default function ProfilePage() {
 
   if (roleLoading || !userId) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-3" />
-          <p className="text-neutral-500">Chargement du profil...</p>
+      <div className="min-h-screen bg-neutral-50 animate-fade-in">
+        {/* Skeleton: Hero Header */}
+        <div className="relative">
+          <div className="h-40 bg-gradient-to-r from-neutral-200 via-neutral-100 to-neutral-200 animate-pulse" />
+          <div className="max-w-3xl mx-auto px-6 -mt-12 relative z-10">
+            <div className="flex items-end gap-4 mb-6">
+              <div className="w-24 h-24 rounded-2xl bg-neutral-200 animate-pulse border-4 border-white shadow-lg" />
+              <div className="flex-1 pb-2 space-y-2">
+                <div className="h-6 w-40 bg-neutral-200 rounded-lg animate-pulse" />
+                <div className="h-4 w-56 bg-neutral-100 rounded-lg animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Skeleton: Stats */}
+        <div className="max-w-3xl mx-auto px-6 mt-4">
+          <div className="bg-white rounded-2xl border border-neutral-100 p-6 mb-6">
+            <div className="grid grid-cols-4 gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="text-center space-y-2">
+                  <div className="w-10 h-10 rounded-xl bg-neutral-100 animate-pulse mx-auto" />
+                  <div className="h-6 w-12 bg-neutral-200 rounded animate-pulse mx-auto" />
+                  <div className="h-3 w-16 bg-neutral-100 rounded animate-pulse mx-auto" />
+                </div>
+              ))}
+            </div>
+          </div>
+          {/* Skeleton: Bio */}
+          <div className="bg-white rounded-2xl border border-neutral-100 p-6 space-y-3">
+            <div className="h-5 w-24 bg-neutral-200 rounded animate-pulse" />
+            <div className="h-4 w-full bg-neutral-100 rounded animate-pulse" />
+            <div className="h-4 w-3/4 bg-neutral-100 rounded animate-pulse" />
+            <div className="h-4 w-1/2 bg-neutral-100 rounded animate-pulse" />
+          </div>
         </div>
       </div>
     );
@@ -350,6 +286,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
   const [editFirstName, setEditFirstName] = useState("");
   const [editLastName, setEditLastName] = useState("");
   const [editPhone, setEditPhone] = useState("");
+  const [editBio, setEditBio] = useState("");
   const [editVehicleType, setEditVehicleType] = useState("");
   const [editCapacity, setEditCapacity] = useState("");
   const [editAreas, setEditAreas] = useState<string[]>([]);
@@ -373,6 +310,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
     setEditFirstName(transporter.first_name);
     setEditLastName(transporter.last_name);
     setEditPhone(transporter.phone || "");
+    setEditBio((transporter as any).bio || "");
     setEditVehicleType(transporter.vehicle_type || "");
     setEditCapacity(
       transporter.vehicle_capacity_kg
@@ -497,6 +435,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
         first_name: editFirstName.trim(),
         last_name: editLastName.trim(),
         phone: editPhone.trim(),
+        bio: editBio.trim(),
         vehicle_type: editVehicleType,
         service_areas: editAreas,
         specializations: editSpecs,
@@ -632,10 +571,10 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
 
   return (
     <div className="p-6 lg:p-8 max-w-6xl mx-auto">
-      {/* Save message toast */}
+      {/* Save message toast — inline (DES-T2) */}
       {saveMsg && (
         <div
-          className={`fixed top-4 right-4 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-semibold border animate-in slide-in-from-top duration-300 ${
+          className={`mb-4 px-5 py-3 rounded-xl text-sm font-semibold border ${
             saveMsg.type === "ok"
               ? "bg-accent-50 text-accent-700 border-accent-200"
               : "bg-red-50 text-red-700 border-red-200"
@@ -750,19 +689,27 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                 <div className="min-w-0 flex-1">
                   {/* Name */}
                   {editing ? (
-                    <div className="flex gap-2">
-                      <input
-                        value={editFirstName}
-                        onChange={(e) => setEditFirstName(e.target.value)}
-                        className="px-2 py-1 rounded-lg bg-white/20 border border-white/30 text-white text-sm font-bold w-28 placeholder:text-white/40"
-                        placeholder="Prénom"
-                      />
-                      <input
-                        value={editLastName}
-                        onChange={(e) => setEditLastName(e.target.value)}
-                        className="px-2 py-1 rounded-lg bg-white/20 border border-white/30 text-white text-sm font-bold w-28 placeholder:text-white/40"
-                        placeholder="Nom"
-                      />
+                    <div className="flex flex-col gap-1">
+                      <div className="flex gap-2">
+                        <div className="flex flex-col">
+                          <input
+                            value={editFirstName}
+                            onChange={(e) => { setEditFirstName(e.target.value); setFormErrors((p) => ({...p, first_name: ''})); }}
+                            className={`px-2 py-1 rounded-lg bg-white/20 border text-white text-sm font-bold w-28 placeholder:text-white/40 ${formErrors.first_name ? 'border-red-400' : 'border-white/30'}`}
+                            placeholder="Prénom"
+                          />
+                          {formErrors.first_name && <span className="text-red-300 text-[10px] mt-0.5">{formErrors.first_name}</span>}
+                        </div>
+                        <div className="flex flex-col">
+                          <input
+                            value={editLastName}
+                            onChange={(e) => { setEditLastName(e.target.value); setFormErrors((p) => ({...p, last_name: ''})); }}
+                            className={`px-2 py-1 rounded-lg bg-white/20 border text-white text-sm font-bold w-28 placeholder:text-white/40 ${formErrors.last_name ? 'border-red-400' : 'border-white/30'}`}
+                            placeholder="Nom"
+                          />
+                          {formErrors.last_name && <span className="text-red-300 text-[10px] mt-0.5">{formErrors.last_name}</span>}
+                        </div>
+                      </div>
                     </div>
                   ) : (
                     <h1 className="text-xl font-bold text-white truncate">
@@ -1004,6 +951,34 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
             </div>
           )}
 
+          {/* ── BIO / À PROPOS (UX-T5) ── */}
+          <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-neutral-100">
+              <h3 className="text-lg font-bold text-neutral-900">
+                À propos
+              </h3>
+            </div>
+            <div className="p-5">
+              {editing ? (
+                <div className="space-y-1">
+                  <textarea
+                    value={editBio}
+                    onChange={(e) => setEditBio(e.target.value)}
+                    maxLength={500}
+                    rows={4}
+                    className="w-full px-3 py-2 rounded-xl border border-neutral-200 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 resize-none"
+                    placeholder="Décrivez votre expérience, vos services, et ce qui vous différencie..."
+                  />
+                  <p className="text-right text-[10px] text-neutral-400">{editBio.length}/500</p>
+                </div>
+              ) : (
+                <p className="text-sm text-neutral-600 leading-relaxed">
+                  {(t as any).bio || <span className="italic text-neutral-400">Aucune description pour le moment.</span>}
+                </p>
+              )}
+            </div>
+          </div>
+
           {/* ── REVIEWS / AVIS CLIENTS ── */}
           <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
@@ -1024,9 +999,21 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                   </p>
                 </div>
               ) : (
-                visibleReviews.map((review) => (
-                  <ReviewCard key={review.id} review={review} />
-                ))
+                <>
+                  {visibleReviews.slice(0, 5).map((review) => (
+                    <ReviewCard key={review.id} review={review} />
+                  ))}
+                  {visibleReviews.length > 5 && (
+                    <div className="text-center pt-2">
+                      <button
+                        className="text-sm text-brand-600 font-semibold hover:underline"
+                        onClick={() => {}}
+                      >
+                        Voir tous les avis ({visibleReviews.length})
+                      </button>
+                    </div>
+                  )}
+                </>
               )}
             </div>
           </div>
@@ -1034,6 +1021,49 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
 
         {/* ─────────── RIGHT COLUMN (1/3) ─────────── */}
         <div className="lg:col-span-1 space-y-5">
+          {/* ── COMPLÉTUDE PROFIL (owner only, UX-T4) ── */}
+          {isOwner && (() => {
+            const checks = [
+              { label: "Photo de profil", done: !!t.avatar_url, weight: 15 },
+              { label: "Photo véhicule", done: !!(t.vehicle_photos && t.vehicle_photos.length > 0), weight: 15 },
+              { label: "Type de véhicule", done: !!t.vehicle_type, weight: 10 },
+              { label: "Capacité de charge", done: !!t.vehicle_capacity_kg, weight: 10 },
+              { label: "Zone de service", done: t.service_areas.length > 0, weight: 15 },
+              { label: "Spécialisation", done: t.specializations.length > 0, weight: 10 },
+              { label: "Mission complétée", done: (t.total_jobs_completed || 0) > 0, weight: 15 },
+              { label: "Avis reçu", done: visibleReviews.length > 0, weight: 10 },
+            ];
+            const pct = checks.reduce((sum, c) => sum + (c.done ? c.weight : 0), 0);
+            const missing = checks.filter(c => !c.done).slice(0, 3);
+            if (pct >= 100) return null;
+            return (
+              <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+                <div className="px-5 py-3 bg-gradient-to-r from-brand-600/5 to-accent-500/5 border-b border-neutral-100 flex items-center justify-between">
+                  <h3 className="text-sm font-bold text-neutral-700">Complétude du profil</h3>
+                  <span className="text-xs font-bold text-brand-600">{pct}%</span>
+                </div>
+                <div className="p-5 space-y-3">
+                  <div className="w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
+                    <div
+                      className="h-2 rounded-full transition-all duration-700 bg-gradient-to-r from-brand-600 to-accent-500"
+                      style={{ width: `${pct}%` }}
+                    />
+                  </div>
+                  {missing.length > 0 && (
+                    <div className="space-y-1.5">
+                      {missing.map(m => (
+                        <div key={m.label} className="flex items-center gap-2 text-xs text-neutral-500">
+                          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                          Ajouter : <span className="font-semibold text-neutral-700">{m.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            );
+          })()}
+
           {/* ── STATISTIQUES CARD ── */}
           <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
             <div className="px-5 py-3 bg-gradient-to-r from-neutral-100 to-neutral-50 border-b border-neutral-100">

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Star, Send } from "lucide-react";
+import { Star, Send, ShieldCheck } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 
@@ -80,9 +80,19 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
 
   return (
     <div className="bg-white p-6 rounded-xl border shadow-sm">
-      <h3 className="text-lg font-bold text-neutral-900 mb-6">
+      <h3 className="text-lg font-bold text-neutral-900 mb-4">
         Laisser un avis
       </h3>
+
+      {/* P1-07: Double-aveugle confidentiality banner */}
+      <div className="mb-5 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2.5">
+        <ShieldCheck className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+        <p className="text-xs text-blue-700 leading-relaxed">
+          <span className="font-semibold">Avis confidentiels</span> — Votre avis
+          restera masqué jusqu&apos;à ce que les deux parties aient noté. Cela
+          garantit des avis honnêtes et sans influence.
+        </p>
+      </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>

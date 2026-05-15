@@ -32,13 +32,19 @@ class DisputeListSerializer(serializers.ModelSerializer):
         read_only_fields = fields
     
     def get_opened_by_name(self, obj) -> str:
-        return f"{obj.opened_by.first_name} {obj.opened_by.last_name[0]}."
+        first = obj.opened_by.first_name or ''
+        last = obj.opened_by.last_name or ''
+        if first and last:
+            return f"{first} {last[0]}."
+        return first or last or obj.opened_by.email.split('@')[0]
     
     def get_job_summary(self, obj) -> dict:
         return {
             'id': obj.job.id,
             'type': obj.job.job_type,
             'status': obj.job.status,
+            'pickup': getattr(obj.job, 'pickup_address', ''),
+            'dropoff': getattr(obj.job, 'dropoff_address', ''),
         }
 
 

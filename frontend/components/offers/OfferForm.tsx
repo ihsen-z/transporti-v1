@@ -5,6 +5,8 @@ import { apiClient, ApiError } from "@/lib/api/client";
 interface OfferFormProps {
   jobId: number;
   jobType?: string;
+  priceTndMin?: number;
+  priceTndMax?: number;
   onOfferSubmitted: () => void;
 }
 
@@ -13,6 +15,8 @@ type FeedbackType = "success" | "error" | "warning" | null;
 export function OfferForm({
   jobId,
   jobType,
+  priceTndMin,
+  priceTndMax,
   onOfferSubmitted,
 }: OfferFormProps) {
   const [priceNet, setPriceNet] = useState("");
@@ -244,6 +248,26 @@ export function OfferForm({
               TND
             </span>
           </div>
+          {/* P1-04: Budget indicatif du client */}
+          {(priceTndMin || priceTndMax) && (
+            <div className="mt-2 p-2.5 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+              <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-blue-700">
+                Budget indicatif du client :{" "}
+                <span className="font-semibold">
+                  {priceTndMin && priceTndMax
+                    ? `${priceTndMin} — ${priceTndMax} TND`
+                    : priceTndMin
+                      ? `à partir de ${priceTndMin} TND`
+                      : `jusqu'à ${priceTndMax} TND`}
+                </span>
+              </p>
+            </div>
+          )}
+          {/* P2-10: COD threshold note */}
+          <p className="text-xs text-neutral-400 mt-1.5">
+            💡 Au-delà de 300 TND, seul le paiement digital sera proposé au client.
+          </p>
         </div>
 
         {/* Pricing Breakdown */}

@@ -111,22 +111,30 @@ function getActionLink(
   const m = notification.metadata;
   if (!m) return null;
 
+  // P1-06: Corrected deep links to actual routes
   if (m.job_id) {
     if (
       notification.category === "JOB" ||
       notification.category === "PAYMENT"
     ) {
-      return { href: `/mes-transports/${m.job_id}`, label: "Voir la mission" };
+      return { href: `/jobs/${m.job_id}`, label: "Voir la mission" };
     }
     if (notification.category === "DISPUTE") {
-      return { href: `/mes-transports/${m.job_id}`, label: "Voir le litige" };
+      return { href: `/jobs/${m.job_id}`, label: "Voir le litige" };
     }
-    return { href: `/mes-transports/${m.job_id}`, label: "Voir les détails" };
+    return { href: `/jobs/${m.job_id}`, label: "Voir les détails" };
+  }
+  if (notification.category === "REVIEW" && m.review_id) {
+    const targetId = m.target_id || "";
+    return {
+      href: targetId ? `/profile/${targetId}` : "/profile",
+      label: "Voir le profil",
+    };
   }
   if (m.dispute_id) {
     return {
-      href: `/mes-transports/${m.job_id || ""}`,
-      label: "Voir le litige",
+      href: `/disputes`,
+      label: "Voir les litiges",
     };
   }
   return null;
@@ -492,7 +500,7 @@ export default function NotificationsPage() {
                                   )}
                                   {notification.metadata.job_id && (
                                     <Link
-                                      href={`/mes-transports/${notification.metadata.job_id}`}
+                                      href={`/jobs/${notification.metadata.job_id}`}
                                       className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 hover:bg-brand-50 hover:text-brand-700 transition-colors border border-neutral-200"
                                     >
                                       Mission #{notification.metadata.job_id}

@@ -24,6 +24,7 @@ import {
   HelpCircle,
 } from "lucide-react";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
+import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -106,6 +107,9 @@ function ClientDashboard({
 }) {
   return (
     <>
+      {/* Onboarding Wizard — shown only on first visits */}
+      <OnboardingWizard />
+
       {/* CTA Hero */}
       <div className="bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
@@ -232,6 +236,9 @@ function TransporterDashboard({
 }) {
   return (
     <>
+      {/* Onboarding Wizard — shown only on first visits */}
+      <OnboardingWizard />
+
       {/* Verification Banner */}
       {stats.verification_status !== "VERIFIED" && (
         <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 flex items-start gap-4">

@@ -9,6 +9,7 @@ import { JobPreview } from "@/components/jobs/JobPreview";
 import { OfferForm } from "@/components/offers/OfferForm";
 import { OfferList } from "@/components/offers/OfferList";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
+import { MissionStepper } from "@/components/jobs/MissionStepper";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useToast } from "@/components/ui/Toast";
 import {
@@ -32,6 +33,7 @@ import {
   Package,
   XCircle,
   ArrowRight,
+  Eye,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -44,6 +46,7 @@ export default function JobDetailsPage() {
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const [cancelling, setCancelling] = useState(false);
+  const [completing, setCompleting] = useState(false);
   const { showToast } = useToast();
 
   // Return trip booking state
@@ -210,9 +213,15 @@ export default function JobDetailsPage() {
     isOwner &&
     isClient &&
     (job.status === "PUBLISHED" || job.status === "MATCHED");
+  const isAssignedTransporter =
+    isTransporter &&
+    job.accepted_transporter?.id === user?.id;
   const showDisputeButton =
     (job.status === "IN_PROGRESS" || job.status === "COMPLETED") &&
-    (isOwner || isTransporter);
+    (isOwner || isAssignedTransporter) &&
+    (!job.completed_at ||
+      Date.now() - new Date(job.completed_at as string).getTime() <
+        15 * 86400000);
 
   // Post-livraison logic
   const isCompleted = job.status === "COMPLETED";
@@ -221,6 +230,8 @@ export default function JobDetailsPage() {
   const showConfirmButton = isCompleted && isOwner && !clientConfirmed;
   const showReviewForm =
     isCompleted && !hasReviewed && (isOwner ? clientConfirmed : true);
+  const showMarkDelivered =
+    job.status === "IN_PROGRESS" && isAssignedTransporter;
 
   return (
     <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
@@ -232,6 +243,20 @@ export default function JobDetailsPage() {
           </h1>
           <StatusBadge status={job.status} />
         </div>
+
+        {/* P1-02: Mission progress stepper */}
+        <MissionStepper
+          status={job.status}
+          completedAt={(job as any).completed_at}
+        />
+
+        {/* P1-05: View counter (visible to job owner) */}
+        {isOwner && (job as any).view_count > 0 && (
+          <div className="flex items-center gap-1.5 text-xs text-neutral-500 justify-end">
+            <Eye className="w-3.5 h-3.5" />
+            {(job as any).view_count} vue{(job as any).view_count > 1 ? "s" : ""}
+          </div>
+        )}
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content: Job Preview */}
@@ -248,13 +273,20 @@ export default function JobDetailsPage() {
                   </h3>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-brand-600/10 flex items-center justify-center text-brand-600 font-bold text-sm">
+                      {/* P0-02 / P2-06: Lien profil transporteur */}
+                      <Link
+                        href={`/profile/${job.accepted_transporter.id}`}
+                        className="w-10 h-10 rounded-full bg-brand-600/10 flex items-center justify-center text-brand-600 font-bold text-sm hover:ring-2 hover:ring-brand-300 transition-all"
+                      >
                         {(job.accepted_transporter.name || "T")[0]}
-                      </div>
+                      </Link>
                       <div>
-                        <p className="text-sm font-medium text-neutral-900">
+                        <Link
+                          href={`/profile/${job.accepted_transporter.id}`}
+                          className="text-sm font-medium text-neutral-900 hover:text-brand-600 hover:underline transition-colors"
+                        >
                           {job.accepted_transporter.name}
-                        </p>
+                        </Link>
                         {job.accepted_transporter.phone && (
                           <p className="text-xs text-neutral-500">
                             📞 {job.accepted_transporter.phone}
@@ -269,6 +301,14 @@ export default function JobDetailsPage() {
                       <p className="text-xs text-neutral-500">Prix accepté</p>
                     </div>
                   </div>
+                  {/* P2-06: Quick link to profile */}
+                  <Link
+                    href={`/profile/${job.accepted_transporter.id}`}
+                    className="mt-3 w-full py-2 text-sm text-brand-600 border border-brand-600/20 rounded-lg font-medium hover:bg-brand-600/5 transition-colors flex items-center justify-center gap-1.5"
+                  >
+                    Voir le profil complet
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </Link>
                 </div>
               )}
           </div>
@@ -303,6 +343,8 @@ export default function JobDetailsPage() {
               <OfferForm
                 jobId={job.id}
                 jobType={job.job_type}
+                priceTndMin={(job as any).price_tnd_min}
+                priceTndMax={(job as any).price_tnd_max}
                 onOfferSubmitted={() => {
                   showToast("success", "Offre envoyée avec succès !");
                   fetchJob();
@@ -658,10 +700,60 @@ export default function JobDetailsPage() {
                   Mission en cours
                 </h3>
                 <p className="text-sm">
-                  Le transporteur a été assigné. Coordonnez-vous via la
-                  messagerie.
+                  {isAssignedTransporter
+                    ? "Vous êtes assigné à cette mission. Marquez-la comme livrée une fois terminée."
+                    : "Le transporteur a été assigné. Coordonnez-vous via la messagerie."}
                 </p>
                 <div className="mt-3 space-y-2">
+                  {/* P0-01: CTA "Marquer comme livré" — Transporteur uniquement */}
+                  {showMarkDelivered && (
+                    <button
+                      onClick={async () => {
+                        if (
+                          !window.confirm(
+                            "Confirmez-vous avoir livré la marchandise ? Le client sera notifié pour confirmer la réception.",
+                          )
+                        )
+                          return;
+                        setCompleting(true);
+                        try {
+                          await apiClient.post(
+                            `/api/jobs/${job.id}/complete/`,
+                          );
+                          showToast(
+                            "success",
+                            "Mission marquée comme terminée ! Le client va confirmer la réception.",
+                          );
+                          fetchJob();
+                        } catch (err) {
+                          if (err instanceof ApiError && err.body) {
+                            const msg =
+                              (err.body as any).error ||
+                              "Erreur lors de la confirmation.";
+                            showToast("error", String(msg));
+                          } else {
+                            showToast(
+                              "error",
+                              "Erreur réseau. Veuillez réessayer.",
+                            );
+                          }
+                        } finally {
+                          setCompleting(false);
+                        }
+                      }}
+                      disabled={completing}
+                      className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 hover:shadow-md hover:shadow-emerald-600/20"
+                    >
+                      {completing ? (
+                        <Clock className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Package className="w-4 h-4" />
+                      )}
+                      {completing
+                        ? "Confirmation..."
+                        : "📦 Marquer comme livré"}
+                    </button>
+                  )}
                   <button
                     onClick={() => router.push(`/messages/${job.id}`)}
                     className="w-full py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2"
@@ -676,6 +768,49 @@ export default function JobDetailsPage() {
                     <FileText className="w-4 h-4" />
                     Voir la réservation
                   </Link>
+                  {/* P2-03: Cancel mutuel — transporteur peut annuler */}
+                  {isAssignedTransporter && (
+                    <button
+                      onClick={async () => {
+                        const reason = window.prompt(
+                          "Raison de l'annulation (obligatoire) :",
+                        );
+                        if (!reason || !reason.trim()) return;
+                        if (
+                          !window.confirm(
+                            "Êtes-vous sûr de vouloir annuler cette mission ? La mission sera remise en ligne.",
+                          )
+                        )
+                          return;
+                        try {
+                          await apiClient.post(
+                            `/api/jobs/${job.id}/transporter-cancel/`,
+                            { reason: reason.trim() },
+                          );
+                          showToast(
+                            "success",
+                            "Mission annulée. Le client a été notifié.",
+                          );
+                          fetchJob();
+                        } catch (err) {
+                          if (err instanceof ApiError && err.body) {
+                            showToast(
+                              "error",
+                              String(
+                                (err.body as any).error || "Erreur inattendue.",
+                              ),
+                            );
+                          } else {
+                            showToast("error", "Erreur réseau.");
+                          }
+                        }
+                      }}
+                      className="w-full py-2 border border-red-300 text-red-600 rounded-lg font-medium hover:bg-red-50 flex items-center justify-center gap-2 text-sm transition-colors"
+                    >
+                      <XCircle className="w-4 h-4" />
+                      Annuler la mission
+                    </button>
+                  )}
                 </div>
               </div>
             )}

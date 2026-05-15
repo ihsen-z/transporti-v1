@@ -2,12 +2,15 @@ from django.urls import path
 from .views import (
     JobCreateView, JobMyListView, JobPublicListView, JobDetailView, JobOffersView,
     OfferCreateView, OfferMyListView, OfferAcceptView,
-    JobUpdateView, JobPublishView, JobCancelView, JobCompleteView,
+    JobUpdateView, JobPublishView, JobCancelView, JobCompleteView, TransporterCancelView,
     OfferWithdrawView, TransporterProfileView, TransporterProfileEditView,
     TransporterJobListView, ReturnTripCreateView, PriceEstimateView,
     BookReturnTripView,
     ClientProfileView, ClientProfileEditView,
-    UserRoleView
+    UserRoleView,
+    FavoriteToggleView, FavoriteListView,
+    CrossMetricsView,
+    CounterOfferCreateView, CounterOfferRespondView,
 )
 from .upload_views import PhotoUploadView
 from payments.views import JobBookingDetailView, JobEscrowDetailView
@@ -28,6 +31,7 @@ urlpatterns = [
     path('jobs/<int:job_id>/offers/', JobOffersView.as_view(), name='job_offers'),
     path('jobs/<int:job_id>/publish/', JobPublishView.as_view(), name='job_publish'),
     path('jobs/<int:job_id>/cancel/', JobCancelView.as_view(), name='job_cancel'),
+    path('jobs/<int:job_id>/transporter-cancel/', TransporterCancelView.as_view(), name='transporter_cancel'),
     path('jobs/<int:job_id>/complete/', JobCompleteView.as_view(), name='job_complete'),
     path('jobs/<int:job_id>/book-return/', BookReturnTripView.as_view(), name='book_return_trip'),
     path('jobs/<int:job_id>/booking/', JobBookingDetailView.as_view(), name='job_booking_detail'),
@@ -49,4 +53,15 @@ urlpatterns = [
 
     # User Role (lightweight — for profile routing)
     path('user/<int:user_id>/role/', UserRoleView.as_view(), name='user_role'),
+
+    # Favorites (P2-09)
+    path('favorites/', FavoriteListView.as_view(), name='favorite_list'),
+    path('favorites/toggle/', FavoriteToggleView.as_view(), name='favorite_toggle'),
+
+    # Cross Metrics (P2-01)
+    path('metrics/dashboard/', CrossMetricsView.as_view(), name='cross_metrics'),
+
+    # Counter-Offers (P2-05)
+    path('offers/<int:offer_id>/counter/', CounterOfferCreateView.as_view(), name='counter_offer_create'),
+    path('counter-offers/<int:counter_id>/respond/', CounterOfferRespondView.as_view(), name='counter_offer_respond'),
 ]
