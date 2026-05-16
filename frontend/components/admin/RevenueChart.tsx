@@ -135,8 +135,8 @@ export default function RevenueChart({ days, jobs }: RevenueChartProps) {
             color: "#f1f5f9",
             fontSize: "13px",
           }}
-          formatter={(value: number, name: string) => [
-            formatCurrency(value),
+          formatter={(value: any, name: any) => [
+            formatCurrency(Number(value) || 0),
             name === "revenue" ? "Revenu brut" : "Commission (10%)",
           ]}
           labelStyle={{ color: "#94a3b8", marginBottom: "4px" }}
