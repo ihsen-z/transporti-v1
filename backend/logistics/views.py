@@ -144,6 +144,54 @@ class JobPublicListView(generics.ListAPIView):
         if dropoff_gov:
             queryset = queryset.filter(dropoff_governorate=dropoff_gov)
 
+        # Full-text search (Phase 3: ?q=keyword)
+        search_q = self.request.query_params.get('q', '').strip()
+        if search_q:
+            try:
+                # PostgreSQL full-text search (production)
+                from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
+                search_vector = SearchVector('title', weight='A') + \
+                                SearchVector('description', weight='B') + \
+                                SearchVector('pickup_address', weight='C') + \
+                                SearchVector('dropoff_address', weight='C')
+                search_query = SearchQuery(search_q, config='french')
+                queryset = queryset.annotate(
+                    search_rank=SearchRank(search_vector, search_query)
+                ).filter(search_rank__gte=0.01).order_by('-search_rank', '-created_at')
+            except ImportError:
+                # Fallback: icontains for SQLite dev
+                from django.db.models import Q
+                queryset = queryset.filter(
+                    Q(title__icontains=search_q) |
+                    Q(description__icontains=search_q) |
+                    Q(pickup_address__icontains=search_q) |
+                    Q(dropoff_address__icontains=search_q)
+                )
+
+        # Price range filters (?min_price=X&max_price=Y)
+        min_price = self.request.query_params.get('min_price')
+        if min_price:
+            try:
+                queryset = queryset.filter(budget_max__gte=float(min_price))
+            except (ValueError, TypeError):
+                pass
+        max_price = self.request.query_params.get('max_price')
+        if max_price:
+            try:
+                queryset = queryset.filter(budget_min__lte=float(max_price))
+            except (ValueError, TypeError):
+                pass
+
+        # Sort options (?sort_by=price_asc|price_desc|newest|closest_date)
+        sort_by = self.request.query_params.get('sort_by', '')
+        if sort_by == 'price_asc':
+            queryset = queryset.order_by('budget_min', '-created_at')
+        elif sort_by == 'price_desc':
+            queryset = queryset.order_by('-budget_max', '-created_at')
+        elif sort_by == 'closest_date':
+            queryset = queryset.order_by('scheduled_time', '-created_at')
+        # Default: newest first (already set above)
+
         return queryset
 
 

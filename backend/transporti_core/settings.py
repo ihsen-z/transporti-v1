@@ -489,6 +489,83 @@ FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
 
 
 # =============================================================================
+# MONITORING & LOGGING (Phase 3: Sentry + structured logs)
+# =============================================================================
+
+# Sentry — only active when DSN is set (production)
+_sentry_dsn = os.environ.get('SENTRY_DSN', '')
+if _sentry_dsn:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+        sentry_sdk.init(
+            dsn=_sentry_dsn,
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=float(os.environ.get('SENTRY_TRACES_RATE', '0.1')),
+            send_default_pii=False,
+            environment=ENV,
+            release=f"transporti@1.0.0",
+        )
+    except ImportError:
+        pass  # sentry-sdk not installed — skip silently
+
+# Structured logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} {module}:{lineno} | {message}',
+            'style': '{',
+        },
+        'json': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'transporti': {
+            'handlers': ['console'],
+            'level': 'INFO' if IS_PRODUCTION else 'DEBUG',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING' if IS_PRODUCTION else 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
+
+# =============================================================================
+# STATIC & MEDIA FILES (Phase 3: CDN-ready)
+# =============================================================================
+
+STATIC_URL = os.environ.get('STATIC_CDN_URL', '/static/')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').is_dir() else []
+
+MEDIA_URL = os.environ.get('MEDIA_CDN_URL', '/media/')
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# File upload limits (10 MB max)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+
+
+# =============================================================================
 # STARTUP SECURITY VALIDATION
 # =============================================================================
 # This MUST be at the end of settings.py to validate all settings are loaded

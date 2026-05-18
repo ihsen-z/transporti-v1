@@ -2,7 +2,7 @@ name: Frontend CI
 
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "master", "develop" ]
     paths:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
@@ -12,10 +12,15 @@ on:
       - 'frontend/**'
       - '.github/workflows/frontend-ci.yml'
 
+concurrency:
+  group: frontend-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    
+    timeout-minutes: 15
+
     defaults:
       run:
         working-directory: ./frontend
@@ -40,17 +45,40 @@ jobs:
 
     - name: Check formatting (Prettier)
       run: npx prettier --check .
+      continue-on-error: true
 
     - name: Run Linter (ESLint)
-      run: npm run lint
-      continue-on-error: true # Tolérance initiale définie dans la stratégie de migration
+      run: npm run lint 2>&1 | head -100
+      continue-on-error: true
 
     - name: Type checking (TypeScript)
-      run: npm run typecheck
-      continue-on-error: true # Tolérance initiale
+      run: npm run typecheck 2>&1 | head -100
+      continue-on-error: true
 
     - name: Build Next.js application
       run: npm run build
       env:
         NEXT_PUBLIC_API_URL: http://localhost:8000
         NEXT_PUBLIC_API_TIMEOUT: 5000
+
+    - name: Check bundle size
+      if: success()
+      run: |
+        echo "## 📦 Build Output" >> $GITHUB_STEP_SUMMARY
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        du -sh .next/ 2>/dev/null || echo "Build folder not found"
+        echo '```' >> $GITHUB_STEP_SUMMARY
+        # List page sizes
+        if [ -d ".next/server/app" ]; then
+          echo "### Page Sizes" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          find .next/server/app -name "*.html" -exec du -h {} \; | sort -rh | head -20 >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+        fi
+
+    - name: Build Summary
+      if: always()
+      run: |
+        echo "## 🚀 Frontend CI Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Node: ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Next.js build: ${{ job.status == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY

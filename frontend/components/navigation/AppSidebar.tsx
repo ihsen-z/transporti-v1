@@ -20,6 +20,7 @@ import { useAuth } from "@/hooks/useAuth";
 import NavItem from "./NavItem";
 import { SidebarLogo } from "@/components/brand/TransportiLogo";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 import type { LucideIcon } from "lucide-react";
 
 export default function AppSidebar() {
@@ -71,7 +72,7 @@ export default function AppSidebar() {
   }
 
   return (
-    <aside className="hidden lg:flex flex-col w-64 bg-white border-r border-neutral-200 h-screen fixed left-0 top-0 pt-0 z-sidebar">
+    <aside className="hidden lg:flex flex-col w-64 bg-white dark:bg-neutral-900 border-r border-neutral-200 dark:border-neutral-800 h-screen fixed left-0 top-0 pt-0 z-sidebar">
       {/* Logo Area */}
       <div className="px-6 py-4 border-b border-neutral-100 h-16 flex items-center overflow-hidden">
         <Link href="/dashboard">
@@ -87,10 +88,14 @@ export default function AppSidebar() {
       </nav>
 
       {/* Bottom Navigation */}
-      <div className="px-4 py-2 border-t border-neutral-100 space-y-1">
+      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800 space-y-1">
         {bottomItems.map((item) => (
           <NavItem key={item.href} {...item} />
         ))}
+        <div className="flex items-center justify-between px-3 py-2">
+          <span className="text-xs text-neutral-400">Thème</span>
+          <ThemeToggle />
+        </div>
       </div>
 
       {/* Footer */}
