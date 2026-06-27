@@ -280,7 +280,7 @@ if test_job_id:
     from reviews.views import ReviewCreateView
     # Client reviews transporter
     request = factory.post('/api/reviews/', json.dumps({
-        'job': test_job_id,
+        'job_id': test_job_id,
         'rating': 5,
         'comment': 'Excellent transporteur, ponctuel et soigneux.',
     }), content_type='application/json')
@@ -295,7 +295,7 @@ if test_job_id:
 
     # Transporter reviews client
     request = factory.post('/api/reviews/', json.dumps({
-        'job': test_job_id,
+        'job_id': test_job_id,
         'rating': 4,
         'comment': 'Client tres sympathique. Bonne communication.',
     }), content_type='application/json')

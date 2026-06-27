@@ -243,3 +243,88 @@ class Notification(models.Model):
                 f"category={self.category}, type={self.type}, title={self.title[:50]}"
             )
 
+
+# =============================================================================
+# DEVICE TOKEN MODEL (Mobile Push Notifications)
+# =============================================================================
+
+class DeviceToken(models.Model):
+    """
+    Stores FCM/APNS device tokens for mobile push notification delivery.
+    
+    RULES:
+    - One active token per (user, platform) — registering a new token
+      deactivates the previous one for that platform.
+    - Tokens are deactivated (not deleted) to preserve audit trail.
+    - Mobile clients call POST /api/v1/notifications/devices/register/
+      on each app launch to keep tokens fresh.
+    """
+    class Platform(models.TextChoices):
+        ANDROID = 'ANDROID', 'Android (FCM)'
+        IOS = 'IOS', 'iOS (APNS)'
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='device_tokens',
+        db_index=True,
+    )
+    platform = models.CharField(
+        max_length=10,
+        choices=Platform.choices,
+        help_text="Mobile platform (ANDROID or IOS)",
+    )
+    token = models.CharField(
+        max_length=500,
+        help_text="FCM registration token or APNS device token",
+    )
+    device_name = models.CharField(
+        max_length=100,
+        blank=True,
+        help_text="Human-readable device name (e.g., 'Samsung S24')",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+        help_text="Inactive tokens are skipped during push delivery",
+    )
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'token'],
+                name='unique_user_device_token',
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['user', 'is_active']),
+            models.Index(fields=['user', 'platform', 'is_active']),
+        ]
+
+    def __str__(self):
+        status = "✅" if self.is_active else "❌"
+        return f"{status} {self.platform}: {self.user} ({self.device_name or 'unnamed'})"
+
+    def save(self, *args, **kwargs):
+        is_new = self.pk is None
+        
+        if is_new and self.is_active:
+            # Deactivate previous tokens for same user+platform
+            DeviceToken.objects.filter(
+                user=self.user,
+                platform=self.platform,
+                is_active=True,
+            ).exclude(token=self.token).update(is_active=False)
+        
+        super().save(*args, **kwargs)
+        
+        if is_new:
+            logger.info(
+                f"DEVICE_TOKEN_REGISTERED: user_id={self.user_id}, "
+                f"platform={self.platform}, device={self.device_name}"
+            )
+

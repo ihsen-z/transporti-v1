@@ -424,7 +424,15 @@ class PasswordResetRequestView(APIView):
             # Use configurable FRONTEND_URL (defaults to localhost:3000 in dev)
             frontend_url = getattr(django_settings, 'FRONTEND_URL', 'http://localhost:3000')
             reset_link = f"{frontend_url}/reset-password?uid={uid}&token={token}"
-            logger.info(f"PASSWORD_RESET_REQUESTED: email={email}, link={reset_link}")
+            
+            # Deep Link Support for Mobile
+            mobile_enabled = getattr(django_settings, 'MOBILE_DEEP_LINK_ENABLED', False)
+            if mobile_enabled:
+                mobile_scheme = getattr(django_settings, 'MOBILE_APP_SCHEME', 'transporti')
+                mobile_link = f"{mobile_scheme}://reset-password?uid={uid}&token={token}"
+                logger.info(f"PASSWORD_RESET_REQUESTED: email={email}, link={reset_link}, mobile_link={mobile_link}")
+            else:
+                logger.info(f"PASSWORD_RESET_REQUESTED: email={email}, link={reset_link}")
         except User.DoesNotExist:
             # Silent — no information leak
             logger.info(f"PASSWORD_RESET_REQUESTED: email={email} (not found)")

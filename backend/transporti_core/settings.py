@@ -136,7 +136,7 @@ ROOT_URLCONF = 'transporti_core.urls'
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip() for origin in
-    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173').split(',')
+    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:8081,http://localhost:8082').split(',')
     if origin.strip()
 ]
 
@@ -144,6 +144,11 @@ CORS_ALLOW_CREDENTIALS = True
 
 CORS_EXPOSE_HEADERS = [
     'Content-Disposition',
+]
+
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-platform',
 ]
 
 TEMPLATES = [
@@ -465,6 +470,27 @@ COD_MAX_AMOUNT = Decimal(os.environ.get('COD_MAX_AMOUNT', '300'))
 # MUST be set in production to prevent forged webhook calls
 PAYMENT_WEBHOOK_SECRET = os.environ.get('PAYMENT_WEBHOOK_SECRET', '')
 
+
+# =============================================================================
+# PUSH NOTIFICATION CONFIGURATION
+# =============================================================================
+
+# Push mode: 'SANDBOX' (log only) or 'PRODUCTION' (Firebase Cloud Messaging)
+PUSH_NOTIFICATION_MODE = os.environ.get('PUSH_NOTIFICATION_MODE', 'SANDBOX')
+
+# Firebase Cloud Messaging (future — when PUSH_NOTIFICATION_MODE = 'PRODUCTION')
+# FCM_SERVICE_ACCOUNT_PATH = os.environ.get('FCM_SERVICE_ACCOUNT_PATH', '')
+
+
+# =============================================================================
+# MOBILE APP CONFIGURATION
+# =============================================================================
+
+# Custom URL scheme for mobile deep links (e.g., transporti://reset-password)
+MOBILE_APP_SCHEME = os.environ.get('MOBILE_APP_SCHEME', 'transporti')
+
+# Enable mobile deep links in emails (password reset, etc.)
+MOBILE_DEEP_LINK_ENABLED = os.environ.get('MOBILE_DEEP_LINK_ENABLED', 'false').lower() in ('true', '1', 'yes')
 
 # =============================================================================
 # EMAIL CONFIGURATION

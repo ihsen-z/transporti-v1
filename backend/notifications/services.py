@@ -29,6 +29,7 @@ def notify(
 ) -> Notification:
     """
     Create a notification for a user.
+    Also triggers push notification delivery to registered mobile devices.
     
     Args:
         user: User to notify
@@ -47,6 +48,25 @@ def notify(
         message=message[:1000],
         metadata=metadata or {}
     )
+    
+    # Trigger push notification (fail-safe — never blocks DB notification)
+    try:
+        from .push_service import send_push_notification
+        send_push_notification(
+            user=user,
+            title=title[:200],
+            body=message[:500],
+            data={
+                'notification_id': str(notification.id),
+                'type': notification_type,
+                **(metadata or {}),
+            },
+        )
+    except Exception as e:
+        logger.error(
+            f"PUSH_TRIGGER_FAILED: notification_id={notification.id}, "
+            f"user_id={user.id}, error={str(e)}"
+        )
     
     return notification
 

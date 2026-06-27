@@ -49,6 +49,41 @@ def health_check(request):
     return JsonResponse(status)
 
 
+# =============================================================================
+# API V1 — Versioned routes for mobile clients
+# =============================================================================
+# Mobile apps MUST use /api/v1/ to ensure forward compatibility.
+# The /api/ routes (below) remain for web frontend backward compatibility.
+
+v1_api_patterns = [
+    # Auth Module
+    path('auth/', include('users.urls')),
+
+    # Logistics Module (Jobs & Offers)
+    path('', include('logistics.urls')),
+
+    # Payments Module
+    path('', include('payments.urls')),
+
+    # Support Module (Disputes)
+    path('', include('support.urls')),
+
+    # Messaging Module
+    path('', include('messaging.urls')),
+
+    # Trust Module
+    path('trust/', include('trust.urls')),
+
+    # Notifications Module
+    path('notifications/', include('notifications.urls')),
+
+    # Reviews Module
+    path('', include('reviews.urls')),
+
+    # Realtime DB Access API
+    path('realtime/', include('realtime_api.urls')),
+]
+
 urlpatterns = [
     # Health Check (unauthenticated)
     path('health/', health_check, name='health_check'),
@@ -58,7 +93,15 @@ urlpatterns = [
     # API Schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+
+    # =========================================================================
+    # V1 API (for mobile clients)
+    # =========================================================================
+    path('api/v1/', include((v1_api_patterns, 'v1'))),
     
+    # =========================================================================
+    # Legacy API (for web frontend — backward compatible)
+    # =========================================================================
     # Auth Module
     path('api/auth/', include('users.urls')),
     

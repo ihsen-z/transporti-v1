@@ -99,10 +99,11 @@ class SandboxGateway(PaymentGateway):
             f"[SANDBOX] Payment initiated: {amount} TND, "
             f"order={order_id}, ref={ref}"
         )
+        separator = '&' if '?' in success_url else '?'
         return PaymentInitResult(
             success=True,
             gateway_ref=ref,
-            payment_url=f"{success_url}?ref={ref}&sandbox=1",
+            payment_url=f"{success_url}{separator}ref={ref}&sandbox=1",
         )
 
     def check_status(self, gateway_ref: str) -> PaymentStatusResult:
