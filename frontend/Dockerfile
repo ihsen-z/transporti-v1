@@ -11,8 +11,11 @@ RUN npm install
 # Copy source
 COPY . .
 
+# Build for production
+RUN npm run build
+
 # Expose port
 EXPOSE 3000
 
-# Default command (overridden by docker-compose)
-CMD ["npm", "run", "dev"]
+# Start production server
+CMD ["npm", "run", "start"]
