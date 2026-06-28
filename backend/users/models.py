@@ -46,7 +46,8 @@ class Profile(models.Model):
     """
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
     full_name = models.CharField(max_length=200, blank=True)
-    avatar_url = models.URLField(blank=True, help_text="Profile photo URL")
+    avatar = models.ImageField(upload_to='avatars/', blank=True, null=True, help_text="Profile photo file")
+    avatar_url = models.URLField(blank=True, help_text="Profile photo URL (legacy or external)")
     language_pref = models.CharField(
         max_length=5, default='fr',
         choices=[('fr', 'Français'), ('ar', 'العربية')]
@@ -96,3 +97,29 @@ class AuthAudit(models.Model):
         if self.pk:
             raise ValueError("AuthAudit entries cannot be modified.")
         super().save(*args, **kwargs)
+
+
+class NotificationPreference(models.Model):
+    """
+    User notification preferences (email, push, per-event toggles).
+    Auto-created on first access via get_or_create in the view.
+    """
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='notification_prefs')
+    
+    # Channel toggles
+    email_enabled = models.BooleanField(default=True)
+    push_enabled = models.BooleanField(default=True)
+    sms_enabled = models.BooleanField(default=False)
+    
+    # Per-event toggles
+    notify_new_offer = models.BooleanField(default=True)
+    notify_offer_accepted = models.BooleanField(default=True)
+    notify_job_completed = models.BooleanField(default=True)
+    notify_new_message = models.BooleanField(default=True)
+    notify_dispute = models.BooleanField(default=True)
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"NotifPrefs: {self.user.email}"

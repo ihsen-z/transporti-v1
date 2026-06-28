@@ -4,7 +4,9 @@ Sprint 2: Aggregation endpoints for admin dashboard.
 All views require ADMIN role.
 """
 import logging
-from django.db.models import Sum, Avg, Count, Q
+
+logger = logging.getLogger(__name__)
+from django.db.models import Sum, Avg, Count, Q, Prefetch
 from django.utils import timezone
 from datetime import timedelta
 from rest_framework import generics
@@ -95,28 +97,408 @@ class AdminStatsView(APIView):
         })
 
 
+class AdminJobCancelView(APIView):
+    """
+    POST /api/admin/jobs/<id>/cancel/
+    Admin cancels a job with mandatory reason.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+
+    def post(self, request, pk):
+        from rest_framework import status as drf_status
+        job = TransportJob.objects.filter(pk=pk).first()
+        if not job:
+            return Response({'error': 'Job introuvable.'}, status=drf_status.HTTP_404_NOT_FOUND)
+
+        if job.status == 'CANCELLED':
+            return Response({'error': 'Ce job est déjà annulé.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        if job.status == 'COMPLETED':
+            return Response({'error': 'Impossible d\'annuler un job terminé.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        reason = request.data.get('reason', '').strip()
+        if not reason:
+            return Response({'error': 'La raison est obligatoire.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        old_status = job.status
+        job.status = 'CANCELLED'
+        job.save(update_fields=['status', 'updated_at'])
+
+        # Refund any HELD escrow transactions
+        refunded_count = 0
+        try:
+            held_escrows = EscrowTransaction.objects.filter(
+                booking_reference=job, status='HELD'
+            )
+            refunded_count = held_escrows.update(status='REFUNDED')
+            if refunded_count > 0:
+                logger.info(
+                    f"ADMIN_ACTION: escrow_refunded | admin={request.user.email} "
+                    f"| job={job.id} | refunded={refunded_count} escrow(s)"
+                )
+        except Exception as e:
+            logger.warning(f"Escrow refund failed for job #{job.id}: {e}")
+
+        # Audit trail
+        try:
+            from admin_audit.services import log_admin_action
+            log_admin_action(
+                request, 'JOB_CANCELLED', 'job', job.id,
+                target_label=f'Job #{job.id} annulé ({old_status} → CANCELLED)',
+                details={'reason': reason, 'old_status': old_status, 'escrows_refunded': refunded_count},
+            )
+        except Exception as e:
+            logger.warning(f"Audit log failed for job cancel #{job.id}: {e}")
+
+        return Response({
+            'message': f'Job #{job.id} annulé avec succès.',
+            'status': 'CANCELLED',
+            'escrowsRefunded': refunded_count,
+        })
+
+
+class AdminJobForceStatusView(APIView):
+    """
+    PATCH /api/admin/jobs/<id>/status/
+    Admin forces a status change with mandatory reason.
+    Validates transition rules and syncs escrow state.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+
+    # J2: Valid status transitions (business rules)
+    VALID_TRANSITIONS = {
+        'DRAFT': ['PUBLISHED', 'CANCELLED'],
+        'PUBLISHED': ['MATCHED', 'CANCELLED', 'DRAFT'],
+        'MATCHED': ['IN_PROGRESS', 'PUBLISHED', 'CANCELLED'],
+        'IN_PROGRESS': ['COMPLETED', 'CANCELLED', 'DISPUTED'],
+        'COMPLETED': [],  # Terminal state
+        'CANCELLED': ['DRAFT'],  # Exceptional reopening
+        'DISPUTED': ['IN_PROGRESS', 'CANCELLED'],
+    }
+
+    def patch(self, request, pk):
+        from rest_framework import status as drf_status
+        job = TransportJob.objects.filter(pk=pk).first()
+        if not job:
+            return Response({'error': 'Job introuvable.'}, status=drf_status.HTTP_404_NOT_FOUND)
+
+        new_status = request.data.get('status', '').strip().upper()
+        reason = request.data.get('reason', '').strip()
+
+        allowed = set()
+        for v in self.VALID_TRANSITIONS.values():
+            allowed.update(v)
+        allowed.update(self.VALID_TRANSITIONS.keys())
+
+        if not new_status or new_status not in allowed:
+            return Response(
+                {'error': f'Statut invalide. Valeurs autorisées: {", ".join(sorted(allowed))}'},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        if not reason:
+            return Response({'error': 'La raison est obligatoire.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        if job.status == new_status:
+            return Response({'error': f'Le job est déjà en statut {new_status}.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        # J2: Validate transition
+        valid_targets = self.VALID_TRANSITIONS.get(job.status, [])
+        if new_status not in valid_targets:
+            return Response(
+                {'error': f'Transition invalide: {job.status} → {new_status}. '
+                          f'Transitions autorisées depuis {job.status}: {", ".join(valid_targets) or "aucune (état terminal)"}'},
+                status=drf_status.HTTP_400_BAD_REQUEST,
+            )
+
+        old_status = job.status
+        job.status = new_status
+        job.save(update_fields=['status', 'updated_at'])
+
+        # J8: Sync escrow state on status change
+        escrow_action = None
+        try:
+            if new_status == 'COMPLETED':
+                updated = EscrowTransaction.objects.filter(
+                    booking_reference=job, status='HELD'
+                ).update(status='RELEASED')
+                if updated > 0:
+                    escrow_action = f'{updated} escrow(s) libéré(s)'
+                    logger.info(f"ADMIN_ACTION: escrow_released | job={job.id} | count={updated}")
+            elif new_status == 'CANCELLED':
+                updated = EscrowTransaction.objects.filter(
+                    booking_reference=job, status='HELD'
+                ).update(status='REFUNDED')
+                if updated > 0:
+                    escrow_action = f'{updated} escrow(s) remboursé(s)'
+                    logger.info(f"ADMIN_ACTION: escrow_refunded | job={job.id} | count={updated}")
+        except Exception as e:
+            logger.warning(f"Escrow sync failed for job #{job.id}: {e}")
+
+        # Audit trail
+        try:
+            from admin_audit.services import log_admin_action
+            log_admin_action(
+                request, 'JOB_STATUS_FORCED', 'job', job.id,
+                target_label=f'Job #{job.id} : {old_status} → {new_status}',
+                details={
+                    'reason': reason, 'old_status': old_status,
+                    'new_status': new_status, 'escrow_action': escrow_action,
+                },
+            )
+        except Exception as e:
+            logger.warning(f"Audit log failed for force status #{job.id}: {e}")
+
+        response_data = {
+            'message': f'Job #{job.id} mis à jour : {old_status} → {new_status}.',
+            'status': new_status,
+        }
+        if escrow_action:
+            response_data['escrowAction'] = escrow_action
+
+        return Response(response_data)
+
+
 class AdminJobListView(generics.ListAPIView):
     """
     GET /api/admin/jobs/
     All jobs with client/transporter details.
+    Supports: ?page=1&page_size=25&status=PUBLISHED&search=query
+    Prefetches offers to eliminate N+1 queries.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
     serializer_class = AdminJobSerializer
-    queryset = TransportJob.objects.select_related('owner').order_by('-created_at')
+
+    def get_queryset(self):
+        queryset = TransportJob.objects.select_related('owner').prefetch_related(
+            Prefetch(
+                'offers',
+                queryset=Offer.objects.select_related('transporter')
+            )
+        ).order_by('-created_at')
+
+        # Server-side status filter
+        status_filter = self.request.query_params.get('status', '').strip().upper()
+        if status_filter and status_filter != 'ALL':
+            queryset = queryset.filter(status=status_filter)
+
+        # Server-side search
+        search = self.request.query_params.get('search', '').strip()
+        if search:
+            q_filter = (
+                Q(title__icontains=search) |
+                Q(pickup_address__icontains=search) |
+                Q(dropoff_address__icontains=search) |
+                Q(owner__first_name__icontains=search) |
+                Q(owner__last_name__icontains=search) |
+                Q(owner__email__icontains=search)
+            )
+            if search.isdigit():
+                q_filter |= Q(id=int(search))
+            queryset = queryset.filter(q_filter)
+
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        import math
+        queryset = self.filter_queryset(self.get_queryset())
+        total_count = queryset.count()
+
+        page = max(1, int(request.query_params.get('page', 1)))
+        page_size = min(100, max(1, int(request.query_params.get('page_size', 50))))
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        jobs = queryset[start:end]
+        serializer = self.get_serializer(jobs, many=True)
+
+        return Response({
+            'results': serializer.data,
+            'count': total_count,
+            'page': page,
+            'pageSize': page_size,
+            'totalPages': math.ceil(total_count / page_size) if total_count > 0 else 1,
+        })
 
 
-class AdminUserListView(generics.ListAPIView):
+class AdminJobDetailView(APIView):
+    """
+    GET /api/admin/jobs/<id>/
+    Detailed view of a single job for admin panel.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
+
+    def get(self, request, pk):
+        from logistics.serializers import TransportJobDetailSerializer, OfferDetailSerializer
+
+        job = TransportJob.objects.select_related('owner').prefetch_related(
+            Prefetch('offers', queryset=Offer.objects.select_related('transporter').order_by('-created_at'))
+        ).filter(pk=pk).first()
+
+        if not job:
+            return Response({'error': 'Job not found'}, status=404)
+
+        # Base job data
+        job_data = AdminJobSerializer(job).data
+
+        # All offers
+        offers = [
+            {
+                'id': o.id,
+                'transporter': f"{o.transporter.first_name} {o.transporter.last_name}".strip() or o.transporter.email,
+                'transporterEmail': o.transporter.email,
+                'totalPrice': float(o.total_price),
+                'priceNet': float(o.price_net) if o.price_net else None,
+                'commission': float(o.commission_amount) if o.commission_amount else None,
+                'status': o.status,
+                'message': o.message or '',
+                'createdAt': o.created_at.isoformat(),
+            }
+            for o in job.offers.all()
+        ]
+
+        # Escrow info
+        escrow_data = None
+        try:
+            from payments.models import EscrowTransaction
+            escrow = EscrowTransaction.objects.filter(booking_reference=job).first()
+            if escrow:
+                escrow_data = {
+                    'id': escrow.id,
+                    'amount': float(escrow.amount),
+                    'status': escrow.status,
+                    'createdAt': escrow.created_at.isoformat(),
+                }
+        except Exception as e:
+            logger.warning(f"AdminJobDetail: Failed to load escrow for job {pk}: {e}")
+
+        # Conversation info
+        conversation_data = None
+        try:
+            from messaging.models import Conversation, Message
+            conv = Conversation.objects.filter(job=job).first()
+            if conv:
+                msg_count = Message.objects.filter(conversation=conv).count()
+                conversation_data = {
+                    'id': conv.id,
+                    'isLocked': conv.is_locked,
+                    'messageCount': msg_count,
+                }
+        except Exception as e:
+            logger.warning(f"AdminJobDetail: Failed to load conversation for job {pk}: {e}")
+
+        # Disputes
+        disputes_data = []
+        try:
+            for d in Dispute.objects.filter(job=job).order_by('-created_at'):
+                disputes_data.append({
+                    'id': d.id,
+                    'reason': d.get_reason_display() if hasattr(d, 'get_reason_display') else d.reason,
+                    'status': d.status,
+                    'openedBy': d.opened_by.email,
+                    'createdAt': d.created_at.isoformat(),
+                })
+        except Exception as e:
+            logger.warning(f"AdminJobDetail: Failed to load disputes for job {pk}: {e}")
+
+        return Response({
+            **job_data,
+            'offers': offers,
+            'escrow': escrow_data,
+            'conversation': conversation_data,
+            'disputes': disputes_data,
+        })
+
+
+class AdminUserListView(APIView):
     """
     GET /api/admin/users/
     All non-admin users with trust/activity info.
+    Supports: ?page=1&page_size=20&role=CLIENT&search=ahmed
+    Sprint 3 R7: Server-side pagination + R6: search/filter.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN', 'MODERATOR')]
-    serializer_class = AdminUserSerializer
 
-    def get_queryset(self):
-        return User.objects.exclude(
+    def get(self, request):
+        from django.db.models import Case, When, IntegerField, Subquery, OuterRef
+        from django.db.models.functions import Coalesce
+
+        queryset = User.objects.exclude(
             role__in=['ADMIN', 'MODERATOR']
         ).select_related('trust_profile').order_by('-date_joined')
+
+        # Annotate job counts to avoid N+1 queries (X1 fix)
+        # CLIENT: count jobs they own; TRANSPORTER: count accepted offers
+        queryset = queryset.annotate(
+            _jobs_completed_count=Coalesce(
+                Case(
+                    When(role='CLIENT', then=Count(
+                        'jobs',
+                        filter=Q(jobs__status='COMPLETED')
+                    )),
+                    When(role='TRANSPORTER', then=Count(
+                        'offers',
+                        filter=Q(offers__status='ACCEPTED', offers__job__status='COMPLETED')
+                    )),
+                    default=0,
+                    output_field=IntegerField(),
+                ), 0
+            ),
+            _jobs_active_count=Coalesce(
+                Case(
+                    When(role='CLIENT', then=Count(
+                        'jobs',
+                        filter=Q(jobs__status__in=['PUBLISHED', 'MATCHED', 'IN_PROGRESS'])
+                    )),
+                    When(role='TRANSPORTER', then=Count(
+                        'offers',
+                        filter=Q(
+                            offers__status='ACCEPTED',
+                            offers__job__status__in=['PUBLISHED', 'MATCHED', 'IN_PROGRESS']
+                        )
+                    )),
+                    default=0,
+                    output_field=IntegerField(),
+                ), 0
+            )
+        )
+
+        # Filter by role
+        role = request.query_params.get('role')
+        if role and role in ('CLIENT', 'TRANSPORTER'):
+            queryset = queryset.filter(role=role)
+
+        # Search by name, email, or ID
+        search = request.query_params.get('search', '').strip()
+        if search:
+            q_filter = (
+                Q(first_name__icontains=search) |
+                Q(last_name__icontains=search) |
+                Q(email__icontains=search)
+            )
+            if search.isdigit():
+                q_filter |= Q(id=int(search))
+            queryset = queryset.filter(q_filter)
+
+        total_count = queryset.count()
+
+        # Pagination
+        page = max(1, int(request.query_params.get('page', 1)))
+        page_size = min(100, max(1, int(request.query_params.get('page_size', 50))))
+        start = (page - 1) * page_size
+        end = start + page_size
+
+        users = queryset[start:end]
+        serializer = AdminUserSerializer(users, many=True)
+
+        import math
+        return Response({
+            'results': serializer.data,
+            'count': total_count,
+            'page': page,
+            'pageSize': page_size,
+            'totalPages': math.ceil(total_count / page_size) if total_count > 0 else 1,
+        })
 
 
 class AdminActivityView(APIView):
@@ -283,3 +665,100 @@ class AdminAlertsView(APIView):
             alert_id += 1
 
         return Response(alerts)
+
+
+class AdminEscrowReleaseView(APIView):
+    """
+    POST /api/admin/escrow/<id>/release/
+    P1: Admin manually releases a HELD escrow.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+
+    def post(self, request, pk):
+        from rest_framework import status as drf_status
+        escrow = EscrowTransaction.objects.filter(pk=pk).first()
+        if not escrow:
+            return Response({'error': 'Escrow introuvable.'}, status=drf_status.HTTP_404_NOT_FOUND)
+
+        if escrow.status != 'HELD':
+            return Response(
+                {'error': f'Impossible de libérer un escrow en statut {escrow.status}. Seuls les escrows HELD peuvent être libérés.'},
+                status=drf_status.HTTP_400_BAD_REQUEST
+            )
+
+        reason = request.data.get('reason', '').strip()
+        if not reason:
+            return Response({'error': 'La raison est obligatoire.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        escrow.status = 'RELEASED'
+        escrow.save(update_fields=['status', 'updated_at'])
+
+        logger.info(
+            f"ADMIN_ACTION: escrow_released | admin={request.user.email} "
+            f"| escrow={escrow.id} | amount={escrow.amount} | job={escrow.booking_reference_id}"
+        )
+
+        try:
+            from admin_audit.services import log_admin_action
+            log_admin_action(
+                request, 'ESCROW_RELEASED', 'escrow', escrow.id,
+                target_label=f'Escrow #{escrow.id} libéré ({escrow.amount} TND)',
+                details={'reason': reason, 'job_id': escrow.booking_reference_id},
+            )
+        except Exception as e:
+            logger.warning(f"Audit log failed for escrow release #{escrow.id}: {e}")
+
+        return Response({
+            'message': f'Escrow #{escrow.id} libéré avec succès ({escrow.amount} TND).',
+            'escrowId': escrow.id,
+            'status': 'RELEASED',
+        })
+
+
+class AdminEscrowRefundView(APIView):
+    """
+    POST /api/admin/escrow/<id>/refund/
+    P1: Admin manually refunds a HELD or FAILED escrow.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
+
+    def post(self, request, pk):
+        from rest_framework import status as drf_status
+        escrow = EscrowTransaction.objects.filter(pk=pk).first()
+        if not escrow:
+            return Response({'error': 'Escrow introuvable.'}, status=drf_status.HTTP_404_NOT_FOUND)
+
+        if escrow.status not in ('HELD', 'FAILED'):
+            return Response(
+                {'error': f'Impossible de rembourser un escrow en statut {escrow.status}. Seuls HELD/FAILED sont remboursables.'},
+                status=drf_status.HTTP_400_BAD_REQUEST
+            )
+
+        reason = request.data.get('reason', '').strip()
+        if not reason:
+            return Response({'error': 'La raison est obligatoire.'}, status=drf_status.HTTP_400_BAD_REQUEST)
+
+        old_status = escrow.status
+        escrow.status = 'REFUNDED'
+        escrow.save(update_fields=['status', 'updated_at'])
+
+        logger.info(
+            f"ADMIN_ACTION: escrow_refunded | admin={request.user.email} "
+            f"| escrow={escrow.id} | amount={escrow.amount} | job={escrow.booking_reference_id}"
+        )
+
+        try:
+            from admin_audit.services import log_admin_action
+            log_admin_action(
+                request, 'ESCROW_REFUNDED', 'escrow', escrow.id,
+                target_label=f'Escrow #{escrow.id} remboursé ({escrow.amount} TND)',
+                details={'reason': reason, 'old_status': old_status, 'job_id': escrow.booking_reference_id},
+            )
+        except Exception as e:
+            logger.warning(f"Audit log failed for escrow refund #{escrow.id}: {e}")
+
+        return Response({
+            'message': f'Escrow #{escrow.id} remboursé avec succès ({escrow.amount} TND).',
+            'escrowId': escrow.id,
+            'status': 'REFUNDED',
+        })

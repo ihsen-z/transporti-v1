@@ -118,13 +118,49 @@
     font-family: var(--font-sans);
   }
 
+  .dark body,
+  .dark {
+    /* Neutral (inverted) */
+    --color-neutral-50: #0f172a;
+    --color-neutral-100: #1e293b;
+    --color-neutral-200: #334155;
+    --color-neutral-300: #475569;
+    --color-neutral-400: #94a3b8;
+    --color-neutral-500: #94a3b8;
+    --color-neutral-600: #cbd5e1;
+    --color-neutral-700: #e2e8f0;
+    --color-neutral-800: #f1f5f9;
+    --color-neutral-900: #f8fafc;
+
+    /* Brand (lightened for contrast) */
+    --color-brand: #3b82f6;
+    --color-brand-deep: #1e3a8a;
+    --color-brand-light: #60a5fa;
+
+    /* Semantic */
+    --color-success: #34d399;
+    --color-warning: #fbbf24;
+    --color-error: #f87171;
+    --color-info: #60a5fa;
+
+    /* Shadows (lighter for dark bg) */
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
+    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.5);
+  }
+
+  .dark * {
+    @apply border-neutral-700;
+  }
+
   h1,
   h2,
   h3,
   h4,
   h5,
   h6 {
-    @apply font-bold text-neutral-900;
+    @apply font-bold text-neutral-900 dark:text-neutral-100;
   }
 
   a {
@@ -237,6 +273,67 @@
   }
 }
 
+@keyframes bounceGentle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes gradientShift {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px 4px rgba(16, 185, 129, 0.2);
+  }
+}
+
+@keyframes spinOnce {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 @layer utilities {
   /* Entry Animations */
   .animate-fade-in-up {
@@ -296,6 +393,64 @@
   .hover-lift:hover {
     transform: translateY(-4px);
     @apply shadow-lg;
+  }
+
+  /* Enhanced hover-lift with scale */
+  .hover-lift-scale {
+    @apply transition-all duration-300;
+  }
+  .hover-lift-scale:hover {
+    transform: translateY(-6px) scale(1.02);
+    @apply shadow-xl;
+  }
+
+  /* Gentle bounce for CTA buttons */
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s ease-in-out infinite;
+  }
+
+  /* Gradient shimmer for premium headers */
+  .animate-gradient-shift {
+    background-size: 200% 200%;
+    animation: gradientShift 4s ease-in-out infinite;
+  }
+
+  /* Scale-in entry for cards */
+  .animate-scale-in {
+    animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Slide up entry with spring */
+  .animate-slide-up {
+    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  /* Scroll reveal (hidden by default, shown by JS) */
+  .scroll-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition:
+      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
+      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  .scroll-reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Pulse glow for important elements */
+  .animate-pulse-glow {
+    animation: pulseGlow 2s ease-in-out infinite;
+  }
+
+  /* Parallax float variant */
+  .animate-float-slow {
+    animation: float 5s ease-in-out infinite;
+  }
+
+  /* Smooth icon spin on hover */
+  .hover-spin:hover svg {
+    animation: spinOnce 0.5s ease-in-out;
   }
 }
 

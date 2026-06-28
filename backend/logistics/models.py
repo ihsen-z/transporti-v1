@@ -16,6 +16,7 @@ class TransportJob(models.Model):
     class JobType(models.TextChoices):
         TRANSPORT = 'TRANSPORT', 'Transport'
         MOVING = 'MOVING', 'Moving (Déménagement)'
+        DELIVERY = 'DELIVERY', 'Delivery (Livraison)'
 
     # Ownership
     owner = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name='jobs')
@@ -59,7 +60,16 @@ class TransportJob(models.Model):
     # Location hints (visible to transporter for precise delivery)
     pickup_hint = models.TextField(blank=True, help_text="Location tip for pickup (floor, door code, landmark...)")
     dropoff_hint = models.TextField(blank=True, help_text="Location tip for dropoff (floor, door code, landmark...)")
-    
+
+    # Return Trip (transporter-created availability)
+    is_return_trip = models.BooleanField(default=False, db_index=True,
+        help_text="True if created by a transporter indicating return trip availability")
+    available_capacity = models.CharField(max_length=255, blank=True,
+        help_text="Available capacity description for return trips (e.g. '2 tonnes, camion bâché')")
+
+    # Analytics
+    view_count = models.PositiveIntegerField(default=0, help_text="Number of times the job detail page was viewed by non-owners")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -74,7 +84,16 @@ class TransportJob(models.Model):
 
     @property
     def accepted_offer(self):
-        """Returns the ACCEPTED offer for this job, or None."""
+        """Returns the ACCEPTED offer for this job, or None.
+        Optimized: uses prefetch cache if offers were prefetched.
+        """
+        # Use prefetch cache if available (avoids N+1 queries in list views)
+        if 'offers' in getattr(self, '_prefetched_objects_cache', {}):
+            for offer in self.offers.all():
+                if offer.status == 'ACCEPTED':
+                    return offer
+            return None
+        # Fallback: direct DB query (single-object views)
         return self.offers.filter(status='ACCEPTED').first()
 
 
@@ -136,3 +155,114 @@ class Offer(models.Model):
 
     def __str__(self):
         return f"Offer #{self.id} for Job #{self.job_id} ({self.status})"
+
+
+class PricingGrid(models.Model):
+    """
+    Configurable pricing grid for automatic price estimation.
+    Managed via Django admin — no code change needed to adjust tariffs.
+    
+    FORMULA: base_rate + (distance_km × per_km_rate)
+    RANGE:   [max(min_price, base*0.8), base * max_multiplier]
+    """
+    job_type = models.CharField(
+        max_length=20, choices=TransportJob.JobType.choices,
+        unique=True, db_index=True,
+        help_text="Type de job (TRANSPORT ou MOVING)"
+    )
+    base_rate = models.DecimalField(
+        max_digits=8, decimal_places=2, default=10,
+        validators=[MinValueValidator(0)],
+        help_text="Tarif de base fixe (TND)"
+    )
+    per_km_rate = models.DecimalField(
+        max_digits=6, decimal_places=3, default=0.350,
+        validators=[MinValueValidator(0)],
+        help_text="Tarif par km (TND/km)"
+    )
+    min_price = models.DecimalField(
+        max_digits=8, decimal_places=2, default=25,
+        validators=[MinValueValidator(0)],
+        help_text="Prix minimum garanti (TND)"
+    )
+    max_multiplier = models.DecimalField(
+        max_digits=4, decimal_places=2, default=1.50,
+        validators=[MinValueValidator(1)],
+        help_text="Multiplicateur pour borne haute (ex: 1.5 = +50%)"
+    )
+    is_active = models.BooleanField(default=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    updated_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, null=True, blank=True,
+        on_delete=models.SET_NULL, related_name='pricing_updates'
+    )
+
+    class Meta:
+        verbose_name = "Grille tarifaire"
+        verbose_name_plural = "Grilles tarifaires"
+        ordering = ['job_type']
+
+    def __str__(self):
+        return f"Tarif {self.job_type}: {self.base_rate} TND + {self.per_km_rate}/km"
+
+
+class FavoriteTransporter(models.Model):
+    """
+    P2-09: Client can favorite transporters for quick access.
+    Simple junction table — one record per (client, transporter) pair.
+    """
+    client = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='favorite_transporters',
+        limit_choices_to={'role': 'CLIENT'}
+    )
+    transporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='favorited_by',
+        limit_choices_to={'role': 'TRANSPORTER'}
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ('client', 'transporter')
+        verbose_name = "Transporteur favori"
+        verbose_name_plural = "Transporteurs favoris"
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.client} ♥ {self.transporter}"
+
+
+class CounterOffer(models.Model):
+    """
+    P2-05: Structured counter-offer from client to transporter.
+    Client proposes a new price on a PENDING offer.
+    Transporter can ACCEPT (updates original offer price) or REJECT.
+    """
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'En attente'
+        ACCEPTED = 'ACCEPTED', 'Acceptée'
+        REJECTED = 'REJECTED', 'Refusée'
+        EXPIRED = 'EXPIRED', 'Expirée'
+
+    offer = models.ForeignKey(
+        Offer, on_delete=models.CASCADE, related_name='counter_offers'
+    )
+    proposed_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text="New total price proposed by client"
+    )
+    message = models.TextField(blank=True, help_text="Optional justification from client")
+    status = models.CharField(
+        max_length=20, choices=Status.choices, default=Status.PENDING, db_index=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = "Contre-offre"
+        verbose_name_plural = "Contre-offres"
+
+    def __str__(self):
+        return f"CounterOffer #{self.id} on Offer #{self.offer_id}: {self.proposed_price} TND ({self.status})"

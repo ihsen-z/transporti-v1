@@ -1,9 +1,16 @@
 "use client";
 
-import React, { useState } from "react";
-import { useRouter } from "next/navigation";
+import React, { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { ChevronLeft, ChevronRight, Check, AlertCircle } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Check,
+  AlertCircle,
+  Lightbulb,
+  MapPin,
+} from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import { JobTypeSelector } from "@/components/jobs/JobTypeSelector";
@@ -22,12 +29,17 @@ const STEPS = [
 
 export default function NewJobPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const isReturnTrip = searchParams.get("return_trip") === "true";
   const { user } = useAuth();
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(isReturnTrip ? 1 : 0); // skip type for return trips
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
   const [formData, setFormData] = useState({
-    job_type: null as "TRANSPORT" | "MOVING" | null,
+    job_type: (isReturnTrip ? "TRANSPORT" : null) as
+      | "TRANSPORT"
+      | "MOVING"
+      | null,
     pickup_address: "",
     pickup_governorate: "",
     pickup_lat: null as number | null,
@@ -44,9 +56,70 @@ export default function NewJobPage() {
     scheduled_time: "",
     price_tnd_min: "",
     price_tnd_max: "",
+    available_capacity: "", // For return trips only
   });
 
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  // L5: Price estimation state
+  const [priceEstimate, setPriceEstimate] = useState<{
+    min: number;
+    max: number;
+    distance_km: number;
+    grid_source: string;
+  } | null>(null);
+  const [estimateLoading, setEstimateLoading] = useState(false);
+
+  // L5: Fetch price estimate when coordinates and job_type are set
+  useEffect(() => {
+    const { pickup_lat, pickup_lng, dropoff_lat, dropoff_lng, job_type } =
+      formData;
+    if (pickup_lat && pickup_lng && dropoff_lat && dropoff_lng && job_type) {
+      const fetchEstimate = async () => {
+        setEstimateLoading(true);
+        try {
+          const result = await apiClient.post<{
+            min: number;
+            max: number;
+            distance_km: number;
+            grid_source: string;
+          }>("/api/jobs/estimate-price/", {
+            pickup_lat,
+            pickup_lng,
+            dropoff_lat,
+            dropoff_lng,
+            job_type,
+          });
+          const estimate = result as {
+            min: number;
+            max: number;
+            distance_km: number;
+            grid_source: string;
+          };
+          setPriceEstimate(estimate);
+          // Pre-fill budget if empty
+          if (!formData.price_tnd_min && !formData.price_tnd_max) {
+            updateFormData({
+              price_tnd_min: String(estimate.min),
+              price_tnd_max: String(estimate.max),
+            });
+          }
+        } catch (_err) {
+          // Non-blocking
+          setPriceEstimate(null);
+        } finally {
+          setEstimateLoading(false);
+        }
+      };
+      fetchEstimate();
+    }
+  }, [
+    formData.pickup_lat,
+    formData.pickup_lng,
+    formData.dropoff_lat,
+    formData.dropoff_lng,
+    formData.job_type,
+  ]);
 
   const handleNext = () => {
     setValidationError(null);
@@ -109,11 +182,12 @@ export default function NewJobPage() {
       if (payload.dropoff_lat == null) delete payload.dropoff_lat;
       if (payload.dropoff_lng == null) delete payload.dropoff_lng;
 
-      console.log("Submitting Job Data:", payload);
+      // Use different endpoint for return trips
+      const endpoint = isReturnTrip ? "/api/jobs/return-trip/" : "/api/jobs/";
       const data = await apiClient.post<{
         message: string;
         job: { id: number };
-      }>("/api/jobs/", payload);
+      }>(endpoint, payload);
 
       if (data && data.job) {
         router.push(`/jobs/${data.job.id}`);
@@ -211,6 +285,27 @@ export default function NewJobPage() {
               )}
             </div>
 
+            {/* L5: Price estimation badge */}
+            {priceEstimate && (
+              <div className="p-3 bg-accent-50 border border-accent-200 rounded-xl flex items-center gap-3 text-sm">
+                <Lightbulb className="w-5 h-5 text-accent-600 flex-shrink-0" />
+                <div>
+                  <span className="font-semibold text-accent-800">
+                    Prix estimé : {priceEstimate.min} – {priceEstimate.max} TND
+                  </span>
+                  <span className="text-accent-600 ml-2 inline-flex items-center gap-1">
+                    <MapPin className="w-3 h-3" />
+                    {priceEstimate.distance_km} km
+                  </span>
+                </div>
+              </div>
+            )}
+            {estimateLoading && (
+              <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-500 animate-pulse">
+                Calcul de l&apos;estimation en cours...
+              </div>
+            )}
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -222,7 +317,9 @@ export default function NewJobPage() {
                   onChange={(e) =>
                     updateFormData({ price_tnd_min: e.target.value })
                   }
-                  placeholder="Optionnel"
+                  placeholder={
+                    priceEstimate ? String(priceEstimate.min) : "Optionnel"
+                  }
                   className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
               </div>
@@ -236,11 +333,34 @@ export default function NewJobPage() {
                   onChange={(e) =>
                     updateFormData({ price_tnd_max: e.target.value })
                   }
-                  placeholder="Optionnel"
+                  placeholder={
+                    priceEstimate ? String(priceEstimate.max) : "Optionnel"
+                  }
                   className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
               </div>
             </div>
+
+            {/* Available capacity for return trips */}
+            {isReturnTrip && (
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  Capacité disponible
+                </label>
+                <input
+                  type="text"
+                  value={formData.available_capacity}
+                  onChange={(e) =>
+                    updateFormData({ available_capacity: e.target.value })
+                  }
+                  placeholder="Ex: 2 tonnes, camion bâché 12m³"
+                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
+                />
+                <p className="text-sm text-neutral-500 mt-1">
+                  Décrivez la capacité disponible pour attirer les bons clients.
+                </p>
+              </div>
+            )}
           </div>
         );
       case 4:
@@ -294,8 +414,21 @@ export default function NewJobPage() {
         {/* Content Card */}
         <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
           <h2 className="text-2xl font-bold text-neutral-900 mb-6">
-            {STEPS[currentStep].title}
+            {isReturnTrip && currentStep === 0
+              ? "Trajet retour"
+              : STEPS[currentStep].title}
           </h2>
+
+          {/* Return trip header info */}
+          {isReturnTrip && currentStep <= 1 && (
+            <div className="mb-6 bg-purple-50 border border-purple-200 rounded-xl p-4">
+              <p className="text-sm text-purple-700 font-medium">
+                🔄 Vous créez un <strong>trajet retour</strong> — les clients
+                qui cherchent un transport sur votre itinéraire pourront voir
+                votre disponibilité.
+              </p>
+            </div>
+          )}
 
           {renderStep()}
 

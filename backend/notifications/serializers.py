@@ -30,7 +30,7 @@ class NotificationSerializer(serializers.ModelSerializer):
 
 
 class NotificationListSerializer(serializers.ModelSerializer):
-    """Compact serializer for notification lists."""
+    """Compact serializer for notification lists — includes message + metadata for frontend."""
     
     class Meta:
         model = Notification
@@ -39,7 +39,9 @@ class NotificationListSerializer(serializers.ModelSerializer):
             'category',
             'type',
             'title',
+            'message',
             'is_read',
+            'metadata',
             'created_at',
         ]
         read_only_fields = fields
@@ -54,3 +56,39 @@ class CategoryCountSerializer(serializers.Serializer):
     """Serializer for category-based counts."""
     category = serializers.CharField()
     count = serializers.IntegerField()
+
+
+# =============================================================================
+# Device Token Serializers (Mobile Push Notifications)
+# =============================================================================
+
+class DeviceTokenRegisterSerializer(serializers.Serializer):
+    """
+    Validates device token registration from mobile clients.
+    POST /api/v1/notifications/devices/register/
+    """
+    platform = serializers.ChoiceField(
+        choices=[('ANDROID', 'Android'), ('IOS', 'iOS')],
+        required=True,
+    )
+    token = serializers.CharField(
+        max_length=500,
+        required=True,
+        help_text="FCM or APNS device token",
+    )
+    device_name = serializers.CharField(
+        max_length=100,
+        required=False,
+        default='',
+        help_text="Human-readable device name",
+    )
+
+
+class DeviceTokenListSerializer(serializers.ModelSerializer):
+    """Read-only serializer for listing user's registered devices."""
+    
+    class Meta:
+        from .models import DeviceToken
+        model = DeviceToken
+        fields = ['id', 'platform', 'device_name', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = fields

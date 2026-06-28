@@ -40,7 +40,10 @@ class TransportJobListSerializer(serializers.ModelSerializer):
         model = TransportJob
         fields = [
             'id', 'job_type', 'status', 'pickup_address', 'dropoff_address',
+            'pickup_governorate', 'dropoff_governorate',
             'scheduled_time', 'specifications', 'owner_name', 'offer_count',
+            'price_tnd_min', 'price_tnd_max',
+            'is_return_trip', 'available_capacity',
             'created_at'
         ]
         read_only_fields = fields
@@ -70,7 +73,9 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
             'scheduled_time', 'specifications', 'description', 'photos',
             'price_tnd_min', 'price_tnd_max', 'owner',
             'pickup_hint', 'dropoff_hint',
+            'is_return_trip', 'available_capacity',
             'accepted_transporter', 'has_reviewed', 'client_confirmed',
+            'view_count',
             'created_at', 'updated_at'
         ]
         read_only_fields = fields
@@ -162,6 +167,17 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         # Use centralized commission calculation (single source of truth)
         commission, price_net = calculate_commission(job.job_type, total_price)
 
+        # INTEGRITY: Strict financial validation (Phase 1 Go-Live audit)
+        from decimal import Decimal
+        expected_total = price_net + commission
+        if abs(Decimal(str(total_price)) - Decimal(str(expected_total))) > Decimal('0.01'):
+            raise serializers.ValidationError({
+                'total_price': (
+                    f'Financial integrity check failed: '
+                    f'total_price ({total_price}) != price_net ({price_net}) + commission ({commission})'
+                )
+            })
+
         validated_data['transporter'] = user
         validated_data['status'] = Offer.Status.PENDING
         validated_data['price_net'] = price_net
@@ -176,23 +192,55 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         except Exception:
             pass  # Email failure must never block business logic
 
+        # DB notification (P0 Fix)
+        try:
+            from notifications.services import notify_offer_received as db_notify_offer
+            db_notify_offer(job, offer)
+        except Exception:
+            pass
+
         return offer
 
 
 class OfferListSerializer(serializers.ModelSerializer):
     """
     Read-only serializer for offer listings.
-    Includes transporter trust badge for client-facing visibility.
+    Includes transporter trust badge for client-facing visibility,
+    and job details for the transporter's "Mes Offres" page.
     """
     transporter_name = serializers.SerializerMethodField()
+    transporter_id = serializers.IntegerField(source='transporter.id', read_only=True)
     transporter_rating = serializers.SerializerMethodField()
+    transporter_verified = serializers.SerializerMethodField()
+    transporter_jobs_count = serializers.SerializerMethodField()
+    transporter_completion_rate = serializers.SerializerMethodField()
+    transporter_moving_specialist = serializers.SerializerMethodField()
+    transporter_avatar = serializers.SerializerMethodField()
+    transporter_trust_score = serializers.SerializerMethodField()
     trust_badge = serializers.SerializerMethodField()
+    has_worked_together = serializers.SerializerMethodField()
+    past_jobs_count = serializers.SerializerMethodField()
+
+    # Job details for transporter's offer tracking view
+    job_pickup = serializers.CharField(source='job.pickup_address', read_only=True)
+    job_dropoff = serializers.CharField(source='job.dropoff_address', read_only=True)
+    job_type = serializers.CharField(source='job.job_type', read_only=True)
+    job_date = serializers.DateTimeField(source='job.scheduled_time', read_only=True)
+    client_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Offer
         fields = [
-            'id', 'job', 'status', 'total_price', 'message',
-            'transporter_name', 'transporter_rating', 'trust_badge',
+            'id', 'job', 'status', 'total_price', 'price_net',
+            'commission_amount', 'message',
+            'job_pickup', 'job_dropoff', 'job_type', 'job_date',
+            'client_name',
+            'transporter_id', 'transporter_name', 'transporter_rating',
+            'transporter_verified', 'transporter_jobs_count',
+            'transporter_completion_rate', 'transporter_moving_specialist',
+            'transporter_avatar', 'transporter_trust_score',
+            'trust_badge',
+            'has_worked_together', 'past_jobs_count',
             'valid_until', 'created_at'
         ]
         read_only_fields = fields
@@ -207,11 +255,85 @@ class OfferListSerializer(serializers.ModelSerializer):
             target=obj.transporter
         ).aggregate(avg=Avg('rating'))['avg']
         return round(float(avg), 1) if avg else 0.0
-    
+
+    def get_transporter_verified(self, obj) -> bool:
+        return getattr(obj.transporter, 'is_verified', False)
+
+    def get_transporter_jobs_count(self, obj) -> int:
+        try:
+            return obj.transporter.trust_profile.completed_jobs
+        except Exception:
+            return 0
+
+    def get_transporter_completion_rate(self, obj):
+        try:
+            tp = obj.transporter.trust_profile
+            total = tp.completed_jobs + tp.cancelled_jobs
+            if total > 0:
+                return round((tp.completed_jobs / total) * 100)
+            return None
+        except Exception:
+            return None
+
+    def get_transporter_moving_specialist(self, obj) -> bool:
+        try:
+            specs = obj.transporter.trust_profile.specializations or []
+            return 'MOVING' in specs or 'moving' in [s.lower() for s in specs]
+        except Exception:
+            return False
+
+    def get_transporter_avatar(self, obj):
+        try:
+            if hasattr(obj.transporter, 'profile') and obj.transporter.profile.avatar:
+                return obj.transporter.profile.avatar.url
+        except Exception:
+            pass
+        return None
+
+    def get_transporter_trust_score(self, obj) -> int | None:
+        """Dynamic trust score for decision-making (P1-01)."""
+        try:
+            from trust.transporter_trust import compute_transporter_trust_score
+            return compute_transporter_trust_score(obj.transporter)
+        except Exception:
+            return None
+
     def get_trust_badge(self, obj) -> dict:
         """Get trust badge for transporter (read-only exposure)."""
         from logistics.services import get_transporter_trust_badge
         return get_transporter_trust_badge(obj.transporter)
+
+    def get_client_name(self, obj) -> str:
+        """Job owner's name — visible to transporter for accepted offers."""
+        owner = obj.job.owner
+        name = f"{owner.first_name} {owner.last_name}".strip()
+        return name or owner.email.split('@')[0]
+
+    def get_has_worked_together(self, obj) -> bool:
+        """P2-07: Check if transporter has completed jobs for this client before."""
+        try:
+            client = obj.job.owner
+            return Offer.objects.filter(
+                transporter=obj.transporter,
+                job__owner=client,
+                status='ACCEPTED',
+                job__status='COMPLETED'
+            ).exclude(job=obj.job).exists()
+        except Exception:
+            return False
+
+    def get_past_jobs_count(self, obj) -> int:
+        """P2-07: Number of past completed jobs between this pair."""
+        try:
+            client = obj.job.owner
+            return Offer.objects.filter(
+                transporter=obj.transporter,
+                job__owner=client,
+                status='ACCEPTED',
+                job__status='COMPLETED'
+            ).exclude(job=obj.job).count()
+        except Exception:
+            return 0
 
 
 class OfferDetailSerializer(serializers.ModelSerializer):
@@ -304,12 +426,15 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     """
     first_name = serializers.CharField(source='user.first_name')
     last_name = serializers.CharField(source='user.last_name')
-    avatar_url = serializers.CharField(source='user.profile.avatar_url', read_only=True)
+    email = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
+    bio = serializers.SerializerMethodField()
     joined_at = serializers.DateTimeField(source='user.date_joined', read_only=True)
     
     # Trust Profile Fields
     is_verified = serializers.BooleanField(read_only=True)
-    trust_score = serializers.IntegerField(read_only=True)
+    trust_score = serializers.SerializerMethodField()
     vehicle_type = serializers.CharField(read_only=True)
     vehicle_capacity_kg = serializers.DecimalField(max_digits=8, decimal_places=1, read_only=True)
     vehicle_photos = serializers.JSONField(read_only=True)
@@ -317,32 +442,410 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     specializations = serializers.JSONField(read_only=True)
     completion_rate = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
     total_jobs_completed = serializers.IntegerField(read_only=True)
+    avg_response_time_min = serializers.IntegerField(source='response_time_avg_minutes', read_only=True)
+    insurance_valid_until = serializers.DateField(read_only=True)
     
-    # Reviews (Summary)
+    # Reviews (Summary) — annotation-aware (PERF-T1)
     rating = serializers.SerializerMethodField()
     review_count = serializers.SerializerMethodField()
+
+    # P2-08: Return trip activity
+    return_trips_completed = serializers.SerializerMethodField()
+    active_return_trips = serializers.SerializerMethodField()
 
     class Meta:
         from trust.models import TrustProfile
         model = TrustProfile
         fields = [
-            'first_name', 'last_name', 'avatar_url', 'joined_at',
+            'first_name', 'last_name', 'email', 'phone',
+            'avatar_url', 'bio', 'joined_at',
             'is_verified', 'trust_score', 
             'vehicle_type', 'vehicle_capacity_kg', 'vehicle_photos',
             'service_areas', 'specializations',
             'completion_rate', 'total_jobs_completed',
-            'rating', 'review_count'
+            'avg_response_time_min', 'insurance_valid_until',
+            'rating', 'review_count',
+            'return_trips_completed', 'active_return_trips',
         ]
 
+    def _is_owner(self) -> bool:
+        """Check if the requesting user is the profile owner."""
+        return self.context.get('is_owner', False)
+
+    def get_email(self, obj) -> str:
+        """Full email for owner, masked for others (SEC-T2)."""
+        if self._is_owner():
+            return obj.user.email
+        email = obj.user.email or ''
+        if '@' in email:
+            local, domain = email.split('@', 1)
+            masked_local = local[0] + '***' if local else '***'
+            return f"{masked_local}@{domain}"
+        return '***'
+
+    def get_phone(self, obj) -> str:
+        """Full phone for owner, masked for others (SEC-T2)."""
+        if self._is_owner():
+            return obj.user.phone or ''
+        phone = obj.user.phone or ''
+        if len(phone) >= 4:
+            return phone[:4] + ' XX XXX ' + phone[-2:]
+        return '***' if phone else ''
+
+    def get_bio(self, obj) -> str:
+        """Bio from user Profile (UX-T5)."""
+        try:
+            return obj.user.profile.bio or ''
+        except Exception:
+            return ''
+
+    def get_avatar_url(self, obj) -> str:
+        """Return avatar URL from ImageField or legacy URLField."""
+        try:
+            profile = obj.user.profile
+            if profile.avatar and hasattr(profile.avatar, 'url'):
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(profile.avatar.url)
+                return profile.avatar.url
+            if profile.avatar_url:
+                return profile.avatar_url
+        except Exception:
+            pass
+        return ''
+
     def get_rating(self, obj) -> float:
+        """Annotation-aware rating (PERF-T1)."""
+        if hasattr(obj, '_avg_rating'):
+            return round(float(obj._avg_rating), 1) if obj._avg_rating else 0.0
         from reviews.models import Review
         from django.db.models import Avg
         avg = Review.objects.filter(
             target=obj.user
         ).aggregate(avg=Avg('rating'))['avg']
         return round(float(avg), 1) if avg else 0.0
-
     def get_review_count(self, obj) -> int:
+        """Annotation-aware review count (PERF-T1)."""
+        if hasattr(obj, '_review_count'):
+            return obj._review_count
         from reviews.models import Review
         return Review.objects.filter(target=obj.user).count()
 
+    def get_trust_score(self, obj) -> int:
+        """Dynamic trust score (BL-T1)."""
+        try:
+            from trust.transporter_trust import compute_transporter_trust_score
+            result = compute_transporter_trust_score(obj)
+            return result['score']
+        except Exception:
+            return obj.trust_score  # fallback to cached DB field
+
+    def get_return_trips_completed(self, obj) -> int:
+        """P2-08: Number of return trips this transporter has completed."""
+        try:
+            return TransportJob.objects.filter(
+                owner=obj.user,
+                is_return_trip=True,
+                status='COMPLETED'
+            ).count()
+        except Exception:
+            return 0
+
+    def get_active_return_trips(self, obj) -> int:
+        """P2-08: Number of currently active return trip offers."""
+        try:
+            return TransportJob.objects.filter(
+                owner=obj.user,
+                is_return_trip=True,
+                status='PUBLISHED'
+            ).count()
+        except Exception:
+            return 0
+
+
+class TransporterProfileEditSerializer(serializers.Serializer):
+    """
+    Serializer for transporters editing their own profile.
+    Handles both User fields and TrustProfile fields.
+    Email is NOT included — email changes require a separate verified flow (SEC-T1).
+    """
+    # User fields (email excluded — SEC-T1)
+    first_name = serializers.CharField(min_length=2, max_length=150, required=False)
+    last_name = serializers.CharField(min_length=2, max_length=150, required=False)
+    phone = serializers.RegexField(
+        regex=r'^\+?216?\d{8}$',
+        max_length=20,
+        required=False,
+        allow_blank=True,
+        error_messages={'invalid': 'Format téléphone invalide. Exemple: +21612345678'}
+    )
+    bio = serializers.CharField(max_length=500, required=False, allow_blank=True)
+
+    # TrustProfile fields
+    vehicle_type = serializers.CharField(max_length=50, required=False, allow_blank=True)
+    vehicle_capacity_kg = serializers.DecimalField(
+        max_digits=8, decimal_places=1, required=False, allow_null=True
+    )
+    service_areas = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        allow_empty=True
+    )
+    specializations = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        allow_empty=True
+    )
+    vehicle_photos = serializers.ListField(
+        child=serializers.URLField(),
+        required=False,
+        allow_empty=True
+    )
+
+    VALID_GOVERNORATES = [
+        'Tunis', 'Ariana', 'Ben Arous', 'Manouba', 'Nabeul', 'Zaghouan',
+        'Bizerte', 'Béja', 'Jendouba', 'Le Kef', 'Siliana', 'Sousse',
+        'Monastir', 'Mahdia', 'Sfax', 'Kairouan', 'Kasserine', 'Sidi Bouzid',
+        'Gabès', 'Médenine', 'Tataouine', 'Gafsa', 'Tozeur', 'Kébili',
+    ]
+
+    def validate_service_areas(self, value):
+        invalid = [v for v in value if v not in self.VALID_GOVERNORATES]
+        if invalid:
+            raise serializers.ValidationError(
+                f"Gouvernorats invalides: {', '.join(invalid)}"
+            )
+        return value
+
+    def validate_vehicle_capacity_kg(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("La capacité doit être positive.")
+        return value
+
+# =============================================================================
+# TRANSPORTER MISSION SERIALIZERS
+# =============================================================================
+
+class TransporterMissionSerializer(serializers.ModelSerializer):
+    """
+    Serializer for a transporter's assigned missions.
+    Shows the job + the transporter's accepted offer details.
+    """
+    client_name = serializers.SerializerMethodField()
+    offer_price = serializers.SerializerMethodField()
+    offer_price_net = serializers.SerializerMethodField()
+    offer_commission = serializers.SerializerMethodField()
+
+    class Meta:
+        model = TransportJob
+        fields = [
+            'id', 'job_type', 'status',
+            'pickup_address', 'pickup_governorate',
+            'dropoff_address', 'dropoff_governorate',
+            'scheduled_time', 'description',
+            'client_name', 'offer_price', 'offer_price_net', 'offer_commission',
+            'is_return_trip', 'available_capacity',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = fields
+
+    def get_client_name(self, obj) -> str:
+        owner = obj.owner
+        name = f"{owner.first_name} {owner.last_name}".strip()
+        return name or owner.email.split('@')[0]
+
+    def _get_accepted_offer(self, obj):
+        """Get the accepted offer cached on the instance."""
+        if not hasattr(obj, '_cached_accepted_offer'):
+            request = self.context.get('request')
+            if request:
+                obj._cached_accepted_offer = obj.offers.filter(
+                    transporter=request.user, status='ACCEPTED'
+                ).first()
+            else:
+                obj._cached_accepted_offer = obj.accepted_offer
+        return obj._cached_accepted_offer
+
+    def get_offer_price(self, obj) -> float:
+        offer = self._get_accepted_offer(obj)
+        return float(offer.total_price) if offer else 0
+
+    def get_offer_price_net(self, obj) -> float:
+        offer = self._get_accepted_offer(obj)
+        return float(offer.price_net) if offer else 0
+
+    def get_offer_commission(self, obj) -> float:
+        offer = self._get_accepted_offer(obj)
+        return float(offer.commission_amount) if offer else 0
+
+
+class ReturnTripCreateSerializer(serializers.ModelSerializer):
+    """
+    Serializer for transporters creating return trip availability.
+    Similar to TransportJobCreateSerializer but with is_return_trip flag.
+    """
+    class Meta:
+        model = TransportJob
+        fields = [
+            'job_type', 'pickup_address', 'pickup_governorate', 'pickup_lat', 'pickup_lng',
+            'dropoff_address', 'dropoff_governorate', 'dropoff_lat', 'dropoff_lng',
+            'scheduled_time', 'specifications', 'description',
+            'price_tnd_min', 'price_tnd_max',
+            'available_capacity',
+        ]
+
+    def validate_scheduled_time(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError("Scheduled time must be in the future.")
+        return value
+
+    def create(self, validated_data):
+        validated_data['owner'] = self.context['request'].user
+        validated_data['status'] = TransportJob.Status.PUBLISHED
+        validated_data['is_return_trip'] = True
+        return super().create(validated_data)
+
+
+class ClientProfileUpdateSerializer(serializers.Serializer):
+    """
+    Validation serializer for PATCH /api/client/profile/me/.
+    Email is NOT included — email changes require a separate verified flow.
+    """
+    first_name = serializers.CharField(min_length=2, max_length=50, required=False)
+    last_name = serializers.CharField(min_length=2, max_length=50, required=False)
+    phone = serializers.RegexField(
+        regex=r'^\+?216?\d{8}$',
+        max_length=20,
+        required=False,
+        allow_blank=True,
+        error_messages={'invalid': 'Format téléphone invalide. Exemple: +21612345678'}
+    )
+    bio = serializers.CharField(max_length=500, required=False, allow_blank=True)
+    address_summary = serializers.CharField(max_length=255, required=False, allow_blank=True)
+
+
+class ClientProfileSerializer(serializers.Serializer):
+    """
+    Public profile for clients.
+    Returns user info + activity stats.
+    Masks email/phone for non-owners (privacy protection).
+    """
+    first_name = serializers.CharField()
+    last_name = serializers.CharField()
+    email = serializers.SerializerMethodField()
+    phone = serializers.SerializerMethodField()
+    avatar_url = serializers.SerializerMethodField()
+    joined_at = serializers.DateTimeField(source='date_joined')
+    role = serializers.CharField()
+    bio = serializers.SerializerMethodField()
+    address_summary = serializers.SerializerMethodField()
+
+    # Computed stats
+    total_jobs_posted = serializers.SerializerMethodField()
+    completed_jobs = serializers.SerializerMethodField()
+    active_jobs = serializers.SerializerMethodField()
+    total_offers_received = serializers.SerializerMethodField()
+
+    # Reviews
+    rating = serializers.SerializerMethodField()
+    review_count = serializers.SerializerMethodField()
+
+    # Trust Score (visible by both client and transporters — BL5)
+    client_trust_score = serializers.SerializerMethodField()
+
+    def _is_owner(self) -> bool:
+        """Check if the requesting user is the profile owner."""
+        return self.context.get('is_owner', False)
+
+    def get_email(self, obj) -> str:
+        """Full email for owner, masked for others."""
+        if self._is_owner():
+            return obj.email
+        email = obj.email or ''
+        if '@' in email:
+            local, domain = email.split('@', 1)
+            masked_local = local[0] + '***' if local else '***'
+            return f"{masked_local}@{domain}"
+        return '***'
+
+    def get_phone(self, obj) -> str:
+        """Full phone for owner, masked for others."""
+        if self._is_owner():
+            return obj.phone or ''
+        phone = obj.phone or ''
+        if len(phone) >= 4:
+            return phone[:4] + ' XX XXX ' + phone[-2:]
+        return '***' if phone else ''
+
+    def get_avatar_url(self, obj) -> str:
+        try:
+            profile = obj.profile
+            if profile.avatar and hasattr(profile.avatar, 'url'):
+                request = self.context.get('request')
+                if request:
+                    return request.build_absolute_uri(profile.avatar.url)
+                return profile.avatar.url
+            if profile.avatar_url:
+                return profile.avatar_url
+        except Exception:
+            pass
+        return ''
+
+    def get_bio(self, obj) -> str:
+        try:
+            return obj.profile.bio or ''
+        except Exception:
+            return ''
+
+    def get_address_summary(self, obj) -> str:
+        try:
+            return obj.profile.address_summary or ''
+        except Exception:
+            return ''
+
+    def get_total_jobs_posted(self, obj) -> int:
+        # Use pre-computed annotation if available (from view queryset)
+        if hasattr(obj, '_total_jobs_posted'):
+            return obj._total_jobs_posted
+        return TransportJob.objects.filter(owner=obj).count()
+
+    def get_completed_jobs(self, obj) -> int:
+        if hasattr(obj, '_completed_jobs'):
+            return obj._completed_jobs
+        return TransportJob.objects.filter(
+            owner=obj, status='COMPLETED'
+        ).count()
+
+    def get_active_jobs(self, obj) -> int:
+        if hasattr(obj, '_active_jobs'):
+            return obj._active_jobs
+        return TransportJob.objects.filter(
+            owner=obj, status__in=['PUBLISHED', 'MATCHED', 'IN_PROGRESS']
+        ).count()
+
+    def get_total_offers_received(self, obj) -> int:
+        if hasattr(obj, '_total_offers_received'):
+            return obj._total_offers_received
+        from logistics.models import Offer
+        return Offer.objects.filter(job__owner=obj).count()
+
+    def get_rating(self, obj) -> float:
+        if hasattr(obj, '_avg_rating'):
+            return round(float(obj._avg_rating), 1) if obj._avg_rating else 0.0
+        from reviews.models import Review
+        from django.db.models import Avg
+        avg = Review.objects.filter(
+            target=obj
+        ).aggregate(avg=Avg('rating'))['avg']
+        return round(float(avg), 1) if avg else 0.0
+
+    def get_review_count(self, obj) -> int:
+        if hasattr(obj, '_review_count'):
+            return obj._review_count
+        from reviews.models import Review
+        return Review.objects.filter(target=obj).count()
+
+    def get_client_trust_score(self, obj) -> dict:
+        """Compute client trust score (visible by both owner and visitors)."""
+        from trust.client_trust import compute_client_trust_score
+        return compute_client_trust_score(obj)

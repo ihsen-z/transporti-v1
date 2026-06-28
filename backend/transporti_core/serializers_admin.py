@@ -10,8 +10,11 @@ from users.models import User
 
 class AdminJobSerializer(serializers.ModelSerializer):
     """
-    Admin view of jobs with owner/transporter names.
+    Admin view of jobs with client/transporter details.
     Maps to frontend AdminJob interface.
+    
+    Performance: Uses a cached _accepted_offer to avoid N+1 queries.
+    Price: Returns accepted offer price > client budget > 0.
     """
     clientName = serializers.SerializerMethodField()
     clientEmail = serializers.SerializerMethodField()
@@ -24,6 +27,7 @@ class AdminJobSerializer(serializers.ModelSerializer):
     delivery = serializers.CharField(source='dropoff_address')
     price = serializers.SerializerMethodField()
     transporter = serializers.SerializerMethodField()
+    offersCount = serializers.SerializerMethodField()
 
     class Meta:
         model = TransportJob
@@ -33,8 +37,23 @@ class AdminJobSerializer(serializers.ModelSerializer):
             'clientName', 'clientEmail',
             'transporterName', 'transporterEmail',
             'cityFrom', 'cityTo', 'job_type',
+            'offersCount',
         ]
         read_only_fields = fields
+
+    def _get_accepted_offer(self, obj):
+        """Cache accepted offer per instance to eliminate N+1."""
+        if not hasattr(obj, '_cached_accepted_offer'):
+            # If prefetched, use it; otherwise query
+            if hasattr(obj, '_prefetched_objects_cache') and 'offers' in obj._prefetched_objects_cache:
+                obj._cached_accepted_offer = next(
+                    (o for o in obj.offers.all() if o.status == 'ACCEPTED'), None
+                )
+            else:
+                obj._cached_accepted_offer = Offer.objects.filter(
+                    job=obj, status='ACCEPTED'
+                ).select_related('transporter').first()
+        return obj._cached_accepted_offer
 
     def get_title(self, obj) -> str:
         desc = obj.description or ''
@@ -49,6 +68,10 @@ class AdminJobSerializer(serializers.ModelSerializer):
         return obj.owner.email
 
     def get_price(self, obj):
+        """Return accepted offer price (real transaction value) > client budget > 0."""
+        accepted = self._get_accepted_offer(obj)
+        if accepted and accepted.total_price:
+            return float(accepted.total_price)
         if obj.price_tnd_max:
             return float(obj.price_tnd_max)
         if obj.price_tnd_min:
@@ -56,33 +79,30 @@ class AdminJobSerializer(serializers.ModelSerializer):
         return 0
 
     def get_transporter(self, obj) -> str:
-        accepted_offer = Offer.objects.filter(
-            job=obj,
-            status='ACCEPTED'
-        ).select_related('transporter').first()
-        if accepted_offer:
-            t = accepted_offer.transporter
+        accepted = self._get_accepted_offer(obj)
+        if accepted:
+            t = accepted.transporter
             return f"{t.first_name} {t.last_name}".strip() or t.email
         return ''
 
     def get_transporterName(self, obj) -> str:
-        accepted_offer = Offer.objects.filter(
-            job=obj,
-            status='ACCEPTED'
-        ).select_related('transporter').first()
-        if accepted_offer:
-            t = accepted_offer.transporter
+        accepted = self._get_accepted_offer(obj)
+        if accepted:
+            t = accepted.transporter
             return f"{t.first_name} {t.last_name}".strip() or t.email
         return ''
 
     def get_transporterEmail(self, obj) -> str:
-        accepted_offer = Offer.objects.filter(
-            job=obj,
-            status='ACCEPTED'
-        ).select_related('transporter').first()
-        if accepted_offer:
-            return accepted_offer.transporter.email
+        accepted = self._get_accepted_offer(obj)
+        if accepted:
+            return accepted.transporter.email
         return ''
+
+    def get_offersCount(self, obj) -> int:
+        """Count of all offers (prefetched or query)."""
+        if hasattr(obj, '_prefetched_objects_cache') and 'offers' in obj._prefetched_objects_cache:
+            return len(obj.offers.all())
+        return obj.offers.count()
 
 
 class AdminUserSerializer(serializers.ModelSerializer):
@@ -147,6 +167,10 @@ class AdminUserSerializer(serializers.ModelSerializer):
             return 'NEW'
 
     def get_jobsCompleted(self, obj) -> int:
+        """Read from queryset annotation to avoid N+1 queries."""
+        if hasattr(obj, '_jobs_completed_count'):
+            return obj._jobs_completed_count
+        # Fallback for single-object serialization (e.g., detail view)
         if obj.role == 'CLIENT':
             return TransportJob.objects.filter(owner=obj, status='COMPLETED').count()
         elif obj.role == 'TRANSPORTER':
@@ -158,6 +182,10 @@ class AdminUserSerializer(serializers.ModelSerializer):
         return 0
 
     def get_jobsActive(self, obj) -> int:
+        """Read from queryset annotation to avoid N+1 queries."""
+        if hasattr(obj, '_jobs_active_count'):
+            return obj._jobs_active_count
+        # Fallback for single-object serialization (e.g., detail view)
         active_statuses = ['PUBLISHED', 'MATCHED', 'IN_PROGRESS']
         if obj.role == 'CLIENT':
             return TransportJob.objects.filter(owner=obj, status__in=active_statuses).count()
@@ -183,7 +211,15 @@ class AdminUserSerializer(serializers.ModelSerializer):
         if obj.role != 'TRANSPORTER':
             return None
         from payments.models import EscrowTransaction
+        # Get job IDs where this transporter has an accepted offer
+        accepted_job_ids = Offer.objects.filter(
+            transporter=obj,
+            status='ACCEPTED'
+        ).values_list('job_id', flat=True)
+        # Sum only the released escrows for those specific jobs
         total = EscrowTransaction.objects.filter(
-            booking_reference__escrow_transactions__status='RELEASED',
+            booking_reference_id__in=accepted_job_ids,
+            status='RELEASED'
         ).aggregate(total=Sum('amount'))['total']
         return float(total) if total else 0
+

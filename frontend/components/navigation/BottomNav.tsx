@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -9,36 +8,68 @@ import {
   Bell,
   MessageSquare,
   Settings,
+  Search,
+  FileText,
+  PlusCircle,
+  UserCircle,
 } from "lucide-react";
-import { getNotifications } from "@/lib/services/notifications";
-import { getUnreadCount } from "@/lib/notifications";
+import { useAuth } from "@/hooks/useAuth";
+import { useNotifications } from "@/contexts/NotificationContext";
 
 export default function BottomNav() {
   const pathname = usePathname();
-  const [unreadCount, setUnreadCount] = useState(0);
+  const { user } = useAuth();
+  const { unreadCount } = useNotifications();
+  const role = user?.role?.toUpperCase();
 
-  const fetchCount = useCallback(async () => {
-    try {
-      const result = await getNotifications();
-      setUnreadCount(getUnreadCount(result.data));
-    } catch (e) {
-      // silent fail
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCount();
-    const interval = setInterval(fetchCount, 30000);
-    return () => clearInterval(interval);
-  }, [fetchCount]);
-
-  const navItems = [
-    { href: "/dashboard", icon: LayoutDashboard, label: "Accueil", badge: 0 },
-    { href: "/jobs", icon: Truck, label: "Transports", badge: 0 },
-    { href: "/messages", icon: MessageSquare, label: "Messages", badge: 0 },
-    { href: "/notifications", icon: Bell, label: "Notifs", badge: unreadCount },
-    { href: "/settings", icon: Settings, label: "Profil", badge: 0 },
-  ];
+  // Role-aware nav items
+  const navItems =
+    role === "TRANSPORTER"
+      ? [
+          {
+            href: "/dashboard",
+            icon: LayoutDashboard,
+            label: "Accueil",
+            badge: 0,
+          },
+          { href: "/jobs/browse", icon: Search, label: "Missions", badge: 0 },
+          { href: "/offers", icon: FileText, label: "Offres", badge: 0 },
+          {
+            href: "/notifications",
+            icon: Bell,
+            label: "Notifs",
+            badge: unreadCount,
+          },
+          {
+            href: "/messages",
+            icon: MessageSquare,
+            label: "Messages",
+            badge: 0,
+          },
+          { href: `/profile/${user?.id || ""}`, icon: UserCircle, label: "Profil", badge: 0 },
+        ]
+      : [
+          {
+            href: "/dashboard",
+            icon: LayoutDashboard,
+            label: "Accueil",
+            badge: 0,
+          },
+          { href: "/jobs", icon: Truck, label: "Transports", badge: 0 },
+          {
+            href: "/messages",
+            icon: MessageSquare,
+            label: "Messages",
+            badge: 0,
+          },
+          {
+            href: "/notifications",
+            icon: Bell,
+            label: "Notifs",
+            badge: unreadCount,
+          },
+          { href: `/profile/${user?.id || ""}`, icon: UserCircle, label: "Profil", badge: 0 },
+        ];
 
   return (
     <nav className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-neutral-200 z-fixed safe-area-bottom">

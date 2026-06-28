@@ -39,22 +39,22 @@ export default function AuthLayout({
             professionnels en Tunisie.
           </p>
 
-          {/* Glass stats card */}
+          {/* Glass trust card */}
           <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-8 animate-fade-in-up delay-300">
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold">3,200+</div>
-                <div className="text-xs text-primary-200 mt-1">Clients</div>
+                <div className="text-2xl font-bold">🚛</div>
+                <div className="text-xs text-primary-200 mt-1">Transport</div>
               </div>
               <div className="border-x border-white/20">
-                <div className="text-2xl font-bold">500+</div>
+                <div className="text-2xl font-bold">🏠</div>
                 <div className="text-xs text-primary-200 mt-1">
-                  Transporteurs
+                  Déménagement
                 </div>
               </div>
               <div>
-                <div className="text-2xl font-bold">24/7</div>
-                <div className="text-xs text-primary-200 mt-1">Support</div>
+                <div className="text-2xl font-bold">📦</div>
+                <div className="text-xs text-primary-200 mt-1">Livraison</div>
               </div>
             </div>
           </div>

@@ -42,3 +42,12 @@ class PaymentRateThrottle(UserRateThrottle):
     Allows 10 requests per minute for security.
     """
     scope = 'payment'
+
+
+class MessageRateThrottle(UserRateThrottle):
+    """
+    Throttle for messaging endpoints.
+    Allows 60 requests per minute to support polling (10s interval)
+    plus user interactions without hitting rate limits.
+    """
+    scope = 'messaging'

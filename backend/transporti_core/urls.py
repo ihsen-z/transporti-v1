@@ -9,9 +9,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from .views_admin import (
-    AdminStatsView, AdminJobListView, AdminUserListView,
+    AdminStatsView, AdminJobListView, AdminJobDetailView, AdminUserListView,
     AdminActivityView, AdminAlertsView,
+    AdminJobCancelView, AdminJobForceStatusView,
+    AdminEscrowReleaseView, AdminEscrowRefundView,
 )
+from .views_admin_users import (
+    AdminUserSuspendView, AdminUserActivateView,
+    AdminUserResetPasswordView, AdminUserDetailView,
+    AdminUserWarnView, AdminUserEditView,
+)
+from admin_audit.views import AdminAuditLogView
+from .views_admin_export import AdminExportUsersCSV, AdminExportJobsCSV
 
 
 def health_check(request):
@@ -40,6 +49,41 @@ def health_check(request):
     return JsonResponse(status)
 
 
+# =============================================================================
+# API V1 — Versioned routes for mobile clients
+# =============================================================================
+# Mobile apps MUST use /api/v1/ to ensure forward compatibility.
+# The /api/ routes (below) remain for web frontend backward compatibility.
+
+v1_api_patterns = [
+    # Auth Module
+    path('auth/', include('users.urls')),
+
+    # Logistics Module (Jobs & Offers)
+    path('', include('logistics.urls')),
+
+    # Payments Module
+    path('', include('payments.urls')),
+
+    # Support Module (Disputes)
+    path('', include('support.urls')),
+
+    # Messaging Module
+    path('', include('messaging.urls')),
+
+    # Trust Module
+    path('trust/', include('trust.urls')),
+
+    # Notifications Module
+    path('notifications/', include('notifications.urls')),
+
+    # Reviews Module
+    path('', include('reviews.urls')),
+
+    # Realtime DB Access API
+    path('realtime/', include('realtime_api.urls')),
+]
+
 urlpatterns = [
     # Health Check (unauthenticated)
     path('health/', health_check, name='health_check'),
@@ -49,7 +93,15 @@ urlpatterns = [
     # API Schema
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
     path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+
+    # =========================================================================
+    # V1 API (for mobile clients)
+    # =========================================================================
+    path('api/v1/', include((v1_api_patterns, 'v1'))),
     
+    # =========================================================================
+    # Legacy API (for web frontend — backward compatible)
+    # =========================================================================
     # Auth Module
     path('api/auth/', include('users.urls')),
     
@@ -80,9 +132,31 @@ urlpatterns = [
     # Admin Panel API (Sprint 2)
     path('api/admin/stats/', AdminStatsView.as_view(), name='admin_stats'),
     path('api/admin/jobs/', AdminJobListView.as_view(), name='admin_jobs'),
+    path('api/admin/jobs/<int:pk>/', AdminJobDetailView.as_view(), name='admin_job_detail'),
+    path('api/admin/jobs/<int:pk>/cancel/', AdminJobCancelView.as_view(), name='admin_job_cancel'),
+    path('api/admin/jobs/<int:pk>/status/', AdminJobForceStatusView.as_view(), name='admin_job_force_status'),
     path('api/admin/users/', AdminUserListView.as_view(), name='admin_users'),
     path('api/admin/activity/', AdminActivityView.as_view(), name='admin_activity'),
     path('api/admin/alerts/', AdminAlertsView.as_view(), name='admin_alerts'),
+
+    # Admin User Management (Sprint 1 R2)
+    path('api/admin/users/<int:user_id>/', AdminUserDetailView.as_view(), name='admin_user_detail'),
+    path('api/admin/users/<int:user_id>/suspend/', AdminUserSuspendView.as_view(), name='admin_user_suspend'),
+    path('api/admin/users/<int:user_id>/activate/', AdminUserActivateView.as_view(), name='admin_user_activate'),
+    path('api/admin/users/<int:user_id>/reset-password/', AdminUserResetPasswordView.as_view(), name='admin_user_reset_password'),
+    path('api/admin/users/<int:user_id>/warn/', AdminUserWarnView.as_view(), name='admin_user_warn'),
+    path('api/admin/users/<int:user_id>/edit/', AdminUserEditView.as_view(), name='admin_user_edit'),
+
+    # Admin Audit Trail (Sprint 2 R8)
+    path('api/admin/audit-log/', AdminAuditLogView.as_view(), name='admin_audit_log'),
+
+    # Admin Export CSV (Sprint 3 R6)
+    path('api/admin/users/export/', AdminExportUsersCSV.as_view(), name='admin_users_export'),
+    path('api/admin/jobs/export/', AdminExportJobsCSV.as_view(), name='admin_jobs_export'),
+
+    # Admin Escrow Management (P1)
+    path('api/admin/escrow/<int:pk>/release/', AdminEscrowReleaseView.as_view(), name='admin_escrow_release'),
+    path('api/admin/escrow/<int:pk>/refund/', AdminEscrowRefundView.as_view(), name='admin_escrow_refund'),
 ]
 
 # Serve media files in development

@@ -88,6 +88,16 @@ class Review(models.Model):
     
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    # Double-blind fields (L4 — reviews hidden until both parties submit)
+    is_revealed = models.BooleanField(
+        default=False,
+        help_text="True when both parties have submitted their review (or auto-revealed after 7 days)"
+    )
+    revealed_at = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Timestamp when the review was revealed"
+    )
     
     class Meta:
         # One review per job per role
@@ -124,7 +134,7 @@ class Review(models.Model):
         # Reviewer must be participant
         if self.reviewer:
             if self.role == ReviewRole.CLIENT:
-                if self.job and self.reviewer != self.job.client:
+                if self.job and self.reviewer != self.job.owner:
                     raise ValidationError("Only the job client can leave a CLIENT review.")
             elif self.role == ReviewRole.TRANSPORTER:
                 if self.job and hasattr(self.job, 'accepted_offer'):
@@ -151,6 +161,10 @@ class Review(models.Model):
         # Update target's trust score based on review average
         if is_new and not self.trust_impact_applied:
             self._apply_trust_impact()
+        
+        # Double-blind: check if both parties submitted (L4)
+        if is_new:
+            self._check_and_reveal()
 
     def _apply_trust_impact(self):
         """Recalculate target's trust score from all their reviews."""
@@ -180,6 +194,24 @@ class Review(models.Model):
                 )
         except Exception as e:
             logger.error(f"TRUST_IMPACT_FAILED: review_id={self.id}, error={str(e)}")
+
+    def _check_and_reveal(self):
+        """Double-blind: reveal all reviews for this job if both parties submitted."""
+        from django.utils import timezone as tz
+        try:
+            reviews = Review.objects.filter(job=self.job)
+            roles_submitted = set(reviews.values_list('role', flat=True))
+            if ReviewRole.CLIENT in roles_submitted and ReviewRole.TRANSPORTER in roles_submitted:
+                # Both parties submitted — reveal all
+                unrevealed = reviews.filter(is_revealed=False)
+                reveal_count = unrevealed.count()
+                if reveal_count > 0:
+                    unrevealed.update(is_revealed=True, revealed_at=tz.now())
+                    logger.info(
+                        f"REVIEWS_REVEALED: job_id={self.job_id}, count={reveal_count}, trigger=both_submitted"
+                    )
+        except Exception as e:
+            logger.error(f"REVIEW_REVEAL_FAILED: job_id={self.job_id}, error={str(e)}")
 
 
 class ReviewAbuseLog(models.Model):

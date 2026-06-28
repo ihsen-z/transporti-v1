@@ -65,9 +65,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_USE_BACKEND=true
       - NEXT_PUBLIC_API_URL=http://localhost:8000
-      - NEXT_PUBLIC_FALLBACK_TO_MOCK=true
       - NEXT_PUBLIC_API_TIMEOUT=5000
     volumes:
       - ./frontend:/app
@@ -79,6 +77,32 @@ services:
       sh -c "
         npm install &&
         npm run dev
+      "
+
+  # ── Scheduler (Periodic Tasks) ──────────────────────────
+  scheduler:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: transporti_scheduler
+    restart: unless-stopped
+    environment:
+      - DATABASE_URL=postgres://transporti:transporti_dev@db:5432/transporti_v1
+      - SECRET_KEY=django-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-secret-key-2026
+      - JWT_SECRET_KEY=jwt-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-jwt-key-2026
+      - DEBUG=True
+      - ENV=development
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+    command: >
+      sh -c "
+        echo '⏳ Waiting for backend migrations...' &&
+        sleep 10 &&
+        echo '🕐 Starting scheduler...' &&
+        python manage.py run_scheduled_tasks
       "
 
 volumes:

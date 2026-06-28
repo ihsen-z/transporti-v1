@@ -15,7 +15,7 @@ export default function JobCard({ job }: JobCardProps) {
   const statusColor = getStatusColor(job.status);
   const statusLabel = getStatusLabel(job.status);
 
-  // Use real API fields, fallback to legacy mock fields
+  // Use real API fields, fallback to legacy fields
   const pickup = job.pickup_address || job.pickup || "";
   const dropoff = job.dropoff_address || job.delivery || "";
   const offerCount = job.offer_count ?? 0;

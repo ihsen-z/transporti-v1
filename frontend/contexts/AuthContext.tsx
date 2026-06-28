@@ -8,19 +8,15 @@ import {
   useEffect,
   type ReactNode,
 } from "react";
-import {
-  type AuthUser,
-  type UserRole,
-  mockUsers,
-  getDefaultRedirect,
-} from "@/lib/auth";
-import { config } from "@/lib/config";
+import { useRouter } from "next/navigation";
+import { type AuthUser, type UserRole, getDefaultRedirect } from "@/lib/auth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import {
   storeTokens,
   clearTokens,
   hasTokens,
   getAccessToken,
+  sessionEvents,
   type TokenPair,
 } from "@/lib/api/tokenManager";
 
@@ -35,7 +31,7 @@ interface AuthApiResponse {
     first_name: string;
     last_name: string;
     is_phone_verified: boolean;
-    verification_status: string | null;
+    verification_status: string | null; // 'VERIFIED' | 'PENDING' | 'UNVERIFIED' | 'REJECTED' | null
   };
   tokens: TokenPair;
 }
@@ -72,6 +68,7 @@ function toAuthUser(apiUser: AuthApiResponse["user"]): AuthUser {
     email: apiUser.email,
     phone: apiUser.phone,
     role: mapBackendRole(apiUser.role),
+    is_verified: apiUser.verification_status === "VERIFIED",
   };
 }
 
@@ -80,13 +77,13 @@ interface AuthContextType {
   role: UserRole;
   isAuthenticated: boolean;
   isAdmin: boolean;
-  /** Mock login — selects a role and loads mock user (existing behavior) */
+  /** @deprecated Use loginWithCredentials instead */
   login: (role: Exclude<UserRole, "guest">) => void;
   /** Real login — authenticates via backend API with email/password */
   loginWithCredentials: (
     email: string,
     password: string,
-  ) => Promise<{ success: boolean; error?: string }>;
+  ) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   /** Real register — creates account via backend API */
   registerWithCredentials: (
     payload: RegisterPayload,
@@ -109,6 +106,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [role, setRole] = useState<UserRole>("guest");
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const router = useRouter();
 
   // Load persisted auth on mount
   useEffect(() => {
@@ -124,28 +122,77 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setUser(savedUser);
         setRole(savedUser.role);
       } catch {
-        // Corrupted data, fall through to mock check
+        // Corrupted data, clear
+        localStorage.removeItem(USER_DATA_KEY);
       }
-    } else if (
-      savedRole &&
-      savedRole !== "guest" &&
-      mockUsers[savedRole as keyof typeof mockUsers]
-    ) {
-      // Backward compat: hydrate from old mock-only storage
-      setUser(mockUsers[savedRole as keyof typeof mockUsers]);
-      setRole(savedRole);
     }
 
     setIsInitialized(true);
   }, []);
 
-  /** Mock login — preserves existing behavior exactly */
+  // Hydrate fresh verification status from backend on mount
+  // This ensures is_verified stays current even if admin verified the transporter
+  // after their last login session
+  useEffect(() => {
+    if (typeof window === "undefined" || !hasTokens()) return;
+
+    const hydrateProfile = async () => {
+      try {
+        const data = await apiClient.get<{
+          user: AuthApiResponse["user"] & { avatar_url?: string };
+        }>("/api/auth/profile/");
+        if (data?.user) {
+          const freshVerified = data.user.verification_status === "VERIFIED";
+          setUser((prev) => {
+            if (!prev) return prev;
+            const updated: AuthUser = {
+              ...prev,
+              is_verified: freshVerified,
+              first_name: data.user.first_name || prev.first_name,
+              last_name: data.user.last_name || prev.last_name,
+              name:
+                `${data.user.first_name || ""} ${data.user.last_name || ""}`.trim() ||
+                prev.name,
+              email: data.user.email || prev.email,
+              phone: data.user.phone || prev.phone,
+            };
+            localStorage.setItem(USER_DATA_KEY, JSON.stringify(updated));
+            return updated;
+          });
+        }
+      } catch {
+        // Non-blocking: if profile fetch fails, keep cached data
+      }
+    };
+    hydrateProfile();
+  }, []);
+
+  // Listen for session-expired events from tokenManager
+  // This handles the case where the refresh token expires (after 7 days)
+  // and the user is silently logged out with a redirect to /login
+  useEffect(() => {
+    if (!sessionEvents) return;
+    const events = sessionEvents;
+
+    const handleSessionExpired = () => {
+      setUser(null);
+      setRole("guest");
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(USER_DATA_KEY);
+      router.push("/login?expired=true");
+    };
+
+    events.addEventListener("session-expired", handleSessionExpired);
+    return () => {
+      events.removeEventListener("session-expired", handleSessionExpired);
+    };
+  }, [router]);
+
+  /** @deprecated Use loginWithCredentials for real authentication */
   const login = useCallback((newRole: Exclude<UserRole, "guest">) => {
-    const mockUser = mockUsers[newRole];
-    setUser(mockUser);
-    setRole(newRole);
-    localStorage.setItem(STORAGE_KEY, newRole);
-    localStorage.setItem(USER_DATA_KEY, JSON.stringify(mockUser));
+    console.warn(
+      "[Transporti] login(role) is deprecated. Use loginWithCredentials() instead.",
+    );
   }, []);
 
   /** Real JWT login via backend API */
@@ -153,7 +200,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (
       email: string,
       password: string,
-    ): Promise<{ success: boolean; error?: string }> => {
+    ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
       setIsLoading(true);
       try {
         const data = await apiClient.post<AuthApiResponse>(
@@ -172,7 +219,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(STORAGE_KEY, authUser.role);
         localStorage.setItem(USER_DATA_KEY, JSON.stringify(authUser));
 
-        return { success: true };
+        return { success: true, role: authUser.role };
       } catch (err) {
         if (err instanceof ApiError && err.body) {
           const messages = Object.values(err.body).flat();

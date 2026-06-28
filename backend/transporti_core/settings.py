@@ -22,18 +22,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY SETTINGS
 # =============================================================================
 
-# SECURITY: Load from environment variable, fail if not set in production
-SECRET_KEY = os.environ.get('SECRET_KEY', 'django-insecure-dev-only-replace-in-production')
-
-# SECURITY: Separate JWT signing key
-JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)
+# SECURITY: Environment detection (must be FIRST for production guards)
+ENV = os.environ.get('ENV', os.environ.get('DJANGO_ENV', 'development')).lower()
+IS_PRODUCTION = ENV in ('production', 'prod', 'live')
 
 # SECURITY: Debug mode - defaults to False for production safety
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
-# SECURITY: Environment detection
-ENV = os.environ.get('ENV', os.environ.get('DJANGO_ENV', 'development')).lower()
-IS_PRODUCTION = ENV in ('production', 'prod', 'live')
+# SECURITY: Load from environment variable, fail if not set in production
+_default_key = 'django-insecure-dev-only-replace-in-production'
+SECRET_KEY = os.environ.get('SECRET_KEY', _default_key)
+
+# SECURITY: BLOCK startup if using default key in production
+if IS_PRODUCTION and SECRET_KEY == _default_key:
+    raise RuntimeError(
+        "CRITICAL: SECRET_KEY is using the default insecure value. "
+        "Set a strong SECRET_KEY in your environment variables before deploying."
+    )
+
+# SECURITY: Separate JWT signing key — also crash if default in production
+JWT_SECRET_KEY = os.environ.get('JWT_SECRET_KEY', SECRET_KEY)
+if IS_PRODUCTION and JWT_SECRET_KEY == _default_key:
+    raise RuntimeError(
+        "CRITICAL: JWT_SECRET_KEY is using the default insecure value. "
+        "Set a strong JWT_SECRET_KEY in your environment variables before deploying."
+    )
 
 # SECURITY: Allowed hosts from environment
 ALLOWED_HOSTS = [
@@ -100,6 +113,7 @@ INSTALLED_APPS = [
     'messaging',
     'analytics',
     'realtime_api',
+    'admin_audit',
 ]
 
 MIDDLEWARE = [
@@ -115,6 +129,27 @@ MIDDLEWARE = [
 ]
 
 ROOT_URLCONF = 'transporti_core.urls'
+
+# =============================================================================
+# CORS CONFIGURATION
+# =============================================================================
+
+CORS_ALLOWED_ORIGINS = [
+    origin.strip() for origin in
+    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:8081,http://localhost:8082').split(',')
+    if origin.strip()
+]
+
+CORS_ALLOW_CREDENTIALS = True
+
+CORS_EXPOSE_HEADERS = [
+    'Content-Disposition',
+]
+
+from corsheaders.defaults import default_headers
+CORS_ALLOW_HEADERS = list(default_headers) + [
+    'x-platform',
+]
 
 TEMPLATES = [
     {
@@ -254,8 +289,10 @@ REST_FRAMEWORK = {
         'user': '1000/hour',
         'auth': '10/minute',        # Login/register rate limit
         'admin_auth': '5/10m',      # Admin login - strict rate limit (5 per 10 min)
+        'admin_action': '30/minute', # Admin sensitive actions (suspend/activate/warn/reset)
         'booking': '20/minute',     # Offer/job creation rate limit
         'payment': '10/minute',     # Payment actions rate limit
+        'messaging': '60/minute',   # Messaging endpoints (polling support)
     },
 }
 
@@ -274,13 +311,42 @@ SPECTACULAR_SETTINGS = {
 
 
 # =============================================================================
-# CORS (Production-safe configuration)
+# CORS — NOTE: Primary CORS config is defined above (L120-134)
+# Duplicate block removed during Go-Live Phase 1 audit (2026-05-15)
 # =============================================================================
 
-# Load from environment, with safe defaults
-_cors_origins = os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173')
-CORS_ALLOWED_ORIGINS = [o.strip() for o in _cors_origins.split(',') if o.strip()]
-CORS_ALLOW_CREDENTIALS = True
+
+# =============================================================================
+# CACHE CONFIGURATION (Phase 2 Go-Live audit)
+# =============================================================================
+
+_redis_url = os.environ.get('REDIS_URL', '')
+
+if _redis_url:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.redis.RedisCache',
+            'LOCATION': _redis_url,
+            'TIMEOUT': 300,  # 5 min default
+            'KEY_PREFIX': 'transporti',
+            'OPTIONS': {
+                'db': 0,
+            },
+        }
+    }
+else:
+    CACHES = {
+        'default': {
+            'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+            'LOCATION': 'transporti-v1-cache',
+            'TIMEOUT': 300,
+        }
+    }
+
+# Cache TTLs for business logic (seconds)
+CACHE_TTL_PROFILE = 120       # 2 min — profile annotations (Avg, Count)
+CACHE_TTL_PRICING = 600       # 10 min — pricing grid
+CACHE_TTL_DASHBOARD = 60      # 1 min — dashboard stats
 
 
 # =============================================================================
@@ -400,6 +466,31 @@ KONNECT_API_URL = os.environ.get(
 # COD threshold — above this amount, digital payment is mandatory
 COD_MAX_AMOUNT = Decimal(os.environ.get('COD_MAX_AMOUNT', '300'))
 
+# Webhook signature validation (Sprint 2 R4)
+# MUST be set in production to prevent forged webhook calls
+PAYMENT_WEBHOOK_SECRET = os.environ.get('PAYMENT_WEBHOOK_SECRET', '')
+
+
+# =============================================================================
+# PUSH NOTIFICATION CONFIGURATION
+# =============================================================================
+
+# Push mode: 'SANDBOX' (log only) or 'PRODUCTION' (Firebase Cloud Messaging)
+PUSH_NOTIFICATION_MODE = os.environ.get('PUSH_NOTIFICATION_MODE', 'SANDBOX')
+
+# Firebase Cloud Messaging (future — when PUSH_NOTIFICATION_MODE = 'PRODUCTION')
+# FCM_SERVICE_ACCOUNT_PATH = os.environ.get('FCM_SERVICE_ACCOUNT_PATH', '')
+
+
+# =============================================================================
+# MOBILE APP CONFIGURATION
+# =============================================================================
+
+# Custom URL scheme for mobile deep links (e.g., transporti://reset-password)
+MOBILE_APP_SCHEME = os.environ.get('MOBILE_APP_SCHEME', 'transporti')
+
+# Enable mobile deep links in emails (password reset, etc.)
+MOBILE_DEEP_LINK_ENABLED = os.environ.get('MOBILE_DEEP_LINK_ENABLED', 'false').lower() in ('true', '1', 'yes')
 
 # =============================================================================
 # EMAIL CONFIGURATION
@@ -421,6 +512,83 @@ EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY', '')
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@transporti.tn')
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
+
+
+# =============================================================================
+# MONITORING & LOGGING (Phase 3: Sentry + structured logs)
+# =============================================================================
+
+# Sentry — only active when DSN is set (production)
+_sentry_dsn = os.environ.get('SENTRY_DSN', '')
+if _sentry_dsn:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+        sentry_sdk.init(
+            dsn=_sentry_dsn,
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=float(os.environ.get('SENTRY_TRACES_RATE', '0.1')),
+            send_default_pii=False,
+            environment=ENV,
+            release=f"transporti@1.0.0",
+        )
+    except ImportError:
+        pass  # sentry-sdk not installed — skip silently
+
+# Structured logging
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'verbose': {
+            'format': '[{asctime}] {levelname} {name} {module}:{lineno} | {message}',
+            'style': '{',
+        },
+        'json': {
+            'format': '{asctime} {levelname} {name} {message}',
+            'style': '{',
+        },
+    },
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+            'formatter': 'verbose',
+        },
+    },
+    'loggers': {
+        'transporti': {
+            'handlers': ['console'],
+            'level': 'INFO' if IS_PRODUCTION else 'DEBUG',
+            'propagate': False,
+        },
+        'django': {
+            'handlers': ['console'],
+            'level': 'WARNING' if IS_PRODUCTION else 'INFO',
+            'propagate': False,
+        },
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'ERROR',
+            'propagate': False,
+        },
+    },
+}
+
+
+# =============================================================================
+# STATIC & MEDIA FILES (Phase 3: CDN-ready)
+# =============================================================================
+
+STATIC_URL = os.environ.get('STATIC_CDN_URL', '/static/')
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').is_dir() else []
+
+MEDIA_URL = os.environ.get('MEDIA_CDN_URL', '/media/')
+MEDIA_ROOT = BASE_DIR / 'media'
+
+# File upload limits (10 MB max)
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 
 
 # =============================================================================

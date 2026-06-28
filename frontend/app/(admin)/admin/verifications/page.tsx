@@ -190,7 +190,9 @@ export default function AdminVerificationsPage() {
       header: "ID",
       width: "w-16",
       render: (v: BackendVerification) => (
-        <span className="font-mono text-neutral-500">#{v.id}</span>
+        <span className="font-mono text-neutral-500 dark:text-neutral-400">
+          #{v.id}
+        </span>
       ),
     },
     {
@@ -198,12 +200,16 @@ export default function AdminVerificationsPage() {
       header: "Transporteur",
       render: (v: BackendVerification) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-purple-100 rounded-full flex items-center justify-center">
+          <div className="w-9 h-9 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
             <User className="w-4 h-4 text-purple-600" />
           </div>
           <div>
-            <p className="font-medium text-neutral-900">{v.transporterName}</p>
-            <p className="text-xs text-neutral-500">{v.transporterEmail}</p>
+            <p className="font-medium text-neutral-900 dark:text-white">
+              {v.transporterName}
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {v.transporterEmail}
+            </p>
           </div>
         </div>
       ),
@@ -213,7 +219,7 @@ export default function AdminVerificationsPage() {
       header: "Document",
       render: (v: BackendVerification) => (
         <div className="flex items-center gap-2">
-          <FileText className="w-4 h-4 text-neutral-400" />
+          <FileText className="w-4 h-4 text-neutral-400 dark:text-neutral-500" />
           <span className="text-sm">{v.documentType}</span>
         </div>
       ),
@@ -251,7 +257,7 @@ export default function AdminVerificationsPage() {
       key: "submittedAt",
       header: "Soumis",
       render: (v: BackendVerification) => (
-        <span className="text-sm text-neutral-500">
+        <span className="text-sm text-neutral-500 dark:text-neutral-400">
           {v.submittedAt ? formatTimeAgoShort(v.submittedAt) : "-"}
         </span>
       ),
@@ -326,7 +332,9 @@ export default function AdminVerificationsPage() {
       header: "ID",
       width: "w-16",
       render: (p: AdminTrustProfile) => (
-        <span className="font-mono text-neutral-500">#{p.id}</span>
+        <span className="font-mono text-neutral-500 dark:text-neutral-400">
+          #{p.id}
+        </span>
       ),
     },
     {
@@ -334,12 +342,16 @@ export default function AdminVerificationsPage() {
       header: "Transporteur",
       render: (p: AdminTrustProfile) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-brand-600/10 rounded-full flex items-center justify-center">
+          <div className="w-9 h-9 bg-brand-600/10 dark:bg-brand-400/10 rounded-full flex items-center justify-center">
             <User className="w-4 h-4 text-brand-600" />
           </div>
           <div>
-            <p className="font-medium text-neutral-900">{p.transporterName}</p>
-            <p className="text-xs text-neutral-500">{p.transporterEmail}</p>
+            <p className="font-medium text-neutral-900 dark:text-white">
+              {p.transporterName}
+            </p>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {p.transporterEmail}
+            </p>
           </div>
         </div>
       ),
@@ -366,23 +378,31 @@ export default function AdminVerificationsPage() {
                 <span className="text-xs font-semibold text-green-600">
                   {p.approvedCount}
                 </span>
-                <span className="text-neutral-300">/</span>
+                <span className="text-neutral-300 dark:text-neutral-600">
+                  /
+                </span>
                 <span
                   className={`text-xs font-semibold ${p.rejectedCount > 0 ? "text-red-600" : "text-neutral-400"}`}
                 >
                   {p.rejectedCount}
                 </span>
-                <span className="text-neutral-300">/</span>
+                <span className="text-neutral-300 dark:text-neutral-600">
+                  /
+                </span>
                 <span
                   className={`text-xs font-semibold ${p.pendingCount > 0 ? "text-orange-600" : "text-neutral-400"}`}
                 >
                   {p.pendingCount}
                 </span>
               </div>
-              <span className="text-[10px] text-neutral-400">A/R/P</span>
+              <span className="text-[10px] text-neutral-400 dark:text-neutral-500">
+                A/R/P
+              </span>
             </>
           ) : (
-            <span className="text-xs text-neutral-400">Aucun</span>
+            <span className="text-xs text-neutral-400 dark:text-neutral-500">
+              Aucun
+            </span>
           )}
         </div>
       ),
@@ -408,7 +428,7 @@ export default function AdminVerificationsPage() {
       key: "createdAt",
       header: "Inscrit",
       render: (p: AdminTrustProfile) => (
-        <span className="text-sm text-neutral-500">
+        <span className="text-sm text-neutral-500 dark:text-neutral-400">
           {p.createdAt ? formatTimeAgoShort(p.createdAt) : "-"}
         </span>
       ),
@@ -451,16 +471,18 @@ export default function AdminVerificationsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Vérifications</h1>
-          <p className="text-neutral-500">
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            Vérifications
+          </h1>
+          <p className="text-neutral-500 dark:text-neutral-400">
             Gestion des profils et documents transporteurs
           </p>
         </div>
         <div className="flex items-center gap-3">
           {profilesNeedingReview.length > 0 && (
-            <div className="flex items-center gap-2 bg-orange-50 border border-orange-200 px-4 py-2 rounded-lg">
+            <div className="flex items-center gap-2 bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 px-4 py-2 rounded-lg">
               <Clock className="w-4 h-4 text-orange-600" />
-              <span className="text-sm font-medium text-orange-800">
+              <span className="text-sm font-medium text-orange-800 dark:text-orange-300">
                 {profilesNeedingReview.length} profil
                 {profilesNeedingReview.length > 1 ? "s" : ""} à vérifier
               </span>
@@ -469,8 +491,8 @@ export default function AdminVerificationsPage() {
           <div
             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
               source === "api"
-                ? "bg-green-50 text-green-700 border border-green-200"
-                : "bg-orange-50 text-orange-700 border border-orange-200"
+                ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
+                : "bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800"
             }`}
           >
             <span
@@ -482,13 +504,13 @@ export default function AdminVerificationsPage() {
       </div>
 
       {/* Main View Toggle */}
-      <div className="flex gap-1 bg-neutral-100 rounded-xl p-1">
+      <div className="flex gap-1 bg-neutral-100 dark:bg-[#0f172a] rounded-xl p-1">
         <button
           onClick={() => setMainView("profiles")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
             mainView === "profiles"
-              ? "bg-white text-neutral-900 shadow-sm"
-              : "text-neutral-500 hover:text-neutral-700"
+              ? "bg-white dark:bg-[#1e293b] text-neutral-900 dark:text-white shadow-sm"
+              : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
           }`}
         >
           <Users className="w-4 h-4" />
@@ -507,8 +529,8 @@ export default function AdminVerificationsPage() {
           onClick={() => setMainView("requests")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
             mainView === "requests"
-              ? "bg-white text-neutral-900 shadow-sm"
-              : "text-neutral-500 hover:text-neutral-700"
+              ? "bg-white dark:bg-[#1e293b] text-neutral-900 dark:text-white shadow-sm"
+              : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
           }`}
         >
           <ClipboardList className="w-4 h-4" />
@@ -530,15 +552,17 @@ export default function AdminVerificationsPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
+        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
-          <p className="text-neutral-500">Chargement...</p>
+          <p className="text-neutral-500 dark:text-neutral-400">
+            Chargement...
+          </p>
         </div>
       )}
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-red-700 dark:text-red-300 text-sm">
           ⚠️ Erreur de chargement: {error?.message}
         </div>
       )}
@@ -563,7 +587,7 @@ export default function AdminVerificationsPage() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
                       ? "bg-brand-600 text-white shadow-sm"
-                      : "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200"
+                      : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700"
                   }`}
                 >
                   {tab.label}
@@ -578,28 +602,36 @@ export default function AdminVerificationsPage() {
           </div>
 
           {/* Profile Stats Bar */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-4">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
-                <span className="text-neutral-500">Affichés:</span>
-                <span className="ml-2 font-semibold text-neutral-900">
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Affichés:
+                </span>
+                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
                   {filteredProfiles.length}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Avec documents:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Avec documents:
+                </span>
                 <span className="ml-2 font-semibold text-purple-600">
                   {profilesWithDocs.length}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">À vérifier:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  À vérifier:
+                </span>
                 <span className="ml-2 font-semibold text-orange-600">
                   {profilesNeedingReview.length}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Vérifiés:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Vérifiés:
+                </span>
                 <span className="ml-2 font-semibold text-green-600">
                   {
                     allProfiles.filter(
@@ -639,7 +671,7 @@ export default function AdminVerificationsPage() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
                       ? "bg-brand-600 text-white shadow-sm"
-                      : "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200"
+                      : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700"
                   }`}
                 >
                   {tab.label}
@@ -654,22 +686,28 @@ export default function AdminVerificationsPage() {
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-4">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
-                <span className="text-neutral-500">Affichées:</span>
-                <span className="ml-2 font-semibold text-neutral-900">
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Affichées:
+                </span>
+                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
                   {filteredVerifications.length}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">En attente:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  En attente:
+                </span>
                 <span className="ml-2 font-semibold text-orange-600">
                   {pendingCount}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Approuvées:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Approuvées:
+                </span>
                 <span className="ml-2 font-semibold text-green-600">
                   {
                     allVerifications.filter((v) => v.status === "APPROVED")
@@ -678,7 +716,9 @@ export default function AdminVerificationsPage() {
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Rejetées:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Rejetées:
+                </span>
                 <span className="ml-2 font-semibold text-red-600">
                   {
                     allVerifications.filter((v) => v.status === "REJECTED")
@@ -701,11 +741,11 @@ export default function AdminVerificationsPage() {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-neutral-900 mb-2">
+          <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-xl max-w-md w-full p-6 border border-neutral-200 dark:border-neutral-700">
+            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
               Rejeter la vérification
             </h3>
-            <p className="text-sm text-neutral-500 mb-4">
+            <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
               Indiquez la raison du rejet. Le transporteur sera notifié.
             </p>
             <textarea
@@ -713,7 +753,7 @@ export default function AdminVerificationsPage() {
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Raison du rejet..."
               rows={3}
-              className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
+              className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
             />
             <div className="flex gap-3 mt-4">
               <button
@@ -721,7 +761,7 @@ export default function AdminVerificationsPage() {
                   setShowRejectModal(false);
                   setRejectReason("");
                 }}
-                className="flex-1 bg-neutral-100 text-neutral-700 py-2.5 rounded-xl font-medium hover:bg-neutral-200 transition-colors"
+                className="flex-1 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-300 py-2.5 rounded-xl font-medium hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
               >
                 Annuler
               </button>

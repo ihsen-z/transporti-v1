@@ -1,0 +1,62 @@
+services:
+  # ---------------------------------------------------------
+  # BACKEND - Django API (Docker)
+  # ---------------------------------------------------------
+  - type: web
+    name: transporti-backend
+    env: docker
+    rootDir: backend
+    region: frankfurt # Proche de la Tunisie pour une faible latence
+    plan: starter # Plan idéal pour 50 utilisateurs (env. 7$/mois)
+    envVars:
+      # Lier la base de données PostgreSQL automatiquement
+      - key: DATABASE_URL
+        fromDatabase:
+          name: transporti-db
+          property: connectionString
+      
+      # Génération automatique et sécurisée des clés secrètes par Render
+      - key: SECRET_KEY
+        generateValue: true
+      - key: JWT_SECRET_KEY
+        generateValue: true
+      
+      # Variables d'environnement de production
+      - key: ENV
+        value: production
+      - key: DEBUG
+        value: "False"
+      
+      # Sécurité & CORS (Domaines auto-générés par Render)
+      - key: ALLOWED_HOSTS
+        value: transporti-backend.onrender.com
+      - key: CORS_ALLOWED_ORIGINS
+        value: https://transporti-frontend.onrender.com
+      - key: FRONTEND_URL
+        value: https://transporti-frontend.onrender.com
+
+  # ---------------------------------------------------------
+  # FRONTEND - Next.js App (Node)
+  # ---------------------------------------------------------
+  - type: web
+    name: transporti-frontend
+    env: node
+    rootDir: frontend
+    region: frankfurt
+    plan: starter
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      # Lier l'URL de l'API déployée ci-dessus
+      - key: NEXT_PUBLIC_API_URL
+        value: https://transporti-backend.onrender.com
+
+databases:
+  # ---------------------------------------------------------
+  # DATABASE - PostgreSQL
+  # ---------------------------------------------------------
+  - name: transporti-db
+    region: frankfurt
+    plan: starter
+    databaseName: transporti_prod
+    user: transporti_admin

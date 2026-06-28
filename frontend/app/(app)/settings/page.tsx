@@ -3,6 +3,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { getAccessToken } from "@/lib/api/tokenManager";
+import { config } from "@/lib/config";
 import {
   User,
   Mail,
@@ -19,7 +21,9 @@ import {
   Globe,
   Loader2,
   AlertCircle,
+  Pencil,
 } from "lucide-react";
+import Link from "next/link";
 
 /* -------------------------------------------------------------------------- */
 /*  Settings Page — Real API integration                                       */
@@ -89,6 +93,7 @@ export default function SettingsPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [governorate, setGovernorate] = useState("Tunis");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
 
   // Status indicators
   const [loading, setLoading] = useState(true);
@@ -127,6 +132,17 @@ export default function SettingsPage() {
       setLastName(u.last_name || "");
       setEmail(u.email || "");
       setPhone(u.phone || "");
+      // Load saved avatar
+      if ((u as any).avatar_url) {
+        setAvatarPreview((u as any).avatar_url);
+      }
+      // Load profile fields
+      if ((u as any).address_summary) {
+        setGovernorate((u as any).address_summary);
+      }
+      if ((u as any).language_pref) {
+        setLanguage((u as any).language_pref);
+      }
     } catch (err) {
       // Fallback: use auth context data
       if (user) {
@@ -142,6 +158,21 @@ export default function SettingsPage() {
 
   useEffect(() => {
     fetchProfile();
+    // Fetch notification preferences from backend
+    apiClient
+      .get<{ data: any }>("/api/auth/notification-preferences/")
+      .then((res) => {
+        const d = res.data;
+        if (d) {
+          setNotifEmail(d.email_enabled ?? true);
+          setNotifPush(d.push_enabled ?? true);
+          setNotifSms(d.sms_enabled ?? false);
+          setNotifNewOffer(d.notify_new_offer ?? true);
+          setNotifBooking(d.notify_offer_accepted ?? true);
+          setNotifMessage(d.notify_new_message ?? true);
+        }
+      })
+      .catch(() => {}); // Fail silently — defaults remain
   }, [fetchProfile]);
 
   // ─── Save profile to API ──────────────────────────────────────────────
@@ -157,6 +188,7 @@ export default function SettingsPage() {
           first_name: firstName.trim(),
           last_name: lastName.trim(),
           phone: phone.trim() || null,
+          profile: { address_summary: governorate },
         },
       );
 
@@ -184,9 +216,87 @@ export default function SettingsPage() {
     }
   };
 
-  const handleSaveNotifications = () => {
-    setSaveStatus("success");
-    setTimeout(() => setSaveStatus("idle"), 2000);
+  // ─── Change Password (real API) ─────────────────────────────────────
+  const [pwSaving, setPwSaving] = useState(false);
+  const [pwStatus, setPwStatus] = useState<"idle" | "success" | "error">(
+    "idle",
+  );
+  const [pwError, setPwError] = useState("");
+
+  const handleChangePassword = async () => {
+    if (!currentPassword || !newPassword || newPassword !== confirmPassword)
+      return;
+    setPwSaving(true);
+    setPwStatus("idle");
+    setPwError("");
+
+    try {
+      await apiClient.post("/api/auth/change-password/", {
+        current_password: currentPassword,
+        new_password: newPassword,
+      });
+      setPwStatus("success");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+      setTimeout(() => setPwStatus("idle"), 4000);
+    } catch (err) {
+      setPwStatus("error");
+      if (err instanceof ApiError && err.body) {
+        const msgs = Object.values(err.body).flat();
+        setPwError(String(msgs[0] || "Erreur lors du changement."));
+      } else {
+        setPwError("Erreur réseau. Veuillez réessayer.");
+      }
+      setTimeout(() => setPwStatus("idle"), 5000);
+    } finally {
+      setPwSaving(false);
+    }
+  };
+
+  // ─── Save notification preferences (real API) ────────────────────
+  const [notifSaving, setNotifSaving] = useState(false);
+  const handleSaveNotifications = async () => {
+    setNotifSaving(true);
+    setSaveStatus("idle");
+    try {
+      await apiClient.put("/api/auth/notification-preferences/", {
+        email_enabled: notifEmail,
+        push_enabled: notifPush,
+        sms_enabled: notifSms,
+        notify_new_offer: notifNewOffer,
+        notify_offer_accepted: notifBooking,
+        notify_new_message: notifMessage,
+      });
+      setSaveStatus("success");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } catch {
+      setSaveStatus("error");
+      setErrorMessage("Erreur lors de la sauvegarde des préférences.");
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    } finally {
+      setNotifSaving(false);
+    }
+  };
+
+  // ─── Save language/currency preferences ───────────────────────────
+  const [prefsSaving, setPrefsSaving] = useState(false);
+  const handleSavePreferences = async () => {
+    setPrefsSaving(true);
+    setSaveStatus("idle");
+    try {
+      await apiClient.put("/api/auth/profile/", {
+        profile: { language_pref: language },
+      });
+      setSaveStatus("success");
+      setTimeout(() => setSaveStatus("idle"), 3000);
+    } catch {
+      setSaveStatus("error");
+      setErrorMessage("Erreur lors de la sauvegarde des préférences.");
+      setTimeout(() => setSaveStatus("idle"), 4000);
+    } finally {
+      setPrefsSaving(false);
+    }
   };
 
   const Toggle = ({
@@ -243,12 +353,20 @@ export default function SettingsPage() {
 
         {/* Content */}
         <div className="flex-1">
-          {/* Profile Tab */}
           {activeTab === "profile" && (
             <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-neutral-900">
-                Informations personnelles
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-neutral-900">
+                  Informations personnelles
+                </h2>
+                <Link
+                  href={`/profile/${user?.id || ""}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm"
+                >
+                  <Pencil className="w-4 h-4" />
+                  Modifier mon profil
+                </Link>
+              </div>
 
               {loading ? (
                 <div className="flex items-center justify-center py-12">
@@ -258,121 +376,44 @@ export default function SettingsPage() {
                   </span>
                 </div>
               ) : (
-                <>
-                  {/* Avatar */}
+                <div className="space-y-4">
+                  {/* Avatar + Name */}
                   <div className="flex items-center gap-4">
-                    <div className="w-20 h-20 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-2xl">
-                      {firstName?.[0]?.toUpperCase() || "U"}
-                    </div>
-                    <button className="flex items-center gap-2 px-4 py-2 border border-neutral-300 rounded-lg text-sm font-medium text-neutral-700 hover:bg-neutral-50 transition-colors">
-                      <Camera className="w-4 h-4" />
-                      Changer la photo
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Prénom
-                      </label>
-                      <input
-                        value={firstName}
-                        onChange={(e) => setFirstName(e.target.value)}
-                        placeholder="Votre prénom"
-                        className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
-                      />
+                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden">
+                      {avatarPreview ? (
+                        <img
+                          src={avatarPreview}
+                          alt="Avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        firstName?.[0]?.toUpperCase() || "U"
+                      )}
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-neutral-700 mb-1">
-                        Nom
-                      </label>
-                      <input
-                        value={lastName}
-                        onChange={(e) => setLastName(e.target.value)}
-                        placeholder="Votre nom"
-                        className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
-                      />
+                      <p className="text-lg font-semibold text-neutral-900">
+                        {firstName} {lastName}
+                      </p>
+                      <p className="text-sm text-neutral-500">{email}</p>
                     </div>
                   </div>
 
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      <Mail className="w-4 h-4 inline mr-1" /> Email
-                    </label>
-                    <input
-                      type="email"
-                      value={email}
-                      disabled
-                      className="w-full p-3 border border-neutral-200 rounded-xl text-sm bg-neutral-50 text-neutral-500 cursor-not-allowed"
-                    />
-                    <p className="text-xs text-neutral-400 mt-1">
-                      L&apos;email ne peut pas être modifié.
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      <Phone className="w-4 h-4 inline mr-1" /> Téléphone
-                    </label>
-                    <input
-                      type="tel"
-                      value={phone}
-                      onChange={(e) => setPhone(e.target.value)}
-                      placeholder="+216 XX XXX XXX"
-                      className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-neutral-700 mb-1">
-                      <MapPin className="w-4 h-4 inline mr-1" /> Gouvernorat
-                    </label>
-                    <select
-                      value={governorate}
-                      onChange={(e) => setGovernorate(e.target.value)}
-                      className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 focus:border-brand-600 outline-none"
-                    >
-                      {GOVERNORATES.map((g) => (
-                        <option key={g} value={g}>
-                          {g}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {/* Save status messages */}
-                  {saveStatus === "success" && (
-                    <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
-                      <CheckCircle className="w-4 h-4 flex-shrink-0" />
-                      Profil mis à jour avec succès !
+                  {/* Info Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-100">
+                    <div>
+                      <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Téléphone</p>
+                      <p className="text-sm text-neutral-800">{phone || "Non renseigné"}</p>
                     </div>
-                  )}
-                  {saveStatus === "error" && (
-                    <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
-                      <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                      {errorMessage}
+                    <div>
+                      <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Gouvernorat</p>
+                      <p className="text-sm text-neutral-800">{governorate || "Non renseigné"}</p>
                     </div>
-                  )}
+                  </div>
 
-                  <button
-                    onClick={handleSaveProfile}
-                    disabled={saving || !firstName.trim() || !lastName.trim()}
-                    className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {saving ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : saveStatus === "success" ? (
-                      <CheckCircle className="w-5 h-5" />
-                    ) : (
-                      <Save className="w-5 h-5" />
-                    )}
-                    {saving
-                      ? "Sauvegarde..."
-                      : saveStatus === "success"
-                        ? "Sauvegardé !"
-                        : "Sauvegarder"}
-                  </button>
-                </>
+                  <p className="text-xs text-neutral-400 mt-4">
+                    Pour modifier vos informations, cliquez sur &quot;Modifier mon profil&quot; ci-dessus.
+                  </p>
+                </div>
               )}
             </div>
           )}
@@ -539,17 +580,42 @@ export default function SettingsPage() {
                   </p>
                 )}
 
+              {/* Password status messages */}
+              {pwStatus === "success" && (
+                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
+                  <CheckCircle className="w-4 h-4 flex-shrink-0" />
+                  Mot de passe modifié avec succès !
+                </div>
+              )}
+              {pwStatus === "error" && (
+                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                  <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                  {pwError}
+                </div>
+              )}
+
               <button
-                onClick={handleSaveNotifications}
+                onClick={handleChangePassword}
                 disabled={
+                  pwSaving ||
                   !currentPassword ||
                   !newPassword ||
                   newPassword !== confirmPassword
                 }
                 className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <Lock className="w-5 h-5" />
-                Mettre à jour le mot de passe
+                {pwSaving ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : pwStatus === "success" ? (
+                  <CheckCircle className="w-5 h-5" />
+                ) : (
+                  <Lock className="w-5 h-5" />
+                )}
+                {pwSaving
+                  ? "Mise à jour..."
+                  : pwStatus === "success"
+                    ? "Modifié !"
+                    : "Mettre à jour le mot de passe"}
               </button>
             </div>
           )}
@@ -594,15 +660,22 @@ export default function SettingsPage() {
               </div>
 
               <button
-                onClick={handleSaveNotifications}
-                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors"
+                onClick={handleSavePreferences}
+                disabled={prefsSaving}
+                className="flex items-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                {saveStatus === "success" ? (
+                {prefsSaving ? (
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                ) : saveStatus === "success" ? (
                   <CheckCircle className="w-5 h-5" />
                 ) : (
                   <Save className="w-5 h-5" />
                 )}
-                {saveStatus === "success" ? "Sauvegardé !" : "Sauvegarder"}
+                {prefsSaving
+                  ? "Sauvegarde..."
+                  : saveStatus === "success"
+                    ? "Sauvegardé !"
+                    : "Sauvegarder"}
               </button>
             </div>
           )}

@@ -1,6 +1,7 @@
 """
 Management command: expire_stale_offers
 Auto-expire offers whose valid_until < now() and status is still PENDING.
+Also expires any PENDING counter-offers attached to expired offers.
 
 Usage:
     python manage.py expire_stale_offers
@@ -9,13 +10,13 @@ Usage:
 import logging
 from django.core.management.base import BaseCommand
 from django.utils import timezone
-from logistics.models import Offer
+from logistics.models import Offer, CounterOffer
 
 logger = logging.getLogger('transporti')
 
 
 class Command(BaseCommand):
-    help = 'Auto-expire PENDING offers whose valid_until has passed'
+    help = 'Auto-expire PENDING offers whose valid_until has passed + their counter-offers'
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -51,12 +52,40 @@ class Command(BaseCommand):
                 )
             return
 
-        # Bulk update
+        # Collect IDs for notifications + counter-offer cleanup
+        expired_offer_ids = list(stale_offers.values_list('id', flat=True))
+        transporter_ids = list(
+            stale_offers.values_list('transporter_id', flat=True).distinct()
+        )
+
+        # Bulk expire offers
         updated = stale_offers.update(status=Offer.Status.EXPIRED)
 
+        # Also expire any PENDING counter-offers on these now-expired offers
+        counter_expired = CounterOffer.objects.filter(
+            offer_id__in=expired_offer_ids,
+            status=CounterOffer.Status.PENDING,
+        ).update(status=CounterOffer.Status.EXPIRED)
+
+        # Notify transporters
+        try:
+            from notifications.services import create_notification
+            for tid in transporter_ids:
+                create_notification(
+                    user_id=tid,
+                    title="Offre(s) expirée(s)",
+                    message=f"{updated} de vos offre(s) ont expiré automatiquement.",
+                    category="JOB",
+                )
+        except Exception:
+            pass  # Notification failure must never block maintenance
+
         self.stdout.write(
-            self.style.SUCCESS(f'Successfully expired {updated} stale offer(s).')
+            self.style.SUCCESS(
+                f'Expired {updated} offer(s) + {counter_expired} counter-offer(s).'
+            )
         )
         logger.info(
-            f'EXPIRE_STALE_OFFERS: expired={updated}, timestamp={now.isoformat()}'
+            f'EXPIRE_STALE_OFFERS: offers={updated}, counters={counter_expired}, '
+            f'timestamp={now.isoformat()}'
         )

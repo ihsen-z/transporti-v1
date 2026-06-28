@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import {
   X,
   Check,
@@ -163,12 +165,13 @@ export default function NotificationDropdown({
         {/* Footer */}
         {notifications.length > 0 && (
           <div className="p-3 border-t border-neutral-200 bg-neutral-50">
-            <a
+            <Link
               href="/notifications"
+              onClick={onClose}
               className="block text-center text-sm font-medium text-brand-600 hover:text-brand-700 transition-colors"
             >
               Voir toutes les notifications
-            </a>
+            </Link>
           </div>
         )}
       </div>

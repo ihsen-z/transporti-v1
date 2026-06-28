@@ -1,14 +1,27 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    optimizeFonts: false,
     eslint: {
-        // Warning: ignoring lint errors for production simulation
         ignoreDuringBuilds: true,
     },
     typescript: {
-        // Warning: ignoring TS errors for production simulation
-        ignoreBuildErrors: true,
+        ignoreBuildErrors: false,
     },
-    optimizeFonts: false,
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'http',
+                hostname: 'localhost',
+                port: '8000',
+                pathname: '/media/**',
+            },
+            {
+                protocol: 'https',
+                hostname: '*.transporti.tn',
+                pathname: '/media/**',
+            },
+        ],
+    },
 };
 
 export default nextConfig;

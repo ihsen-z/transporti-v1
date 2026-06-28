@@ -89,3 +89,21 @@ class CommissionLedgerDetailSerializer(serializers.ModelSerializer):
     
     def get_transporter_name(self, obj) -> str:
         return f"{obj.transporter.first_name} {obj.transporter.last_name}"
+
+
+class BookingDetailSerializer(serializers.ModelSerializer):
+    """
+    Read-only booking details for /api/jobs/{id}/booking/.
+    """
+    class Meta:
+        model = None  # Set dynamically to avoid circular import
+        fields = [
+            'id', 'job', 'accepted_offer', 'final_price',
+            'commission_rate', 'payment_method', 'cod_allowed', 'created_at',
+        ]
+        read_only_fields = fields
+
+    def __init__(self, *args, **kwargs):
+        from .models import Booking
+        self.Meta.model = Booking
+        super().__init__(*args, **kwargs)

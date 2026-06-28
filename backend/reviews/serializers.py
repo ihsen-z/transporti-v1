@@ -90,20 +90,19 @@ class ReviewListSerializer(serializers.ModelSerializer):
     def get_is_revealed(self, obj):
         """
         A review is revealed if:
-          1. The viewer IS the reviewer (you always see your own review), OR
-          2. Both parties have submitted reviews for this job, OR
-          3. The review is older than REVEAL_WINDOW_DAYS days.
+          1. The DB field is_revealed is True (set by model logic), OR
+          2. The viewer IS the reviewer (you always see your own review), OR
+          3. The review is older than REVEAL_WINDOW_DAYS days (auto-reveal).
         """
         from datetime import timedelta
         from django.utils import timezone
 
-        # Check if reveal window has passed
-        if obj.created_at and (timezone.now() - obj.created_at).days >= self.REVEAL_WINDOW_DAYS:
+        # DB field (set when both parties submit)
+        if obj.is_revealed:
             return True
 
-        # Check if both reviews exist for this job
-        both_exist = Review.objects.filter(job_id=obj.job_id).count() >= 2
-        if both_exist:
+        # Check if reveal window has passed (auto-reveal after 7 days)
+        if obj.created_at and (timezone.now() - obj.created_at).days >= self.REVEAL_WINDOW_DAYS:
             return True
 
         # If the request user IS the reviewer, always reveal

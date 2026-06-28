@@ -8,6 +8,7 @@ import { formatTimeAgoShort } from "@/lib/admin";
 import { useAdminReviews } from "@/hooks/useAdminData";
 import {
   toggleReviewVisibility,
+  warnUser,
   type BackendReview,
   type BackendReviewAbuseLog,
 } from "@/lib/services/admin";
@@ -20,6 +21,7 @@ import {
   User,
   MessageSquare,
 } from "lucide-react";
+import { useI18n } from "@/lib/i18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Config                                                                     */
@@ -53,11 +55,13 @@ type FilterTab = "ALL" | "VISIBLE" | "HIDDEN";
 
 export default function AdminReviewsPage() {
   const [filter, setFilter] = useState<FilterTab>("ALL");
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedReview, setSelectedReview] = useState<BackendReview | null>(
     null,
   );
   const [actionLoading, setActionLoading] = useState(false);
   const { showToast } = useToast();
+  const { t } = useI18n();
 
   const {
     data: allReviews,
@@ -73,12 +77,24 @@ export default function AdminReviewsPage() {
     { value: "HIDDEN", label: "Masqués" },
   ];
 
-  const filtered =
+  const statusFiltered =
     filter === "ALL"
       ? allReviews
       : filter === "VISIBLE"
         ? allReviews.filter((r) => !r.isHidden)
         : allReviews.filter((r) => r.isHidden);
+
+  const filtered = searchQuery.trim()
+    ? statusFiltered.filter((r) => {
+        const q = searchQuery.toLowerCase();
+        return (
+          String(r.id).includes(q) ||
+          (r.reviewerName || "").toLowerCase().includes(q) ||
+          (r.targetName || "").toLowerCase().includes(q) ||
+          (r.comment || "").toLowerCase().includes(q)
+        );
+      })
+    : statusFiltered;
 
   const handleToggleVisibility = async (id: number) => {
     setActionLoading(true);
@@ -95,11 +111,36 @@ export default function AdminReviewsPage() {
     }
   };
 
-  const handleWarnUser = (reviewerEmail: string) => {
-    showToast(
-      "info",
-      `⚠️ Avertissement envoyé à ${reviewerEmail} (fonctionnalité à venir)`,
-    );
+  // R1: Warn user state
+  const [warnModalOpen, setWarnModalOpen] = useState(false);
+  const [warnTarget, setWarnTarget] = useState<{
+    email: string;
+    userId?: number;
+  } | null>(null);
+  const [warnReason, setWarnReason] = useState("");
+  const [warnLoading, setWarnLoading] = useState(false);
+
+  const handleWarnUser = (reviewerEmail: string, userId?: number) => {
+    setWarnTarget({ email: reviewerEmail, userId });
+    setWarnReason("");
+    setWarnModalOpen(true);
+  };
+
+  const confirmWarnUser = async () => {
+    if (!warnTarget?.userId || !warnReason.trim()) return;
+    setWarnLoading(true);
+    try {
+      const res = await warnUser(warnTarget.userId, warnReason);
+      showToast("success", res.message);
+      setWarnModalOpen(false);
+    } catch (err) {
+      showToast(
+        "error",
+        `Erreur: ${err instanceof Error ? err.message : "Erreur inconnue"}`,
+      );
+    } finally {
+      setWarnLoading(false);
+    }
   };
 
   const columns = [
@@ -126,7 +167,7 @@ export default function AdminReviewsPage() {
             />
           </div>
           <div>
-            <p className="text-sm font-medium text-neutral-900">
+            <p className="text-sm font-medium text-neutral-900 dark:text-white">
               {r.reviewerName}
             </p>
             <p className="text-xs text-neutral-400">
@@ -231,11 +272,11 @@ export default function AdminReviewsPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">
-            Modération des avis
+          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+            {t.reviews.title}
           </h1>
-          <p className="text-neutral-500">
-            Avis signalés pour contenu abusif ou frauduleux
+          <p className="text-neutral-500 dark:text-neutral-400">
+            {t.reviews.subtitle}
           </p>
         </div>
         {/* Source Badge */}
@@ -255,9 +296,11 @@ export default function AdminReviewsPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white rounded-xl border border-neutral-200 p-12 text-center">
+        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
-          <p className="text-neutral-500">Chargement des avis...</p>
+          <p className="text-neutral-500 dark:text-neutral-400">
+            Chargement des avis...
+          </p>
         </div>
       )}
 
@@ -270,54 +313,73 @@ export default function AdminReviewsPage() {
 
       {!loading && (
         <>
-          {/* Filter Tabs */}
-          <div className="flex flex-wrap gap-2">
-            {filterTabs.map((tab) => {
-              const isActive = filter === tab.value;
-              const count =
-                tab.value === "ALL"
-                  ? allReviews.length
-                  : tab.value === "VISIBLE"
-                    ? allReviews.filter((r) => !r.isHidden).length
-                    : allReviews.filter((r) => r.isHidden).length;
-              return (
-                <button
-                  key={tab.value}
-                  onClick={() => setFilter(tab.value)}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
-                    isActive
-                      ? "bg-brand-600 text-white shadow-sm"
-                      : "bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200"
-                  }`}
-                >
-                  {tab.label}
-                  <span
-                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
+          {/* Filter Tabs + Search */}
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex flex-wrap gap-2 flex-1">
+              {filterTabs.map((tab) => {
+                const isActive = filter === tab.value;
+                const count =
+                  tab.value === "ALL"
+                    ? allReviews.length
+                    : tab.value === "VISIBLE"
+                      ? allReviews.filter((r) => !r.isHidden).length
+                      : allReviews.filter((r) => r.isHidden).length;
+                return (
+                  <button
+                    key={tab.value}
+                    onClick={() => setFilter(tab.value)}
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                      isActive
+                        ? "bg-brand-600 text-white shadow-sm"
+                        : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
+                    }`}
                   >
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+                    {tab.label}
+                    <span
+                      className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
+                    >
+                      {count}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+            {/* Search */}
+            <div className="relative">
+              <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Rechercher un avis..."
+                className="pl-9 pr-4 py-2 bg-white dark:bg-[#0f172a] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 w-full sm:w-64"
+              />
+            </div>
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white rounded-xl border border-neutral-200 p-4">
+          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
-                <span className="text-neutral-500">Total:</span>
-                <span className="ml-2 font-semibold text-neutral-900">
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Total:
+                </span>
+                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
                   {allReviews.length}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Visibles:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Visibles:
+                </span>
                 <span className="ml-2 font-semibold text-green-600">
                   {allReviews.filter((r) => !r.isHidden).length}
                 </span>
               </div>
               <div>
-                <span className="text-neutral-500">Masqués:</span>
+                <span className="text-neutral-500 dark:text-neutral-400">
+                  Masqués:
+                </span>
                 <span className="ml-2 font-semibold text-red-600">
                   {allReviews.filter((r) => r.isHidden).length}
                 </span>
@@ -337,14 +399,14 @@ export default function AdminReviewsPage() {
       {/* Detail Drawer */}
       {selectedReview && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-          <div className="bg-white w-full max-w-lg h-full overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-neutral-100 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-neutral-900">
+          <div className="bg-white dark:bg-[#1e293b] w-full max-w-lg h-full overflow-y-auto shadow-2xl">
+            <div className="p-6 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
+              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
                 Avis #{selectedReview.id}
               </h2>
               <button
                 onClick={() => setSelectedReview(null)}
-                className="text-neutral-400 hover:text-neutral-600 text-xl"
+                className="text-neutral-400 dark:text-neutral-500 hover:text-neutral-600 dark:hover:text-neutral-300 text-xl"
               >
                 ×
               </button>
@@ -354,7 +416,7 @@ export default function AdminReviewsPage() {
               {/* Rating */}
               <div className="flex items-center gap-3">
                 <StarDisplay rating={selectedReview.rating} />
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-lg font-bold text-neutral-900 dark:text-white">
                   {selectedReview.rating}/5
                 </span>
                 <StatusBadge
@@ -369,18 +431,22 @@ export default function AdminReviewsPage() {
 
               {/* Parties */}
               <div className="grid grid-cols-2 gap-4">
-                <div className="bg-neutral-50 rounded-xl p-3">
-                  <p className="text-xs text-neutral-500 mb-1">Auteur</p>
-                  <p className="font-medium text-neutral-900 text-sm">
+                <div className="bg-neutral-50 dark:bg-[#0f172a] rounded-xl p-3">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                    Auteur
+                  </p>
+                  <p className="font-medium text-neutral-900 dark:text-white text-sm">
                     {selectedReview.reviewerName}
                   </p>
                   <p className="text-xs text-neutral-400">
                     {selectedReview.reviewerEmail}
                   </p>
                 </div>
-                <div className="bg-neutral-50 rounded-xl p-3">
-                  <p className="text-xs text-neutral-500 mb-1">Cible</p>
-                  <p className="font-medium text-neutral-900 text-sm">
+                <div className="bg-neutral-50 dark:bg-[#0f172a] rounded-xl p-3">
+                  <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-1">
+                    Cible
+                  </p>
+                  <p className="font-medium text-neutral-900 dark:text-white text-sm">
                     {selectedReview.targetName}
                   </p>
                   <p className="text-xs text-neutral-400">
@@ -394,7 +460,7 @@ export default function AdminReviewsPage() {
                 <p className="text-xs text-neutral-500 mb-2 flex items-center gap-1">
                   <MessageSquare className="w-3 h-3" /> Commentaire
                 </p>
-                <p className="text-sm text-neutral-700 bg-neutral-50 rounded-xl p-4 italic">
+                <p className="text-sm text-neutral-700 dark:text-neutral-300 bg-neutral-50 dark:bg-[#0f172a] rounded-xl p-4 italic">
                   &ldquo;{selectedReview.comment}&rdquo;
                 </p>
               </div>
@@ -423,7 +489,7 @@ export default function AdminReviewsPage() {
                         (log: BackendReviewAbuseLog, idx: number) => (
                           <div
                             key={idx}
-                            className="bg-white border border-neutral-100 rounded-xl p-3"
+                            className="bg-white dark:bg-[#1e293b] border border-neutral-100 dark:border-neutral-700 rounded-xl p-3"
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <StatusBadge
@@ -481,6 +547,47 @@ export default function AdminReviewsPage() {
                   Avertir l&apos;auteur
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* R1: Warn User Modal */}
+      {warnModalOpen && warnTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
+                <AlertTriangle className="w-5 h-5 text-orange-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                  Avertir l&apos;utilisateur
+                </h3>
+                <p className="text-sm text-neutral-500">{warnTarget.email}</p>
+              </div>
+            </div>
+            <textarea
+              value={warnReason}
+              onChange={(e) => setWarnReason(e.target.value)}
+              placeholder="Raison de l'avertissement (obligatoire)..."
+              rows={3}
+              className="w-full px-4 py-3 border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:ring-2 focus:ring-orange-500 resize-none"
+            />
+            <div className="flex gap-3 mt-4">
+              <button
+                onClick={() => setWarnModalOpen(false)}
+                className="flex-1 px-4 py-2.5 bg-neutral-100 dark:bg-neutral-700 text-neutral-700 dark:text-neutral-200 rounded-xl font-medium hover:bg-neutral-200 dark:hover:bg-neutral-600 transition-colors"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={confirmWarnUser}
+                disabled={!warnReason.trim() || warnLoading}
+                className="flex-1 px-4 py-2.5 bg-orange-600 text-white rounded-xl font-medium hover:bg-orange-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+              >
+                {warnLoading ? "Envoi..." : "Envoyer l'avertissement"}
+              </button>
             </div>
           </div>
         </div>

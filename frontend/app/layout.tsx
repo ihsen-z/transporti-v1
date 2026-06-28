@@ -2,14 +2,33 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NotificationProvider } from "@/contexts/NotificationContext";
 import { ToastProvider } from "@/components/ui/Toast";
-import RoleSwitcher from "@/components/auth/RoleSwitcher";
+
+import { AppI18nProvider } from "@/lib/i18n/useAppI18n";
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Transporti V1 - La logistique réinventée",
-  description: "Plateforme de transport en Tunisie. Simple, rapide, fiable.",
+  title: {
+    default: "Transporti — La logistique réinventée",
+    template: "%s | Transporti",
+  },
+  description:
+    "Plateforme de transport en Tunisie. Trouvez un transporteur fiable en quelques clics. Simple, rapide, sécurisé.",
+  keywords: [
+    "transport",
+    "Tunisie",
+    "logistique",
+    "déménagement",
+    "livraison",
+    "transporteur",
+  ],
+  openGraph: {
+    type: "website",
+    locale: "fr_TN",
+    siteName: "Transporti",
+  },
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -27,12 +46,15 @@ export default function RootLayout({
   return (
     <html lang="fr">
       <body className={inter.className}>
-        <AuthProvider>
-          <ToastProvider>
-            {children}
-            {process.env.NODE_ENV === "development" && <RoleSwitcher />}
-          </ToastProvider>
-        </AuthProvider>
+        <AppI18nProvider>
+          <AuthProvider>
+            <NotificationProvider>
+              <ToastProvider>
+                {children}
+              </ToastProvider>
+            </NotificationProvider>
+          </AuthProvider>
+        </AppI18nProvider>
       </body>
     </html>
   );

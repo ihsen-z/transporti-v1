@@ -4,11 +4,11 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 
-from .models import EscrowTransaction, CommissionLedger
+from .models import EscrowTransaction, CommissionLedger, Booking
 from .serializers import (
     EscrowReleaseSerializer, CommissionSettleSerializer,
     ConfirmCompletionSerializer, EscrowDetailSerializer,
-    CommissionLedgerDetailSerializer
+    CommissionLedgerDetailSerializer, BookingDetailSerializer
 )
 from .services import release_escrow_on_completion, settle_commission_debt, create_escrow_on_booking
 from .gateway import get_payment_gateway
@@ -24,8 +24,8 @@ class InitiatePaymentView(APIView):
     """
     POST /api/payments/initiate/
     Client initiates payment for a booking via the configured gateway.
-    Body: { "job_id": int }
-    Returns: { "payment_url": str, "gateway_ref": str }
+    Body: { "job_id": int, "platform": str } (platform defaults to 'web')
+    Returns: { "payment_url": str, "gateway_ref": str, "callback_url": str (optional) }
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
 
@@ -68,15 +68,25 @@ class InitiatePaymentView(APIView):
             )
 
         # Initiate payment via gateway
+        platform = request.data.get('platform', 'web')
         gateway = get_payment_gateway()
-        frontend_url = request.build_absolute_uri('/').rstrip('/')
+
+        if platform == 'mobile':
+            from django.conf import settings
+            mobile_scheme = getattr(settings, 'MOBILE_APP_SCHEME', 'transporti')
+            success_url = f"{mobile_scheme}://payment/callback?status=success&job_id={job.id}"
+            fail_url = f"{mobile_scheme}://payment/callback?status=failed&job_id={job.id}"
+        else:
+            frontend_url = request.build_absolute_uri('/').rstrip('/')
+            success_url = f"{frontend_url}/jobs/{job.id}?payment=success"
+            fail_url = f"{frontend_url}/jobs/{job.id}?payment=failed"
 
         result = gateway.init_payment(
             amount=booking.final_price,
             description=f"Transporti - Job #{job.id}",
             order_id=f"TRN-{job.id}-{booking.id}",
-            success_url=f"{frontend_url}/jobs/{job.id}?payment=success",
-            fail_url=f"{frontend_url}/jobs/{job.id}?payment=failed",
+            success_url=success_url,
+            fail_url=fail_url,
         )
 
         if not result.success:
@@ -93,11 +103,18 @@ class InitiatePaymentView(APIView):
             gateway_reference=result.gateway_ref,
         )
 
-        return Response({
+        response_data = {
             'payment_url': result.payment_url,
             'gateway_ref': result.gateway_ref,
             'escrow_id': escrow.id,
-        })
+        }
+
+        if platform == 'mobile':
+            from django.conf import settings
+            mobile_scheme = getattr(settings, 'MOBILE_APP_SCHEME', 'transporti')
+            response_data['callback_url'] = f"{mobile_scheme}://payment/callback"
+
+        return Response(response_data)
 
 
 class PaymentWebhookView(APIView):
@@ -105,10 +122,15 @@ class PaymentWebhookView(APIView):
     POST /api/payments/webhook/
     Callback from payment gateway when payment status changes.
     No authentication (called by gateway server).
+    HMAC-SHA256 signature validation (Sprint 2 R4).
     """
     permission_classes = []  # Public endpoint
 
     def post(self, request):
+        # R4: Verify webhook signature before processing
+        from .webhook_security import verify_webhook_signature
+        verify_webhook_signature(request)
+
         gateway_ref = request.data.get('payment_ref') or request.data.get('paymentRef', '')
         payment_status = request.data.get('status', 'pending')
 
@@ -130,6 +152,45 @@ class PaymentWebhookView(APIView):
             return Response({'status': 'payment_failed'})
 
         return Response({'status': 'no_change'})
+
+
+class PaymentStatusView(APIView):
+    """
+    GET /api/payments/<reference>/status/
+    Retrieve payment status by gateway reference.
+    Accessible only to the job owner (client) or the accepted transporter.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, reference):
+        escrow = get_object_or_404(EscrowTransaction, gateway_reference=reference)
+        
+        # Verify the user is either the client (job owner) or the accepted transporter
+        job = escrow.booking_reference
+        is_client = (job.owner == request.user)
+        
+        # Check if the user is the accepted transporter
+        is_transporter = False
+        try:
+            booking = Booking.objects.get(job=job)
+            if booking.accepted_offer.transporter == request.user:
+                is_transporter = True
+        except Booking.DoesNotExist:
+            pass
+
+        if not is_client and not is_transporter:
+            return Response(
+                {'error': 'You do not have permission to view this payment status.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        return Response({
+            'gateway_reference': escrow.gateway_reference,
+            'status': escrow.status,
+            'amount': escrow.amount,
+            'job_id': job.id,
+            'updated_at': escrow.updated_at,
+        })
 
 
 # =============================================================================
@@ -176,6 +237,72 @@ class ConfirmCompletionView(generics.GenericAPIView):
                 {'error': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+
+# =============================================================================
+# JOB-SCOPED BOOKING & ESCROW ENDPOINTS (F2)
+# =============================================================================
+
+class JobBookingDetailView(APIView):
+    """
+    GET /api/jobs/{job_id}/booking/
+    Returns the booking for a specific job.
+    Accessible only to the job owner (client) or the accepted transporter.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id)
+
+        # Authorization: must be job owner or accepted transporter
+        is_owner = job.owner == request.user
+        accepted_offer = job.offers.filter(status='ACCEPTED').first()
+        is_transporter = accepted_offer and accepted_offer.transporter == request.user
+
+        if not is_owner and not is_transporter:
+            return Response(
+                {'error': 'Access denied.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        try:
+            booking = Booking.objects.get(job=job)
+        except Booking.DoesNotExist:
+            return Response(
+                {'error': 'No booking found for this job.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        return Response(BookingDetailSerializer(booking).data)
+
+
+class JobEscrowDetailView(APIView):
+    """
+    GET /api/jobs/{job_id}/escrow/
+    Returns escrow transactions for a specific job.
+    Accessible only to the job owner (client) or the accepted transporter.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id)
+
+        # Authorization: must be job owner or accepted transporter
+        is_owner = job.owner == request.user
+        accepted_offer = job.offers.filter(status='ACCEPTED').first()
+        is_transporter = accepted_offer and accepted_offer.transporter == request.user
+
+        if not is_owner and not is_transporter:
+            return Response(
+                {'error': 'Access denied.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        escrows = EscrowTransaction.objects.filter(
+            booking_reference=job
+        ).order_by('-created_at')
+
+        return Response(EscrowDetailSerializer(escrows, many=True).data)
 
 
 # =============================================================================

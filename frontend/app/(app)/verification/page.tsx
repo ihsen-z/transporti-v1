@@ -16,6 +16,7 @@ import {
   Eye,
   ShieldAlert,
 } from "lucide-react";
+import { getMediaUrl } from "@/lib/utils/media";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -357,11 +358,7 @@ export default function VerificationPage() {
                       {/* View link */}
                       {doc.file_url && (
                         <a
-                          href={
-                            doc.file_url.startsWith("http")
-                              ? doc.file_url
-                              : `http://localhost:8000${doc.file_url}`
-                          }
+                          href={getMediaUrl(doc.file_url)}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-shrink-0 p-1.5 rounded-lg text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 transition-colors"

@@ -27,7 +27,7 @@ class ReviewListView(generics.ListAPIView):
     GET /api/reviews/user/{user_id}/
     List reviews received by a specific user.
     """
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = ReviewListSerializer
 
     def get_queryset(self):

@@ -9,6 +9,9 @@ from .views import (
     NotificationReadView,
     NotificationReadAllView,
     UnreadCountView,
+    DeviceTokenRegisterView,
+    DeviceTokenUnregisterView,
+    DeviceTokenListView,
 )
 
 urlpatterns = [
@@ -19,4 +22,9 @@ urlpatterns = [
     path('read-all/', NotificationReadAllView.as_view(), name='read_all'),
     path('<int:pk>/', NotificationDetailView.as_view(), name='notification_detail'),
     path('<int:pk>/read/', NotificationReadView.as_view(), name='notification_read'),
+
+    # Device token management (mobile push notifications)
+    path('devices/', DeviceTokenListView.as_view(), name='device_list'),
+    path('devices/register/', DeviceTokenRegisterView.as_view(), name='device_register'),
+    path('devices/<str:token>/', DeviceTokenUnregisterView.as_view(), name='device_unregister'),
 ]
