@@ -179,7 +179,7 @@ if _db_url:
     # Parse DATABASE_URL: postgres://user:password@host:port/dbname
     import re
     _match = re.match(
-        r'postgres(?:ql)?://(?P<user>[^:]+):(?P<password>[^@]+)@(?P<host>[^:]+):(?P<port>\d+)/(?P<name>.+)',
+        r'postgres(?:ql)?://(?P<user>[^:]+):(?P<password>[^@]+)@(?P<host>[^:/]+)(?::(?P<port>\d+))?/(?P<name>.+)',
         _db_url
     )
     if _match:
@@ -190,7 +190,7 @@ if _db_url:
                 'USER': _match.group('user'),
                 'PASSWORD': _match.group('password'),
                 'HOST': _match.group('host'),
-                'PORT': _match.group('port'),
+                'PORT': _match.group('port') or '5432',
                 'CONN_MAX_AGE': 600,  # Connection pooling: 10 min
                 'OPTIONS': {
                     'connect_timeout': 5,
