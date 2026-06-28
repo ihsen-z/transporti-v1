@@ -30,7 +30,7 @@ services:
       
       # Sécurité & CORS (Domaines auto-générés par Render)
       - key: ALLOWED_HOSTS
-        value: transporti-backend.onrender.com
+        value: transporti-v1.onrender.com
       - key: CORS_ALLOWED_ORIGINS
         value: https://transporti-frontend.onrender.com
       - key: FRONTEND_URL
@@ -50,7 +50,7 @@ services:
     envVars:
       # Lier l'URL de l'API déployée ci-dessus
       - key: NEXT_PUBLIC_API_URL
-        value: https://transporti-backend.onrender.com
+        value: https://transporti-v1.onrender.com
 
 databases:
   # ---------------------------------------------------------
