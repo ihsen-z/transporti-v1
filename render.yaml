@@ -8,6 +8,7 @@ services:
     rootDir: backend
     region: frankfurt # Proche de la Tunisie pour une faible latence
     plan: starter # Plan idéal pour 50 utilisateurs (env. 7$/mois)
+    healthCheckPath: /api/schema/
     envVars:
       # Lier la base de données PostgreSQL automatiquement
       - key: DATABASE_URL
