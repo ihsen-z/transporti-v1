@@ -27,7 +27,7 @@ ENV = os.environ.get('ENV', os.environ.get('DJANGO_ENV', 'development')).lower()
 IS_PRODUCTION = ENV in ('production', 'prod', 'live')
 
 # SECURITY: Debug mode - defaults to False for production safety
-DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
+DEBUG = True
 
 # SECURITY: Load from environment variable, fail if not set in production
 _default_key = 'django-insecure-dev-only-replace-in-production'
