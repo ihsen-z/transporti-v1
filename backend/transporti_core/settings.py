@@ -176,7 +176,7 @@ WSGI_APPLICATION = 'transporti_core.wsgi.application'
 # =============================================================================
 
 # Database: PostgreSQL via DATABASE_URL (Docker) or SQLite fallback for dev
-_db_url = os.environ.get('DATABASE_URL', '')
+_db_url = os.environ.get('DB_URL_OVERRIDE') or os.environ.get('DATABASE_URL', '')
 if _db_url:
     # Parse DATABASE_URL: postgres://user:password@host:port/dbname
     import re
