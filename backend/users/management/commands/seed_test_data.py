@@ -144,7 +144,7 @@ class Command(BaseCommand):
         TrustProfile.objects.get_or_create(
             user=self.transporter_2,
             defaults={
-                'verification_status': VerificationStatus.PENDING_REVIEW,
+                'verification_status': VerificationStatus.PENDING,
                 'last_submitted_at': timezone.now() - timedelta(hours=12),
             }
         )
