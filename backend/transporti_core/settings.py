@@ -138,7 +138,7 @@ ROOT_URLCONF = 'transporti_core.urls'
 
 CORS_ALLOWED_ORIGINS = [
     origin.strip() for origin in
-    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:8081,http://localhost:8082').split(',')
+    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:8081,http://localhost:8082,https://transporti-frontend.onrender.com').split(',')
     if origin.strip()
 ]
 
