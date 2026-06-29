@@ -376,7 +376,7 @@ class Command(BaseCommand):
         dispute, created = Dispute.objects.get_or_create(
             job=self.job_4,
             defaults={
-                'initiator': self.client_1,
+                'opened_by': self.client_1,
                 'reason': 'DAMAGED_ITEMS',
                 'description': 'Glass table was cracked during transport. Mirror has scratches.',
                 'status': 'INVESTIGATING',
