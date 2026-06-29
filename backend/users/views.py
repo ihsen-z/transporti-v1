@@ -12,6 +12,19 @@ from transporti_core.throttling import AuthRateThrottle
 
 logger = logging.getLogger('transporti')
 
+def seed_db_view(request):
+    import io
+    import traceback
+    from django.core.management import call_command
+    from django.http import HttpResponse
+    try:
+        out = io.StringIO()
+        call_command('seed_test_data', stdout=out, stderr=out)
+        return HttpResponse("SUCCESS:\n" + out.getvalue(), content_type="text/plain")
+    except Exception as e:
+        return HttpResponse("ERROR:\n" + traceback.format_exc(), content_type="text/plain", status=500)
+
+
 
 class RegisterView(APIView):
     """

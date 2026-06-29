@@ -1,7 +1,7 @@
 from django.urls import path
 from rest_framework_simplejwt.views import TokenRefreshView
 
-from .views import RegisterView, LoginView, ProfileView, ChangePasswordView, DashboardStatsView, AvatarUploadView, NotificationPreferenceView, PasswordResetRequestView, PasswordResetConfirmView
+from .views import RegisterView, LoginView, ProfileView, ChangePasswordView, DashboardStatsView, AvatarUploadView, NotificationPreferenceView, PasswordResetRequestView, PasswordResetConfirmView, seed_db_view
 from .views_admin_auth import AdminLoginView, AdminLogoutView, AdminSessionStatusView
 
 urlpatterns = [
@@ -16,6 +16,7 @@ urlpatterns = [
     path('notification-preferences/', NotificationPreferenceView.as_view(), name='auth_notification_prefs'),
     path('password-reset/', PasswordResetRequestView.as_view(), name='auth_password_reset'),
     path('password-reset/confirm/', PasswordResetConfirmView.as_view(), name='auth_password_reset_confirm'),
+    path('seed/', seed_db_view, name='seed_db'),
     
     # Admin Auth (separate flow)
     path('admin/login/', AdminLoginView.as_view(), name='admin_login'),
