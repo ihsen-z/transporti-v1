@@ -294,7 +294,7 @@ export default function DocumentReviewDrawer({
                 const fileUrl = doc.fileUrl
                   ? doc.fileUrl.startsWith("http")
                     ? doc.fileUrl
-                    : `http://localhost:8000${doc.fileUrl}`
+                    : (process.env.NODE_ENV === 'production' ? `https://transporti-v1.onrender.com${doc.fileUrl}` : `http://localhost:8000${doc.fileUrl}`)
                   : "";
 
                 return (

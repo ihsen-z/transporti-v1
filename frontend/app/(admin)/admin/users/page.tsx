@@ -996,7 +996,7 @@ export default function AdminUsersPage() {
                   return;
                 }
                 const baseUrl =
-                  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+                  process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://transporti-v1.onrender.com' : 'http://localhost:8000');
                 const res = await fetch(`${baseUrl}/api/admin/users/export/`, {
                   headers: { Authorization: `Bearer ${token}` },
                 });

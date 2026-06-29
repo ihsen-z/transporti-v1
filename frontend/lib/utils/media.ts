@@ -4,7 +4,7 @@
  */
 
 const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+  process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://transporti-v1.onrender.com' : 'http://localhost:8000');
 
 /**
  * Returns a full URL for a media file path.

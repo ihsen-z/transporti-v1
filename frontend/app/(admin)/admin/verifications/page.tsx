@@ -290,7 +290,7 @@ export default function AdminVerificationsPage() {
               href={
                 v.documentUrl.startsWith("http")
                   ? v.documentUrl
-                  : `http://localhost:8000${v.documentUrl}`
+                  : (process.env.NODE_ENV === 'production' ? `https://transporti-v1.onrender.com${v.documentUrl}` : `http://localhost:8000${v.documentUrl}`)
               }
               target="_blank"
               rel="noopener noreferrer"
