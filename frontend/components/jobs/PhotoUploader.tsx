@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useCallback } from "react";
 import { Camera, ImagePlus, X, Loader2 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { compressImage, validateImageFile } from "@/lib/imageUtils";
@@ -24,6 +24,7 @@ interface UploadResponse {
 /**
  * Shared photo upload component with camera, gallery, compression, and upload.
  * Works for both Transport and Moving job forms.
+ * Camera button uses navigator.mediaDevices on desktop, capture attribute on mobile.
  */
 export function PhotoUploader({
   photos,
@@ -32,8 +33,12 @@ export function PhotoUploader({
 }: PhotoUploaderProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [showCamera, setShowCamera] = useState(false);
+  const [stream, setStream] = useState<MediaStream | null>(null);
 
   const remainingSlots = maxPhotos - photos.length;
 
@@ -98,6 +103,100 @@ export function PhotoUploader({
     onPhotosChange(updated);
   };
 
+  // --- Camera via getUserMedia (works on desktop & mobile browsers) ---
+  const stopCameraStream = useCallback(() => {
+    if (stream) {
+      stream.getTracks().forEach((track) => track.stop());
+      setStream(null);
+    }
+    setShowCamera(false);
+  }, [stream]);
+
+  const openCamera = async () => {
+    setError(null);
+
+    // On mobile: use the native file input with capture attribute
+    // Check if this is a mobile device via touch support
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    if (isMobile) {
+      cameraInputRef.current?.click();
+      return;
+    }
+
+    // On desktop: use getUserMedia to access camera
+    try {
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false,
+      });
+      setStream(mediaStream);
+      setShowCamera(true);
+
+      // Wait for video element to mount then attach stream
+      setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.srcObject = mediaStream;
+          videoRef.current.play();
+        }
+      }, 100);
+    } catch (err: any) {
+      console.error("Camera access error:", err);
+      if (err.name === "NotAllowedError") {
+        setError("Accès à la caméra refusé. Vérifiez les permissions de votre navigateur.");
+      } else if (err.name === "NotFoundError") {
+        setError("Aucune caméra détectée sur cet appareil.");
+      } else {
+        setError("Impossible d'accéder à la caméra. Utilisez la galerie.");
+      }
+    }
+  };
+
+  const capturePhoto = async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const video = videoRef.current;
+    const canvas = canvasRef.current;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    ctx.drawImage(video, 0, 0);
+
+    // Convert canvas to blob
+    canvas.toBlob(
+      async (blob) => {
+        if (!blob) {
+          setError("Erreur lors de la capture.");
+          return;
+        }
+
+        // Stop camera
+        stopCameraStream();
+
+        // Create a File from the blob
+        const file = new File([blob], `camera_${Date.now()}.jpg`, {
+          type: "image/jpeg",
+        });
+
+        // Use the same upload pipeline
+        const fakeFileList = {
+          length: 1,
+          item: (i: number) => (i === 0 ? file : null),
+          [Symbol.iterator]: function* () {
+            yield file;
+          },
+          0: file,
+        } as unknown as FileList;
+
+        await handleFiles(fakeFileList);
+      },
+      "image/jpeg",
+      0.9,
+    );
+  };
+
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-neutral-700">
@@ -123,6 +222,8 @@ export function PhotoUploader({
           className="hidden"
           onChange={(e) => handleFiles(e.target.files)}
         />
+        {/* Hidden canvas for photo capture */}
+        <canvas ref={canvasRef} className="hidden" />
 
         {/* Gallery button */}
         <button
@@ -142,7 +243,7 @@ export function PhotoUploader({
         {/* Camera button */}
         <button
           type="button"
-          onClick={() => cameraInputRef.current?.click()}
+          onClick={openCamera}
           disabled={uploading || remainingSlots <= 0}
           className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
@@ -156,6 +257,39 @@ export function PhotoUploader({
           </span>
         )}
       </div>
+
+      {/* Camera viewfinder (desktop) */}
+      {showCamera && (
+        <div className="relative rounded-xl overflow-hidden border-2 border-brand-600 bg-black">
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full max-h-[400px] object-contain"
+          />
+          <div className="absolute bottom-3 left-0 right-0 flex justify-center gap-3">
+            {/* Capture button */}
+            <button
+              type="button"
+              onClick={capturePhoto}
+              className="w-14 h-14 rounded-full bg-white border-4 border-brand-600 shadow-lg hover:scale-105 transition-transform flex items-center justify-center"
+              title="Prendre la photo"
+            >
+              <Camera className="w-6 h-6 text-brand-600" />
+            </button>
+            {/* Cancel button */}
+            <button
+              type="button"
+              onClick={stopCameraStream}
+              className="w-10 h-10 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-colors flex items-center justify-center self-center"
+              title="Fermer la caméra"
+            >
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Error message */}
       {error && (
