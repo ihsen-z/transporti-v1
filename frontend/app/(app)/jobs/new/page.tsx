@@ -124,17 +124,17 @@ export default function NewJobPage() {
   const handleNext = () => {
     setValidationError(null);
 
-    // Step 3 validation: date is required and ≥ 24h from now
+    // Step 3 validation: date is required and ≥ 15m from now
     if (currentStep === 3 && !formData.scheduled_time) {
       setValidationError("Veuillez sélectionner une date et heure.");
       return;
     }
     if (currentStep === 3 && formData.scheduled_time) {
       const selected = new Date(formData.scheduled_time);
-      const minDate = new Date(Date.now() + 24 * 60 * 60 * 1000);
+      const minDate = new Date(Date.now() + 15 * 60 * 1000);
       if (selected < minDate) {
         setValidationError(
-          "La date doit être au moins 24h dans le futur pour maximiser les offres.",
+          "La date doit être au moins 15 minutes dans le futur.",
         );
         return;
       }
