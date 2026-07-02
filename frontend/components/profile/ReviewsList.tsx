@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Star, User, Quote } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Review {
   id: number;
@@ -39,15 +40,16 @@ const ASPECT_LABELS: Record<string, string> = {
 };
 
 export function ReviewsList({ reviews, totalCount }: Props) {
+  const { t } = useTranslation();
   return (
     <div className="rounded-2xl overflow-hidden border border-neutral-100 shadow-sm">
       {/* Header — deep navy */}
       <div className="px-6 py-4 bg-gradient-to-r from-brand-900 to-brand-600 flex items-center justify-between">
         <h3 className="text-base font-bold text-white tracking-wide">
-          Avis clients
+          {t("reviews_title")}
         </h3>
         <span className="text-xs font-semibold text-accent-400 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
-          {totalCount} avis
+          {totalCount} {t("reviews")}
         </span>
       </div>
 
@@ -110,7 +112,7 @@ export function ReviewsList({ reviews, totalCount }: Props) {
       ) : (
         <div className="bg-white p-10 text-center">
           <Star className="w-8 h-8 text-neutral-200 mx-auto mb-2" />
-          <p className="text-sm text-neutral-400">Aucun avis pour le moment</p>
+          <p className="text-sm text-neutral-400">{t("no_reviews")}</p>
         </div>
       )}
     </div>

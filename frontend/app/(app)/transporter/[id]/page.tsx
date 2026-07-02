@@ -1,13 +1,15 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Languages } from "lucide-react";
 import { TransporterProfileCard } from "@/components/profile/TransporterProfileCard";
 import { TrustBadges } from "@/components/profile/TrustBadges";
 import { VehicleGallery } from "@/components/profile/VehicleGallery";
 import { ReviewsList } from "@/components/profile/ReviewsList";
 import { StatsGrid } from "@/components/profile/StatsGrid";
+import { TranslationProvider } from "@/lib/i18n/TranslationContext";
+import { useTranslation } from "@/hooks/useTranslation";
 
 /* -------------------------------------------------------------------------- */
 /*  Mock Data                                                                 */
@@ -20,7 +22,7 @@ const MOCK_PROFILE = {
   joined_at: "2025-06-15T00:00:00Z",
   is_verified: true,
   trust_score: 92,
-  vehicle_type: "Camion bâché — Hyundai HD65",
+  vehicle_type: "vehicle_truck", // Key for translation (Camion Bâché)
   vehicle_capacity_kg: 3500,
   vehicle_photos: [] as string[],
   service_areas: ["Tunis", "Sousse", "Sfax", "Nabeul"],
@@ -63,28 +65,37 @@ const MOCK_REVIEWS = [
 ];
 
 /* -------------------------------------------------------------------------- */
-/*  Transporter Profile Page                                                  */
+/*  Transporter Profile Page Content                                          */
 /* -------------------------------------------------------------------------- */
 
-export default function TransporterProfilePage() {
-  const params = useParams();
+function ProfileContent() {
   const router = useRouter();
-  const [loading, setLoading] = useState(false);
+  const { t, locale, setLocale, isRtl } = useTranslation();
 
-  // In production: fetch from /api/transporter/profile/{id}/ and /api/reviews/user/{id}/
   const profile = MOCK_PROFILE;
   const reviews = MOCK_REVIEWS;
 
   return (
-    <div className="p-6 lg:p-8 max-w-5xl mx-auto">
-      {/* Back */}
-      <button
-        onClick={() => router.back()}
-        className="flex items-center gap-2 text-sm text-neutral-500 hover:text-brand-600 mb-6 transition-colors"
-      >
-        <ArrowLeft className="w-4 h-4" />
-        Retour
-      </button>
+    <div className={`p-6 lg:p-8 max-w-5xl mx-auto ${isRtl ? "text-right" : ""}`} dir={isRtl ? "rtl" : "ltr"}>
+      {/* Header Actions */}
+      <div className="flex items-center justify-between mb-6">
+        <button
+          onClick={() => router.back()}
+          className="flex items-center gap-2 text-sm text-neutral-500 hover:text-brand-600 transition-colors"
+        >
+          <ArrowLeft className={`w-4 h-4 ${isRtl ? "rotate-180" : ""}`} />
+          {t("back")}
+        </button>
+        
+        {/* Language Toggle Demo */}
+        <button
+          onClick={() => setLocale(locale === "fr" ? "ar" : "fr")}
+          className="flex items-center gap-2 text-sm font-medium bg-white px-3 py-1.5 rounded-full shadow-sm border border-neutral-200 hover:bg-neutral-50 transition-colors"
+        >
+          <Languages className="w-4 h-4 text-brand-600" />
+          {locale === "fr" ? "العربية (Derja)" : "Français"}
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Column */}
@@ -123,7 +134,7 @@ export default function TransporterProfilePage() {
           />
 
           <VehicleGallery
-            vehicleType={profile.vehicle_type}
+            vehicleType={t(profile.vehicle_type)}
             vehicleCapacityKg={profile.vehicle_capacity_kg}
             vehiclePhotos={profile.vehicle_photos}
             insuranceValidUntil={profile.insurance_valid_until}
@@ -131,5 +142,13 @@ export default function TransporterProfilePage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function TransporterProfilePage() {
+  return (
+    <TranslationProvider>
+      <ProfileContent />
+    </TranslationProvider>
   );
 }

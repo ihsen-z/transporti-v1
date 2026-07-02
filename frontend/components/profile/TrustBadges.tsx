@@ -2,6 +2,7 @@
 
 import React from "react";
 import { ShieldCheck, Star, CheckCircle2, Truck, Zap } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   isVerified: boolean;
@@ -18,10 +19,11 @@ export function TrustBadges({
   totalJobsCompleted,
   averageRating,
 }: Props) {
+  const { t } = useTranslation();
   const badges = [
     {
       icon: ShieldCheck,
-      label: isVerified ? "Identité vérifiée" : "Non vérifié",
+      label: isVerified ? t("verified_identity") : "Non vérifié",
       active: isVerified,
       activeClass:
         "bg-gradient-to-br from-accent-50 to-accent-100/60 text-accent-700 border-accent-300/60",
@@ -38,6 +40,22 @@ export function TrustBadges({
       active: averageRating >= 4.0,
       activeClass:
         "bg-gradient-to-br from-amber-50 to-amber-100/60 text-amber-700 border-amber-300/60",
+      inactiveClass: "bg-neutral-50 text-neutral-400 border-neutral-200",
+    },
+    {
+      icon: ShieldCheck,
+      label: t("business_license"),
+      active: isVerified, // Demo logic: linking it to isVerified
+      activeClass:
+        "bg-gradient-to-br from-emerald-50 to-emerald-100/60 text-emerald-700 border-emerald-300/60",
+      inactiveClass: "bg-neutral-50 text-neutral-400 border-neutral-200",
+    },
+    {
+      icon: ShieldCheck,
+      label: t("cargo_insurance"),
+      active: true, // Demo logic: assuming they have it
+      activeClass:
+        "bg-gradient-to-br from-blue-50 to-blue-100/60 text-blue-700 border-blue-300/60",
       inactiveClass: "bg-neutral-50 text-neutral-400 border-neutral-200",
     },
     {

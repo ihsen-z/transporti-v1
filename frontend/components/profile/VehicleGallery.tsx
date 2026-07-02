@@ -2,6 +2,7 @@
 
 import React from "react";
 import { Truck, Weight, FileCheck, ShieldCheck, ImageOff } from "lucide-react";
+import { useTranslation } from "@/hooks/useTranslation";
 
 interface Props {
   vehicleType: string;
@@ -16,6 +17,7 @@ export function VehicleGallery({
   vehiclePhotos,
   insuranceValidUntil,
 }: Props) {
+  const { t } = useTranslation();
   const isInsured =
     insuranceValidUntil && new Date(insuranceValidUntil) > new Date();
 
@@ -24,7 +26,7 @@ export function VehicleGallery({
       {/* Header — deep navy */}
       <div className="px-6 py-4 bg-gradient-to-r from-brand-900 to-brand-600">
         <h3 className="text-base font-bold text-white tracking-wide">
-          Véhicule
+          {t("vehicle")}
         </h3>
       </div>
 
@@ -49,7 +51,7 @@ export function VehicleGallery({
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-600/5 to-brand-600/10 flex items-center justify-center mx-auto mb-3">
             <ImageOff className="w-7 h-7 text-brand-600/30" />
           </div>
-          <p className="text-sm text-neutral-400">Aucune photo de véhicule</p>
+          <p className="text-sm text-neutral-400">{t("no_vehicle_photo")}</p>
         </div>
       )}
 
@@ -61,10 +63,10 @@ export function VehicleGallery({
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-              Type de véhicule
+              {t("vehicle_type")}
             </p>
             <p className="text-sm font-medium text-neutral-900">
-              {vehicleType || "Non spécifié"}
+              {vehicleType || t("not_specified")}
             </p>
           </div>
         </div>
@@ -76,7 +78,7 @@ export function VehicleGallery({
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                Capacité de charge
+                {t("capacity")}
               </p>
               <p className="text-sm font-medium text-neutral-900">
                 {vehicleCapacityKg.toLocaleString()} kg
@@ -96,12 +98,12 @@ export function VehicleGallery({
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                Assurance
+                {t("insurance")}
               </p>
               <p
                 className={`text-sm font-semibold ${isInsured ? "text-accent-600" : "text-red-600"}`}
               >
-                {isInsured ? "✓ Valide" : "✗ Expirée"} — jusqu'au{" "}
+                {isInsured ? t("insurance_valid") : t("insurance_expired")} — {t("insurance_until")}{" "}
                 {new Date(insuranceValidUntil).toLocaleDateString("fr-TN", {
                   day: "numeric",
                   month: "long",
