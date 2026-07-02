@@ -451,8 +451,18 @@ function TransporterDashboard({
 /*  Main Dashboard Page                                                       */
 /* -------------------------------------------------------------------------- */
 
+import { useRouter } from "next/navigation";
+
 export default function DashboardPage() {
   const { user } = useAuth();
+  const router = useRouter();
+
+  useEffect(() => {
+    if (user?.role === "admin") {
+      router.replace("/admin/dashboard");
+    }
+  }, [user, router]);
+
   const [clientStats, setClientStats] = useState<ClientStats>({
     active_jobs: 0,
     total_offers_received: 0,
