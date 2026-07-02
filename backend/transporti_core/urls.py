@@ -159,6 +159,12 @@ urlpatterns = [
     path('api/admin/escrow/<int:pk>/refund/', AdminEscrowRefundView.as_view(), name='admin_escrow_refund'),
 ]
 
-# Serve media files in development
-if settings.DEBUG:
-    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+from django.urls import re_path
+from django.views.static import serve
+
+# Serve media files (For MVP/Render without external storage)
+urlpatterns += [
+    re_path(r'^media/(?P<path>.*)$', serve, {
+        'document_root': settings.MEDIA_ROOT,
+    }),
+]
