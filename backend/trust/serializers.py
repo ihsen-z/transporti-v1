@@ -15,7 +15,7 @@ ALLOWED_MIME_TYPES = {
 }
 
 MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
-MAX_DOCUMENTS_PER_PROFILE = 5
+MAX_DOCUMENTS_PER_PROFILE = 10
 
 
 class VerificationDocumentUploadSerializer(serializers.Serializer):
@@ -171,10 +171,17 @@ class TrustProfileSubmissionSerializer(serializers.ModelSerializer):
 DOCUMENT_TYPE_LABELS = {
     'CIN_FRONT': "Carte d'identité (Recto)",
     'CIN_BACK': "Carte d'identité (Verso)",
+    'LICENSE_FRONT': 'Permis de conduire (Recto)',
+    'LICENSE_BACK': 'Permis de conduire (Verso)',
+    'CARTE_GRISE_FRONT': 'Carte grise (Recto)',
+    'CARTE_GRISE_BACK': 'Carte grise (Verso)',
+    'INSURANCE_FRONT': 'Assurance véhicule (Recto)',
+    'INSURANCE_BACK': 'Assurance véhicule (Verso)',
+    'SELFIE': 'Selfie avec pièce d\'identité',
+    # Legacy
     'CARTE_GRISE': 'Carte grise',
     'INSURANCE': 'Assurance véhicule',
     'LICENSE': 'Licence professionnelle',
-    'SELFIE': 'Selfie avec pièce d\'identité',
 }
 
 

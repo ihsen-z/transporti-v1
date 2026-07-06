@@ -82,6 +82,62 @@ function isImageFile(url: string): boolean {
 }
 
 /* -------------------------------------------------------------------------- */
+/*  Recto/Verso Grouping Logic                                                 */
+/* -------------------------------------------------------------------------- */
+
+// Define which document types form recto/verso pairs
+const DOC_PAIR_MAP: Record<string, { groupLabel: string; side: "recto" | "verso" }> = {
+  CIN_FRONT:          { groupLabel: "Carte d'identité", side: "recto" },
+  CIN_BACK:           { groupLabel: "Carte d'identité", side: "verso" },
+  LICENSE_FRONT:      { groupLabel: "Permis de conduire", side: "recto" },
+  LICENSE_BACK:       { groupLabel: "Permis de conduire", side: "verso" },
+  CARTE_GRISE_FRONT:  { groupLabel: "Carte grise", side: "recto" },
+  CARTE_GRISE_BACK:   { groupLabel: "Carte grise", side: "verso" },
+  INSURANCE_FRONT:    { groupLabel: "Assurance véhicule", side: "recto" },
+  INSURANCE_BACK:     { groupLabel: "Assurance véhicule", side: "verso" },
+  // Legacy (standalone)
+  CARTE_GRISE:        { groupLabel: "Carte grise (ancien)", side: "recto" },
+  INSURANCE:          { groupLabel: "Assurance (ancien)", side: "recto" },
+  LICENSE:            { groupLabel: "Licence pro (ancien)", side: "recto" },
+  SELFIE:             { groupLabel: "Selfie", side: "recto" },
+};
+
+interface DocGroup {
+  groupLabel: string;
+  recto?: AdminDocument;
+  verso?: AdminDocument;
+}
+
+function groupDocuments(docs: AdminDocument[]): DocGroup[] {
+  const groupMap = new Map<string, DocGroup>();
+
+  for (const doc of docs) {
+    const pairInfo = DOC_PAIR_MAP[doc.documentType];
+    if (!pairInfo) {
+      // Unknown type — show standalone
+      groupMap.set(`standalone_${doc.id}`, {
+        groupLabel: doc.documentTypeLabel,
+        recto: doc,
+      });
+      continue;
+    }
+
+    const key = pairInfo.groupLabel;
+    if (!groupMap.has(key)) {
+      groupMap.set(key, { groupLabel: key });
+    }
+    const group = groupMap.get(key)!;
+    if (pairInfo.side === "recto") {
+      group.recto = doc;
+    } else {
+      group.verso = doc;
+    }
+  }
+
+  return Array.from(groupMap.values());
+}
+
+/* -------------------------------------------------------------------------- */
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
@@ -286,127 +342,139 @@ export default function DocumentReviewDrawer({
                 </div>
               )}
 
-              {/* Document List */}
-              {data.documents.map((doc) => {
-                const status = getDocStatus(doc);
-                const cfg = docStatusConfig[status];
-                const StatusIcon = cfg.icon;
-                const fileUrl = doc.fileUrl
-                  ? doc.fileUrl.startsWith("http")
-                    ? doc.fileUrl
-                    : (process.env.NODE_ENV === 'production' ? `https://transporti-v1.onrender.com${doc.fileUrl}` : `http://localhost:8000${doc.fileUrl}`)
-                  : "";
-
-                return (
-                  <div
-                    key={doc.id}
-                    className={`border rounded-xl p-4 transition-all ${cfg.bg}`}
-                  >
-                    {/* Doc Header */}
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex items-center gap-2">
-                        <FileText className={`w-5 h-5 ${cfg.text}`} />
-                        <div>
-                          <p className="font-medium text-neutral-900 text-sm">
-                            {doc.documentTypeLabel}
-                          </p>
-                          <p className="text-xs text-neutral-400">
-                            Doc #{doc.id} · Soumis le{" "}
-                            {new Date(doc.uploadedAt).toLocaleDateString(
-                              "fr-FR",
-                            )}
-                          </p>
-                        </div>
+              {/* Document List — Grouped Recto/Verso */}
+              {groupDocuments(data.documents).map((group) => {
+                const renderDocCard = (doc: AdminDocument | undefined, sideLabel: string) => {
+                  if (!doc) {
+                    return (
+                      <div className="flex-1 min-w-0 border-2 border-dashed border-neutral-200 rounded-lg p-4 flex flex-col items-center justify-center text-center">
+                        <FileText className="w-6 h-6 text-neutral-300 mb-1" />
+                        <p className="text-xs text-neutral-400">{sideLabel}</p>
+                        <p className="text-[10px] text-neutral-300">Non soumis</p>
                       </div>
-                      <span
-                        className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium ${cfg.badge}`}
-                      >
-                        <StatusIcon className="w-3 h-3" />
-                        {cfg.label}
-                      </span>
-                    </div>
+                    );
+                  }
 
-                    {/* Preview / View */}
-                    {fileUrl && (
-                      <div className="mb-3">
-                        {isImageFile(fileUrl) ? (
+                  const status = getDocStatus(doc);
+                  const cfg = docStatusConfig[status];
+                  const StatusIcon = cfg.icon;
+                  const fileUrl = doc.fileUrl
+                    ? doc.fileUrl.startsWith("http")
+                      ? doc.fileUrl
+                      : (process.env.NODE_ENV === 'production' ? `https://transporti-v1.onrender.com${doc.fileUrl}` : `http://localhost:8000${doc.fileUrl}`)
+                    : "";
+
+                  return (
+                    <div className={`flex-1 min-w-0 border rounded-lg p-3 transition-all ${cfg.bg}`}>
+                      {/* Side label + Status */}
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
+                          {sideLabel}
+                        </span>
+                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${cfg.badge}`}>
+                          <StatusIcon className="w-2.5 h-2.5" />
+                          {cfg.label}
+                        </span>
+                      </div>
+
+                      {/* Preview */}
+                      {fileUrl && (
+                        <div className="mb-2">
+                          {isImageFile(fileUrl) ? (
+                            <button
+                              onClick={() => setPreviewUrl(fileUrl)}
+                              className="w-full h-24 bg-white rounded-md border border-neutral-200 overflow-hidden relative group cursor-pointer"
+                            >
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={fileUrl}
+                                alt={doc.documentTypeLabel}
+                                className="w-full h-full object-contain"
+                              />
+                              <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
+                                <Eye className="w-5 h-5 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
+                              </div>
+                            </button>
+                          ) : (
+                            <a
+                              href={fileUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="flex items-center gap-1.5 px-2 py-1.5 bg-white rounded-md border border-neutral-200 text-xs text-brand-600 hover:bg-brand-600/5 transition-colors"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                              PDF
+                            </a>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Rejection Reason */}
+                      {doc.rejectionReason && (
+                        <div className="bg-red-100 rounded-md px-2 py-1.5 mb-2 flex items-start gap-1.5">
+                          <AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
+                          <p className="text-[10px] text-red-700">{doc.rejectionReason}</p>
+                        </div>
+                      )}
+
+                      {/* Reviewed info */}
+                      {doc.reviewedAt && (
+                        <p className="text-[10px] text-neutral-400 mb-2">
+                          Par {doc.reviewedBy || "Admin"} · {new Date(doc.reviewedAt).toLocaleDateString("fr-FR")}
+                        </p>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex gap-1.5">
+                        {status !== "approved" && (
                           <button
-                            onClick={() => setPreviewUrl(fileUrl)}
-                            className="w-full h-32 bg-white rounded-lg border border-neutral-200 overflow-hidden relative group cursor-pointer"
+                            onClick={() => handleApprove(doc.id)}
+                            disabled={actionLoading === doc.id}
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-green-600 text-white rounded-md text-[10px] font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
                           >
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={fileUrl}
-                              alt={doc.documentTypeLabel}
-                              className="w-full h-full object-contain"
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all flex items-center justify-center">
-                              <Eye className="w-6 h-6 text-white opacity-0 group-hover:opacity-100 transition-opacity" />
-                            </div>
+                            {actionLoading === doc.id ? (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            ) : (
+                              <CheckCircle className="w-3 h-3" />
+                            )}
+                            OK
                           </button>
-                        ) : (
-                          <a
-                            href={fileUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-neutral-200 text-sm text-brand-600 hover:bg-brand-600/5 transition-colors"
+                        )}
+                        {status !== "rejected" && (
+                          <button
+                            onClick={() => setRejectDocId(doc.id)}
+                            disabled={actionLoading === doc.id}
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-red-600 text-white rounded-md text-[10px] font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
                           >
-                            <ExternalLink className="w-4 h-4" />
-                            Voir le document (PDF)
-                          </a>
+                            <XCircle className="w-3 h-3" />
+                            Non
+                          </button>
+                        )}
+                        {status === "approved" && (
+                          <p className="flex-1 text-center text-[10px] text-green-600 font-medium py-1.5">
+                            ✓ Approuvé
+                          </p>
                         )}
                       </div>
-                    )}
+                    </div>
+                  );
+                };
 
-                    {/* Rejection Reason */}
-                    {doc.rejectionReason && (
-                      <div className="bg-red-100 rounded-lg px-3 py-2 mb-3 flex items-start gap-2">
-                        <AlertTriangle className="w-4 h-4 text-red-500 flex-shrink-0 mt-0.5" />
-                        <p className="text-xs text-red-700">
-                          {doc.rejectionReason}
-                        </p>
-                      </div>
-                    )}
+                return (
+                  <div key={group.groupLabel} className="space-y-2">
+                    {/* Group Header */}
+                    <div className="flex items-center gap-2">
+                      <FileText className="w-4 h-4 text-brand-600" />
+                      <h4 className="text-sm font-semibold text-neutral-800">{group.groupLabel}</h4>
+                    </div>
 
-                    {/* Reviewed By */}
-                    {doc.reviewedAt && (
-                      <p className="text-xs text-neutral-400 mb-3">
-                        Vérifié par {doc.reviewedBy || "Admin"} le{" "}
-                        {new Date(doc.reviewedAt).toLocaleDateString("fr-FR")}
-                      </p>
-                    )}
-
-                    {/* Actions */}
-                    <div className="flex gap-2">
-                      {status !== "approved" && (
-                        <button
-                          onClick={() => handleApprove(doc.id)}
-                          disabled={actionLoading === doc.id}
-                          className="flex-1 flex items-center justify-center gap-2 py-2 bg-green-600 text-white rounded-lg text-sm font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
-                        >
-                          {actionLoading === doc.id ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : (
-                            <CheckCircle className="w-4 h-4" />
-                          )}
-                          Approuver
-                        </button>
-                      )}
-                      {status !== "rejected" && (
-                        <button
-                          onClick={() => setRejectDocId(doc.id)}
-                          disabled={actionLoading === doc.id}
-                          className="flex-1 flex items-center justify-center gap-2 py-2 bg-red-600 text-white rounded-lg text-sm font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
-                        >
-                          <XCircle className="w-4 h-4" />
-                          Rejeter
-                        </button>
-                      )}
-                      {status === "approved" && (
-                        <p className="flex-1 text-center text-sm text-green-600 font-medium py-2">
-                          ✓ Document approuvé
-                        </p>
-                      )}
+                    {/* Recto / Verso Side by Side */}
+                    <div className="flex gap-3">
+                      {renderDocCard(group.recto, "Recto")}
+                      {group.verso !== undefined || (!group.verso && DOC_PAIR_MAP[group.recto?.documentType || '']?.side === 'recto' && ['CIN_FRONT', 'LICENSE_FRONT', 'CARTE_GRISE_FRONT', 'INSURANCE_FRONT'].includes(group.recto?.documentType || ''))
+                        ? renderDocCard(group.verso, "Verso")
+                        : null
+                      }
                     </div>
                   </div>
                 );

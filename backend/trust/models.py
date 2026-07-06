@@ -306,12 +306,24 @@ class TrustProfile(models.Model):
 
 
 class DocumentType(models.TextChoices):
+    # --- CIN (existing) ---
     CIN_FRONT = 'CIN_FRONT', 'National ID (Front)'
     CIN_BACK = 'CIN_BACK', 'National ID (Back)'
-    CARTE_GRISE = 'CARTE_GRISE', 'Vehicle Registration'
-    INSURANCE = 'INSURANCE', 'Insurance Certificate'
-    LICENSE = 'LICENSE', 'Business License'
+    # --- Driving License (recto/verso) ---
+    LICENSE_FRONT = 'LICENSE_FRONT', 'Driving License (Front)'
+    LICENSE_BACK = 'LICENSE_BACK', 'Driving License (Back)'
+    # --- Vehicle Registration (recto/verso) ---
+    CARTE_GRISE_FRONT = 'CARTE_GRISE_FRONT', 'Vehicle Registration (Front)'
+    CARTE_GRISE_BACK = 'CARTE_GRISE_BACK', 'Vehicle Registration (Back)'
+    # --- Insurance (recto/verso) ---
+    INSURANCE_FRONT = 'INSURANCE_FRONT', 'Insurance Certificate (Front)'
+    INSURANCE_BACK = 'INSURANCE_BACK', 'Insurance Certificate (Back)'
+    # --- Selfie ---
     SELFIE = 'SELFIE', 'Selfie with ID'
+    # --- Legacy types (kept for backward compatibility, not shown in new uploads) ---
+    CARTE_GRISE = 'CARTE_GRISE', 'Vehicle Registration (Legacy)'
+    INSURANCE = 'INSURANCE', 'Insurance Certificate (Legacy)'
+    LICENSE = 'LICENSE', 'Business License (Legacy)'
 
 
 class VerificationDocument(models.Model):

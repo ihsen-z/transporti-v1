@@ -35,10 +35,17 @@ interface VerificationDoc {
 const DOC_TYPE_LABELS: Record<string, string> = {
   CIN_FRONT: "Carte d'identité (Recto)",
   CIN_BACK: "Carte d'identité (Verso)",
+  LICENSE_FRONT: "Permis de conduire (Recto)",
+  LICENSE_BACK: "Permis de conduire (Verso)",
+  CARTE_GRISE_FRONT: "Carte grise (Recto)",
+  CARTE_GRISE_BACK: "Carte grise (Verso)",
+  INSURANCE_FRONT: "Assurance véhicule (Recto)",
+  INSURANCE_BACK: "Assurance véhicule (Verso)",
+  SELFIE: "Selfie avec pièce d'identité",
+  // Legacy
   CARTE_GRISE: "Carte grise",
   INSURANCE: "Assurance véhicule",
   LICENSE: "Licence professionnelle",
-  SELFIE: "Selfie avec pièce d'identité",
   ID_CARD: "Carte d'identité",
   DRIVING_LICENSE: "Permis de conduire",
   VEHICLE_REGISTRATION: "Carte grise",
@@ -157,7 +164,7 @@ export default function VerificationPage() {
   };
 
   const statusInfo = getStatusDisplay();
-  const hasDocuments = documents.length >= 2;
+  const hasDocuments = documents.length >= 4;
   const showUploadForm = status === "UNVERIFIED" || status === "REJECTED";
   const showDocumentStatus = documents.length > 0 && status !== "UNVERIFIED";
 
@@ -391,26 +398,26 @@ export default function VerificationPage() {
             )}
 
             <VerificationUpload
-              documentType="ID_CARD"
+              category="ID_CARD"
               label="Carte d'identité (Recto/Verso)"
               onUploadSuccess={fetchDocuments}
             />
 
             <VerificationUpload
-              documentType="DRIVING_LICENSE"
-              label="Permis de conduire"
+              category="DRIVING_LICENSE"
+              label="Permis de conduire (Recto/Verso)"
               onUploadSuccess={fetchDocuments}
             />
 
             <VerificationUpload
-              documentType="VEHICLE_REGISTRATION"
-              label="Carte grise"
+              category="VEHICLE_REGISTRATION"
+              label="Carte grise (Recto/Verso)"
               onUploadSuccess={fetchDocuments}
             />
 
             <VerificationUpload
-              documentType="INSURANCE"
-              label="Assurance véhicule"
+              category="INSURANCE"
+              label="Assurance véhicule (Recto/Verso)"
               onUploadSuccess={fetchDocuments}
             />
 
@@ -424,8 +431,8 @@ export default function VerificationPage() {
               </button>
               {!hasDocuments && (
                 <p className="text-xs text-center text-neutral-500 mt-2">
-                  Veuillez télécharger au moins votre pièce d&apos;identité et
-                  votre permis.
+                  Veuillez télécharger au moins le recto et verso de votre pièce
+                  d&apos;identité et de votre permis de conduire.
                 </p>
               )}
             </div>
