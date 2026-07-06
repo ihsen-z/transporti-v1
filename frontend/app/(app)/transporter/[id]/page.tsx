@@ -8,8 +8,7 @@ import { TrustBadges } from "@/components/profile/TrustBadges";
 import { VehicleGallery } from "@/components/profile/VehicleGallery";
 import { ReviewsList } from "@/components/profile/ReviewsList";
 import { StatsGrid } from "@/components/profile/StatsGrid";
-import { TranslationProvider } from "@/lib/i18n/TranslationContext";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Mock Data                                                                 */
@@ -22,7 +21,7 @@ const MOCK_PROFILE = {
   joined_at: "2025-06-15T00:00:00Z",
   is_verified: true,
   trust_score: 92,
-  vehicle_type: "vehicle_truck", // Key for translation (Camion Bâché)
+  vehicle_type: "vehicleTruck", // Key for translation (Camion Bâché)
   vehicle_capacity_kg: 3500,
   vehicle_photos: [] as string[],
   service_areas: ["Tunis", "Sousse", "Sfax", "Nabeul"],
@@ -68,23 +67,23 @@ const MOCK_REVIEWS = [
 /*  Transporter Profile Page Content                                          */
 /* -------------------------------------------------------------------------- */
 
-function ProfileContent() {
+export default function TransporterProfilePage() {
   const router = useRouter();
-  const { t, locale, setLocale, isRtl } = useTranslation();
+  const { t, locale, setLocale, isRTL } = useAppI18n();
 
   const profile = MOCK_PROFILE;
   const reviews = MOCK_REVIEWS;
 
   return (
-    <div className={`p-6 lg:p-8 max-w-5xl mx-auto ${isRtl ? "text-right" : ""}`} dir={isRtl ? "rtl" : "ltr"}>
+    <div className={`p-6 lg:p-8 max-w-5xl mx-auto ${isRTL ? "text-right" : ""}`} dir={isRTL ? "rtl" : "ltr"}>
       {/* Header Actions */}
       <div className="flex items-center justify-between mb-6">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-sm text-neutral-500 hover:text-brand-600 transition-colors"
         >
-          <ArrowLeft className={`w-4 h-4 ${isRtl ? "rotate-180" : ""}`} />
-          {t("back")}
+          <ArrowLeft className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
+          {t.common.back}
         </button>
         
         {/* Language Toggle Demo */}
@@ -134,7 +133,7 @@ function ProfileContent() {
           />
 
           <VehicleGallery
-            vehicleType={t(profile.vehicle_type)}
+            vehicleType={t.profile[profile.vehicle_type as keyof typeof t.profile] || profile.vehicle_type}
             vehicleCapacityKg={profile.vehicle_capacity_kg}
             vehiclePhotos={profile.vehicle_photos}
             insuranceValidUntil={profile.insurance_valid_until}
@@ -142,13 +141,5 @@ function ProfileContent() {
         </div>
       </div>
     </div>
-  );
-}
-
-export default function TransporterProfilePage() {
-  return (
-    <TranslationProvider>
-      <ProfileContent />
-    </TranslationProvider>
   );
 }

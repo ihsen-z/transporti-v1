@@ -2,7 +2,7 @@
 
 import React from "react";
 import { TrendingUp, CheckCircle2, Clock, Truck } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 interface Props {
   completionRate: number;
@@ -17,11 +17,11 @@ export function StatsGrid({
   responseTimeMinutes,
   trustScore,
 }: Props) {
-  const { t } = useTranslation();
+  const { t } = useAppI18n();
   const stats = [
     {
       icon: TrendingUp,
-      label: t("trust_score"),
+      label: t.profile.trustScore,
       value: `${trustScore}/100`,
       iconBg:
         trustScore >= 80
@@ -32,7 +32,7 @@ export function StatsGrid({
     },
     {
       icon: CheckCircle2,
-      label: t("completion_rate"),
+      label: t.profile.completionRate,
       value: `${completionRate.toFixed(1)}%`,
       iconBg:
         completionRate >= 90
@@ -41,14 +41,14 @@ export function StatsGrid({
     },
     {
       icon: Truck,
-      label: t("total_jobs"),
+      label: t.profile.totalJobs,
       value: totalJobsCompleted.toString(),
       iconBg: "bg-brand-600/10 text-brand-600",
     },
     {
       icon: Clock,
-      label: t("avg_response_time"),
-      value: responseTimeMinutes ? `${responseTimeMinutes} ${t("min")}` : "N/A",
+      label: t.profile.avgResponseTime,
+      value: responseTimeMinutes ? `${responseTimeMinutes} ${t.profile.min}` : "N/A",
       iconBg:
         responseTimeMinutes && responseTimeMinutes < 30
           ? "bg-accent-500/10 text-accent-600"

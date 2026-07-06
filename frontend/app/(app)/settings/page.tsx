@@ -24,6 +24,7 @@ import {
   Pencil,
 } from "lucide-react";
 import Link from "next/link";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Settings Page — Real API integration                                       */
@@ -31,11 +32,11 @@ import Link from "next/link";
 
 type SettingsTab = "profile" | "notifications" | "security" | "preferences";
 
-const TABS: { id: SettingsTab; label: string; icon: React.ElementType }[] = [
-  { id: "profile", label: "Profil", icon: User },
-  { id: "notifications", label: "Notifications", icon: Bell },
-  { id: "security", label: "Sécurité", icon: Shield },
-  { id: "preferences", label: "Préférences", icon: Globe },
+const TABS: { id: SettingsTab; labelKey: string; icon: React.ElementType }[] = [
+  { id: "profile", labelKey: "profileTab", icon: User },
+  { id: "notifications", labelKey: "notificationsTab", icon: Bell },
+  { id: "security", labelKey: "securityTab", icon: Shield },
+  { id: "preferences", labelKey: "preferencesTab", icon: Globe },
 ];
 
 interface ProfileApiResponse {
@@ -85,6 +86,7 @@ const GOVERNORATES = [
 
 export default function SettingsPage() {
   const { user, updateUser } = useAuth();
+  const { t } = useAppI18n();
   const [activeTab, setActiveTab] = useState<SettingsTab>("profile");
 
   // Profile form state
@@ -326,7 +328,7 @@ export default function SettingsPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-neutral-900">Paramètres</h1>
         <p className="text-neutral-500 mt-1">
-          Gérez votre profil, vos notifications et votre sécurité.
+          {t.settings.title}
         </p>
       </div>
 
@@ -345,7 +347,7 @@ export default function SettingsPage() {
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                {tab.label}
+                {(t.settings as any)[tab.labelKey] || tab.labelKey}
               </button>
             ))}
           </div>

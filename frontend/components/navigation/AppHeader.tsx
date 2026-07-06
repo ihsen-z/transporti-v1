@@ -28,7 +28,7 @@ export default function AppHeader() {
   const { notifications, unreadCount, markAsRead, markAllRead } =
     useNotifications();
   const { showToast } = useToast();
-  const { t } = useAppI18n();
+  const { t, isRTL } = useAppI18n();
   const router = useRouter();
   const pathname = usePathname();
   const notifRef = useRef<HTMLDivElement>(null);
@@ -95,7 +95,7 @@ export default function AppHeader() {
   }, []);
 
   return (
-    <header className="fixed top-0 left-0 right-0 lg:left-64 bg-white border-b border-neutral-200 z-fixed h-16">
+    <header className={`fixed top-0 left-0 right-0 ${isRTL ? 'lg:right-64' : 'lg:left-64'} bg-white border-b border-neutral-200 z-fixed h-16`}>
       <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Mobile: Logo */}
         <div className="flex items-center gap-3 lg:hidden">

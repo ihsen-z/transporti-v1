@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Star, User, Quote } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 interface Review {
   id: number;
@@ -40,16 +40,18 @@ const ASPECT_LABELS: Record<string, string> = {
 };
 
 export function ReviewsList({ reviews, totalCount }: Props) {
-  const { t } = useTranslation();
+  const { t, locale } = useAppI18n();
+  const dateLocale = locale === "ar" ? "ar-TN" : "fr-TN";
+
   return (
     <div className="rounded-2xl overflow-hidden border border-neutral-100 shadow-sm">
       {/* Header — deep navy */}
       <div className="px-6 py-4 bg-gradient-to-r from-brand-900 to-brand-600 flex items-center justify-between">
         <h3 className="text-base font-bold text-white tracking-wide">
-          {t("reviews_title")}
+          {t.profile.reviewsTitle}
         </h3>
         <span className="text-xs font-semibold text-accent-400 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
-          {totalCount} {t("reviews")}
+          {totalCount} {t.profile.reviews}
         </span>
       </div>
 
@@ -78,7 +80,7 @@ export function ReviewsList({ reviews, totalCount }: Props) {
                       {review.reviewer_name}
                     </p>
                     <p className="text-xs text-neutral-400 font-medium">
-                      {new Date(review.created_at).toLocaleDateString("fr-TN", {
+                      {new Date(review.created_at).toLocaleDateString(dateLocale, {
                         day: "numeric",
                         month: "short",
                         year: "numeric",
@@ -112,7 +114,7 @@ export function ReviewsList({ reviews, totalCount }: Props) {
       ) : (
         <div className="bg-white p-10 text-center">
           <Star className="w-8 h-8 text-neutral-200 mx-auto mb-2" />
-          <p className="text-sm text-neutral-400">{t("no_reviews")}</p>
+          <p className="text-sm text-neutral-400">{t.profile.noReviews}</p>
         </div>
       )}
     </div>

@@ -17,24 +17,21 @@ import {
 import { AuthLogo } from "@/components/brand/TransportiLogo";
 import { useAuth, getDefaultRedirect } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
-import { roleLabels } from "@/lib/auth";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 type RegisterRole = "client" | "transporter";
 
 const roleOptions: {
   value: RegisterRole;
   icon: typeof User;
-  description: string;
 }[] = [
   {
     value: "client",
     icon: User,
-    description: "Je veux envoyer des colis et marchandises",
   },
   {
     value: "transporter",
     icon: Truck,
-    description: "Je veux proposer mes services de transport",
   },
 ];
 
@@ -51,6 +48,7 @@ export default function RegisterPage() {
   const [error, setError] = useState<string | null>(null);
   const { registerWithCredentials } = useAuth();
   const { showToast } = useToast();
+  const { t } = useAppI18n();
   const router = useRouter();
 
   const handleRealRegister = async (e: React.FormEvent) => {
@@ -66,15 +64,15 @@ export default function RegisterPage() {
       !password ||
       !passwordConfirm
     ) {
-      setError("Veuillez remplir tous les champs.");
+      setError(t.auth.fillAllFields);
       return;
     }
     if (password !== passwordConfirm) {
-      setError("Les mots de passe ne correspondent pas.");
+      setError(t.auth.passwordsDoNotMatch);
       return;
     }
     if (password.length < 6) {
-      setError("Le mot de passe doit contenir au moins 6 caractères.");
+      setError(t.auth.passwordTooShort);
       return;
     }
 
@@ -91,10 +89,10 @@ export default function RegisterPage() {
     });
 
     if (result.success) {
-      showToast("success", "Inscription réussie ! Bienvenue sur Transporti");
+      showToast("success", t.auth.registerSuccess);
       router.push(getDefaultRedirect(selectedRole));
     } else {
-      setError(result.error || "Erreur lors de l'inscription.");
+      setError(result.error || t.auth.registerError);
     }
 
     setIsLoading(false);
@@ -107,9 +105,9 @@ export default function RegisterPage() {
         <div className="flex items-center justify-center gap-2 mb-3">
           <AuthLogo />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">Créer un compte</h1>
+        <h1 className="text-2xl font-bold text-white mb-2">{t.auth.registerTitle}</h1>
         <p className="text-blue-200 text-sm">
-          Rejoignez la communauté Transporti
+          {t.auth.registerSubtitle}
         </p>
       </div>
 
@@ -128,10 +126,10 @@ export default function RegisterPage() {
           {/* Role Selection */}
           <div>
             <p className="text-sm font-medium text-neutral-700 mb-2">
-              Je suis un...
+              {t.auth.iAmA}
             </p>
             <div className="grid grid-cols-2 gap-3">
-              {roleOptions.map(({ value, icon: Icon, description }) => (
+              {roleOptions.map(({ value, icon: Icon }) => (
                 <button
                   key={value}
                   type="button"
@@ -151,7 +149,7 @@ export default function RegisterPage() {
                   <span
                     className={`text-sm font-medium ${selectedRole === value ? "text-accent-700" : "text-neutral-600"}`}
                   >
-                    {roleLabels[value]}
+                    {(t.auth.roles as any)[value] || value}
                   </span>
                 </button>
               ))}
@@ -165,7 +163,7 @@ export default function RegisterPage() {
                 htmlFor="firstName"
                 className="block text-sm font-medium text-neutral-700 mb-1"
               >
-                Prénom
+                {t.auth.firstName}
               </label>
               <div className="relative">
                 <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -185,7 +183,7 @@ export default function RegisterPage() {
                 htmlFor="lastName"
                 className="block text-sm font-medium text-neutral-700 mb-1"
               >
-                Nom
+                {t.auth.lastName}
               </label>
               <input
                 id="lastName"
@@ -205,7 +203,7 @@ export default function RegisterPage() {
               htmlFor="email"
               className="block text-sm font-medium text-neutral-700 mb-1"
             >
-              Email
+              {t.auth.emailLabel}
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -228,7 +226,7 @@ export default function RegisterPage() {
               htmlFor="phone"
               className="block text-sm font-medium text-neutral-700 mb-1"
             >
-              Téléphone
+              {t.auth.phoneLabel}
             </label>
             <div className="relative">
               <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -250,7 +248,7 @@ export default function RegisterPage() {
               htmlFor="password"
               className="block text-sm font-medium text-neutral-700 mb-1"
             >
-              Mot de passe
+              {t.auth.passwordLabel}
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -283,7 +281,7 @@ export default function RegisterPage() {
               htmlFor="passwordConfirm"
               className="block text-sm font-medium text-neutral-700 mb-1"
             >
-              Confirmer le mot de passe
+              {t.auth.passwordConfirmLabel}
             </label>
             <div className="relative">
               <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -307,11 +305,11 @@ export default function RegisterPage() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Création en cours...
+                {t.auth.creatingAccount}
               </>
             ) : (
               <>
-                Créer mon compte
+                {t.auth.registerButton}
                 <ArrowRight className="w-5 h-5" />
               </>
             )}
@@ -322,12 +320,12 @@ export default function RegisterPage() {
       {/* Footer Links */}
       <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-200 text-center">
         <p className="text-sm text-neutral-500">
-          Déjà inscrit ?{" "}
+          {t.auth.alreadyRegistered}{" "}
           <Link
             href="/login"
             className="text-accent-600 hover:text-accent-700 font-medium"
           >
-            Se connecter
+            {t.auth.loginButton}
           </Link>
         </p>
       </div>

@@ -2,8 +2,7 @@
 
 import React from "react";
 import { Truck, Weight, FileCheck, ShieldCheck, ImageOff } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
-
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 interface Props {
   vehicleType: string;
   vehicleCapacityKg?: number;
@@ -17,7 +16,7 @@ export function VehicleGallery({
   vehiclePhotos,
   insuranceValidUntil,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, locale } = useAppI18n();
   const isInsured =
     insuranceValidUntil && new Date(insuranceValidUntil) > new Date();
 
@@ -26,7 +25,7 @@ export function VehicleGallery({
       {/* Header — deep navy */}
       <div className="px-6 py-4 bg-gradient-to-r from-brand-900 to-brand-600">
         <h3 className="text-base font-bold text-white tracking-wide">
-          {t("vehicle")}
+          {t.profile.vehicle}
         </h3>
       </div>
 
@@ -51,7 +50,7 @@ export function VehicleGallery({
           <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-600/5 to-brand-600/10 flex items-center justify-center mx-auto mb-3">
             <ImageOff className="w-7 h-7 text-brand-600/30" />
           </div>
-          <p className="text-sm text-neutral-400">{t("no_vehicle_photo")}</p>
+          <p className="text-sm text-neutral-400">{t.profile.noVehiclePhoto}</p>
         </div>
       )}
 
@@ -63,10 +62,10 @@ export function VehicleGallery({
           </div>
           <div>
             <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-              {t("vehicle_type")}
+              {t.profile.vehicleType}
             </p>
             <p className="text-sm font-medium text-neutral-900">
-              {vehicleType || t("not_specified")}
+              {vehicleType || t.profile.notSpecified}
             </p>
           </div>
         </div>
@@ -78,7 +77,7 @@ export function VehicleGallery({
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                {t("capacity")}
+                {t.profile.capacity}
               </p>
               <p className="text-sm font-medium text-neutral-900">
                 {vehicleCapacityKg.toLocaleString()} kg
@@ -98,13 +97,13 @@ export function VehicleGallery({
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                {t("insurance")}
+                {t.profile.insurance}
               </p>
               <p
                 className={`text-sm font-semibold ${isInsured ? "text-accent-600" : "text-red-600"}`}
               >
-                {isInsured ? t("insurance_valid") : t("insurance_expired")} — {t("insurance_until")}{" "}
-                {new Date(insuranceValidUntil).toLocaleDateString("fr-TN", {
+                {isInsured ? t.profile.insuranceValid : t.profile.insuranceExpired} — {t.profile.insuranceUntil}{" "}
+                {new Date(insuranceValidUntil).toLocaleDateString(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
                   day: "numeric",
                   month: "long",
                   year: "numeric",

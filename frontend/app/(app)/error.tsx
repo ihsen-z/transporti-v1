@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 export default function AppError({
   error,
@@ -13,6 +14,8 @@ export default function AppError({
     // Log to error reporting service in production
     console.error("[Transporti] App Error:", error);
   }, [error]);
+
+  const { t } = useAppI18n();
 
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
@@ -33,24 +36,23 @@ export default function AppError({
           </svg>
         </div>
         <h2 className="text-xl font-bold text-neutral-900 mb-2">
-          Une erreur est survenue
+          {t.errors.pageError}
         </h2>
         <p className="text-neutral-600 mb-6">
-          Quelque chose s&apos;est mal passé. Veuillez réessayer ou revenir à
-          l&apos;accueil.
+          {t.errors.pageErrorDesc}
         </p>
         <div className="flex gap-3 justify-center">
           <button
             onClick={reset}
             className="px-6 py-2.5 bg-brand-700 hover:bg-brand-800 text-white font-medium rounded-lg transition-colors"
           >
-            Réessayer
+            {t.errors.retry}
           </button>
           <a
             href="/dashboard"
             className="px-6 py-2.5 bg-neutral-100 hover:bg-neutral-200 text-neutral-700 font-medium rounded-lg transition-colors"
           >
-            Accueil
+            {t.errors.backHome}
           </a>
         </div>
         {error.digest && (

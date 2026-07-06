@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import StatusBadge from "@/components/ui/StatusBadge";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import {
   Truck,
   Package,
@@ -101,10 +103,13 @@ function StatCard({
 function ClientDashboard({
   stats,
   recentJobs,
+  dateLocale,
 }: {
   stats: ClientStats;
   recentJobs: RecentJob[];
+  dateLocale: string;
 }) {
+  const { t } = useAppI18n();
   return (
     <>
       {/* Onboarding Wizard — shown only on first visits */}
@@ -116,18 +121,17 @@ function ClientDashboard({
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         <div className="relative z-10">
           <h2 className="text-2xl font-bold mb-2">
-            Besoin de transporter quelque chose ?
+            {t.dashboard.clientCTA}
           </h2>
           <p className="text-blue-200 mb-6 max-w-lg">
-            Publiez votre annonce et recevez des offres de transporteurs
-            vérifiés en quelques minutes.
+            {t.dashboard.clientCTADesc}
           </p>
           <Link
             href="/jobs/new"
             className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
           >
             <PlusCircle className="w-5 h-5" />
-            Publier une annonce
+            {t.dashboard.publishAd}
           </Link>
         </div>
       </div>
@@ -136,26 +140,26 @@ function ClientDashboard({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           icon={Truck}
-          label="Annonces actives"
+          label={t.dashboard.activeAds}
           value={stats.active_jobs}
           accent="bg-brand-600/10 text-brand-600"
         />
         <StatCard
           icon={Package}
-          label="Offres reçues"
+          label={t.dashboard.offersReceived}
           value={stats.total_offers_received}
           accent="bg-purple-50 text-purple-600"
-          sub="total"
+          sub={t.dashboard.total}
         />
         <StatCard
           icon={CheckCircle2}
-          label="Missions terminées"
+          label={t.dashboard.completedMissions}
           value={stats.completed_jobs}
           accent="bg-accent-50 text-accent-600"
         />
         <StatCard
           icon={Clock}
-          label="Offres en attente"
+          label={t.dashboard.pendingOffersLabel}
           value={stats.pending_offers}
           accent="bg-amber-50 text-amber-600"
         />
@@ -165,21 +169,21 @@ function ClientDashboard({
       <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
         <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
           <h3 className="text-lg font-semibold text-neutral-900">
-            Mes annonces récentes
+            {t.dashboard.recentAds}
           </h3>
           <Link
             href="/jobs"
             className="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1"
           >
-            Voir tout <ArrowRight className="w-4 h-4" />
+            {t.dashboard.viewAll} <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
         <div className="divide-y divide-neutral-50">
           {recentJobs.length === 0 ? (
             <div className="px-6 py-8 text-center text-neutral-400 text-sm">
-              Aucune annonce pour le moment.{" "}
+              {t.dashboard.noAdsYet}{" "}
               <Link href="/jobs/new" className="text-brand-600 font-medium">
-                Publier une annonce →
+                {t.dashboard.publishAdLink}
               </Link>
             </div>
           ) : (
@@ -205,7 +209,7 @@ function ClientDashboard({
                     </p>
                     <p className="text-xs text-neutral-500">
                       {new Date(job.scheduled_time).toLocaleDateString(
-                        "fr-TN",
+                        dateLocale,
                         { day: "numeric", month: "short", year: "numeric" },
                       )}
                       {job.offer_count !== undefined &&
@@ -230,10 +234,13 @@ function ClientDashboard({
 function TransporterDashboard({
   stats,
   recentJobs,
+  dateLocale,
 }: {
   stats: TransporterStats;
   recentJobs: RecentJob[];
+  dateLocale: string;
 }) {
+  const { t } = useAppI18n();
   return (
     <>
       {/* Onboarding Wizard — shown only on first visits */}
@@ -245,17 +252,16 @@ function TransporterDashboard({
           <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
           <div>
             <h3 className="font-semibold text-amber-800">
-              Vérification requise
+              {t.dashboard.verificationRequired}
             </h3>
             <p className="text-sm text-amber-700 mt-1">
-              Complétez votre vérification pour pouvoir soumettre des offres et
-              accéder aux missions.
+              {t.dashboard.verificationRequiredDesc}
             </p>
             <Link
               href="/verification"
               className="inline-flex items-center gap-1 text-sm font-semibold text-amber-800 mt-3 hover:text-amber-900"
             >
-              Compléter la vérification <ArrowRight className="w-4 h-4" />
+              {t.dashboard.completeVerification} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
         </div>
@@ -266,11 +272,10 @@ function TransporterDashboard({
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="relative z-10">
           <h2 className="text-2xl font-bold mb-2">
-            Trouvez de nouvelles missions
+            {t.dashboard.findMissionsTitle}
           </h2>
           <p className="text-blue-200 mb-6 max-w-lg">
-            {stats.available_missions} missions disponibles dans votre zone.
-            Soumettez vos offres dès maintenant.
+            {stats.available_missions} {t.dashboard.missionsInZone}
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link
@@ -278,7 +283,7 @@ function TransporterDashboard({
               className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
             >
               <Search className="w-5 h-5" />
-              Parcourir les missions
+              {t.dashboard.browseMissions}
             </Link>
             <Link
               href="/jobs/return-trip"
@@ -288,7 +293,7 @@ function TransporterDashboard({
               }}
             >
               <RotateCcw className="w-5 h-5" />
-              Proposer un trajet retour
+              {t.dashboard.proposeReturnTrip}
             </Link>
           </div>
         </div>
@@ -298,25 +303,25 @@ function TransporterDashboard({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
         <StatCard
           icon={Search}
-          label="Missions disponibles"
+          label={t.dashboard.availableMissions}
           value={stats.available_missions}
           accent="bg-brand-600/10 text-brand-600"
         />
         <StatCard
           icon={Package}
-          label="Offres actives"
+          label={t.dashboard.activeOffersLabel}
           value={stats.active_offers}
           accent="bg-purple-50 text-purple-600"
         />
         <StatCard
           icon={CheckCircle2}
-          label="Missions terminées"
+          label={t.dashboard.completedMissionsLabel}
           value={stats.completed_jobs}
           accent="bg-accent-50 text-accent-600"
         />
         <StatCard
           icon={DollarSign}
-          label="Gains totaux"
+          label={t.dashboard.totalEarnings}
           value={`${stats.total_earnings} TND`}
           accent="bg-amber-50 text-amber-600"
         />
@@ -327,13 +332,13 @@ function TransporterDashboard({
         {/* Performance Card */}
         <div className="bg-white rounded-2xl border border-neutral-100 p-6">
           <h3 className="text-lg font-semibold text-neutral-900 mb-6">
-            Performance
+            {t.dashboard.performance}
           </h3>
           <div className="space-y-6">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
-                  <Star className="w-4 h-4 text-amber-500" /> Note moyenne
+                  <Star className="w-4 h-4 text-amber-500" /> {t.dashboard.avgRating}
                 </div>
                 <span className="text-lg font-bold text-neutral-900">
                   {stats.average_rating}/5
@@ -349,8 +354,7 @@ function TransporterDashboard({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" /> Taux de
-                  complétion
+                  <TrendingUp className="w-4 h-4 text-emerald-500" /> {t.dashboard.completionRateLabel}
                 </div>
                 <span className="text-lg font-bold text-neutral-900">
                   {stats.completion_rate}%
@@ -365,8 +369,7 @@ function TransporterDashboard({
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
               <div className="flex items-center gap-2 text-sm text-neutral-600">
-                <ShieldCheck className="w-4 h-4 text-brand-600" /> Statut
-                vérification
+                <ShieldCheck className="w-4 h-4 text-brand-600" /> {t.dashboard.verificationStatus}
               </div>
               <span
                 className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
@@ -376,8 +379,8 @@ function TransporterDashboard({
                 }`}
               >
                 {stats.verification_status === "VERIFIED"
-                  ? "Vérifié ✓"
-                  : "En attente"}
+                  ? t.dashboard.verified
+                  : t.dashboard.pending}
               </span>
             </div>
           </div>
@@ -387,24 +390,24 @@ function TransporterDashboard({
         <div className="lg:col-span-2 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
           <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
             <h3 className="text-lg font-semibold text-neutral-900">
-              Missions récentes
+              {t.dashboard.recentMissions}
             </h3>
             <Link
               href="/jobs"
               className="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1"
             >
-              Tout voir <ArrowRight className="w-4 h-4" />
+              {t.dashboard.viewAllMissions} <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
           <div className="divide-y divide-neutral-50">
             {recentJobs.length === 0 ? (
               <div className="px-6 py-8 text-center text-neutral-400 text-sm">
-                Aucune mission récente.{" "}
+                {t.dashboard.noRecentMissions}{" "}
                 <Link
                   href="/jobs/browse"
                   className="text-brand-600 font-medium"
                 >
-                  Parcourir les missions →
+                  {t.dashboard.browseMissionsLink}
                 </Link>
               </div>
             ) : (
@@ -430,7 +433,7 @@ function TransporterDashboard({
                       </p>
                       <p className="text-xs text-neutral-500">
                         {new Date(job.scheduled_time).toLocaleDateString(
-                          "fr-TN",
+                          dateLocale,
                           { day: "numeric", month: "short", year: "numeric" },
                         )}
                       </p>
@@ -451,11 +454,11 @@ function TransporterDashboard({
 /*  Main Dashboard Page                                                       */
 /* -------------------------------------------------------------------------- */
 
-import { useRouter } from "next/navigation";
-
 export default function DashboardPage() {
   const { user } = useAuth();
   const router = useRouter();
+  const { t, locale } = useAppI18n();
+  const dateLocale = locale === "ar" ? "ar-TN" : "fr-TN";
 
   useEffect(() => {
     if (user?.role === "admin") {
@@ -529,24 +532,25 @@ export default function DashboardPage() {
       {/* Header */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-neutral-900">
-          Bonjour,{" "}
-          {user?.first_name || user?.name?.split(" ")[0] || "Utilisateur"} 👋
+          {t.dashboard.hello}{" "}
+          {user?.first_name || user?.name?.split(" ")[0] || t.dashboard.defaultUser} 👋
         </h1>
         <p className="text-neutral-500 mt-1">
           {isClient
-            ? "Gérez vos transports et suivez vos annonces."
-            : "Trouvez des missions et développez votre activité."}
+            ? t.dashboard.clientSubtitle
+            : t.dashboard.transporterSubtitle}
         </p>
       </div>
 
       {/* Role-specific content */}
       {isClient && (
-        <ClientDashboard stats={clientStats} recentJobs={recentJobs} />
+        <ClientDashboard stats={clientStats} recentJobs={recentJobs} dateLocale={dateLocale} />
       )}
       {isTransporter && (
         <TransporterDashboard
           stats={transporterStats}
           recentJobs={recentJobs}
+          dateLocale={dateLocale}
         />
       )}
 
@@ -555,10 +559,10 @@ export default function DashboardPage() {
         <div className="bg-white rounded-2xl border border-neutral-100 p-12 text-center">
           <BarChart3 className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
           <h2 className="text-lg font-semibold text-neutral-900">
-            Bienvenue sur Transporti
+            {t.dashboard.welcomeGeneric}
           </h2>
           <p className="text-neutral-500 mt-1">
-            Sélectionnez votre rôle pour voir votre tableau de bord.
+            {t.dashboard.selectRole}
           </p>
         </div>
       )}
@@ -569,7 +573,7 @@ export default function DashboardPage() {
           className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-brand-600 transition-colors"
         >
           <HelpCircle className="w-4 h-4" />
-          Besoin d&apos;aide ? Consultez le centre d&apos;aide
+          {t.dashboard.needHelp}
         </Link>
       </div>
     </div>

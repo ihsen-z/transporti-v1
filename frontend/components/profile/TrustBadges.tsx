@@ -2,8 +2,7 @@
 
 import React from "react";
 import { ShieldCheck, Star, CheckCircle2, Truck, Zap } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
-
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 interface Props {
   isVerified: boolean;
   trustScore: number;
@@ -19,11 +18,11 @@ export function TrustBadges({
   totalJobsCompleted,
   averageRating,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, locale } = useAppI18n();
   const badges = [
     {
       icon: ShieldCheck,
-      label: isVerified ? t("verified_identity") : "Non vérifié",
+      label: isVerified ? t.profile.verifiedIdentity : (locale === 'ar' ? "غير موثق" : "Non vérifié"),
       active: isVerified,
       activeClass:
         "bg-gradient-to-br from-accent-50 to-accent-100/60 text-accent-700 border-accent-300/60",
@@ -33,10 +32,10 @@ export function TrustBadges({
       icon: Star,
       label:
         averageRating >= 4.5
-          ? "Top noté"
+          ? (locale === 'ar' ? "نوت طيّارة" : "Top noté")
           : averageRating >= 4.0
-            ? "Bien noté"
-            : "En progression",
+            ? (locale === 'ar' ? "باهي" : "Bien noté")
+            : (locale === 'ar' ? "في تحسّن" : "En progression"),
       active: averageRating >= 4.0,
       activeClass:
         "bg-gradient-to-br from-amber-50 to-amber-100/60 text-amber-700 border-amber-300/60",
@@ -44,7 +43,7 @@ export function TrustBadges({
     },
     {
       icon: ShieldCheck,
-      label: t("business_license"),
+      label: t.profile.businessLicense,
       active: isVerified, // Demo logic: linking it to isVerified
       activeClass:
         "bg-gradient-to-br from-emerald-50 to-emerald-100/60 text-emerald-700 border-emerald-300/60",
@@ -52,7 +51,7 @@ export function TrustBadges({
     },
     {
       icon: ShieldCheck,
-      label: t("cargo_insurance"),
+      label: t.profile.cargoInsurance,
       active: true, // Demo logic: assuming they have it
       activeClass:
         "bg-gradient-to-br from-blue-50 to-blue-100/60 text-blue-700 border-blue-300/60",
@@ -62,10 +61,10 @@ export function TrustBadges({
       icon: CheckCircle2,
       label:
         completionRate >= 95
-          ? "Fiabilité excellente"
+          ? (locale === 'ar' ? "ثقة تامة" : "Fiabilité excellente")
           : completionRate >= 85
-            ? "Fiable"
-            : "En progression",
+            ? (locale === 'ar' ? "ثقة" : "Fiable")
+            : (locale === 'ar' ? "في تحسّن" : "En progression"),
       active: completionRate >= 85,
       activeClass:
         "bg-gradient-to-br from-brand-600/5 to-brand-600/10 text-brand-600 border-brand-600/20",
@@ -75,10 +74,10 @@ export function TrustBadges({
       icon: Truck,
       label:
         totalJobsCompleted >= 50
-          ? "Expert"
+          ? (locale === 'ar' ? "معلّم" : "Expert")
           : totalJobsCompleted >= 10
-            ? "Expérimenté"
-            : "Débutant",
+            ? (locale === 'ar' ? "مجرّب" : "Expérimenté")
+            : (locale === 'ar' ? "جديد" : "Débutant"),
       active: totalJobsCompleted >= 10,
       activeClass:
         "bg-gradient-to-br from-purple-50 to-purple-100/60 text-purple-700 border-purple-300/60",

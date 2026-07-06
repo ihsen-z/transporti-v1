@@ -1,6 +1,10 @@
+"use client";
+
 import Link from "next/link";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 export default function NotFound() {
+  const { t } = useAppI18n();
   return (
     <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-brand-50 flex items-center justify-center px-6">
       <div className="text-center max-w-md">
@@ -29,12 +33,10 @@ export default function NotFound() {
 
         {/* Message */}
         <h2 className="text-2xl font-bold text-neutral-900 mb-3">
-          Page introuvable
+          {t.errors.pageNotFound}
         </h2>
         <p className="text-neutral-500 mb-8 leading-relaxed">
-          La page que vous cherchez n&apos;existe pas ou a été déplacée.
-          <br />
-          Pas de panique, retournez sur la bonne route !
+          {t.errors.pageNotFoundDesc}
         </p>
 
         {/* Actions */}
@@ -55,13 +57,13 @@ export default function NotFound() {
               <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
-            Tableau de bord
+            {t.errors.backToDashboard}
           </Link>
           <Link
             href="/help"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-neutral-300 text-neutral-700 rounded-xl font-semibold hover:bg-neutral-50 transition-colors"
           >
-            Centre d&apos;aide
+            {t.errors.helpCenter || "Centre d'aide"}
           </Link>
         </div>
 

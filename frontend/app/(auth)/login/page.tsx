@@ -7,6 +7,7 @@ import { ArrowRight, Mail, Lock, Eye, EyeOff } from "lucide-react";
 import { AuthLogo } from "@/components/brand/TransportiLogo";
 import { useAuth, getDefaultRedirect } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [error, setError] = useState<string | null>(null);
   const { loginWithCredentials } = useAuth();
   const { showToast } = useToast();
+  const { t } = useAppI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -24,7 +26,7 @@ export default function LoginPage() {
     if (searchParams.get("expired") === "true") {
       showToast(
         "warning",
-        "Votre session a expiré. Veuillez vous reconnecter.",
+        t.auth.sessionExpired,
       );
     }
   }, [searchParams, showToast]);
@@ -34,7 +36,7 @@ export default function LoginPage() {
     setError(null);
 
     if (!email || !password) {
-      setError("Veuillez remplir tous les champs.");
+      setError(t.auth.fillAllFields);
       return;
     }
 
@@ -42,13 +44,13 @@ export default function LoginPage() {
     const result = await loginWithCredentials(email, password);
 
     if (result.success) {
-      showToast("success", "Connexion réussie !");
+      showToast("success", t.auth.loginSuccess);
       const userRole = result.role || "client";
       const redirectTo =
         searchParams.get("redirect") || getDefaultRedirect(userRole);
       router.push(redirectTo);
     } else {
-      setError(result.error || "Email ou mot de passe incorrect.");
+      setError(result.error || t.auth.loginError);
     }
 
     setIsLoading(false);
@@ -65,10 +67,10 @@ export default function LoginPage() {
           <AuthLogo />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">
-          Bienvenue sur Transporti
+          {t.auth.loginTitle}
         </h1>
         <p className="text-blue-200 text-sm">
-          Connectez-vous pour accéder à votre espace
+          {t.auth.loginSubtitle}
         </p>
       </div>
 
@@ -86,7 +88,7 @@ export default function LoginPage() {
               htmlFor="email"
               className="block text-sm font-medium text-neutral-700 mb-1"
             >
-              Adresse email
+              {t.auth.emailLabel}
             </label>
             <div className="relative">
               <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -95,7 +97,7 @@ export default function LoginPage() {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="votre@email.com"
+                placeholder={t.auth.emailPlaceholder}
                 className="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
                 autoComplete="email"
                 required
@@ -109,13 +111,13 @@ export default function LoginPage() {
                 htmlFor="password"
                 className="block text-sm font-medium text-neutral-700"
               >
-                Mot de passe
+                {t.auth.passwordLabel}
               </label>
               <Link
                 href="/forgot-password"
                 className="text-xs text-brand-600 hover:text-brand-700 font-medium transition-colors"
               >
-                Mot de passe oublié ?
+                {t.auth.forgotPassword}
               </Link>
             </div>
             <div className="relative">
@@ -152,11 +154,11 @@ export default function LoginPage() {
             {isLoading ? (
               <>
                 <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Connexion en cours...
+                {t.auth.loggingIn}
               </>
             ) : (
               <>
-                Se connecter
+                {t.auth.loginButton}
                 <ArrowRight className="w-5 h-5" />
               </>
             )}
@@ -168,7 +170,7 @@ export default function LoginPage() {
           <div className="relative flex items-center py-2">
             <div className="flex-grow border-t border-neutral-200"></div>
             <span className="flex-shrink-0 mx-4 text-xs text-neutral-400 uppercase tracking-wide">
-              ou continuer avec
+              {t.auth.orContinueWith}
             </span>
             <div className="flex-grow border-t border-neutral-200"></div>
           </div>
@@ -204,7 +206,7 @@ export default function LoginPage() {
               </svg>
               Google
               <span className="absolute -top-2 -right-2 text-[10px] bg-brand-600/10 text-brand-600 px-1.5 py-0.5 rounded-full font-semibold">
-                Bientôt
+                {t.auth.comingSoon}
               </span>
             </button>
             <button
@@ -224,7 +226,7 @@ export default function LoginPage() {
               </svg>
               Facebook
               <span className="absolute -top-2 -right-2 text-[10px] bg-brand-600/10 text-brand-600 px-1.5 py-0.5 rounded-full font-semibold">
-                Bientôt
+                {t.auth.comingSoon}
               </span>
             </button>
           </div>
@@ -234,12 +236,12 @@ export default function LoginPage() {
       {/* Footer Links */}
       <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-200 text-center">
         <p className="text-sm text-neutral-500">
-          Pas encore de compte ?{" "}
+          {t.auth.noAccount}{" "}
           <Link
             href="/register"
             className="text-accent-600 hover:text-accent-700 font-medium"
           >
-            S&apos;inscrire
+            {t.auth.register}
           </Link>
         </p>
       </div>

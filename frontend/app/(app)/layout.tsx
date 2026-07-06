@@ -5,12 +5,16 @@ import AppHeader from '@/components/navigation/AppHeader';
 import BottomNav from '@/components/navigation/BottomNav';
 import TrustFooter from '@/components/layout/TrustFooter';
 import AuthGuard from '@/components/auth/AuthGuard';
+import { useAppI18n } from '@/lib/i18n/useAppI18n';
 
 export default function AppLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
+    const { isRTL } = useAppI18n();
+    const sidebarMargin = isRTL ? 'lg:mr-64' : 'lg:ml-64';
+
     return (
         <AuthGuard allowedRoles={['client', 'transporter', 'admin']}>
             <div className="min-h-screen bg-neutral-50 flex flex-col">
@@ -21,12 +25,12 @@ export default function AppLayout({
                 <AppHeader />
 
                 {/* Main Content */}
-                <main className="lg:ml-64 pt-16 pb-20 lg:pb-0 flex-1">
+                <main className={`${sidebarMargin} pt-16 pb-20 lg:pb-0 flex-1`}>
                     {children}
                 </main>
 
                 {/* Trust Footer (Desktop) */}
-                <div className="lg:ml-64 hidden lg:block">
+                <div className={`${sidebarMargin} hidden lg:block`}>
                     <TrustFooter />
                 </div>
 

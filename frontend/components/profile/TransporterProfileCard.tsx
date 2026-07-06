@@ -9,8 +9,7 @@ import {
   Calendar,
   BadgeCheck,
 } from "lucide-react";
-import { useTranslation } from "@/hooks/useTranslation";
-
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 interface Props {
   firstName: string;
   lastName: string;
@@ -36,7 +35,7 @@ export function TransporterProfileCard({
   serviceAreas,
   specializations,
 }: Props) {
-  const { t } = useTranslation();
+  const { t, locale } = useAppI18n();
   return (
     <div className="rounded-2xl overflow-hidden border border-white/10 shadow-xl">
       {/* Hero Banner — deep navy gradient matching brand charter */}
@@ -56,7 +55,7 @@ export function TransporterProfileCard({
         {isVerified && (
           <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-accent-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg shadow-accent-500/25">
             <BadgeCheck className="w-3.5 h-3.5" />
-            {t("verified")}
+            {t.profile.verified}
           </div>
         )}
       </div>
@@ -94,7 +93,7 @@ export function TransporterProfileCard({
                   {rating.toFixed(1)}
                 </span>
                 <span className="text-sm text-neutral-400">
-                  ({reviewCount} {t("reviews")})
+                  ({reviewCount} {t.profile.reviews})
                 </span>
               </div>
             </div>
@@ -105,7 +104,7 @@ export function TransporterProfileCard({
         <div className="mb-5 bg-neutral-50 rounded-xl p-4">
           <div className="flex items-center justify-between mb-2">
             <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wide">
-              {t("trust_score")}
+              {t.profile.trustScore}
             </span>
             <span className="text-sm font-bold text-neutral-900">
               {trustScore}/100
@@ -131,8 +130,8 @@ export function TransporterProfileCard({
         <div className="flex flex-wrap gap-4 text-sm text-neutral-500 mb-4">
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-neutral-400" />
-            {t("member_since")}{" "}
-            {new Date(joinedAt).toLocaleDateString("fr-TN", {
+            {t.profile.memberSince}{" "}
+            {new Date(joinedAt).toLocaleDateString(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
               month: "long",
               year: "numeric",
             })}
