@@ -258,9 +258,9 @@ export default function JobDetailsPage() {
           </div>
         )}
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_380px] gap-8">
           {/* Main Content: Job Preview */}
-          <div className="lg:col-span-2">
+          <div className="min-w-0 max-w-full">
             <JobPreview data={job} isOwner={isOwner} />
 
             {/* Accepted Transporter Info (visible when job is assigned) */}
@@ -314,7 +314,7 @@ export default function JobDetailsPage() {
           </div>
 
           {/* Sidebar: Actions */}
-          <div className="space-y-6">
+          <div className="space-y-6 min-w-0 flex-shrink-0">
             {/* Verification Gate */}
             {showVerificationGate && (
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
