@@ -112,6 +112,13 @@ class UserProfileSerializer(serializers.ModelSerializer):
                   'is_phone_verified', 'verification_status']
         read_only_fields = fields
 
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        # Ensure superusers or staff are treated as ADMINs in frontend
+        if instance.is_superuser or instance.is_staff:
+            data['role'] = 'ADMIN'
+        return data
+
     def get_verification_status(self, obj):
         if obj.role == 'TRANSPORTER':
             try:

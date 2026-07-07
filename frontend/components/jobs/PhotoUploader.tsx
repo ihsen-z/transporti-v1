@@ -3,7 +3,7 @@
 import React, { useRef, useState, useCallback } from "react";
 import { Camera, ImagePlus, X, Loader2 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
-import { compressImage, validateImageFile } from "@/lib/imageUtils";
+import { compressImage, validateImageFile, getMediaUrl } from "@/lib/imageUtils";
 
 interface PhotoUploaderProps {
   /** Current list of photo URLs */
@@ -307,7 +307,7 @@ export function PhotoUploader({
               className="relative aspect-square border rounded-lg overflow-hidden bg-neutral-50 group"
             >
               <img
-                src={photo}
+                src={getMediaUrl(photo)}
                 alt={`Photo ${index + 1}`}
                 className="object-cover w-full h-full"
               />

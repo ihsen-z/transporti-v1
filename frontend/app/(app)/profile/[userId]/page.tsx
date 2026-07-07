@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import ImageCropper from "@/components/ImageCropper";
 import {
   Star,
@@ -267,6 +268,7 @@ export default function ProfilePage() {
 function TransporterProfileContent({ userId }: { userId: string | null }) {
   const router = useRouter();
   const { user } = useAuth();
+  const { t: t_i18n } = useAppI18n();
 
   const [transporter, setTransporter] = useState<TransporterData | null>(null);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
@@ -329,7 +331,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
 
   const cancelEditing = () => {
     if (editFirstName !== transporter?.first_name || editLastName !== transporter?.last_name || editPhone !== (transporter?.phone || '')) {
-      if (!window.confirm('Vous avez des modifications non sauvegardées. Quitter sans enregistrer ?')) return;
+      if (!window.confirm(t_i18n.profile.unsavedChanges)) return;
     }
     setEditing(false);
     setAvatarCropSrc(null);
@@ -366,12 +368,12 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
         fd,
       );
       setEditAvatarUrl(res.avatar_url);
-      setSaveMsg({ type: "ok", text: "Photo de profil mise à jour !" });
+      setSaveMsg({ type: "ok", text: t_i18n.profile.avatarUpdated });
       setTimeout(() => setSaveMsg(null), 2500);
     } catch (err: any) {
       setSaveMsg({
         type: "err",
-        text: err?.message || "Erreur upload avatar.",
+        text: err?.message || t_i18n.profile.avatarError,
       });
     } finally {
       setAvatarUploading(false);
@@ -398,12 +400,12 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
         fd,
       );
       setEditVehiclePhotos([res.url]);
-      setSaveMsg({ type: "ok", text: "Photo du véhicule mise à jour !" });
+      setSaveMsg({ type: "ok", text: t_i18n.profile.vehiclePhotoUpdated });
       setTimeout(() => setSaveMsg(null), 2500);
     } catch (err: any) {
       setSaveMsg({
         type: "err",
-        text: err?.message || "Erreur upload véhicule.",
+        text: err?.message || t_i18n.profile.vehiclePhotoError,
       });
     } finally {
       setVehicleUploading(false);
@@ -413,14 +415,14 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
   /* --- Form validation (UX-T1) --- */
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-    if (editFirstName.trim().length < 2) errors.first_name = "Minimum 2 caractères.";
-    if (editLastName.trim().length < 2) errors.last_name = "Minimum 2 caractères.";
+    if (editFirstName.trim().length < 2) errors.first_name = t_i18n.profile.min2Chars;
+    if (editLastName.trim().length < 2) errors.last_name = t_i18n.profile.min2Chars;
     if (editPhone.trim() && !/^\+?216?\d{8}$/.test(editPhone.trim())) {
-      errors.phone = "Format invalide. Ex: +21612345678";
+      errors.phone = t_i18n.profile.invalidPhone;
     }
     if (editCapacity.trim()) {
       const cap = parseFloat(editCapacity);
-      if (isNaN(cap) || cap <= 0) errors.capacity = "La capacité doit être positive.";
+      if (isNaN(cap) || cap <= 0) errors.capacity = t_i18n.profile.positiveCapacity;
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -450,7 +452,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
       }>("/api/transporter/profile/me/", payload);
       setTransporter(res.profile);
       setEditing(false);
-      setSaveMsg({ type: "ok", text: "Profil mis à jour !" });
+      setSaveMsg({ type: "ok", text: t_i18n.profile.profileUpdated });
       setTimeout(() => setSaveMsg(null), 3000);
     } catch (e: any) {
       const errBody = e?.body;
@@ -459,7 +461,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
         errBody?.first_name?.[0] ||
         errBody?.last_name?.[0] ||
         e?.message ||
-        "Erreur de sauvegarde.";
+        t_i18n.profile.saveError;
       setSaveMsg({ type: "err", text: msg });
     } finally {
       setSaving(false);
@@ -484,7 +486,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
       setReviews(reviewsList);
     } catch (e: any) {
       console.error("Error fetching profile:", e);
-      setError(e?.message || "Profil introuvable.");
+      setError(e?.message || t_i18n.profile.profileNotFound);
     } finally {
       setLoading(false);
     }
@@ -495,7 +497,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-3" />
-          <p className="text-neutral-500">Chargement du profil...</p>
+          <p className="text-neutral-500">{t_i18n.profile.loadingProfile}</p>
         </div>
       </div>
     );
@@ -505,12 +507,12 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || "Profil introuvable."}</p>
+          <p className="text-red-500 mb-4">{error || t_i18n.profile.profileNotFound}</p>
           <Link
             href="/jobs/browse"
             className="text-brand-600 hover:underline text-sm font-medium"
           >
-            ← Retour aux missions
+            ← {t_i18n.profile.backToMissions}
           </Link>
         </div>
       </div>
@@ -535,7 +537,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
   if (t.is_verified) {
     trustBadges.push({
       icon: ShieldCheck,
-      label: "Identité vérifiée",
+      label: t_i18n.profile.verifiedIdentity,
       color: "bg-emerald-50 border-emerald-200 text-emerald-700",
     });
   }
@@ -549,14 +551,14 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
   if ((t.completion_rate || 0) >= 90) {
     trustBadges.push({
       icon: Award,
-      label: "Fiabilité excellente",
+      label: t_i18n.profile.excellentService,
       color: "bg-blue-50 border-blue-200 text-blue-700",
     });
   }
   if ((t.total_jobs_completed || 0) >= 10) {
     trustBadges.push({
       icon: Zap,
-      label: "Expérimenté",
+      label: t_i18n.profile.highlyReliable,
       color: "bg-purple-50 border-purple-200 text-purple-700",
     });
   }
@@ -564,7 +566,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
   if (!t.is_verified) {
     trustBadges.push({
       icon: ShieldCheck,
-      label: "Identité vérifiée",
+      label: t_i18n.profile.verifiedIdentity,
       color: "bg-neutral-50 border-neutral-200 text-neutral-400",
     });
   }
@@ -591,7 +593,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
           className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Retour
+          {t_i18n.profile.back}
         </button>
 
         {isOwner && !editing && (
@@ -600,7 +602,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
             className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-md"
           >
             <Pencil className="w-4 h-4" />
-            Modifier le profil
+            {t_i18n.settings.editProfile}
           </button>
         )}
 
@@ -611,7 +613,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
               className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-600 rounded-xl text-sm font-semibold hover:bg-neutral-200 transition-colors"
             >
               <X className="w-4 h-4" />
-              Annuler
+              {t_i18n.common.cancel}
             </button>
             <button
               onClick={handleSave}
@@ -623,7 +625,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
               ) : (
                 <Save className="w-4 h-4" />
               )}
-              Enregistrer
+              {t_i18n.common.save}
             </button>
           </div>
         )}
@@ -645,7 +647,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
               {t.is_verified && (
                 <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-accent-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg z-10">
                   <BadgeCheck className="w-3.5 h-3.5" />
-                  Vérifié
+                  {t_i18n.profile.verified}
                 </div>
               )}
 
@@ -696,7 +698,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                             value={editFirstName}
                             onChange={(e) => { setEditFirstName(e.target.value); setFormErrors((p) => ({...p, first_name: ''})); }}
                             className={`px-2 py-1 rounded-lg bg-white/20 border text-white text-sm font-bold w-28 placeholder:text-white/40 ${formErrors.first_name ? 'border-red-400' : 'border-white/30'}`}
-                            placeholder="Prénom"
+                            placeholder={t_i18n.profile.firstName}
                           />
                           {formErrors.first_name && <span className="text-red-300 text-[10px] mt-0.5">{formErrors.first_name}</span>}
                         </div>
@@ -705,7 +707,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                             value={editLastName}
                             onChange={(e) => { setEditLastName(e.target.value); setFormErrors((p) => ({...p, last_name: ''})); }}
                             className={`px-2 py-1 rounded-lg bg-white/20 border text-white text-sm font-bold w-28 placeholder:text-white/40 ${formErrors.last_name ? 'border-red-400' : 'border-white/30'}`}
-                            placeholder="Nom"
+                            placeholder={t_i18n.profile.lastName}
                           />
                           {formErrors.last_name && <span className="text-red-300 text-[10px] mt-0.5">{formErrors.last_name}</span>}
                         </div>
@@ -725,7 +727,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                         <span className="px-2 py-1 rounded-lg bg-white/10 text-white/60 text-xs italic">
                           {t.email || "—"}
                         </span>
-                        <span className="text-[9px] text-white/30 font-medium">Non modifiable</span>
+                        <span className="text-[9px] text-white/30 font-medium">{t_i18n.profile.unmodifiable}</span>
                       </div>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-1.5">
@@ -768,7 +770,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                       {t.rating.toFixed(1)}
                     </span>
                     <span className="text-sm text-white/60">
-                      ({t.review_count} avis)
+                      ({t.review_count} {t_i18n.profile.reviews})
                     </span>
                   </div>
 
@@ -776,7 +778,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                   <div className="mt-3">
                     <div className="flex items-center justify-between mb-1">
                       <span className="text-[11px] font-semibold text-white/50 uppercase tracking-wider">
-                        Score de confiance
+                        {t_i18n.profile.trustScore}
                       </span>
                       <span className="text-sm font-bold text-white">
                         {t.trust_score}/100
@@ -802,8 +804,8 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                   <div className="flex flex-wrap items-center gap-3 mt-3 text-sm text-white/60">
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
-                      Membre depuis{" "}
-                      {new Date(t.joined_at).toLocaleDateString("fr-TN", {
+                      {t_i18n.profile.memberSince}{" "}
+                      {new Date(t.joined_at).toLocaleDateString(t_i18n.locale === 'ar' ? "ar-TN" : "fr-TN", {
                         month: "long",
                         year: "numeric",
                       })}
@@ -814,7 +816,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                         <span className="text-xs font-medium">
                           {editAreas.length > 0
                             ? editAreas.join(", ")
-                            : "Aucune zone"}
+                            : t_i18n.profile.noZones}
                         </span>
                       </div>
                     ) : (
@@ -835,7 +837,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                   {editing && (
                     <div className="mt-3">
                       <p className="text-[10px] uppercase tracking-wider font-semibold text-white/40 mb-2">
-                        Zones de service
+                        {t_i18n.profile.serviceZones}
                       </p>
                       <div className="flex flex-wrap gap-1.5">
                         {GOVERNORATES.map((gov) => {
@@ -873,7 +875,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
               {editing ? (
                 <div className="relative z-10 mt-4">
                   <p className="text-[10px] uppercase tracking-wider font-semibold text-white/50 mb-2">
-                    Spécialisations
+                    {t_i18n.profile.specializations}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {editSpecs.map((spec) => (
@@ -905,7 +907,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                             setNewSpec("");
                           }
                         }}
-                        placeholder="Ajouter..."
+                        placeholder={t_i18n.profile.add}
                         className="px-2 py-1 rounded-full bg-white/10 border border-white/20 text-white text-xs w-24 placeholder:text-white/30"
                       />
                       <button
@@ -955,7 +957,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
           <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
             <div className="px-6 py-4 border-b border-neutral-100">
               <h3 className="text-lg font-bold text-neutral-900">
-                À propos
+                {t_i18n.profile.about}
               </h3>
             </div>
             <div className="p-5">
@@ -967,13 +969,13 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                     maxLength={500}
                     rows={4}
                     className="w-full px-3 py-2 rounded-xl border border-neutral-200 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 resize-none"
-                    placeholder="Décrivez votre expérience, vos services, et ce qui vous différencie..."
+                    placeholder={t_i18n.profile.aboutPlaceholder}
                   />
                   <p className="text-right text-[10px] text-neutral-400">{editBio.length}/500</p>
                 </div>
               ) : (
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  {(t as any).bio || <span className="italic text-neutral-400">Aucune description pour le moment.</span>}
+                  {(t as any).bio || <span className="italic text-neutral-400">{t_i18n.profile.noInfo}</span>}
                 </p>
               )}
             </div>
@@ -983,10 +985,10 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
           <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
             <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
               <h3 className="text-lg font-bold text-neutral-900">
-                Avis clients
+                {t_i18n.profile.reviewsTitle}
               </h3>
               <span className="text-xs font-semibold bg-brand-600 text-white px-3 py-1 rounded-full">
-                {visibleReviews.length} avis
+                {visibleReviews.length} {t_i18n.profile.reviews}
               </span>
             </div>
 
@@ -995,7 +997,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                 <div className="text-center py-10">
                   <MessageSquare className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
                   <p className="text-sm text-neutral-400">
-                    Aucun avis pour le moment.
+                    {t_i18n.profile.noReviews}
                   </p>
                 </div>
               ) : (
@@ -1009,7 +1011,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                         className="text-sm text-brand-600 font-semibold hover:underline"
                         onClick={() => {}}
                       >
-                        Voir tous les avis ({visibleReviews.length})
+                        {t_i18n.common.seeMore} ({visibleReviews.length})
                       </button>
                     </div>
                   )}
@@ -1024,14 +1026,14 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
           {/* ── COMPLÉTUDE PROFIL (owner only, UX-T4) ── */}
           {isOwner && (() => {
             const checks = [
-              { label: "Photo de profil", done: !!t.avatar_url, weight: 15 },
-              { label: "Photo véhicule", done: !!(t.vehicle_photos && t.vehicle_photos.length > 0), weight: 15 },
-              { label: "Type de véhicule", done: !!t.vehicle_type, weight: 10 },
-              { label: "Capacité de charge", done: !!t.vehicle_capacity_kg, weight: 10 },
-              { label: "Zone de service", done: t.service_areas.length > 0, weight: 15 },
-              { label: "Spécialisation", done: t.specializations.length > 0, weight: 10 },
-              { label: "Mission complétée", done: (t.total_jobs_completed || 0) > 0, weight: 15 },
-              { label: "Avis reçu", done: visibleReviews.length > 0, weight: 10 },
+              { label: t_i18n.profile.profilePhotoCheck, done: !!t.avatar_url, weight: 15 },
+              { label: t_i18n.profile.vehiclePhotoCheck, done: !!(t.vehicle_photos && t.vehicle_photos.length > 0), weight: 15 },
+              { label: t_i18n.profile.vehicleType, done: !!t.vehicle_type, weight: 10 },
+              { label: t_i18n.profile.capacity, done: !!t.vehicle_capacity_kg, weight: 10 },
+              { label: t_i18n.profile.serviceZones, done: t.service_areas.length > 0, weight: 15 },
+              { label: t_i18n.profile.specializations, done: t.specializations.length > 0, weight: 10 },
+              { label: t_i18n.profile.jobCompletedCheck, done: (t.total_jobs_completed || 0) > 0, weight: 15 },
+              { label: t_i18n.profile.reviewReceivedCheck, done: visibleReviews.length > 0, weight: 10 },
             ];
             const pct = checks.reduce((sum, c) => sum + (c.done ? c.weight : 0), 0);
             const missing = checks.filter(c => !c.done).slice(0, 3);
@@ -1039,7 +1041,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
             return (
               <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
                 <div className="px-5 py-3 bg-gradient-to-r from-brand-600/5 to-accent-500/5 border-b border-neutral-100 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-neutral-700">Complétude du profil</h3>
+                  <h3 className="text-sm font-bold text-neutral-700">{t_i18n.profile.completenessTitle}</h3>
                   <span className="text-xs font-bold text-brand-600">{pct}%</span>
                 </div>
                 <div className="p-5 space-y-3">
@@ -1051,11 +1053,11 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                   </div>
                   {missing.length > 0 && (
                     <div className="space-y-1.5">
-                      {missing.map(m => (
-                        <div key={m.label} className="flex items-center gap-2 text-xs text-neutral-500">
-                          <div className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-                          Ajouter : <span className="font-semibold text-neutral-700">{m.label}</span>
-                        </div>
+                      {missing.map((m, i) => (
+                        <li key={i} className="flex items-center gap-2 text-[11px] text-neutral-500">
+                          <span className="w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0" />
+                          <span>{t_i18n.profile.addCheck} {m.label}</span>
+                        </li>
                       ))}
                     </div>
                   )}
@@ -1066,35 +1068,34 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
 
           {/* ── STATISTIQUES CARD ── */}
           <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
-            <div className="px-5 py-3 bg-gradient-to-r from-neutral-100 to-neutral-50 border-b border-neutral-100">
-              <h3 className="text-sm font-bold text-neutral-700">
-                Statistiques
-              </h3>
+            <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-100 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-neutral-400" />
+              <h3 className="text-sm font-bold text-neutral-700">{t_i18n.profile.statistics}</h3>
             </div>
             <div className="p-5">
               <div className="grid grid-cols-2 gap-5">
                 <StatItem
                   icon={TrendingUp}
                   value={`${t.trust_score}/100`}
-                  label="Score de confiance"
+                  label={t_i18n.profile.trustScore}
                   color="bg-brand-600/10 text-brand-600"
                 />
                 <StatItem
                   icon={CheckCircle2}
                   value={`${t.completion_rate || 0}%`}
-                  label="Taux de complétion"
+                  label={t_i18n.profile.completionRate}
                   color="bg-accent-50 text-accent-600"
                 />
                 <StatItem
                   icon={TruckIcon}
                   value={t.total_jobs_completed || 0}
-                  label="Missions terminées"
+                  label={t_i18n.profile.totalJobs}
                   color="bg-purple-50 text-purple-600"
                 />
                 <StatItem
                   icon={Clock}
                   value={`${t.avg_response_time_min || "--"} min`}
-                  label="Temps de réponse"
+                  label={t_i18n.profile.avgResponseTime}
                   color="bg-amber-50 text-amber-600"
                 />
               </div>
@@ -1106,7 +1107,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
             {/* Header — navy gradient */}
             <div className="px-5 py-3 bg-gradient-to-r from-brand-900 to-brand-600">
               <h3 className="text-sm font-bold text-white tracking-wide">
-                Véhicule
+                {t_i18n.profile.vehicle}
               </h3>
             </div>
 
@@ -1122,50 +1123,27 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
 
               return photoUrl ? (
                 <div
-                  className={`aspect-video bg-neutral-100 overflow-hidden relative ${editing ? "cursor-pointer group" : ""}`}
-                  onClick={() => editing && vehicleInputRef.current?.click()}
+                  className={`aspect-video bg-neutral-100 overflow-hidden relative ${editing ? "group" : ""}`}
                 >
                   <img
                     src={photoUrl}
                     alt="Véhicule"
-                    className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                    className="w-full h-full object-cover"
                   />
                   {editing && (
-                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                      {vehicleUploading ? (
-                        <Loader2 className="w-8 h-8 text-white animate-spin" />
-                      ) : (
-                        <div className="text-center">
-                          <Camera className="w-8 h-8 text-white mx-auto mb-1" />
-                          <span className="text-white text-xs font-semibold">
-                            Changer la photo
-                          </span>
-                        </div>
-                      )}
-                    </div>
+                    <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
+                      <Camera className="w-4 h-4 text-neutral-50 group-hover:text-neutral-200" />
+                      <span className="text-xs font-medium text-neutral-50 mt-1">{t_i18n.profile.changePhoto}</span>
+                    </label>
                   )}
                 </div>
               ) : (
-                <div
-                  className={`bg-neutral-50 p-6 text-center ${editing ? "cursor-pointer hover:bg-neutral-100 transition-colors" : ""}`}
-                  onClick={() => editing && vehicleInputRef.current?.click()}
-                >
-                  {vehicleUploading ? (
-                    <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-2" />
-                  ) : (
-                    <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-brand-600/5 to-brand-600/10 flex items-center justify-center mx-auto mb-2">
-                      {editing ? (
-                        <Upload className="w-6 h-6 text-brand-600/50" />
-                      ) : (
-                        <ImageOff className="w-6 h-6 text-brand-600/25" />
-                      )}
-                    </div>
-                  )}
-                  <p className="text-xs text-neutral-400">
-                    {editing
-                      ? "Cliquer pour ajouter une photo"
-                      : "Aucune photo de véhicule"}
+                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center group cursor-pointer hover:bg-neutral-50 transition-colors" onClick={() => editing && vehicleInputRef.current?.click()}>
+                  <Camera className="w-8 h-8 text-neutral-300 mb-2 group-hover:text-brand-500 transition-colors" />
+                  <p className="text-sm font-medium text-neutral-500 group-hover:text-brand-600">
+                    {t_i18n.profile.clickToAddPhoto}
                   </p>
+                  <p className="text-xs text-neutral-400 mt-1">JPEG, PNG (Max 5MB)</p>
                 </div>
               );
             })()}
@@ -1186,7 +1164,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                 </div>
                 <div className="flex-1">
                   <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                    Type de véhicule
+                    {t_i18n.profile.vehicleType}
                   </p>
                   {editing ? (
                     <select
@@ -1194,7 +1172,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                       onChange={(e) => setEditVehicleType(e.target.value)}
                       className="mt-1 w-full px-2 py-1.5 border border-neutral-200 rounded-lg text-sm font-semibold text-neutral-900 bg-white"
                     >
-                      <option value="">Sélectionner...</option>
+                      <option value="">{t_i18n.profile.select}</option>
                       {VEHICLE_TYPES.map((vt) => (
                         <option key={vt} value={vt}>
                           {vt}
@@ -1203,7 +1181,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                     </select>
                   ) : (
                     <p className="text-sm font-semibold text-neutral-900">
-                      {t.vehicle_type || "Non spécifié"}
+                      {t.vehicle_type || t_i18n.profile.notSpecified}
                     </p>
                   )}
                 </div>
@@ -1216,7 +1194,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                 </div>
                 <div className="flex-1">
                   <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                    Capacité de charge
+                    {t_i18n.profile.capacity}
                   </p>
                   {editing ? (
                     <div className="flex items-center gap-1 mt-1">
@@ -1233,7 +1211,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                     <p className="text-sm font-semibold text-neutral-900">
                       {t.vehicle_capacity_kg
                         ? `${t.vehicle_capacity_kg.toLocaleString()} kg`
-                        : "Non spécifié"}
+                        : t_i18n.profile.notSpecified}
                     </p>
                   )}
                 </div>
@@ -1251,14 +1229,14 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
                   </div>
                   <div>
                     <p className="text-[10px] uppercase tracking-wider font-semibold text-neutral-400">
-                      Assurance
+                      {t_i18n.profile.insurance}
                     </p>
                     <p
                       className={`text-sm font-semibold ${isInsured ? "text-accent-600" : "text-red-600"}`}
                     >
-                      {isInsured ? "✓ Valide" : "✗ Expirée"} — jusqu&apos;au{" "}
+                      {isInsured ? t_i18n.profile.insuranceValid : t_i18n.profile.insuranceExpired} — {t_i18n.profile.insuranceUntil}{" "}
                       {new Date(t.insurance_valid_until).toLocaleDateString(
-                        "fr-TN",
+                        t_i18n.locale === 'ar' ? 'ar-TN' : 'fr-TN',
                         {
                           day: "numeric",
                           month: "long",
@@ -1280,7 +1258,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
           imageSrc={avatarCropSrc}
           aspect={1}
           cropShape="round"
-          title="Recadrer la photo de profil"
+          title={t_i18n.profile.cropProfilePhoto}
           onCrop={handleAvatarCropped}
           onCancel={() => setAvatarCropSrc(null)}
         />
@@ -1290,7 +1268,7 @@ function TransporterProfileContent({ userId }: { userId: string | null }) {
           imageSrc={vehicleCropSrc}
           aspect={16 / 9}
           cropShape="rect"
-          title="Recadrer la photo du véhicule"
+          title={t_i18n.profile.cropVehiclePhoto}
           onCrop={handleVehicleCropped}
           onCancel={() => setVehicleCropSrc(null)}
         />

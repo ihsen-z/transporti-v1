@@ -79,3 +79,30 @@ export function validateImageFile(file: File): string | null {
     }
     return null; // no error
 }
+
+/**
+ * Ensures media URLs point to the correct API base URL.
+ * Replaces localhost with the actual API URL if necessary,
+ * and prepends the API URL for relative paths.
+ */
+import { config } from './config';
+
+export function getMediaUrl(url: string | null | undefined): string {
+    if (!url) return '';
+    
+    try {
+        if (url.startsWith('/')) {
+            return `${config.API_BASE_URL}${url}`;
+        }
+        
+        const urlObj = new URL(url);
+        // If it's a media path, override the origin with our API_BASE_URL
+        // This fixes broken localhost URLs when viewed on mobile or production
+        if (urlObj.pathname.startsWith('/media/') || urlObj.pathname.startsWith('/uploads/')) {
+            return `${config.API_BASE_URL}${urlObj.pathname}`;
+        }
+    } catch (e) {
+        // ignore invalid urls
+    }
+    return url;
+}

@@ -3,6 +3,8 @@
 import React from "react";
 import { Truck, Weight, FileCheck, ShieldCheck, ImageOff } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { getMediaUrl } from "@/lib/imageUtils";
+
 interface Props {
   vehicleType: string;
   vehicleCapacityKg?: number;
@@ -38,7 +40,7 @@ export function VehicleGallery({
               className="aspect-video bg-neutral-100 rounded-lg overflow-hidden"
             >
               <img
-                src={photo}
+                src={getMediaUrl(photo)}
                 alt={`Véhicule ${idx + 1}`}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               />

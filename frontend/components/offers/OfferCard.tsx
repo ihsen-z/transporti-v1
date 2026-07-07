@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { getMediaUrl } from "@/lib/imageUtils";
 
 interface OfferCardProps {
   offer: any;
@@ -46,7 +47,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
               <div className="w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-neutral-200 group-hover:ring-brand-300 transition-colors cursor-pointer">
                 {offer.transporter_avatar ? (
                   <img
-                    src={offer.transporter_avatar}
+                    src={getMediaUrl(offer.transporter_avatar)}
                     alt={offer.transporter_name}
                     className="w-full h-full object-cover"
                   />

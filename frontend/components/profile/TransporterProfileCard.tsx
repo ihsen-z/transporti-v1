@@ -10,6 +10,8 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { getMediaUrl } from "@/lib/imageUtils";
+
 interface Props {
   firstName: string;
   lastName: string;
@@ -67,7 +69,7 @@ export function TransporterProfileCard({
           <div className="w-24 h-24 rounded-2xl bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden ring-2 ring-accent-200/50">
             {avatarUrl ? (
               <img
-                src={avatarUrl}
+                src={getMediaUrl(avatarUrl)}
                 alt={`${firstName} ${lastName}`}
                 className="w-full h-full object-cover"
               />

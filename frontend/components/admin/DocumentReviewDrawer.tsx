@@ -8,6 +8,7 @@ import {
   type TransporterDocumentsResponse,
 } from "@/lib/services/admin";
 import { useToast } from "@/components/ui/Toast";
+import { getMediaUrl } from "@/lib/imageUtils";
 import {
   X,
   CheckCircle,
@@ -358,11 +359,7 @@ export default function DocumentReviewDrawer({
                   const status = getDocStatus(doc);
                   const cfg = docStatusConfig[status];
                   const StatusIcon = cfg.icon;
-                  const fileUrl = doc.fileUrl
-                    ? doc.fileUrl.startsWith("http")
-                      ? doc.fileUrl
-                      : (process.env.NODE_ENV === 'production' ? `https://transporti-v1.onrender.com${doc.fileUrl}` : `http://localhost:8000${doc.fileUrl}`)
-                    : "";
+                  const fileUrl = doc.fileUrl || "";
 
                   return (
                     <div className={`flex-1 min-w-0 border rounded-lg p-3 transition-all ${cfg.bg}`}>
@@ -387,7 +384,7 @@ export default function DocumentReviewDrawer({
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
-                                src={fileUrl}
+                                src={getMediaUrl(fileUrl)}
                                 alt={doc.documentTypeLabel}
                                 className="w-full h-full object-contain"
                               />
@@ -397,7 +394,7 @@ export default function DocumentReviewDrawer({
                             </button>
                           ) : (
                             <a
-                              href={fileUrl}
+                              href={getMediaUrl(fileUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
                               className="flex items-center gap-1.5 px-2 py-1.5 bg-white rounded-md border border-neutral-200 text-xs text-brand-600 hover:bg-brand-600/5 transition-colors"
@@ -539,7 +536,7 @@ export default function DocumentReviewDrawer({
             </button>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={previewUrl}
+              src={getMediaUrl(previewUrl)}
               alt="Prévisualisation du document"
               className="max-w-full max-h-[80vh] rounded-xl shadow-2xl object-contain"
             />

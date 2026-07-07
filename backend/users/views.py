@@ -89,7 +89,11 @@ class LoginView(APIView):
             refresh = RefreshToken.for_user(user)
             
             # Add custom claims
-            refresh['role'] = user.role
+            effective_role = user.role
+            if user.is_superuser or user.is_staff:
+                effective_role = 'ADMIN'
+                
+            refresh['role'] = effective_role
             refresh['is_verified'] = user.is_phone_verified
             
             # Add trust status for transporters
