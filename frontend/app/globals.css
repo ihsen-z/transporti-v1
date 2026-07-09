@@ -521,3 +521,84 @@
 .transporti-marker-active {
   filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
 }
+
+/* ============================================================================
+   RTL SUPPORT (Arabic — دارجة تونسية)
+   ============================================================================ */
+
+/* Arabic font on body when dir=rtl */
+html[dir="rtl"] body {
+  font-family: var(--font-cairo), var(--font-sans);
+}
+
+/* Text alignment */
+html[dir="rtl"] body {
+  text-align: right;
+}
+
+/* Flip directional margins and paddings */
+html[dir="rtl"] .ml-auto { margin-left: 0; margin-right: auto; }
+html[dir="rtl"] .mr-auto { margin-right: 0; margin-left: auto; }
+html[dir="rtl"] .ml-\[size\:var\(--radix-context-menu-content-padding\)\] { padding-left: 0; padding-right: var(--radix-context-menu-content-padding); }
+html[dir="rtl"] .mr-1 { margin-right: 0; margin-left: 0.25rem; }
+html[dir="rtl"] .mr-2 { margin-right: 0; margin-left: 0.5rem; }
+html[dir="rtl"] .mr-3 { margin-right: 0; margin-left: 0.75rem; }
+html[dir="rtl"] .mr-4 { margin-right: 0; margin-left: 1rem; }
+html[dir="rtl"] .ml-1 { margin-left: 0; margin-right: 0.25rem; }
+html[dir="rtl"] .ml-2 { margin-left: 0; margin-right: 0.5rem; }
+html[dir="rtl"] .ml-3 { margin-left: 0; margin-right: 0.75rem; }
+html[dir="rtl"] .ml-4 { margin-left: 0; margin-right: 1rem; }
+html[dir="rtl"] .pl-3 { padding-left: 0; padding-right: 0.75rem; }
+html[dir="rtl"] .pr-3 { padding-right: 0; padding-left: 0.75rem; }
+html[dir="rtl"] .pr-12 { padding-right: 0; padding-left: 3rem; }
+html[dir="rtl"] .pr-2 { padding-right: 0; padding-left: 0.5rem; }
+
+/* Flip flex-row-reverse and directional flex */
+html[dir="rtl"] .flex-row { flex-direction: row; }
+html[dir="rtl"] .flex-row-reverse { flex-direction: row-reverse; }
+
+/* Flip chevron/arrow icons */
+html[dir="rtl"] .rotate-180 { /* keep rotation for chevrons that need flipping */ }
+html[dir="rtl"] svg\.rotate-flip {
+  transform: scaleX(-1);
+}
+
+/* Input text direction */
+html[dir="rtl"] input[type="text"],
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="tel"],
+html[dir="rtl"] input[type="password"],
+html[dir="rtl"] textarea,
+html[dir="rtl"] select {
+  text-align: right;
+}
+
+/* Number inputs — keep numeric digits LTR */
+html[dir="rtl"] input[type="number"] {
+  direction: ltr;
+  text-align: right;
+}
+
+/* Sidebar margin flip — handled dynamically in AppSidebar via isRTL */
+/* No static CSS needed; layout uses conditional classes */
+
+/* Scrollbar on the "start" side in RTL */
+html[dir="rtl"] ::-webkit-scrollbar {
+  /* keep default — modern browsers handle this */
+}
+
+/* Dropdown/popover arrow flip */
+html[dir="rtl"] .dropdown-arrow {
+  transform: scaleX(-1);
+}
+
+/* Calendar picker date grid — keep numbers LTR */
+html[dir="rtl"] .calendar-grid {
+  direction: ltr;
+}
+
+/* Table content — numbers should stay LTR even in RTL context */
+html[dir="rtl"] .table-numbers {
+  direction: ltr;
+  text-align: center;
+}

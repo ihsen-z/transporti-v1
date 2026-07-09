@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Cairo } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { NotificationProvider } from "@/contexts/NotificationContext";
@@ -8,6 +8,12 @@ import { ToastProvider } from "@/components/ui/Toast";
 import { AppI18nProvider } from "@/lib/i18n/useAppI18n";
 
 const inter = Inter({ subsets: ["latin"] });
+const cairo = Cairo({
+  subsets: ["arabic"],
+  weight: ["400", "500", "600", "700"],
+  display: "swap",
+  variable: "--font-cairo",
+});
 
 export const metadata: Metadata = {
   title: {
@@ -45,7 +51,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="fr">
-      <body className={inter.className}>
+      <body className={`${inter.className} ${cairo.variable}`}>
         <AppI18nProvider>
           <AuthProvider>
             <NotificationProvider>
