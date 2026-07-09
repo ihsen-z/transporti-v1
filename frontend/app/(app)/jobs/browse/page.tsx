@@ -6,10 +6,12 @@ import { apiClient } from "@/lib/api/client";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobFeedCard } from "@/components/jobs/JobFeedCard";
 import { Search, ChevronLeft, ChevronRight, SortAsc } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 const PAGE_SIZE = 10;
 
 export default function JobBrowsePage() {
+  const { t } = useAppI18n();
   const { user, isLoading: authLoading } = useAuth();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,14 +79,14 @@ export default function JobBrowsePage() {
     }
   };
 
-  if (authLoading) return <div className="p-8 text-center">Chargement...</div>;
+  if (authLoading) return <div className="p-8 text-center">{t.common.loading}</div>;
 
   if (user?.role?.toUpperCase() !== "TRANSPORTER") {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-xl font-bold text-red-600">Accès Refusé</h2>
+        <h2 className="text-xl font-bold text-red-600">{t.browse.accessDenied}</h2>
         <p className="text-neutral-600">
-          Seuls les transporteurs peuvent accéder à cette page.
+          {t.browse.transportersOnly}
         </p>
       </div>
     );
@@ -106,10 +108,10 @@ export default function JobBrowsePage() {
             <div className="mb-6 flex justify-between items-center">
               <div>
                 <h1 className="text-2xl font-bold text-neutral-900">
-                  Missions disponibles
+                  {t.browse.title}
                 </h1>
                 <span className="text-sm text-neutral-500">
-                  {totalCount} résultat{totalCount > 1 ? "s" : ""}
+                  {totalCount} {totalCount > 1 ? t.browse.resultsPlural : t.browse.results}
                 </span>
               </div>
               {/* Sort Dropdown */}
@@ -120,9 +122,9 @@ export default function JobBrowsePage() {
                   onChange={(e) => setSortBy(e.target.value as any)}
                   className="text-sm border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700 focus:ring-2 focus:ring-brand-500 outline-none"
                 >
-                  <option value="newest">Plus récentes</option>
-                  <option value="price_asc">Prix croissant</option>
-                  <option value="price_desc">Prix décroissant</option>
+                  <option value="newest">{t.browse.sortNewest}</option>
+                  <option value="price_asc">{t.browse.sortPriceAsc}</option>
+                  <option value="price_desc">{t.browse.sortPriceDesc}</option>
                 </select>
               </div>
             </div>
@@ -199,10 +201,10 @@ export default function JobBrowsePage() {
                   <Search className="w-6 h-6 text-neutral-400" />
                 </div>
                 <h3 className="text-lg font-medium text-neutral-900">
-                  Aucune mission trouvée
+                  {t.browse.noResultsTitle}
                 </h3>
                 <p className="text-neutral-500 mt-1">
-                  Essayez de modifier vos filtres ou revenez plus tard.
+                  {t.browse.noResultsDesc}
                 </p>
               </div>
             )}

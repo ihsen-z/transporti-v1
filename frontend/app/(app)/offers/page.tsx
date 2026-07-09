@@ -21,8 +21,22 @@ import {
   Undo2,
   Search,
   ArrowRight,
+import {
+  FileText,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  TrendingUp,
+  DollarSign,
+  Loader2,
+  RefreshCw,
+  Undo2,
+  Search,
+  ArrowRight,
   Wallet,
 } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -70,14 +84,14 @@ type TabFilter =
   | "EXPIRED"
   | "WITHDRAWN";
 
-const TABS: { id: TabFilter; label: string; icon: React.ElementType }[] = [
-  { id: "ALL", label: "Toutes", icon: FileText },
-  { id: "PENDING", label: "En attente", icon: Clock },
-  { id: "ACCEPTED", label: "Acceptées", icon: CheckCircle },
-  { id: "REJECTED", label: "Refusées", icon: XCircle },
-  { id: "EXPIRED", label: "Expirées", icon: AlertCircle },
-  { id: "WITHDRAWN", label: "Retirées", icon: Undo2 },
-];
+const TABS = [
+  { id: "ALL", labelKey: "tabsAll", icon: FileText },
+  { id: "PENDING", labelKey: "tabsPending", icon: Clock },
+  { id: "ACCEPTED", labelKey: "tabsAccepted", icon: CheckCircle },
+  { id: "REJECTED", labelKey: "tabsRejected", icon: XCircle },
+  { id: "EXPIRED", labelKey: "tabsExpired", icon: AlertCircle },
+  { id: "WITHDRAWN", labelKey: "tabsWithdrawn", icon: Undo2 },
+] as const;
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                    */
@@ -186,6 +200,7 @@ function StatCard({
 const POLL_INTERVAL_MS = 30_000;
 
 export default function MyOffersPage() {
+  const { t } = useAppI18n();
   const { user } = useAuth();
   const { showToast } = useToast();
   const [activeTab, setActiveTab] = useState<TabFilter>("ALL");
@@ -285,23 +300,21 @@ export default function MyOffersPage() {
   if (role === "CLIENT") {
     return (
       <div className="p-6 lg:p-8 max-w-4xl mx-auto text-center py-20">
-        <div className="w-20 h-20 bg-brand-600/5 rounded-2xl flex items-center justify-center mx-auto mb-5">
-          <FileText className="w-10 h-10 text-brand-600" />
+        <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <FileText className="w-8 h-8 text-neutral-400" />
         </div>
-        <h1 className="text-2xl font-bold text-neutral-900 mb-2">
-          Offres reçues
-        </h1>
-        <p className="text-neutral-500 max-w-md mx-auto">
-          Consultez les offres reçues dans chaque annonce de votre espace « Mes
-          Transports ».
+        <h3 className="text-lg font-bold text-neutral-900 mb-1">
+          {t.offers.emptyStateTitle}
+        </h3>
+        <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
+          {t.offers.emptyStateDesc}
         </p>
-        {/* FIX #12: Use <Link> instead of <a> */}
         <Link
-          href="/jobs"
-          className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
+          href="/jobs/browse"
+          className="inline-flex items-center gap-2 bg-brand-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-brand-700 transition-colors shadow-sm"
         >
-          Voir mes annonces
-          <ArrowRight className="w-4 h-4" />
+          <Search className="w-5 h-5" />
+          {t.offers.emptyStateFind}
         </Link>
       </div>
     );
@@ -361,44 +374,25 @@ export default function MyOffersPage() {
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
       {/* FIX #1: Premium Confirm Modal */}
       <ConfirmModal
-        open={!!withdrawTarget}
-        title="Retirer cette offre ?"
-        message="Cette action est irréversible. L'offre ne sera plus visible par le client."
-        detail={
-          withdrawTarget && (
-            <div className="bg-neutral-50 rounded-xl border border-neutral-100 p-3 text-left text-sm">
-              <div className="flex items-center justify-between mb-1">
-                <span className="text-neutral-500">Trajet</span>
-                <span className="font-medium text-neutral-700 truncate ml-2 max-w-[200px]">
-                  {shortAddress(withdrawTarget.job_pickup, 20)} →{" "}
-                  {shortAddress(withdrawTarget.job_dropoff, 20)}
-                </span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-neutral-500">Montant</span>
-                <span className="font-bold text-neutral-900">
-                  {withdrawTarget.price.toFixed(0)} TND
-                </span>
-              </div>
-            </div>
-          )
-        }
-        confirmLabel="Retirer l'offre"
-        cancelLabel="Annuler"
-        confirmColor="red"
-        loading={withdrawing}
+        isOpen={!!withdrawTarget}
+        onClose={() => setWithdrawTarget(null)}
         onConfirm={handleWithdrawConfirm}
-        onCancel={handleWithdrawCancel}
+        title={t.offers.confirmWithdrawTitle}
+        description={t.offers.confirmWithdrawDesc}
+        confirmText={t.offers.actionWithdraw}
+        cancelText={t.common.cancel}
+        type="danger"
+        isLoading={withdrawing}
       />
 
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-            Mes offres
+          <h1 className="text-2xl font-bold text-neutral-900 mb-2">
+            {t.offers.title}
           </h1>
-          <p className="text-neutral-500 mt-1 text-sm">
-            Suivez l&apos;état de vos offres soumises et gérez vos propositions.
+          <p className="text-neutral-500 max-w-2xl">
+            {t.offers.subtitle}
           </p>
         </div>
         <button
@@ -414,43 +408,28 @@ export default function MyOffersPage() {
       </div>
 
       {/* Stats Grid — FIX #6: 5 stats with confirmed earnings highlighted */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-8">
-        <StatCard
-          icon={FileText}
-          label="Total"
-          value={String(offers.length)}
-          iconColor="bg-brand-600/10 text-brand-600"
-          valueColor="text-neutral-900"
-        />
-        <StatCard
-          icon={Clock}
-          label="En attente"
-          value={String(pendingCount)}
-          iconColor="bg-amber-100 text-amber-600"
-          valueColor="text-amber-600"
-        />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <StatCard
           icon={TrendingUp}
-          label="Taux accept."
-          value={acceptanceRate === -1 ? "—" : `${acceptanceRate}%`}
-          iconColor="bg-emerald-100 text-emerald-600"
-          valueColor="text-emerald-600"
+          label={t.offers.statsActive}
+          value={String(offers.length)}
+          iconColor="bg-blue-50 text-blue-600"
+          valueColor="text-blue-700"
+        />
+        <StatCard
+          icon={CheckCircle}
+          label={t.offers.statsAccepted}
+          value={String(acceptedCount)}
+          iconColor="bg-emerald-50 text-emerald-600"
+          valueColor="text-emerald-700"
+          highlight
         />
         <StatCard
           icon={DollarSign}
-          label="Gain potentiel"
-          value={`${potentialEarnings.toFixed(0)} TND`}
-          iconColor="bg-brand-600/10 text-brand-600"
-          valueColor="text-brand-600"
-        />
-        {/* FIX #6: Confirmed earnings stat */}
-        <StatCard
-          icon={Wallet}
-          label="Gains confirmés"
-          value={`${confirmedEarnings.toFixed(0)} TND`}
-          iconColor="bg-emerald-100 text-emerald-600"
-          valueColor="text-emerald-700"
-          highlight
+          label={t.offers.statsEarnings}
+          value={`${potentialEarnings.toLocaleString()} TND`}
+          iconColor="bg-amber-50 text-amber-600"
+          valueColor="text-amber-700"
         />
       </div>
 
@@ -461,30 +440,26 @@ export default function MyOffersPage() {
             tab.id === "ALL"
               ? offers.length
               : offers.filter((o) => o.status === tab.id).length;
-          const isActive = activeTab === tab.id;
           return (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap transition-all duration-200 ${
-                isActive
-                  ? "bg-white text-brand-600 shadow-sm ring-1 ring-brand-600/10"
-                  : count === 0
-                    ? "text-neutral-300 hover:text-neutral-400 hover:bg-white/30"
-                    : "text-neutral-500 hover:text-neutral-700 hover:bg-white/50"
+              onClick={() => {
+                setActiveTab(tab.id as TabFilter);
+                setOfferPage(1);
+              }}
+              className={`flex items-center gap-2 px-4 py-3 border-b-2 font-medium text-sm transition-colors whitespace-nowrap ${
+                activeTab === tab.id
+                  ? "border-brand-600 text-brand-600"
+                  : "border-transparent text-neutral-500 hover:text-neutral-700 hover:border-neutral-300"
               }`}
             >
-              <tab.icon
-                className={`w-4 h-4 ${isActive ? "text-brand-600" : ""}`}
-              />
-              {tab.label}
+              <tab.icon className="w-4 h-4" />
+              {t.offers[tab.labelKey as keyof typeof t.offers]}
               <span
-                className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
-                  isActive
-                    ? "bg-accent-500/10 text-accent-600"
-                    : count === 0
-                      ? "bg-neutral-100 text-neutral-300"
-                      : "bg-neutral-200/70 text-neutral-500"
+                className={`ml-1.5 py-0.5 px-2 rounded-full text-xs ${
+                  activeTab === tab.id
+                    ? "bg-brand-100 text-brand-700"
+                    : "bg-neutral-100 text-neutral-600"
                 }`}
               >
                 {count}
@@ -505,21 +480,16 @@ export default function MyOffersPage() {
               </div>
             </div>
             <p className="text-neutral-700 font-semibold mb-1">
-              Aucune offre{" "}
-              {activeTab !== "ALL"
-                ? `${TABS.find((t) => t.id === activeTab)?.label.toLowerCase()}`
-                : ""}{" "}
-              pour le moment.
+              {t.offers.emptyStateTitle}
             </p>
             <p className="text-sm text-neutral-400 max-w-md mx-auto">
-              Parcourez les missions disponibles pour soumettre vos offres.
+              {t.offers.emptyStateDesc}
             </p>
-            {/* FIX #12: <a> → <Link> */}
             <Link
               href="/jobs/browse"
               className="inline-flex items-center gap-2 mt-5 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
-              Trouver une mission
+              {t.offers.emptyStateFind}
               <ArrowRight className="w-4 h-4" />
             </Link>
           </div>

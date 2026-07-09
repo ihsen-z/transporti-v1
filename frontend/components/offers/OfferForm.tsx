@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Send, CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { apiClient, ApiError } from "@/lib/api/client";
 
 interface OfferFormProps {
   jobId: number;
@@ -19,6 +21,9 @@ export function OfferForm({
   priceTndMax,
   onOfferSubmitted,
 }: OfferFormProps) {
+  const { t: allT } = useAppI18n();
+  const t = allT.offerForm;
+
   const [priceNet, setPriceNet] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
@@ -106,7 +111,7 @@ export function OfferForm({
 
       setFeedback({
         type: "success",
-        message: "Offre envoyée avec succès ! Le client sera notifié.",
+        message: t.success,
       });
       setPriceNet("");
       setMessage("");
@@ -121,8 +126,7 @@ export function OfferForm({
           // Verification or role issue
           setFeedback({
             type: "warning",
-            message:
-              "Accès refusé. Vérifiez que votre profil transporteur est vérifié.",
+            message: t.errorVerification,
           });
         } else if (error.status === 400 && body) {
           // Validation errors from serializer
@@ -136,20 +140,18 @@ export function OfferForm({
           }
           setFeedback({
             type: "error",
-            message:
-              messages.join(" ") ||
-              "Erreur de validation. Veuillez vérifier vos données.",
+            message: messages.join(" ") || t.errorValidation,
           });
         } else {
           setFeedback({
             type: "error",
-            message: `Erreur serveur (${error.status}). Veuillez réessayer.`,
+            message: t.errorServer,
           });
         }
       } else {
         setFeedback({
           type: "error",
-          message: "Erreur réseau. Vérifiez votre connexion.",
+          message: t.errorNetwork,
         });
       }
     } finally {
@@ -162,7 +164,7 @@ export function OfferForm({
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
           <Send className="w-5 h-5 text-brand-600" />
-          Faire une offre
+          {t.submitOffer}
         </h3>
         {activeOfferCount !== null && (
           <span
@@ -174,7 +176,7 @@ export function OfferForm({
                   : "bg-green-100 text-green-700"
             }`}
           >
-            {activeOfferCount}/{MAX_ACTIVE_OFFERS} offres actives
+            {activeOfferCount}/{MAX_ACTIVE_OFFERS} {t.activeOffersLimit.replace('{{count}}', '').replace('{{max}}', '').trim()}
           </span>
         )}
       </div>
@@ -185,11 +187,10 @@ export function OfferForm({
           <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div>
             <p className="font-semibold">
-              Limite atteinte ({MAX_ACTIVE_OFFERS}/{MAX_ACTIVE_OFFERS})
+              {t.limitReachedTitle} ({MAX_ACTIVE_OFFERS}/{MAX_ACTIVE_OFFERS})
             </p>
             <p>
-              Vous avez déjà {MAX_ACTIVE_OFFERS} offres actives. Retirez une
-              offre existante avant d&apos;en soumettre une nouvelle.
+              {t.limitReachedDesc}
             </p>
           </div>
         </div>
@@ -198,8 +199,7 @@ export function OfferForm({
         <div className="mb-4 p-3 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-start gap-2 text-sm">
           <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>
-            Attention : il vous reste <strong>1 offre disponible</strong> sur{" "}
-            {MAX_ACTIVE_OFFERS}.
+            {t.nearLimitDesc}
           </span>
         </div>
       )}
@@ -231,7 +231,7 @@ export function OfferForm({
       <form onSubmit={handleSubmit} className="space-y-6">
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Votre tarif net (ce que vous gagnez)
+            {t.netTariff}
           </label>
           <div className="relative">
             <input
@@ -253,32 +253,32 @@ export function OfferForm({
             <div className="mt-2 p-2.5 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
               <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-blue-700">
-                Budget indicatif du client :{" "}
+                {t.indicativeBudget}{" "}
                 <span className="font-semibold">
                   {priceTndMin && priceTndMax
                     ? `${priceTndMin} — ${priceTndMax} TND`
                     : priceTndMin
-                      ? `à partir de ${priceTndMin} TND`
-                      : `jusqu'à ${priceTndMax} TND`}
+                      ? `${t.from} ${priceTndMin} TND`
+                      : `${t.upTo} ${priceTndMax} TND`}
                 </span>
               </p>
             </div>
           )}
           {/* P2-10: COD threshold note */}
           <p className="text-xs text-neutral-400 mt-1.5">
-            💡 Au-delà de 300 TND, seul le paiement digital sera proposé au client.
+            {t.codNote}
           </p>
         </div>
 
         {/* Pricing Breakdown */}
         <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
           <div className="flex justify-between text-neutral-600">
-            <span>+ Commission plateforme ({commissionPct}%)</span>
+            <span>{t.platformCommission} ({commissionPct}%)</span>
             <span>{commission.toFixed(2)} TND</span>
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-neutral-200">
             <span className="font-semibold text-neutral-900">
-              Prix total (payé par le client)
+              {t.totalPrice}
             </span>
             <span className="font-bold text-xl text-brand-600">
               {total.toFixed(2)} TND
@@ -288,12 +288,12 @@ export function OfferForm({
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
-            Message pour le client (Optionnel)
+            {t.messageLabel}
           </label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
-            placeholder="Détaillez vos disponibilités, votre véhicule..."
+            placeholder={t.messagePlaceholder}
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500 h-24"
           />
         </div>
@@ -303,7 +303,7 @@ export function OfferForm({
           disabled={loading || !priceNet || isAtLimit}
           className="w-full py-3 bg-brand-600 text-white rounded-lg font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors"
         >
-          {loading ? "Envoi en cours..." : "Envoyer mon offre"}
+          {loading ? t.sending : t.sendOffer}
         </button>
       </form>
     </div>

@@ -19,6 +19,7 @@ import {
   Info,
   Banknote,
 } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /* ------------------------------------------------------------------ */
 /*  24 Gouvernorats de Tunisie                                         */
@@ -53,23 +54,24 @@ const GOVERNORATES = [
 /* ------------------------------------------------------------------ */
 /*  Types de véhicules tunisiens                                       */
 /* ------------------------------------------------------------------ */
-const VEHICLE_TYPES = [
-  { value: "camion", label: "🚛 Camion", desc: "Transport lourd (> 3.5T)" },
-  {
-    value: "camionnette",
-    label: "🚐 Camionnette",
-    desc: "Transport moyen (< 3.5T)",
-  },
-  { value: "fourgon", label: "📦 Fourgon", desc: "Transport couvert" },
-  { value: "pickup", label: "🛻 Pickup", desc: "Transport léger / ouvert" },
-  { value: "remorque", label: "🚜 Remorque", desc: "Transport spécialisé" },
-];
+// VEHICLE_TYPES are now constructed inside the component using translations
 
 /* ------------------------------------------------------------------ */
 /*  Component                                                          */
 /* ------------------------------------------------------------------ */
 
 export default function ReturnTripPage() {
+  const { t: allT } = useAppI18n();
+  const t = allT.returnTrip;
+  
+  const VEHICLE_TYPES = [
+    { value: "camion", label: "🚛 Camion", desc: t.vehicleHeavy },
+    { value: "camionnette", label: "🚐 Camionnette", desc: t.vehicleMedium },
+    { value: "fourgon", label: "📦 Fourgon", desc: t.vehicleCovered },
+    { value: "pickup", label: "🛻 Pickup", desc: t.vehicleLight },
+    { value: "remorque", label: "🚜 Remorque", desc: t.vehicleSpecial },
+  ];
+
   const router = useRouter();
   const { showToast } = useToast();
   const [submitting, setSubmitting] = useState(false);
@@ -129,7 +131,7 @@ export default function ReturnTripPage() {
       setSuccess(true);
       showToast(
         "success",
-        "Trajet retour publié ! Les clients pourront vous contacter.",
+        t.successMsg,
       );
 
       // Auto-redirect after 2s
@@ -144,7 +146,7 @@ export default function ReturnTripPage() {
             : String(e.body);
         showToast("error", msg);
       } else {
-        showToast("error", "Erreur lors de la publication.");
+        showToast("error", t.errorPub);
       }
     } finally {
       setSubmitting(false);
@@ -165,18 +167,17 @@ export default function ReturnTripPage() {
             </div>
           </div>
           <h2 className="text-2xl font-bold text-neutral-900 mb-2">
-            Trajet publié !
+            {t.successTitle}
           </h2>
           <p className="text-neutral-500 mb-6">
-            Votre disponibilité est maintenant visible par les clients qui
-            cherchent un transport sur votre itinéraire.
+            {t.successDesc}
           </p>
           <div className="flex gap-3 justify-center">
             <Link
               href="/jobs"
               className="px-5 py-2.5 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-all"
             >
-              Voir mes missions
+              {t.viewMissions}
             </Link>
           </div>
         </div>
@@ -195,21 +196,20 @@ export default function ReturnTripPage() {
         className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 mb-6 transition-colors"
       >
         <ChevronLeft className="w-4 h-4" />
-        Mes Missions
+        {t.backMissions}
       </Link>
 
       {/* Header — distinct purple identity */}
       <div className="mb-8">
         <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold mb-4">
           <RotateCcw className="w-4 h-4" />
-          Trajet retour
+          {t.badgeReturn}
         </div>
         <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-1">
-          Proposer un trajet retour
+          {t.pageTitle}
         </h1>
         <p className="text-neutral-500 text-sm">
-          Évitez le retour à vide — indiquez votre itinéraire et les clients
-          vous trouveront.
+          {t.pageSubtitle}
         </p>
       </div>
 
@@ -217,14 +217,11 @@ export default function ReturnTripPage() {
       <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200 rounded-2xl p-4 mb-8 flex gap-3">
         <Info className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
         <div className="text-sm text-purple-700">
-          <p className="font-medium mb-1">Comment ça marche ?</p>
+          <p className="font-medium mb-1">{t.howItWorksTitle}</p>
           <ol className="space-y-0.5 text-purple-600 list-decimal list-inside">
-            <li>Indiquez votre itinéraire retour et votre véhicule</li>
-            <li>
-              Les <strong>clients</strong> voient votre trajet dans la liste des
-              annonces
-            </li>
-            <li>Un client vous contacte ou fait une offre</li>
+            <li>{t.howItWorks1}</li>
+            <li>{t.howItWorks2}</li>
+            <li>{t.howItWorks3}</li>
           </ol>
         </div>
       </div>
@@ -235,21 +232,21 @@ export default function ReturnTripPage() {
         <div className="p-6 border-b border-neutral-100">
           <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
             <MapPin className="w-4 h-4 text-purple-500" />
-            Itinéraire
+            {t.sectionRoute}
           </h3>
 
           <div className="flex items-center gap-3">
             {/* Départ */}
             <div className="flex-1">
               <label className="block text-xs font-medium text-neutral-500 mb-1.5">
-                Départ
+                {t.pickupGov}
               </label>
               <select
                 value={form.pickup_governorate}
                 onChange={(e) => update("pickup_governorate", e.target.value)}
                 className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm font-medium bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all appearance-none cursor-pointer"
               >
-                <option value="">Choisir un gouvernorat</option>
+                <option value="">{t.chooseGov}</option>
                 {GOVERNORATES.map((g) => (
                   <option
                     key={g}
@@ -272,14 +269,14 @@ export default function ReturnTripPage() {
             {/* Destination */}
             <div className="flex-1">
               <label className="block text-xs font-medium text-neutral-500 mb-1.5">
-                Destination
+                {t.dropoffGov}
               </label>
               <select
                 value={form.dropoff_governorate}
                 onChange={(e) => update("dropoff_governorate", e.target.value)}
                 className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm font-medium bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all appearance-none cursor-pointer"
               >
-                <option value="">Choisir un gouvernorat</option>
+                <option value="">{t.chooseGov}</option>
                 {GOVERNORATES.map((g) => (
                   <option
                     key={g}
@@ -298,8 +295,7 @@ export default function ReturnTripPage() {
             form.dropoff_governorate &&
             form.pickup_governorate === form.dropoff_governorate && (
               <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
-                <Info className="w-3 h-3" /> Le départ et la destination doivent
-                être différents.
+                <Info className="w-3 h-3" /> {t.sameGovError}
               </p>
             )}
 
@@ -309,14 +305,14 @@ export default function ReturnTripPage() {
               type="text"
               value={form.pickup_address}
               onChange={(e) => update("pickup_address", e.target.value)}
-              placeholder="Adresse exacte départ (optionnel)"
+              placeholder={t.pickupAddr}
               className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
             />
             <input
               type="text"
               value={form.dropoff_address}
               onChange={(e) => update("dropoff_address", e.target.value)}
-              placeholder="Adresse exacte arrivée (optionnel)"
+              placeholder={t.dropoffAddr}
               className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
             />
           </div>
@@ -326,7 +322,7 @@ export default function ReturnTripPage() {
         <div className="p-6 border-b border-neutral-100">
           <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-purple-500" />
-            Quand ?
+            {t.sectionWhen}
           </h3>
           <input
             type="datetime-local"
@@ -336,7 +332,7 @@ export default function ReturnTripPage() {
             className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all"
           />
           <p className="text-xs text-neutral-400 mt-1.5">
-            Indiquez quand vous comptez faire le trajet retour.
+            {t.whenHint}
           </p>
         </div>
 
@@ -344,7 +340,7 @@ export default function ReturnTripPage() {
         <div className="p-6 border-b border-neutral-100">
           <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
             <Truck className="w-4 h-4 text-purple-500" />
-            Véhicule
+            {t.sectionVehicle}
           </h3>
 
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
@@ -376,32 +372,32 @@ export default function ReturnTripPage() {
         <div className="p-6 border-b border-neutral-100">
           <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
             <Package className="w-4 h-4 text-purple-500" />
-            Capacité & Prix
+            {t.sectionCapacity}
           </h3>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-medium text-neutral-500 mb-1.5">
-                Capacité disponible
+                {t.capacityLabel}
               </label>
               <input
                 type="text"
                 value={form.available_capacity}
                 onChange={(e) => update("available_capacity", e.target.value)}
-                placeholder="Ex: 2 tonnes, 8m³ libre"
+                placeholder={t.capacityPlaceholder}
                 className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-neutral-500 mb-1.5 flex items-center gap-1">
                 <Banknote className="w-3.5 h-3.5" />
-                Prix indicatif (TND)
+                {t.priceLabel}
               </label>
               <input
                 type="number"
                 value={form.price_tnd_min}
                 onChange={(e) => update("price_tnd_min", e.target.value)}
-                placeholder="Optionnel — Ex: 150"
+                placeholder={t.pricePlaceholder}
                 className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
               />
             </div>
@@ -412,13 +408,13 @@ export default function ReturnTripPage() {
         <div className="p-6">
           <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
             <Info className="w-4 h-4 text-purple-500" />
-            Note (optionnel)
+            {t.sectionNote}
           </h3>
           <textarea
             value={form.description}
             onChange={(e) => update("description", e.target.value)}
             rows={2}
-            placeholder="Ex: Disponible pour chargement à partir de 14h, passage par Kairouan possible..."
+            placeholder={t.notePlaceholder}
             className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none resize-none"
           />
         </div>
@@ -430,7 +426,7 @@ export default function ReturnTripPage() {
           href="/jobs"
           className="text-sm text-neutral-400 hover:text-neutral-600 transition-colors"
         >
-          Annuler
+          {t.btnCancel}
         </Link>
 
         <button
@@ -441,12 +437,12 @@ export default function ReturnTripPage() {
           {submitting ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Publication...
+              {t.btnPublishing}
             </>
           ) : (
             <>
               <Send className="w-4 h-4" />
-              Publier le trajet retour
+              {t.btnPublish}
             </>
           )}
         </button>

@@ -1,5 +1,6 @@
 import React from "react";
 import Link from "next/link";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import {
   Clock,
   CheckCircle,
@@ -113,6 +114,9 @@ export function OfferStatusCard({
   onWithdraw,
   isWithdrawing,
 }: OfferStatusCardProps) {
+  const { locale } = useAppI18n();
+  const dateLocale = locale === "ar" ? "ar-TN" : "fr-TN";
+
   const config = STATUS_CONFIG[offer.status];
   const StatusIcon = config.icon;
   const typeConfig =
@@ -179,7 +183,7 @@ export function OfferStatusCard({
           <div className="flex items-center gap-3 text-xs text-neutral-400">
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
-              {new Date(offer.job_date).toLocaleDateString("fr-TN", {
+              {new Date(offer.job_date).toLocaleDateString(dateLocale, {
                 day: "numeric",
                 month: "short",
                 year: "numeric",
