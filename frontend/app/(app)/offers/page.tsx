@@ -21,19 +21,6 @@ import {
   Undo2,
   Search,
   ArrowRight,
-import {
-  FileText,
-  Clock,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-  TrendingUp,
-  DollarSign,
-  Loader2,
-  RefreshCw,
-  Undo2,
-  Search,
-  ArrowRight,
   Wallet,
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
@@ -374,15 +361,15 @@ export default function MyOffersPage() {
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
       {/* FIX #1: Premium Confirm Modal */}
       <ConfirmModal
-        isOpen={!!withdrawTarget}
-        onClose={() => setWithdrawTarget(null)}
+        open={!!withdrawTarget}
+        onCancel={() => setWithdrawTarget(null)}
         onConfirm={handleWithdrawConfirm}
         title={t.offers.confirmWithdrawTitle}
-        description={t.offers.confirmWithdrawDesc}
-        confirmText={t.offers.actionWithdraw}
-        cancelText={t.common.cancel}
-        type="danger"
-        isLoading={withdrawing}
+        message={t.offers.confirmWithdrawDesc}
+        confirmLabel={t.offers.actionWithdraw}
+        cancelLabel={t.common.cancel}
+        confirmColor="red"
+        loading={withdrawing}
       />
 
       {/* Header */}

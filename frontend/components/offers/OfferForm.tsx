@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import { Send, CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
-import { apiClient, ApiError } from "@/lib/api/client";
 
 interface OfferFormProps {
   jobId: number;
