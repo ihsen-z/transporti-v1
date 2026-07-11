@@ -2,11 +2,7 @@
 // Production — Real API only
 
 import { apiClient } from '@/lib/api/client';
-import {
-    type DashboardStats,
-    type UserProfile,
-} from '@/lib/dashboard';
-import type { ServiceResult } from './types';
+import type { DashboardStats, UserProfile, ServiceResult } from './types';
 
 export async function getDashboardStats(): Promise<ServiceResult<DashboardStats>> {
     const data = await apiClient.get<DashboardStats>('/api/auth/profile/');

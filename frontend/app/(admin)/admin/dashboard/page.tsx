@@ -29,8 +29,8 @@ import {
   formatTimeAgoShort,
   getActivityIcon,
   getAlertSeverityColor,
-  type AdminJob,
-} from "@/lib/admin";
+} from "@/lib/format";
+import { type AdminJob } from "@/lib/services/types";
 import {
   useAdminStats,
   useAdminJobs,
@@ -44,7 +44,7 @@ import {
   DashboardSettingsButton,
   useDashboardConfig,
 } from "@/components/admin/DashboardConfig";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Inner Dashboard (needs context)                                           */

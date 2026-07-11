@@ -13,8 +13,8 @@ import {
   formatDate,
   formatTimeAgoShort,
   formatCurrency,
-  type AdminUser,
-} from "@/lib/admin";
+} from "@/lib/format";
+import { type AdminUser } from "@/lib/services/types";
 import {
   suspendUser,
   activateUser,
@@ -43,7 +43,7 @@ import {
   MinusSquare,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 type RoleFilter = "ALL" | "CLIENT" | "TRANSPORTER";
 

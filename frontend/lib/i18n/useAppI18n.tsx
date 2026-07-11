@@ -1,7 +1,12 @@
 "use client";
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { appTranslations, type AppLocale, type AppTranslationKeys } from "./app-translations";
+import { fr, type AppLocale } from "./locales/fr";
+
+export type { AppLocale };
+// Union of both dictionaries (the `ar` import is type-only — erased at build
+// time, so it does not defeat the code-splitting of the Arabic chunk).
+export type AppTranslationKeys = typeof fr | typeof import("./locales/ar").ar;
 
 /* -------------------------------------------------------------------------- */
 /*  Context                                                                    */
@@ -18,7 +23,7 @@ interface AppI18nContextType {
 
 const AppI18nContext = createContext<AppI18nContextType>({
   locale: "fr",
-  t: appTranslations.fr,
+  t: fr,
   setLocale: () => {},
   toggleLocale: () => {},
   dir: "ltr",
@@ -27,6 +32,16 @@ const AppI18nContext = createContext<AppI18nContextType>({
 
 export function useAppI18n() {
   return useContext(AppI18nContext);
+}
+
+/**
+ * Compatibility shim for the admin section (ex-`useI18n` from lib/i18n/index).
+ * Returns the same locale controls but scopes `t` to the `admin` namespace,
+ * so admin components keep using `t.sidebar.*`, `t.header.*`, `t.langLabel`, etc.
+ */
+export function useI18n() {
+  const ctx = useContext(AppI18nContext);
+  return { ...ctx, t: (ctx.t as typeof fr).admin };
 }
 
 /* -------------------------------------------------------------------------- */
@@ -38,6 +53,9 @@ const APP_LOCALE_KEY = "transporti-app-locale";
 export function AppI18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<AppLocale>("fr");
   const [loaded, setLoaded] = useState(false);
+  // `fr` is bundled statically (default language). `ar` is code-split and
+  // loaded on demand, so French users never download the Arabic dictionary.
+  const [dict, setDict] = useState<AppTranslationKeys>(fr);
 
   // Load preference from localStorage
   useEffect(() => {
@@ -50,13 +68,25 @@ export function AppI18nProvider({ children }: { children: React.ReactNode }) {
     setLoaded(true);
   }, []);
 
-  // Apply dir attribute to html element when locale changes
+  // Load the active dictionary (dynamic import for `ar`)
+  useEffect(() => {
+    let active = true;
+    if (locale === "ar") {
+      import("./locales/ar").then((m) => {
+        if (active) setDict(m.ar);
+      });
+    } else {
+      setDict(fr);
+    }
+    return () => { active = false; };
+  }, [locale]);
+
+  // Apply dir attribute to html element when the dictionary changes
   useEffect(() => {
     if (!loaded) return;
-    const dir = appTranslations[locale].dir;
-    document.documentElement.setAttribute("dir", dir);
+    document.documentElement.setAttribute("dir", dict.dir);
     document.documentElement.setAttribute("lang", locale);
-  }, [locale, loaded]);
+  }, [locale, loaded, dict]);
 
   const setLocale = useCallback((newLocale: AppLocale) => {
     setLocaleState(newLocale);
@@ -66,18 +96,20 @@ export function AppI18nProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const toggleLocale = useCallback(() => {
-    const next = locale === "fr" ? "ar" : "fr";
-    setLocale(next);
-  }, [locale, setLocale]);
+    setLocaleState((prev) => {
+      const next = prev === "fr" ? "ar" : "fr";
+      try { localStorage.setItem(APP_LOCALE_KEY, next); } catch { /* ignore */ }
+      return next;
+    });
+  }, []);
 
-  const t = appTranslations[locale] as AppTranslationKeys;
-  const dir = t.dir as "ltr" | "rtl";
+  const dir = dict.dir as "ltr" | "rtl";
   const isRTL = dir === "rtl";
 
   if (!loaded) return null;
 
   return (
-    <AppI18nContext.Provider value={{ locale, t, setLocale, toggleLocale, dir, isRTL }}>
+    <AppI18nContext.Provider value={{ locale, t: dict, setLocale, toggleLocale, dir, isRTL }}>
       {children}
     </AppI18nContext.Provider>
   );

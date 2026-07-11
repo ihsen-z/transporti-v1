@@ -9,7 +9,7 @@ import React, {
   useRef,
   type ReactNode,
 } from "react";
-import type { Notification } from "@/lib/notifications";
+import type { Notification } from "@/lib/services/types";
 import {
   getNotifications,
   markNotificationAsRead,

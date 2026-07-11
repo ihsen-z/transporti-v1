@@ -88,6 +88,11 @@ interface AuthContextType {
   registerWithCredentials: (
     payload: RegisterPayload,
   ) => Promise<{ success: boolean; error?: string }>;
+  /** Social login — exchanges provider token for Transporti JWT */
+  loginWithSocialToken: (
+    provider: "google" | "facebook",
+    accessToken: string,
+  ) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   logout: () => void;
   switchRole: (role: Exclude<UserRole, "guest">) => void;
   /** Update local user data (after profile update) */
@@ -276,6 +281,47 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [],
   );
 
+  /** Social login — exchange provider token for Transporti JWT */
+  const loginWithSocialToken = useCallback(
+    async (
+      provider: "google" | "facebook",
+      accessToken: string,
+    ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
+      setIsLoading(true);
+      try {
+        const data = await apiClient.post<AuthApiResponse>(
+          `/api/auth/social/${provider}/`,
+          { access_token: accessToken },
+          { skipAuth: true },
+        );
+
+        // Store JWT tokens
+        storeTokens(data.tokens);
+
+        // Map to frontend user shape
+        const authUser = toAuthUser(data.user);
+        setUser(authUser);
+        setRole(authUser.role);
+        localStorage.setItem(STORAGE_KEY, authUser.role);
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify(authUser));
+
+        return { success: true, role: authUser.role };
+      } catch (err) {
+        if (err instanceof ApiError && err.body) {
+          const messages = Object.values(err.body).flat();
+          return {
+            success: false,
+            error: String(messages[0] || "Social login failed."),
+          };
+        }
+        return { success: false, error: "Network error. Please try again." };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
   const logout = useCallback(() => {
     setUser(null);
     setRole("guest");
@@ -309,6 +355,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     login,
     loginWithCredentials,
     registerWithCredentials,
+    loginWithSocialToken,
     logout,
     switchRole,
     updateUser,

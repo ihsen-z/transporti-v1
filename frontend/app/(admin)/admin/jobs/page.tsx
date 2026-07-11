@@ -20,10 +20,11 @@ import {
 import DataTable from "@/components/admin/DataTable";
 import Pagination from "@/components/admin/Pagination";
 import { JobStatusBadge } from "@/components/admin/StatusBadge";
-import { formatCurrency, formatDate, type AdminJob } from "@/lib/admin";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { type AdminJob } from "@/lib/services/types";
 import { cancelJob, forceJobStatus } from "@/lib/services/admin";
 import { apiClient } from "@/lib/api/client";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 type StatusFilter =
   | "ALL"

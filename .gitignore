@@ -32,6 +32,7 @@ db.sqlite3
 *.pot
 *.pyc
 media/
+backend/uploads/
 
 # Logs directory (keep .gitkeep)
 backend/logs/*
@@ -40,6 +41,7 @@ backend/logs/*
 # IDE
 .idea/
 .vscode/
+.claude/
 *.swp
 *.swo
 *~

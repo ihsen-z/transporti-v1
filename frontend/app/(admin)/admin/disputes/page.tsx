@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import DataTable from "@/components/admin/DataTable";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { formatTimeAgoShort, formatCurrency } from "@/lib/admin";
+import { formatTimeAgoShort, formatCurrency } from "@/lib/format";
 import { useAdminDisputes } from "@/hooks/useAdminData";
 import {
   investigateDispute,
@@ -26,7 +26,7 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Status Config                                                              */

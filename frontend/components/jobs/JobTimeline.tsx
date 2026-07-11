@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, Clock, Package, Truck, MapPin } from "lucide-react";
-import type { Job } from "@/lib/dashboard";
+import type { Job } from "@/lib/services/types";
 
 interface JobTimelineProps {
   status: Job["status"];

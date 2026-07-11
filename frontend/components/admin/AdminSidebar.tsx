@@ -19,7 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { AdminSidebarLogo } from "../brand/TransportiLogo";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 export default function AdminSidebar() {
   const pathname = usePathname();

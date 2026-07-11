@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useToast } from "@/components/ui/Toast";
 import DataTable from "@/components/admin/DataTable";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { formatTimeAgoShort } from "@/lib/admin";
+import { formatTimeAgoShort } from "@/lib/format";
 import { useAdminReviews } from "@/hooks/useAdminData";
 import {
   toggleReviewVisibility,
@@ -21,7 +21,7 @@ import {
   User,
   MessageSquare,
 } from "lucide-react";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Config                                                                     */

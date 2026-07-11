@@ -495,6 +495,19 @@ MOBILE_APP_SCHEME = os.environ.get('MOBILE_APP_SCHEME', 'transporti')
 MOBILE_DEEP_LINK_ENABLED = os.environ.get('MOBILE_DEEP_LINK_ENABLED', 'false').lower() in ('true', '1', 'yes')
 
 # =============================================================================
+# SOCIAL AUTH (Google & Facebook OAuth)
+# =============================================================================
+
+# Google OAuth 2.0 — Client ID from Google Cloud Console
+# https://console.cloud.google.com/apis/credentials
+GOOGLE_CLIENT_ID = os.environ.get('GOOGLE_CLIENT_ID', '')
+
+# Facebook Login — App credentials from Facebook Developers
+# https://developers.facebook.com/apps/
+FACEBOOK_APP_ID = os.environ.get('FACEBOOK_APP_ID', '')
+FACEBOOK_APP_SECRET = os.environ.get('FACEBOOK_APP_SECRET', '')
+
+# =============================================================================
 # EMAIL CONFIGURATION
 # =============================================================================
 

@@ -22,9 +22,10 @@ import DataTable from "@/components/admin/DataTable";
 import Pagination from "@/components/admin/Pagination";
 import { PaymentStatusBadge } from "@/components/admin/StatusBadge";
 import { useAdminPayments, useAdminStats } from "@/hooks/useAdminData";
-import { formatCurrency, formatDate, type AdminPayment } from "@/lib/admin";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { type AdminPayment } from "@/lib/services/types";
 import { releaseEscrow, refundEscrow } from "@/lib/services/admin";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 type PaymentStatusFilter = "ALL" | "HELD" | "RELEASED" | "REFUNDED" | "BLOCKED" | "PENDING";
 

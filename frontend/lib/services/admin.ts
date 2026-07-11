@@ -9,7 +9,7 @@ import {
     type AdminPayment,
     type ActivityLog,
     type SystemAlert,
-} from '@/lib/admin';
+} from './types';
 
 interface ServiceResult<T> {
     data: T;

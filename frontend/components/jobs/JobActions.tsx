@@ -12,7 +12,7 @@ import {
   Check,
   X,
 } from "lucide-react";
-import type { Job } from "@/lib/dashboard";
+import type { Job } from "@/lib/services/types";
 import { apiClient } from "@/lib/api/client";
 
 type JobStatus = Job["status"];

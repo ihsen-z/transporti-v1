@@ -2,8 +2,7 @@
 // Production — Real API only
 
 import { apiClient } from '@/lib/api/client';
-import { type Notification } from '@/lib/notifications';
-import type { ServiceResult, PaginatedResponse } from './types';
+import type { Notification, ServiceResult, PaginatedResponse } from './types';
 
 export async function getNotifications(): Promise<ServiceResult<Notification[]>> {
     const response = await apiClient.get<PaginatedResponse<Notification>>('/api/notifications/my/');

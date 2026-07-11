@@ -5,7 +5,7 @@ import { useToast } from "@/components/ui/Toast";
 import DataTable from "@/components/admin/DataTable";
 import StatusBadge from "@/components/admin/StatusBadge";
 import DocumentReviewDrawer from "@/components/admin/DocumentReviewDrawer";
-import { formatTimeAgoShort } from "@/lib/admin";
+import { formatTimeAgoShort } from "@/lib/format";
 import { useAdminVerifications, useAdminProfiles } from "@/hooks/useAdminData";
 import {
   approveVerification,

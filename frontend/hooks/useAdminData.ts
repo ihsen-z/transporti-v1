@@ -27,7 +27,7 @@ import {
   type AdminPayment,
   type ActivityLog,
   type SystemAlert,
-} from "@/lib/admin";
+} from "@/lib/services/types";
 
 const emptyStats: AdminStats = {
   totalUsers: 0,

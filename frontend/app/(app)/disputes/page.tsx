@@ -22,6 +22,9 @@ import {
   FileText,
   MessageCircle,
 } from "lucide-react";
+import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
+
+type DisputesT = AppTranslationKeys["disputes"];
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -62,52 +65,56 @@ interface UserJob {
 /*  Status helpers                                                            */
 /* -------------------------------------------------------------------------- */
 
-const statusConfig: Record<
-  string,
-  { label: string; color: string; bgColor: string; icon: React.ElementType }
-> = {
-  OPEN: {
-    label: "Ouvert",
-    color: "text-amber-700",
-    bgColor: "bg-amber-50 border-amber-200",
-    icon: Clock,
-  },
-  INVESTIGATING: {
-    label: "En investigation",
-    color: "text-blue-700",
-    bgColor: "bg-blue-50 border-blue-200",
-    icon: SearchIcon,
-  },
-  RESOLVED: {
-    label: "Résolu",
-    color: "text-emerald-700",
-    bgColor: "bg-emerald-50 border-emerald-200",
-    icon: CheckCircle,
-  },
-  REJECTED: {
-    label: "Rejeté",
-    color: "text-red-700",
-    bgColor: "bg-red-50 border-red-200",
-    icon: XCircle,
-  },
-};
+function getStatusConfig(
+  t: DisputesT
+): Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> {
+  return {
+    OPEN: {
+      label: t.statusOpen,
+      color: "text-amber-700",
+      bgColor: "bg-amber-50 border-amber-200",
+      icon: Clock,
+    },
+    INVESTIGATING: {
+      label: t.statusInvestigating,
+      color: "text-blue-700",
+      bgColor: "bg-blue-50 border-blue-200",
+      icon: SearchIcon,
+    },
+    RESOLVED: {
+      label: t.statusResolved,
+      color: "text-emerald-700",
+      bgColor: "bg-emerald-50 border-emerald-200",
+      icon: CheckCircle,
+    },
+    REJECTED: {
+      label: t.statusRejected,
+      color: "text-red-700",
+      bgColor: "bg-red-50 border-red-200",
+      icon: XCircle,
+    },
+  };
+}
 
-// ✅ Aligned with backend Dispute.Reason choices
-const reasonLabels: Record<string, string> = {
-  DAMAGED_ITEMS: "Marchandise endommagée",
-  LATE_DELIVERY: "Retard de livraison",
-  NO_SHOW: "Transporteur absent",
-  PAYMENT_ISSUE: "Problème de paiement",
-  HARASSMENT: "Harcèlement",
-  FRAUD: "Fraude suspectée",
-  OTHER: "Autre",
-};
+function getReasonLabels(t: DisputesT): Record<string, string> {
+  return {
+    DAMAGED_ITEMS: t.reasonDamaged,
+    LATE_DELIVERY: t.reasonLate,
+    NO_SHOW: t.reasonNoShow,
+    PAYMENT_ISSUE: t.reasonPayment,
+    HARASSMENT: t.reasonHarassment,
+    FRAUD: t.reasonFraud,
+    OTHER: t.reasonOther,
+  };
+}
 
-const jobTypeLabels: Record<string, string> = {
-  TRANSPORT: "Transport",
-  MOVING: "Déménagement",
-  DELIVERY: "Livraison",
-};
+function getJobTypeLabels(t: DisputesT): Record<string, string> {
+  return {
+    TRANSPORT: t.jobTypeTransport,
+    MOVING: t.jobTypeMoving,
+    DELIVERY: t.jobTypeDelivery,
+  };
+}
 
 /* -------------------------------------------------------------------------- */
 /*  Create Dispute Modal — Premium + Connected                                */
@@ -122,6 +129,8 @@ function CreateDisputeModal({
   onCreated: () => void;
   userRole: string;
 }) {
+  const { t: allT } = useAppI18n();
+  const t = allT.disputes;
   const { showToast } = useToast();
   const [selectedJobId, setSelectedJobId] = useState("");
   const [reason, setReason] = useState("");
@@ -173,7 +182,7 @@ function CreateDisputeModal({
         reason,
         description: description.trim(),
       });
-      showToast("success", "Litige créé avec succès !");
+      showToast("success", t.disputeCreated);
       onCreated();
       onClose();
     } catch (err) {
@@ -182,17 +191,14 @@ function CreateDisputeModal({
         const msg = String(msgs[0] || "");
         // ✅ P2-06: Translate common backend errors
         if (msg.includes("already has an active dispute")) {
-          showToast("error", "Ce job a déjà un litige actif en cours.");
+          showToast("error", t.alreadyHasDispute);
         } else if (msg.includes("not a participant")) {
-          showToast(
-            "error",
-            "Vous ne pouvez signaler que les missions auxquelles vous participez.",
-          );
+          showToast("error", t.notParticipant);
         } else {
-          showToast("error", msg || "Erreur lors de la création.");
+          showToast("error", msg || t.createError);
         }
       } else {
-        showToast("error", "Erreur réseau. Veuillez réessayer.");
+        showToast("error", t.networkError);
       }
     } finally {
       setSubmitting(false);
@@ -209,9 +215,9 @@ function CreateDisputeModal({
               <Scale className="w-5 h-5" />
             </div>
             <div>
-              <h2 className="text-lg font-bold">Ouvrir un litige</h2>
+              <h2 className="text-lg font-bold">{t.openDisputeTitle}</h2>
               <p className="text-white/70 text-xs">
-                Sélectionnez la mission concernée
+                {t.openDisputeSubtitle}
               </p>
             </div>
           </div>
@@ -228,19 +234,18 @@ function CreateDisputeModal({
           {/* ✅ P0-03: Dropdown with user's own jobs */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Mission concernée
+              {t.mission}
             </label>
             {loadingJobs ? (
               <div className="flex items-center gap-2 p-3 bg-neutral-50 rounded-xl text-sm text-neutral-500">
                 <Loader2 className="w-4 h-4 animate-spin" />
-                Chargement de vos missions...
+                {t.loadingMissions}
               </div>
             ) : userJobs.length === 0 ? (
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
-                <p className="font-medium">Aucune mission éligible</p>
+                <p className="font-medium">{t.noEligibleMissions}</p>
                 <p className="text-xs mt-1">
-                  Seules les missions en cours ou terminées peuvent faire
-                  l'objet d'un litige.
+                  {t.noEligibleMissionsDesc}
                 </p>
               </div>
             ) : (
@@ -250,10 +255,10 @@ function CreateDisputeModal({
                 className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-600 outline-none bg-white"
                 required
               >
-                <option value="">— Sélectionner une mission —</option>
+                <option value="">{t.selectMission}</option>
                 {userJobs.map((job) => (
                   <option key={job.id} value={job.id}>
-                    #{job.id} · {jobTypeLabels[job.job_type] || job.job_type} ·{" "}
+                    #{job.id} · {getJobTypeLabels(t)[job.job_type] || job.job_type} ·{" "}
                     {job.pickup_governorate ||
                       job.pickup_address?.split(",")[0]}{" "}
                     →{" "}
@@ -286,7 +291,7 @@ function CreateDisputeModal({
           {/* ✅ P0-02: Reason codes aligned with backend */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Motif du litige
+              {t.reason}
             </label>
             <select
               value={reason}
@@ -294,8 +299,8 @@ function CreateDisputeModal({
               className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-600 outline-none bg-white"
               required
             >
-              <option value="">— Sélectionner un motif —</option>
-              {Object.entries(reasonLabels).map(([key, label]) => (
+              <option value="">{t.selectReason}</option>
+              {Object.entries(getReasonLabels(t)).map(([key, label]) => (
                 <option key={key} value={key}>
                   {label}
                 </option>
@@ -306,13 +311,13 @@ function CreateDisputeModal({
           {/* ✅ P2-03: Character counter */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5">
-              Description détaillée
+              {t.detailedDesc}
             </label>
             <textarea
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={4}
-              placeholder="Décrivez le problème rencontré en détail (minimum 20 caractères)..."
+              placeholder={t.descPlaceholder}
               className={`w-full p-3 border rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-600 outline-none resize-none ${
                 descriptionLength > 0 && !isDescriptionValid
                   ? "border-red-300 bg-red-50/30"
@@ -329,8 +334,8 @@ function CreateDisputeModal({
                 }`}
               >
                 {descriptionLength > 0 && !isDescriptionValid
-                  ? `${20 - descriptionLength} caractères restants`
-                  : "Minimum 20 caractères"}
+                  ? `${20 - descriptionLength} ${t.remainingChars}`
+                  : t.minChars}
               </span>
               <span className="text-xs text-neutral-400">
                 {descriptionLength}/2000
@@ -344,7 +349,7 @@ function CreateDisputeModal({
               onClick={onClose}
               className="flex-1 py-3 px-4 border border-neutral-300 rounded-xl text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
             >
-              Annuler
+              {t.cancel}
             </button>
             <button
               type="submit"
@@ -358,7 +363,7 @@ function CreateDisputeModal({
               ) : (
                 <Plus className="w-4 h-4" />
               )}
-              {submitting ? "Envoi..." : "Créer le litige"}
+              {submitting ? t.creating : t.createDispute}
             </button>
           </div>
         </form>
@@ -373,6 +378,10 @@ function CreateDisputeModal({
 
 export default function DisputesPage() {
   const { user } = useAuth();
+  const { t: allT } = useAppI18n();
+  const t = allT.disputes;
+  const statusConfig = getStatusConfig(t);
+  const reasonLabels = getReasonLabels(t);
   const [disputes, setDisputes] = useState<Dispute[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -409,25 +418,25 @@ export default function DisputesPage() {
 
   // ✅ P1-03: Added REJECTED tab
   const tabs = [
-    { id: "ALL", label: "Tous", count: disputes.length },
+    { id: "ALL", label: t.all, count: disputes.length },
     {
       id: "OPEN",
-      label: "Ouverts",
+      label: t.open,
       count: disputes.filter((d) => d.status === "OPEN").length,
     },
     {
       id: "INVESTIGATING",
-      label: "En cours",
+      label: t.inProgress,
       count: disputes.filter((d) => d.status === "INVESTIGATING").length,
     },
     {
       id: "RESOLVED",
-      label: "Résolus",
+      label: t.resolved,
       count: disputes.filter((d) => d.status === "RESOLVED").length,
     },
     {
       id: "REJECTED",
-      label: "Rejetés",
+      label: t.rejected,
       count: disputes.filter((d) => d.status === "REJECTED").length,
     },
   ];
@@ -437,9 +446,9 @@ export default function DisputesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">Mes Litiges</h1>
+          <h1 className="text-2xl font-bold text-neutral-900">{t.pageTitle}</h1>
           <p className="text-neutral-500 mt-1 text-sm">
-            Suivez et gérez vos réclamations et litiges.
+            {t.pageSubtitle}
           </p>
         </div>
         <button
@@ -447,7 +456,7 @@ export default function DisputesPage() {
           className="flex items-center gap-2 px-5 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-all hover:shadow-lg hover:shadow-brand-600/20 hover:scale-[1.02]"
         >
           <Plus className="w-5 h-5" />
-          Nouveau litige
+          {t.newDispute}
         </button>
       </div>
 
@@ -496,20 +505,20 @@ export default function DisputesPage() {
           </div>
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">
             {statusFilter === "ALL"
-              ? "Aucun litige"
-              : "Aucun litige dans cette catégorie"}
+              ? t.noDisputes
+              : t.noDisputesInCategory}
           </h3>
           <p className="text-neutral-500 text-sm mb-6">
             {statusFilter === "ALL"
-              ? "Vous n'avez pas encore de litiges. Espérons que ça reste ainsi !"
-              : "Essayez de changer le filtre."}
+              ? t.noDisputesDesc
+              : t.tryChangeFilter}
           </p>
           {statusFilter === "ALL" && (
             <button
               onClick={() => setShowModal(true)}
               className="text-sm text-brand-600 font-medium hover:text-brand-700"
             >
-              Ouvrir un litige →
+              {t.openDisputeLink}
             </button>
           )}
         </div>
@@ -549,7 +558,7 @@ export default function DisputesPage() {
                           href={`/jobs/${dispute.job}`}
                           className="text-xs text-brand-600 hover:text-brand-700 font-medium hover:underline"
                         >
-                          Mission #{dispute.job}
+                          {t.missionLabel} #{dispute.job}
                         </Link>
                         <span className="text-xs text-neutral-300">·</span>
                         {dispute.job_summary?.pickup &&
@@ -586,8 +595,8 @@ export default function DisputesPage() {
                             }`}
                           >
                             {dispute.status === "RESOLVED"
-                              ? "✅ Résolution :"
-                              : "❌ Motif du rejet :"}
+                              ? "✅ " + t.resolution
+                              : "❌ " + t.rejectionReason}
                           </p>
                           <p
                             className={`text-xs ${
@@ -607,7 +616,7 @@ export default function DisputesPage() {
                   <Link
                     href={`/jobs/${dispute.job}`}
                     className="flex-shrink-0 p-2 text-neutral-300 hover:text-brand-600 hover:bg-brand-600/5 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                    title="Voir la mission"
+                    title={t.seeMission}
                   >
                     <ChevronRight className="w-5 h-5" />
                   </Link>
@@ -622,22 +631,13 @@ export default function DisputesPage() {
       <div className="mt-8 bg-brand-600/5 border border-brand-600/10 rounded-2xl p-6">
         <h3 className="font-semibold text-neutral-900 mb-2 flex items-center gap-2">
           <AlertTriangle className="w-5 h-5 text-brand-600" />
-          Comment fonctionne la résolution de litiges ?
+          {t.howItWorks}
         </h3>
         <ul className="text-sm text-neutral-600 space-y-2 ml-7">
-          <li className="list-disc">
-            Ouvrez un litige en sélectionnant la mission et le motif.
-          </li>
-          <li className="list-disc">
-            Notre équipe examine votre réclamation sous 24-48h.
-          </li>
-          <li className="list-disc">
-            Vous serez notifié dès qu&apos;une décision est prise.
-          </li>
-          <li className="list-disc">
-            En cas de résolution favorable, le remboursement est traité sous 3-5
-            jours.
-          </li>
+          <li className="list-disc">{t.how1}</li>
+          <li className="list-disc">{t.how2}</li>
+          <li className="list-disc">{t.how3}</li>
+          <li className="list-disc">{t.how4}</li>
         </ul>
       </div>
 

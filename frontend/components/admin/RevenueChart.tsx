@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { formatCurrency } from "@/lib/admin";
+import { formatCurrency } from "@/lib/format";
 
 interface RevenueChartProps {
   /** Number of days to show (7, 30, 90, 365) */

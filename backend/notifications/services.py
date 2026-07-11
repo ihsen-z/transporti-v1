@@ -313,28 +313,6 @@ def notify_dispute_resolved(dispute, resolution: str):
 
 
 # =============================================================================
-# REVIEW EVENT NOTIFICATIONS
-# =============================================================================
-
-def notify_review_received(review):
-    """Notify user they received a review."""
-    rating_stars = "⭐" * review.rating
-    
-    return _safe_notify(
-        user=review.target,
-        notification_type=NotificationType.REVIEW_RECEIVED,
-        title="⭐ Nouvel avis reçu",
-        message=f"Vous avez reçu un avis {rating_stars} sur votre profil.",
-        metadata={
-            'review_id': review.id,
-            'job_id': review.job_id,
-            'rating': review.rating,
-            'has_comment': bool(review.comment)
-        }
-    )
-
-
-# =============================================================================
 # TRUST EVENT NOTIFICATIONS
 # =============================================================================
 

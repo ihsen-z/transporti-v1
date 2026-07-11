@@ -10,7 +10,7 @@ import {
   Languages,
 } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
-import { useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 interface AdminHeaderProps {
   title?: string;

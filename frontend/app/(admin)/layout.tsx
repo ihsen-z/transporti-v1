@@ -4,7 +4,7 @@ import AdminSidebar from "@/components/admin/AdminSidebar";
 import AdminHeader from "@/components/admin/AdminHeader";
 import AuthGuard from "@/components/auth/AuthGuard";
 import { ThemeProvider } from "@/components/admin/ThemeProvider";
-import { I18nProvider, useI18n } from "@/lib/i18n";
+import { useI18n } from "@/lib/i18n/useAppI18n";
 
 function AdminLayoutInner({ children }: { children: React.ReactNode }) {
   const { isRTL } = useI18n();
@@ -33,9 +33,7 @@ export default function AdminLayout({
   return (
     <AuthGuard allowedRoles={["admin"]}>
       <ThemeProvider>
-        <I18nProvider>
-          <AdminLayoutInner>{children}</AdminLayoutInner>
-        </I18nProvider>
+        <AdminLayoutInner>{children}</AdminLayoutInner>
       </ThemeProvider>
     </AuthGuard>
   );

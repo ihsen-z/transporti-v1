@@ -22,7 +22,7 @@ import {
   PaymentStatusBadge,
 } from "@/components/admin/StatusBadge";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { formatCurrency, formatDate } from "@/lib/admin";
+import { formatCurrency, formatDate } from "@/lib/format";
 import { apiClient } from "@/lib/api/client";
 
 /* -------------------------------------------------------------------------- */

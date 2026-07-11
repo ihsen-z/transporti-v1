@@ -2,8 +2,7 @@
 // Production — Real API only
 
 import { apiClient } from '@/lib/api/client';
-import { type Job } from '@/lib/dashboard';
-import type { ServiceResult, PaginatedResponse } from './types';
+import type { Job, ServiceResult, PaginatedResponse } from './types';
 
 export type { DataSource } from './types';
 

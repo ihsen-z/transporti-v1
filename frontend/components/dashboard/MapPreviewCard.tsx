@@ -3,7 +3,7 @@
 import dynamic from "next/dynamic";
 import { Map } from "lucide-react";
 import { getCoordinates } from "@/lib/map";
-import type { Job } from "@/lib/dashboard";
+import type { Job } from "@/lib/services/types";
 
 const RouteMap = dynamic(() => import("@/components/map/RouteMap"), {
   ssr: false,

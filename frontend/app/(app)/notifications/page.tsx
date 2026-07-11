@@ -19,6 +19,9 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
+
+type NotificationsT = AppTranslationKeys["notifications"];
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -57,17 +60,20 @@ const categoryColors: Record<string, string> = {
   SYSTEM: "text-neutral-600 bg-neutral-100 border-neutral-200",
 };
 
-const categoryLabels: Record<string, string> = {
-  ALL: "Toutes",
-  PAYMENT: "Paiements",
-  TRUST: "Vérifications",
-  JOB: "Missions",
-  DISPUTE: "Litiges",
-  REVIEW: "Avis",
-  SYSTEM: "Système",
+const getCategoryLabel = (cat: string, t: NotificationsT): string => {
+  const map: Record<string, string> = {
+    ALL: t.all,
+    PAYMENT: t.catPayments,
+    TRUST: t.catVerifications,
+    JOB: t.catMissions,
+    DISPUTE: t.catDisputes,
+    REVIEW: t.catReviews,
+    SYSTEM: t.catSystem,
+  };
+  return map[cat] || cat;
 };
 
-function relativeTime(dateStr: string): string {
+function relativeTime(dateStr: string, t: NotificationsT): string {
   try {
     const d = new Date(dateStr);
     const now = new Date();
@@ -76,27 +82,27 @@ function relativeTime(dateStr: string): string {
     const diffH = Math.floor(diffMs / 3600000);
     const diffD = Math.floor(diffMs / 86400000);
 
-    if (diffMin < 1) return "À l'instant";
-    if (diffMin < 60) return `Il y a ${diffMin} min`;
-    if (diffH < 24) return `Il y a ${diffH}h`;
-    if (diffD === 1) return "Hier";
-    if (diffD < 7) return `Il y a ${diffD}j`;
+    if (diffMin < 1) return t.now;
+    if (diffMin < 60) return `Il y a ${diffMin} ${t.minutesAgo}`;
+    if (diffH < 24) return `Il y a ${diffH}${t.hourAgo}`;
+    if (diffD === 1) return t.yesterday;
+    if (diffD < 7) return `Il y a ${diffD}${t.daysAgo}`;
     return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   } catch {
     return "";
   }
 }
 
-function getDateGroup(dateStr: string): string {
+function getDateGroup(dateStr: string, t: NotificationsT): string {
   const d = new Date(dateStr);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const yesterday = new Date(today.getTime() - 86400000);
   const notifDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
 
-  if (notifDay.getTime() === today.getTime()) return "Aujourd'hui";
-  if (notifDay.getTime() === yesterday.getTime()) return "Hier";
-  if (now.getTime() - notifDay.getTime() < 7 * 86400000) return "Cette semaine";
+  if (notifDay.getTime() === today.getTime()) return t.today;
+  if (notifDay.getTime() === yesterday.getTime()) return t.yesterday;
+  if (now.getTime() - notifDay.getTime() < 7 * 86400000) return t.thisWeek;
   return d.toLocaleDateString("fr-FR", {
     day: "numeric",
     month: "long",
@@ -107,6 +113,7 @@ function getDateGroup(dateStr: string): string {
 /** Build an action link from notification metadata */
 function getActionLink(
   notification: Notification,
+  t: NotificationsT,
 ): { href: string; label: string } | null {
   const m = notification.metadata;
   if (!m) return null;
@@ -117,24 +124,24 @@ function getActionLink(
       notification.category === "JOB" ||
       notification.category === "PAYMENT"
     ) {
-      return { href: `/jobs/${m.job_id}`, label: "Voir la mission" };
+      return { href: `/jobs/${m.job_id}`, label: t.actionSeeMission };
     }
     if (notification.category === "DISPUTE") {
-      return { href: `/jobs/${m.job_id}`, label: "Voir le litige" };
+      return { href: `/jobs/${m.job_id}`, label: t.actionSeeDispute };
     }
-    return { href: `/jobs/${m.job_id}`, label: "Voir les détails" };
+    return { href: `/jobs/${m.job_id}`, label: t.actionSeeDetails };
   }
   if (notification.category === "REVIEW" && m.review_id) {
     const targetId = m.target_id || "";
     return {
       href: targetId ? `/profile/${targetId}` : "/profile",
-      label: "Voir le profil",
+      label: t.actionSeeProfile,
     };
   }
   if (m.dispute_id) {
     return {
       href: `/disputes`,
-      label: "Voir les litiges",
+      label: t.actionSeeDisputes,
     };
   }
   return null;
@@ -152,6 +159,8 @@ const POLL_INTERVAL_MS = 30_000;
 
 export default function NotificationsPage() {
   const { isAuthenticated, user } = useAuth();
+  const { t: allT } = useAppI18n();
+  const t = allT.notifications;
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -176,7 +185,7 @@ export default function NotificationsPage() {
       const message =
         err instanceof Error
           ? err.message
-          : "Erreur lors du chargement des notifications.";
+          : t.loading;
       if (!silent) setError(message);
     } finally {
       setLoading(false);
@@ -251,7 +260,7 @@ export default function NotificationsPage() {
   const groupedNotifications: { label: string; items: Notification[] }[] = [];
   let lastGroup = "";
   filteredNotifications.forEach((n) => {
-    const group = getDateGroup(n.created_at);
+    const group = getDateGroup(n.created_at, t);
     if (group !== lastGroup) {
       groupedNotifications.push({ label: group, items: [n] });
       lastGroup = group;
@@ -282,16 +291,16 @@ export default function NotificationsPage() {
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-              Notifications
+              {t.pageTitle}
             </h1>
             <p className="text-neutral-600">
-              Restez informé de toutes vos activités sur Transporti
+              {t.pageSubtitle}
             </p>
           </div>
           <button
             onClick={() => fetchNotifications()}
             className="p-2 text-neutral-500 hover:text-brand-600 hover:bg-neutral-100 rounded-lg transition-colors"
-            title="Rafraîchir"
+            title={t.refresh}
           >
             <RefreshCw className={`w-5 h-5 ${loading ? "animate-spin" : ""}`} />
           </button>
@@ -312,7 +321,7 @@ export default function NotificationsPage() {
                     : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
                 }`}
               >
-                Toutes ({notifications.length})
+                {t.all} ({notifications.length})
               </button>
               <button
                 onClick={() => setFilter("unread")}
@@ -322,7 +331,7 @@ export default function NotificationsPage() {
                     : "bg-neutral-100 text-neutral-700 hover:bg-neutral-200"
                 }`}
               >
-                Non lues ({unreadCount})
+                {t.unread} ({unreadCount})
               </button>
             </div>
 
@@ -334,7 +343,7 @@ export default function NotificationsPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Rechercher..."
+                  placeholder={t.search}
                   className="pl-9 pr-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 w-48"
                 />
               </div>
@@ -347,7 +356,7 @@ export default function NotificationsPage() {
                 >
                   <CheckCheck className="w-4 h-4" />
                   <span className="hidden sm:inline">
-                    Tout marquer comme lu
+                    {t.markAllRead}
                   </span>
                 </button>
               )}
@@ -368,7 +377,7 @@ export default function NotificationsPage() {
                       : "bg-neutral-100 text-neutral-600 hover:bg-neutral-200"
                   }`}
                 >
-                  {categoryLabels[cat] || cat} ({categoryCounts[cat] || 0})
+                  {getCategoryLabel(cat, t)} ({categoryCounts[cat] || 0})
                 </button>
               ))}
             </div>
@@ -385,7 +394,7 @@ export default function NotificationsPage() {
             onClick={() => fetchNotifications()}
             className="ml-auto text-red-600 hover:text-red-700 text-sm font-medium"
           >
-            Réessayer
+            {t.retry}
           </button>
         </div>
       )}
@@ -395,7 +404,7 @@ export default function NotificationsPage() {
         <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-12">
           <div className="flex flex-col items-center justify-center text-center">
             <Loader2 className="w-10 h-10 text-brand-600 animate-spin mb-4" />
-            <p className="text-neutral-600">Chargement des notifications...</p>
+            <p className="text-neutral-600">{t.loading}</p>
           </div>
         </div>
       )}
@@ -409,15 +418,15 @@ export default function NotificationsPage() {
             </div>
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">
               {filter === "unread"
-                ? "Aucune notification non lue"
+                ? t.noUnread
                 : categoryFilter !== "ALL"
-                  ? `Aucune notification ${categoryLabels[categoryFilter]?.toLowerCase() || ""}`
-                  : "Aucune notification"}
+                  ? `${t.noNotificationsInCategory} ${getCategoryLabel(categoryFilter, t).toLowerCase()}`
+                  : t.noNotifications}
             </h3>
             <p className="text-neutral-600 max-w-md">
               {filter === "unread"
-                ? "Vous avez lu toutes vos notifications. Bon travail ! 🎉"
-                : "Vos notifications apparaîtront ici lorsque vous recevrez des offres, des messages, ou des mises à jour."}
+                ? t.successDesc
+                : t.noNotificationsDesc}
             </p>
           </div>
         </div>
@@ -443,7 +452,7 @@ export default function NotificationsPage() {
                   const colorClasses =
                     categoryColors[notification.category] ||
                     categoryColors.SYSTEM;
-                  const actionLink = getActionLink(notification);
+                  const actionLink = getActionLink(notification, t);
 
                   return (
                     <div
@@ -481,7 +490,7 @@ export default function NotificationsPage() {
                                 )}
                               </div>
                               <span className="flex-shrink-0 text-xs text-neutral-500 pt-0.5">
-                                {relativeTime(notification.created_at)}
+                                {relativeTime(notification.created_at, t)}
                               </span>
                             </div>
 
@@ -539,7 +548,7 @@ export default function NotificationsPage() {
                                   className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-brand-600 hover:bg-neutral-100 rounded-lg transition-colors"
                                 >
                                   <Check className="w-3.5 h-3.5" />
-                                  Marquer comme lu
+                                  {t.markRead}
                                 </button>
                               )}
                             </div>

@@ -13,8 +13,8 @@ import {
   Star,
   Bell as BellIcon,
 } from "lucide-react";
-import type { Notification } from "@/lib/notifications";
-import { formatTimeAgo, getCategoryColor } from "@/lib/notifications";
+import type { Notification } from "@/lib/services/types";
+import { formatTimeAgo, getCategoryColor } from "@/lib/format";
 
 interface NotificationDropdownProps {
   notifications: Notification[];

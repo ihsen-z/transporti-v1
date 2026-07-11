@@ -5,7 +5,7 @@
 import { useCallback } from "react";
 import { useDataService } from "./useDataService";
 import { getDashboardStats, getUserProfile } from "@/lib/services/dashboard";
-import { type DashboardStats, type UserProfile } from "@/lib/dashboard";
+import { type DashboardStats, type UserProfile } from "@/lib/services/types";
 
 const emptyStats: DashboardStats = {
   totalJobs: 0,

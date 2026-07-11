@@ -5,7 +5,7 @@
 import { useCallback } from "react";
 import { useDataService } from "./useDataService";
 import { getJobs, getJobById } from "@/lib/services/jobs";
-import { type Job } from "@/lib/dashboard";
+import { type Job } from "@/lib/services/types";
 
 export function useJobs() {
   const fetcher = useCallback(() => getJobs(), []);

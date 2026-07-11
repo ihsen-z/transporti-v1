@@ -4,8 +4,8 @@ import { Truck, Package, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { getStatusColor, getStatusLabel } from "@/lib/dashboard";
-import type { Job } from "@/lib/dashboard";
+import { getStatusColor, getStatusLabel } from "@/lib/format";
+import type { Job } from "@/lib/services/types";
 
 interface JobCardProps {
   job: Job;
