@@ -3,6 +3,8 @@
 // Loading State — Skeleton placeholders
 // Sprint 7.5 — API Transition Layer
 
+import { Skeleton } from "./Skeleton";
+
 interface LoadingStateProps {
   /** Type of skeleton to render */
   variant?: "table" | "cards" | "page";
@@ -10,12 +12,10 @@ interface LoadingStateProps {
   count?: number;
 }
 
+// Réutilise ui/Skeleton (shimmer) — l'app avait deux styles de chargement
+// différents (shimmer vs pulse) selon le composant.
 function SkeletonPulse({ className }: { className?: string }) {
-  return (
-    <div
-      className={`animate-pulse bg-neutral-200 rounded ${className || ""}`}
-    />
-  );
+  return <Skeleton width="" height="" className={className || ""} />;
 }
 
 function SkeletonRow() {

@@ -40,7 +40,7 @@ export default function StatCard({
 
   if (compact) {
     return (
-      <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-100 dark:border-neutral-700 p-4 hover:shadow-md transition-all animate-fade-in">
+      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-700 p-4 hover:shadow-md transition-all animate-fade-in">
         <div className="flex items-center gap-3">
           <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
             <Icon className="w-4 h-4" />
@@ -66,7 +66,7 @@ export default function StatCard({
   }
 
   return (
-    <div className="bg-white dark:bg-[#1e293b] rounded-2xl border border-neutral-100 dark:border-neutral-700 p-6 hover:shadow-md hover:-translate-y-0.5 transition-all animate-fade-in">
+    <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 p-6 hover:shadow-md hover:-translate-y-0.5 transition-all animate-fade-in">
       <div className="flex items-start justify-between mb-4">
         <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
           <Icon className="w-6 h-6" />

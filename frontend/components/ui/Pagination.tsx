@@ -14,6 +14,8 @@ interface PaginationProps {
   pageSize: number;
   onPageChange: (page: number) => void;
   className?: string;
+  /** Masquer la ligne "Affichage de X à Y" (utilisé par l'adaptateur admin) */
+  showCount?: boolean;
 }
 
 export default function Pagination({
@@ -22,6 +24,7 @@ export default function Pagination({
   pageSize,
   onPageChange,
   className = "",
+  showCount = true,
 }: PaginationProps) {
   const totalPages = Math.ceil(totalItems / pageSize);
 
@@ -58,20 +61,30 @@ export default function Pagination({
       className={`flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 ${className}`}
     >
       {/* Item count */}
-      <p className="text-sm text-neutral-500">
-        Affichage de{" "}
-        <span className="font-medium text-neutral-700">{startItem}</span> à{" "}
-        <span className="font-medium text-neutral-700">{endItem}</span> sur{" "}
-        <span className="font-medium text-neutral-700">{totalItems}</span>{" "}
-        résultats
-      </p>
+      {showCount && (
+        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+          Affichage de{" "}
+          <span className="font-medium text-neutral-700 dark:text-neutral-200">
+            {startItem}
+          </span>{" "}
+          à{" "}
+          <span className="font-medium text-neutral-700 dark:text-neutral-200">
+            {endItem}
+          </span>{" "}
+          sur{" "}
+          <span className="font-medium text-neutral-700 dark:text-neutral-200">
+            {totalItems}
+          </span>{" "}
+          résultats
+        </p>
+      )}
 
       {/* Page buttons */}
       <div className="flex items-center gap-1">
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Page précédente"
         >
           <ChevronLeft className="w-4 h-4" />
@@ -92,7 +105,7 @@ export default function Pagination({
               className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition-colors ${
                 page === currentPage
                   ? "bg-brand-600 text-white shadow-sm"
-                  : "text-neutral-600 hover:bg-neutral-100"
+                  : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700"
               }`}
             >
               {page}
@@ -103,7 +116,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg text-neutral-500 hover:bg-neutral-100 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Page suivante"
         >
           <ChevronRight className="w-4 h-4" />
