@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { fr, type AppLocale } from "./locales/fr";
+import { setCurrentLocale } from "./currentLocale";
 
 export type { AppLocale };
 // Union of both dictionaries (the `ar` import is type-only — erased at build
@@ -50,22 +51,30 @@ export function useI18n() {
 
 const APP_LOCALE_KEY = "transporti-app-locale";
 
+// Lecture synchrone de la préférence, pour un rendu initial correct sans flash
+// (le script inline de app/layout.tsx a déjà posé lang/dir avant le paint).
+// Le dictionnaire initial reste `fr` même en `ar` : le chunk `ar` est chargé
+// en async dans l'effet ci-dessous, donc aucun rendu ne dépend de `locale`
+// seul → pas de mismatch d'hydratation.
+function readSavedLocale(): AppLocale {
+  try {
+    const saved = localStorage.getItem(APP_LOCALE_KEY);
+    return saved === "ar" ? "ar" : "fr";
+  } catch {
+    return "fr";
+  }
+}
+
 export function AppI18nProvider({ children }: { children: React.ReactNode }) {
   const [locale, setLocaleState] = useState<AppLocale>("fr");
-  const [loaded, setLoaded] = useState(false);
   // `fr` is bundled statically (default language). `ar` is code-split and
   // loaded on demand, so French users never download the Arabic dictionary.
   const [dict, setDict] = useState<AppTranslationKeys>(fr);
 
-  // Load preference from localStorage
+  // Read the persisted preference once, after mount (SSR-safe).
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(APP_LOCALE_KEY) as AppLocale | null;
-      if (saved && (saved === "fr" || saved === "ar")) {
-        setLocaleState(saved);
-      }
-    } catch { /* ignore SSR */ }
-    setLoaded(true);
+    const saved = readSavedLocale();
+    if (saved !== "fr") setLocaleState(saved);
   }, []);
 
   // Load the active dictionary (dynamic import for `ar`)
@@ -81,12 +90,12 @@ export function AppI18nProvider({ children }: { children: React.ReactNode }) {
     return () => { active = false; };
   }, [locale]);
 
-  // Apply dir attribute to html element when the dictionary changes
+  // Apply dir/lang + sync the non-React locale (lib/format.ts) on every change.
   useEffect(() => {
-    if (!loaded) return;
     document.documentElement.setAttribute("dir", dict.dir);
     document.documentElement.setAttribute("lang", locale);
-  }, [locale, loaded, dict]);
+    setCurrentLocale(locale);
+  }, [locale, dict]);
 
   const setLocale = useCallback((newLocale: AppLocale) => {
     setLocaleState(newLocale);
@@ -105,8 +114,6 @@ export function AppI18nProvider({ children }: { children: React.ReactNode }) {
 
   const dir = dict.dir as "ltr" | "rtl";
   const isRTL = dir === "rtl";
-
-  if (!loaded) return null;
 
   return (
     <AppI18nContext.Provider value={{ locale, t: dict, setLocale, toggleLocale, dir, isRTL }}>

@@ -44,13 +44,22 @@ export const metadata: Metadata = {
   },
 };
 
+// Pose lang/dir avant le premier paint selon la préférence localStorage, pour
+// éviter le flash LTR chez les utilisateurs arabophones. Le serveur rend
+// lang="fr" (langue par défaut) ; ce script corrige avant l'hydratation
+// (d'où suppressHydrationWarning sur <html>).
+const LOCALE_INIT_SCRIPT = `(function(){try{var l=localStorage.getItem("transporti-app-locale");if(l==="ar"){var d=document.documentElement;d.setAttribute("lang","ar");d.setAttribute("dir","rtl");}}catch(e){}})();`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr">
+    <html lang="fr" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: LOCALE_INIT_SCRIPT }} />
+      </head>
       <body className={`${inter.className} ${cairo.variable}`}>
         <AppI18nProvider>
           <AuthProvider>
