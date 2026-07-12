@@ -66,7 +66,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
               </div>
             </Link>
             {offer.transporter_verified && (
-              <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-white">
+              <div className="absolute -bottom-0.5 -end-0.5 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center ring-2 ring-white">
                 <ShieldCheck className="w-2.5 h-2.5 text-white" />
               </div>
             )}

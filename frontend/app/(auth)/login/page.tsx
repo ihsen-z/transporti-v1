@@ -140,7 +140,7 @@ export default function LoginPage() {
               {t.auth.emailLabel}
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
                 id="email"
                 type="email"
@@ -171,7 +171,7 @@ export default function LoginPage() {
               </Link>
             </div>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -186,7 +186,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />

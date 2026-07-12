@@ -50,7 +50,7 @@ export default function NotificationDropdown({
       <div className="fixed inset-0 z-modal-backdrop" onClick={onClose} />
 
       {/* Dropdown */}
-      <div className="absolute right-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-neutral-200 z-modal overflow-hidden">
+      <div className="absolute end-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-neutral-200 z-modal overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-200 bg-neutral-50">
           <div>

@@ -37,7 +37,7 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
     <div className="bg-white border rounded-xl p-5 hover:shadow-md transition-shadow relative overflow-hidden group">
       {/* Type Indicator Strip */}
       <div
-        className={`absolute left-0 top-0 bottom-0 w-1 ${isTransport ? "bg-brand-600" : "bg-orange-500"}`}
+        className={`absolute start-0 top-0 bottom-0 w-1 ${isTransport ? "bg-brand-600" : "bg-orange-500"}`}
       />
 
       <div className="ps-3">

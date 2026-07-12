@@ -399,7 +399,7 @@ export default function AdminJobsPage() {
       {/* Feedback Toast */}
       {feedback && (
         <div
-          className={`fixed top-6 right-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all animate-in slide-in-from-right ${
+          className={`fixed top-6 end-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all animate-in slide-in-from-right ${
             feedback.type === "success"
               ? "bg-green-50 text-green-700 border border-green-200"
               : "bg-red-50 text-red-700 border border-red-200"
@@ -512,7 +512,7 @@ export default function AdminJobsPage() {
 
             {/* Search Bar */}
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <input
                 type="text"
                 value={searchQuery}

@@ -530,7 +530,7 @@ export default function DocumentReviewDrawer({
           <div className="relative max-w-3xl max-h-[80vh]">
             <button
               onClick={() => setPreviewUrl(null)}
-              className="absolute -top-10 right-0 text-white/80 hover:text-white"
+              className="absolute -top-10 end-0 text-white/80 hover:text-white"
             >
               <X className="w-6 h-6" />
             </button>

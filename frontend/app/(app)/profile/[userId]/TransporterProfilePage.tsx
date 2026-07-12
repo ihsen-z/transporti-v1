@@ -561,7 +561,7 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
 
               {/* Verified badge */}
               {t.is_verified && (
-                <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-accent-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg z-10">
+                <div className="absolute top-4 end-4 flex items-center gap-1.5 bg-accent-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg z-10">
                   <BadgeCheck className="w-3.5 h-3.5" />
                   {t_i18n.profile.verified}
                 </div>

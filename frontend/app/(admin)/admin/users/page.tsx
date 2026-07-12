@@ -1112,7 +1112,7 @@ export default function AdminUsersPage() {
 
             {/* Search Bar (R3) */}
             <div className="relative w-full sm:w-80">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <input
                 type="text"
                 value={searchQuery}
@@ -1123,7 +1123,7 @@ export default function AdminUsersPage() {
               {searchQuery && (
                 <button
                   onClick={() => handleSearchChange("")}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-neutral-100 rounded"
+                  className="absolute end-3 top-1/2 -translate-y-1/2 p-0.5 hover:bg-neutral-100 rounded"
                 >
                   <X className="w-3.5 h-3.5 text-neutral-400" />
                 </button>

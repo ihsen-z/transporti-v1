@@ -56,7 +56,7 @@ export function TransporterProfileCard({
 
         {/* Verified badge overlay */}
         {isVerified && (
-          <div className="absolute top-4 right-4 flex items-center gap-1.5 bg-accent-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg shadow-accent-500/25">
+          <div className="absolute top-4 end-4 flex items-center gap-1.5 bg-accent-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg shadow-accent-500/25">
             <BadgeCheck className="w-3.5 h-3.5" />
             {t.profile.verified}
           </div>

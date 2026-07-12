@@ -346,7 +346,7 @@ export default function AdminReviewsPage() {
             </div>
             {/* Search */}
             <div className="relative">
-              <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+              <MessageSquare className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
               <input
                 type="text"
                 value={searchQuery}

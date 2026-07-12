@@ -445,7 +445,7 @@ export default function AdminPaymentsPage() {
         <div className="flex flex-col sm:flex-row sm:items-center gap-4 mb-4">
           {/* Search */}
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+            <Search className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
             <input
               type="text"
               placeholder={t.payments?.searchPlaceholder || "Rechercher..."}

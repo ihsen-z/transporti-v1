@@ -354,7 +354,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                 <button
                   type="button"
                   onClick={() => handleChange(hintField, "")}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-red-500"
+                  className="absolute end-2 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-red-500"
                 >
                   <X className="w-4 h-4" />
                 </button>

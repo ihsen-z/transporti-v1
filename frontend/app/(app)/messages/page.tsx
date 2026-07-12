@@ -166,7 +166,7 @@ const ConversationCard = React.memo(function ConversationCardInner({ conv }: { c
         </div>
         {/* Online indicator dot */}
         {hasUnread && (
-          <span className="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-accent-500 border-2 border-white rounded-full" />
+          <span className="absolute -bottom-0.5 -end-0.5 w-3.5 h-3.5 bg-accent-500 border-2 border-white rounded-full" />
         )}
       </div>
 
@@ -365,7 +365,7 @@ export default function MessagesInboxPage() {
             />
           </button>
           <div className="relative">
-            <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+            <Search className="w-4 h-4 text-neutral-400 absolute start-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
               placeholder={t.common.search}

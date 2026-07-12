@@ -132,7 +132,7 @@ export default function ResetPasswordPage() {
                 {t.resetPassword.newPasswordLabel}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
                 <input
                   id="new-password"
                   type="password"
@@ -154,7 +154,7 @@ export default function ResetPasswordPage() {
                 {t.auth.passwordConfirmLabel}
               </label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
                 <input
                   id="confirm-password"
                   type="password"

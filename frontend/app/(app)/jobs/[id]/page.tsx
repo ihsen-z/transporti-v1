@@ -620,7 +620,7 @@ export default function JobDetailsPage() {
                           className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-lg font-bold text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
                           placeholder={t.jobDetail.priceExample}
                         />
-                        <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-neutral-400">
+                        <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-medium text-neutral-400">
                           {t.jobsList.tnd}
                         </span>
                       </div>

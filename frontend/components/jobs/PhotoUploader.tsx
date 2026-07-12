@@ -325,7 +325,7 @@ export function PhotoUploader({
               <button
                 type="button"
                 onClick={() => removePhoto(index)}
-                className="absolute top-1 right-1 p-2 bg-red-500 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity shadow-md"
+                className="absolute top-1 end-1 p-2 bg-red-500 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity shadow-md"
                 title={t.jobsComponents.photos.remove}
                 aria-label={interpolate(t.jobsComponents.photos.removePhoto, {
                   n: index + 1,

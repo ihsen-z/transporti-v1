@@ -82,7 +82,7 @@ export default function AdminHeader({
           {/* Notifications */}
           <button className="relative p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <span className="absolute top-1 end-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
 
           {/* Admin Badge */}

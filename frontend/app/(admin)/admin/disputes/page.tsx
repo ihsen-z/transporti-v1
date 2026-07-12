@@ -416,7 +416,7 @@ export default function AdminDisputesPage() {
         </div>
         {/* Search */}
         <div className="relative">
-          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
+          <SearchIcon className="absolute start-3 top-1/2 -translate-y-1/2 w-4 h-4 text-neutral-400" />
           <input
             type="text"
             value={searchQuery}

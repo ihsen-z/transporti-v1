@@ -88,7 +88,7 @@ export default function ConfirmModal({
           <button
             onClick={onCancel}
             disabled={loading}
-            className="absolute top-3 right-3 p-1.5 text-neutral-400 hover:text-neutral-600 rounded-lg transition-colors disabled:opacity-50"
+            className="absolute top-3 end-3 p-1.5 text-neutral-400 hover:text-neutral-600 rounded-lg transition-colors disabled:opacity-50"
           >
             <X className="w-4 h-4" />
           </button>

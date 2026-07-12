@@ -166,7 +166,7 @@ export default function RegisterPage() {
                 {t.auth.firstName}
               </label>
               <div className="relative">
-                <UserCircle className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+                <UserCircle className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
                 <input
                   id="firstName"
                   type="text"
@@ -206,7 +206,7 @@ export default function RegisterPage() {
               {t.auth.emailLabel}
             </label>
             <div className="relative">
-              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
                 id="email"
                 type="email"
@@ -229,7 +229,7 @@ export default function RegisterPage() {
               {t.auth.phoneLabel}
             </label>
             <div className="relative">
-              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
                 id="phone"
                 type="tel"
@@ -251,7 +251,7 @@ export default function RegisterPage() {
               {t.auth.passwordLabel}
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
@@ -264,7 +264,7 @@ export default function RegisterPage() {
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                className="absolute end-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
               >
                 {showPassword ? (
                   <EyeOff className="w-5 h-5" />
@@ -284,7 +284,7 @@ export default function RegisterPage() {
               {t.auth.passwordConfirmLabel}
             </label>
             <div className="relative">
-              <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+              <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
                 id="passwordConfirm"
                 type={showPassword ? "text" : "password"}

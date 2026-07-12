@@ -180,7 +180,7 @@ export function OfferList({
           >
             <button
               onClick={() => setShowPaymentModal(false)}
-              className="absolute top-4 right-4 text-neutral-400 hover:text-neutral-600"
+              className="absolute top-4 end-4 text-neutral-400 hover:text-neutral-600"
             >
               <X className="w-5 h-5" />
             </button>

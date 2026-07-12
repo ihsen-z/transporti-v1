@@ -101,7 +101,7 @@ export default function BottomNav() {
               >
                 <Icon className="w-5 h-5" />
                 {item.badge > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 animate-pulse">
+                  <span className="absolute -top-1 -end-1 min-w-[18px] h-[18px] bg-red-500 text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 animate-pulse">
                     {item.badge > 9 ? "9+" : item.badge}
                   </span>
                 )}

@@ -556,7 +556,7 @@ export default function SettingsPage() {
                   <button
                     type="button"
                     onClick={() => setShowPasswords(!showPasswords)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                    className="absolute end-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
                   >
                     {showPasswords ? (
                       <EyeOff className="w-4 h-4" />
