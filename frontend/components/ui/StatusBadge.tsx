@@ -1,10 +1,12 @@
 "use client";
 
 import React from "react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Unified StatusBadge — single source of truth for job & offer statuses     */
 /*  Matches backend TransportJob.Status (7) + Offer.Status (5) choices        */
+/*  Couleurs : config locale ; libellés : i18n (t.status.job / t.status.offer) */
 /* -------------------------------------------------------------------------- */
 
 interface StatusBadgeProps {
@@ -101,7 +103,15 @@ export default function StatusBadge({
   size = "sm",
   className = "",
 }: StatusBadgeProps) {
+  const { t } = useAppI18n();
   const config = ALL_STATUS_CONFIG[status] || { ...FALLBACK, label: status };
+
+  // Libellé localisé (fr/ar) ; le label FR de la config reste le fallback.
+  const statusLabels = t.status as
+    | { job: Record<string, string>; offer: Record<string, string> }
+    | undefined;
+  const label =
+    statusLabels?.job?.[status] ?? statusLabels?.offer?.[status] ?? config.label;
 
   const sizeClasses =
     size === "md" ? "px-3 py-1.5 text-sm" : "px-2.5 py-1 text-xs";
@@ -111,7 +121,7 @@ export default function StatusBadge({
       className={`inline-flex items-center gap-1.5 rounded-full font-semibold ${sizeClasses} ${config.bg} ${className}`}
     >
       <span className={`w-1.5 h-1.5 rounded-full ${config.dot}`} />
-      {config.label}
+      {label}
     </span>
   );
 }

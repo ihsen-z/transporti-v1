@@ -1,19 +1,18 @@
 "use client";
 
+import { memo } from "react";
 import { Truck, Package, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
-import { getStatusColor, getStatusLabel } from "@/lib/format";
+import StatusBadge from "@/components/ui/StatusBadge";
 import type { Job } from "@/lib/services/types";
 
 interface JobCardProps {
   job: Job;
 }
 
-export default function JobCard({ job }: JobCardProps) {
-  const statusColor = getStatusColor(job.status);
-  const statusLabel = getStatusLabel(job.status);
+function JobCard({ job }: JobCardProps) {
 
   // Use real API fields, fallback to legacy fields
   const pickup = job.pickup_address || job.pickup || "";
@@ -69,12 +68,11 @@ export default function JobCard({ job }: JobCardProps) {
         </div>
 
         {/* Status badge */}
-        <span
-          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${statusColor}`}
-        >
-          {statusLabel}
-        </span>
+        <StatusBadge status={job.status} className="flex-shrink-0" />
       </div>
     </Link>
   );
 }
+
+// Memoized: dashboard lists poll every 30s — skip unchanged cards
+export default memo(JobCard);

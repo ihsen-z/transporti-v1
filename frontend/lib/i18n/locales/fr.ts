@@ -428,6 +428,26 @@ export const fr = {
     transportersOnly: "Seuls les transporteurs peuvent accéder à cette page.",
   },
 
+  // Libellés de statut — source unique consommée par ui/StatusBadge
+  status: {
+    job: {
+      DRAFT: "Brouillon",
+      PUBLISHED: "Publiée",
+      MATCHED: "Attribuée",
+      IN_PROGRESS: "En cours",
+      COMPLETED: "Terminée",
+      CANCELLED: "Annulée",
+      DISPUTED: "Litige",
+    },
+    offer: {
+      PENDING: "En attente",
+      ACCEPTED: "Acceptée",
+      REJECTED: "Refusée",
+      WITHDRAWN: "Retirée",
+      EXPIRED: "Expirée",
+    },
+  },
+
   offers: {
     title: "Mes offres",
     subtitle: "Gérez vos offres envoyées et suivez leurs statuts.",

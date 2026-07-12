@@ -7,6 +7,7 @@ import { MessageBubble } from "@/components/messaging/MessageBubble";
 import { ContactReveal } from "@/components/messaging/ContactReveal";
 import { checkForBypass } from "@/lib/antiBypass";
 import { apiClient, ApiError } from "@/lib/api/client";
+import StatusBadge from "@/components/ui/StatusBadge";
 import {
   ArrowLeft,
   Send,
@@ -254,29 +255,6 @@ export default function MessagingPage() {
     }
   };
 
-  const getStatusLabel = (status: string) => {
-    const labels: Record<string, string> = {
-      IN_PROGRESS: "En cours",
-      COMPLETED: "Terminée",
-      PUBLISHED: "Publiée",
-      DISPUTED: "Litige",
-      MATCHED: "Confirmée",
-      CANCELLED: "Annulée",
-    };
-    return labels[status] || status;
-  };
-
-  const getStatusColor = (status: string) => {
-    const colors: Record<string, string> = {
-      IN_PROGRESS: "bg-brand-600/5 text-brand-600",
-      COMPLETED: "bg-emerald-50 text-emerald-700",
-      PUBLISHED: "bg-amber-50 text-amber-700",
-      DISPUTED: "bg-red-50 text-red-700",
-      CANCELLED: "bg-neutral-100 text-neutral-500",
-    };
-    return colors[status] || "bg-neutral-100 text-neutral-600";
-  };
-
   // Loading state
   if (loading) {
     return (
@@ -392,13 +370,7 @@ export default function MessagingPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {job && (
-            <span
-              className={`text-xs font-medium px-2.5 py-1 rounded-full ${getStatusColor(job.status)}`}
-            >
-              {getStatusLabel(job.status)}
-            </span>
-          )}
+          {job && <StatusBadge status={job.status} />}
         </div>
       </div>
 

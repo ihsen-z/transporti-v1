@@ -404,6 +404,26 @@ export const ar = {
     transportersOnly: "الترانسبورتور كهو ينجم يشوف الصفحة هذي.",
   },
 
+  // Libellés de statut — source unique consommée par ui/StatusBadge
+  status: {
+    job: {
+      DRAFT: "مسودّة",
+      PUBLISHED: "منشورة",
+      MATCHED: "تعيّنت",
+      IN_PROGRESS: "قاعدة تتنفّذ",
+      COMPLETED: "كمّلت",
+      CANCELLED: "ملغيّة",
+      DISPUTED: "فيها نزاع",
+    },
+    offer: {
+      PENDING: "في الانتظار",
+      ACCEPTED: "مقبولة",
+      REJECTED: "مرفوضة",
+      WITHDRAWN: "مسحوبة",
+      EXPIRED: "وفى وقتها",
+    },
+  },
+
   offers: {
     title: "عروضي",
     subtitle: "تبع العروض الي بعثتها وشنوة صار فيها.",

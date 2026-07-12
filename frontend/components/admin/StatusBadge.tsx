@@ -1,3 +1,5 @@
+import UnifiedStatusBadge from "@/components/ui/StatusBadge";
+
 interface StatusBadgeProps {
   status: string;
   colorClass: string;
@@ -23,34 +25,11 @@ export default function StatusBadge({
   );
 }
 
-// Pre-built badge variants for common statuses
+// Job/offer statuses: delegate to the unified badge (single source of truth
+// for colors + i18n labels) — the admin previously showed different colors
+// for the same status than the rest of the app.
 export function JobStatusBadge({ status }: { status: string }) {
-  const colors: Record<string, string> = {
-    DRAFT: "bg-neutral-100 text-neutral-600",
-    PUBLISHED: "bg-orange-100 text-orange-700",
-    PENDING: "bg-orange-100 text-orange-700",
-    MATCHED: "bg-brand-600/10 text-brand-600",
-    ACCEPTED: "bg-brand-600/10 text-brand-600",
-    IN_PROGRESS: "bg-cyan-100 text-cyan-700",
-    COMPLETED: "bg-green-100 text-green-700",
-    CANCELLED: "bg-neutral-100 text-neutral-600",
-  };
-  const labels: Record<string, string> = {
-    DRAFT: "Brouillon",
-    PUBLISHED: "Publié",
-    PENDING: "En attente",
-    MATCHED: "Matché",
-    ACCEPTED: "Accepté",
-    IN_PROGRESS: "En cours",
-    COMPLETED: "Terminé",
-    CANCELLED: "Annulé",
-  };
-  return (
-    <StatusBadge
-      status={labels[status] || status}
-      colorClass={colors[status] || colors.PENDING}
-    />
-  );
+  return <UnifiedStatusBadge status={status} />;
 }
 
 export function UserStatusBadge({ status }: { status: string }) {

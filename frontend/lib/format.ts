@@ -68,38 +68,9 @@ export function formatTimeAgo(dateString: string): string {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Job status (ex lib/dashboard.ts)                                          */
+/*  Job status : supprimé — utiliser components/ui/StatusBadge (couleurs +    */
+/*  libellés i18n unifiés). Ne pas réintroduire de mapping statut→couleur ici. */
 /* -------------------------------------------------------------------------- */
-
-export function getStatusColor(status: Job['status']): string {
-    const colors: Record<string, string> = {
-        DRAFT: 'bg-slate-100 text-slate-600',
-        PUBLISHED: 'bg-orange-100 text-orange-700',
-        MATCHED: 'bg-blue-100 text-blue-700',
-        IN_PROGRESS: 'bg-accent-100 text-accent-700',
-        COMPLETED: 'bg-green-100 text-green-700',
-        CANCELLED: 'bg-neutral-200 text-neutral-700',
-        DISPUTED: 'bg-red-100 text-red-700',
-        PENDING: 'bg-orange-100 text-orange-700',
-        ACCEPTED: 'bg-blue-100 text-blue-700',
-    };
-    return colors[status] || 'bg-neutral-100 text-neutral-600';
-}
-
-export function getStatusLabel(status: Job['status']): string {
-    const labels: Record<string, string> = {
-        DRAFT: 'Brouillon',
-        PUBLISHED: 'Publiée',
-        MATCHED: 'Transporteur assigné',
-        IN_PROGRESS: 'En cours',
-        COMPLETED: 'Terminé',
-        CANCELLED: 'Annulé',
-        DISPUTED: 'En litige',
-        PENDING: 'En attente',
-        ACCEPTED: 'Accepté',
-    };
-    return labels[status] || status;
-}
 
 export function getTrustLevelColor(level: UserProfile['trust_level']): string {
     const colors = {
