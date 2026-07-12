@@ -234,7 +234,7 @@ export function useSocialAuth() {
       }
 
       window.FB.login(
-        async (response) => {
+        (response) => {
           if (!response.authResponse) {
             showToast("info", t.auth.socialLoginCancelled);
             resolve({ success: false, error: "Facebook login cancelled" });
@@ -243,18 +243,24 @@ export function useSocialAuth() {
 
           showToast("info", t.auth.socialLoginLoading);
 
-          const result = await loginWithSocialToken(
-            "facebook",
-            response.authResponse.accessToken,
-          );
+          const authResponse = response.authResponse;
 
-          if (result.success) {
-            showToast("success", t.auth.loginSuccess);
-          } else {
-            showToast("error", result.error || t.auth.socialLoginError);
-          }
+          // The Facebook SDK explicitly checks typeof and throws if it's an async function.
+          // We wrap the async logic in an IIFE to satisfy the SDK's type check.
+          (async () => {
+            const result = await loginWithSocialToken(
+              "facebook",
+              authResponse.accessToken,
+            );
 
-          resolve(result);
+            if (result.success) {
+              showToast("success", t.auth.loginSuccess);
+            } else {
+              showToast("error", result.error || t.auth.socialLoginError);
+            }
+
+            resolve(result);
+          })();
         },
         { scope: "email,public_profile" },
       );

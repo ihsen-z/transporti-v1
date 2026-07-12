@@ -9,6 +9,7 @@ import { useAuth, getDefaultRedirect } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { useSocialAuth } from "@/hooks/useSocialAuth";
+import type { UserRole } from "@/lib/auth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -73,7 +74,7 @@ export default function LoginPage() {
         // New social user → role selection first
         router.push("/select-role");
       } else {
-        const userRole = result.role || "client";
+        const userRole = (result.role || "client") as UserRole;
         const redirectTo =
           searchParams.get("redirect") || getDefaultRedirect(userRole);
         router.push(redirectTo);
@@ -95,7 +96,7 @@ export default function LoginPage() {
         // New social user → role selection first
         router.push("/select-role");
       } else {
-        const userRole = result.role || "client";
+        const userRole = (result.role || "client") as UserRole;
         const redirectTo =
           searchParams.get("redirect") || getDefaultRedirect(userRole);
         router.push(redirectTo);

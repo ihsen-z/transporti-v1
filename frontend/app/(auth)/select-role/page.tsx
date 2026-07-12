@@ -140,7 +140,9 @@ export default function SelectRolePage() {
                     {(t.auth.roles as Record<string, string>)[value.toLowerCase()] || value}
                   </span>
                   <span className="text-sm text-neutral-500 mt-0.5 block">
-                    {(t.auth as unknown as Record<string, string>)[descriptionKey] || ""}
+                    {descriptionKey === "clientDescription"
+                      ? t.auth.clientDescription
+                      : t.auth.transporterDescription}
                   </span>
                 </div>
                 {selectedRole === value && (
