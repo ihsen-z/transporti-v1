@@ -14,6 +14,8 @@ import {
 } from "lucide-react";
 import type { Job } from "@/lib/services/types";
 import { apiClient } from "@/lib/api/client";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 type JobStatus = Job["status"];
 
@@ -41,6 +43,7 @@ export default function JobActions({
   onStatusChange,
   jobId,
 }: JobActionsProps) {
+  const { t } = useAppI18n();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingAction, setLoadingAction] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<FeedbackMessage | null>(null);
@@ -72,14 +75,14 @@ export default function JobActions({
       } catch (error) {
         showFeedback({
           type: "error",
-          message: "Une erreur est survenue. Veuillez réessayer.",
+          message: t.jobsComponents.actions.genericError,
         });
       }
 
       setIsLoading(false);
       setLoadingAction(null);
     },
-    [jobId, onStatusChange, showFeedback],
+    [jobId, onStatusChange, showFeedback, t],
   );
 
   // Action handlers by status
@@ -87,40 +90,40 @@ export default function JobActions({
     handleAction(
       "accept",
       "ACCEPTED",
-      "Livraison acceptée ! Un transporteur vous sera assigné.",
+      t.jobsComponents.actions.acceptedMsg,
     );
 
   const handleRefuse = () =>
-    handleAction("refuse", "CANCELLED", "Livraison refusée.");
+    handleAction("refuse", "CANCELLED", t.jobsComponents.actions.refusedMsg);
 
   const handleStartTransport = () =>
     handleAction(
       "start",
       "IN_PROGRESS",
-      "Transport démarré ! Le colis est en route.",
+      t.jobsComponents.actions.startedMsg,
     );
 
   const handleCancel = () =>
-    handleAction("cancel", "CANCELLED", "Transport annulé.");
+    handleAction("cancel", "CANCELLED", t.jobsComponents.actions.cancelledMsg);
 
   const handleConfirmDelivery = () =>
     handleAction(
       "confirm",
       "COMPLETED",
-      "🎉 Livraison confirmée avec succès !",
+      t.jobsComponents.actions.confirmedMsg,
     );
 
   const handleReportProblem = () => {
     showFeedback({
       type: "warning",
-      message: "Un problème a été signalé. Notre équipe vous contactera.",
+      message: t.jobsComponents.actions.problemMsg,
     });
   };
 
   const handleLeaveReview = () => {
     showFeedback({
       type: "success",
-      message: "Merci ! Votre avis sera pris en compte.",
+      message: t.jobsComponents.actions.reviewMsg,
     });
   };
 
@@ -130,13 +133,13 @@ export default function JobActions({
       case "PENDING":
         return [
           {
-            label: "Accepter la livraison",
+            label: t.jobsComponents.actions.accept,
             icon: <CheckCircle className="w-5 h-5" />,
             onClick: handleAccept,
             variant: "primary",
           },
           {
-            label: "Refuser",
+            label: t.jobsComponents.actions.refuse,
             icon: <XCircle className="w-5 h-5" />,
             onClick: handleRefuse,
             variant: "secondary",
@@ -145,13 +148,13 @@ export default function JobActions({
       case "ACCEPTED":
         return [
           {
-            label: "Démarrer le transport",
+            label: t.jobsComponents.actions.start,
             icon: <Truck className="w-5 h-5" />,
             onClick: handleStartTransport,
             variant: "primary",
           },
           {
-            label: "Annuler",
+            label: t.common.cancel,
             icon: <Ban className="w-5 h-5" />,
             onClick: handleCancel,
             variant: "danger",
@@ -160,13 +163,13 @@ export default function JobActions({
       case "IN_PROGRESS":
         return [
           {
-            label: "Confirmer la livraison",
+            label: t.jobsComponents.actions.confirmDelivery,
             icon: <Check className="w-5 h-5" />,
             onClick: handleConfirmDelivery,
             variant: "primary",
           },
           {
-            label: "Signaler un problème",
+            label: t.jobsComponents.actions.reportProblem,
             icon: <AlertTriangle className="w-5 h-5" />,
             onClick: handleReportProblem,
             variant: "secondary",
@@ -175,7 +178,7 @@ export default function JobActions({
       case "COMPLETED":
         return [
           {
-            label: "Laisser un avis",
+            label: t.jobsComponents.actions.leaveReview,
             icon: <Star className="w-5 h-5" />,
             onClick: handleLeaveReview,
             variant: "primary",
@@ -243,15 +246,19 @@ export default function JobActions({
   if (status === "CANCELLED") {
     return (
       <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
-        <h3 className="text-lg font-bold text-neutral-900 mb-4">Statut</h3>
+        <h3 className="text-lg font-bold text-neutral-900 mb-4">
+          {t.jobsComponents.actions.statusTitle}
+        </h3>
         <div className="flex items-center gap-3 p-4 bg-neutral-100 rounded-xl">
           <div className="w-10 h-10 bg-neutral-300 rounded-full flex items-center justify-center">
             <Ban className="w-5 h-5 text-neutral-600" />
           </div>
           <div>
-            <p className="font-semibold text-neutral-700">Livraison annulée</p>
+            <p className="font-semibold text-neutral-700">
+              {t.jobsComponents.actions.cancelledTitle}
+            </p>
             <p className="text-sm text-neutral-500">
-              Ce transport a été annulé
+              {t.jobsComponents.actions.cancelledDesc}
             </p>
           </div>
         </div>
@@ -262,7 +269,9 @@ export default function JobActions({
   return (
     <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
       <h3 className="text-lg font-bold text-neutral-900 mb-4">
-        {status === "COMPLETED" ? "Transport terminé" : "Actions"}
+        {status === "COMPLETED"
+          ? t.jobsComponents.actions.completedTitle
+          : t.jobsComponents.actions.title}
       </h3>
 
       {/* Completed Badge */}
@@ -272,9 +281,11 @@ export default function JobActions({
             <Check className="w-5 h-5 text-white" />
           </div>
           <div>
-            <p className="font-semibold text-accent-800">Livraison terminée</p>
+            <p className="font-semibold text-accent-800">
+              {t.jobsComponents.actions.completedBadge}
+            </p>
             <p className="text-sm text-accent-600">
-              Le colis a été livré avec succès
+              {t.jobsComponents.actions.completedDesc}
             </p>
           </div>
         </div>
@@ -312,7 +323,11 @@ export default function JobActions({
               ) : (
                 action.icon
               )}
-              <span>{isActionLoading ? "Traitement..." : action.label}</span>
+              <span>
+                {isActionLoading
+                  ? t.jobsComponents.actions.processing
+                  : action.label}
+              </span>
             </button>
           );
         })}
@@ -321,7 +336,7 @@ export default function JobActions({
       {/* Help Text */}
       {status !== "COMPLETED" && actions.length > 0 && (
         <p className="text-xs text-neutral-500 mt-4 text-center">
-          Transport #{jobId}
+          {interpolate(t.jobsComponents.actions.transportRef, { id: jobId })}
         </p>
       )}
     </div>

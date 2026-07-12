@@ -42,34 +42,7 @@ const GOVERNORATES = [
   "Kebili",
 ];
 
-/* -------------- Hint suggestion chips -------------- */
-const HINT_SUGGESTIONS = [
-  {
-    icon: <Building className="w-3.5 h-3.5" />,
-    label: "Étage",
-    prefix: "Étage ",
-  },
-  {
-    icon: <DoorOpen className="w-3.5 h-3.5" />,
-    label: "Code porte",
-    prefix: "Code porte: ",
-  },
-  {
-    icon: <ArrowUp className="w-3.5 h-3.5" />,
-    label: "Ascenseur",
-    prefix: "Ascenseur disponible",
-  },
-  {
-    icon: <Eye className="w-3.5 h-3.5" />,
-    label: "Repère visuel",
-    prefix: "En face de ",
-  },
-  {
-    icon: <Landmark className="w-3.5 h-3.5" />,
-    label: "Point de repère",
-    prefix: "Près de ",
-  },
-];
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 import type { JobFormData } from "@/lib/types/jobs";
 
@@ -85,6 +58,37 @@ interface GpsState {
 }
 
 export function LocationPicker({ data, onChange }: LocationPickerProps) {
+  const { t } = useAppI18n();
+
+  /* -------------- Hint suggestion chips -------------- */
+  const HINT_SUGGESTIONS = [
+    {
+      icon: <Building className="w-3.5 h-3.5" />,
+      label: t.jobsComponents.location.hintFloor,
+      prefix: t.jobsComponents.location.prefixFloor,
+    },
+    {
+      icon: <DoorOpen className="w-3.5 h-3.5" />,
+      label: t.jobsComponents.location.hintDoorCode,
+      prefix: t.jobsComponents.location.prefixDoorCode,
+    },
+    {
+      icon: <ArrowUp className="w-3.5 h-3.5" />,
+      label: t.jobsComponents.location.hintElevator,
+      prefix: t.jobsComponents.location.prefixElevator,
+    },
+    {
+      icon: <Eye className="w-3.5 h-3.5" />,
+      label: t.jobsComponents.location.hintLandmarkVisual,
+      prefix: t.jobsComponents.location.prefixVisual,
+    },
+    {
+      icon: <Landmark className="w-3.5 h-3.5" />,
+      label: t.jobsComponents.location.hintLandmark,
+      prefix: t.jobsComponents.location.prefixLandmark,
+    },
+  ];
+
   const [pickupGps, setPickupGps] = useState<GpsState>({
     loading: false,
     error: null,
@@ -108,7 +112,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
       if (!navigator.geolocation) {
         setGps({
           loading: false,
-          error: "Géolocalisation non supportée par ce navigateur.",
+          error: t.jobsComponents.location.gpsUnsupported,
           done: false,
         });
         return;
@@ -157,17 +161,16 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
           setGps({ loading: false, error: null, done: true });
         },
         (err) => {
-          let msg = "Erreur de géolocalisation.";
-          if (err.code === 1)
-            msg = "Accès à la position refusé. Autorisez la géolocalisation.";
-          if (err.code === 2) msg = "Position non disponible.";
-          if (err.code === 3) msg = "Délai d'attente dépassé.";
+          let msg: string = t.jobsComponents.location.gpsError;
+          if (err.code === 1) msg = t.jobsComponents.location.gpsDenied;
+          if (err.code === 2) msg = t.jobsComponents.location.gpsUnavailable;
+          if (err.code === 3) msg = t.jobsComponents.location.gpsTimeout;
           setGps({ loading: false, error: msg, done: false });
         },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 60000 },
       );
     },
-    [onChange],
+    [onChange, t],
   );
 
   /* -------------- Hint chip click -------------- */
@@ -229,10 +232,10 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
               <Navigation className="w-4 h-4" />
             )}
             {gpsState.loading
-              ? "Localisation..."
+              ? t.jobsComponents.location.gpsLoading
               : gpsState.done
-                ? "GPS ✓"
-                : "Ma position"}
+                ? t.jobsComponents.location.gpsDone
+                : t.jobsComponents.location.gpsButton}
           </button>
         </div>
 
@@ -257,7 +260,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
               rel="noopener noreferrer"
               className="ml-auto text-brand-600 hover:underline"
             >
-              Voir sur Maps →
+              {t.jobsComponents.location.viewOnMaps}
             </a>
           </div>
         )}
@@ -265,7 +268,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
         <div className="space-y-3">
           <div>
             <label className="block text-sm text-neutral-600 mb-1">
-              Adresse complète
+              {t.jobsComponents.location.addressLabel}
             </label>
             <input
               type="text"
@@ -273,8 +276,8 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
               onChange={(e) => handleChange(addressField, e.target.value)}
               placeholder={
                 target === "pickup"
-                  ? "Ex: 12 Rue de la République, Tunis"
-                  : "Ex: Zone Industrielle, Sfax"
+                  ? t.jobsComponents.location.pickupPlaceholder
+                  : t.jobsComponents.location.dropoffPlaceholder
               }
               className={`w-full p-3 border rounded-lg focus:ring-2 ${colorClasses.ring}`}
             />
@@ -283,14 +286,14 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="block text-xs text-neutral-500 mb-1">
-                Gouvernorat
+                {t.jobsComponents.location.governorate}
               </label>
               <select
                 value={data[govField] || ""}
                 onChange={(e) => handleChange(govField, e.target.value)}
                 className="w-full p-2 border rounded-lg text-sm"
               >
-                <option value="">Choisir...</option>
+                <option value="">{t.jobsComponents.location.chooseGov}</option>
                 {GOVERNORATES.map((g) => (
                   <option key={g} value={g}>
                     {g}
@@ -300,14 +303,18 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
             </div>
             <div>
               <label className="block text-xs text-neutral-500 mb-1">
-                Code Postal
+                {t.jobsComponents.location.postalCode}
               </label>
               <input
                 type="text"
                 value={data[postalField] || ""}
                 onChange={(e) => handleChange(postalField, e.target.value)}
                 className="w-full p-2 border rounded-lg text-sm"
-                placeholder={target === "pickup" ? "Ex: 1001" : "Ex: 3000"}
+                placeholder={
+                  target === "pickup"
+                    ? t.jobsComponents.location.pickupPostalPlaceholder
+                    : t.jobsComponents.location.dropoffPostalPlaceholder
+                }
               />
             </div>
           </div>
@@ -316,7 +323,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
           <div className="border-t pt-3 mt-1">
             <label className="block text-sm font-medium text-neutral-700 mb-2 flex items-center gap-1.5">
               <Navigation className="w-4 h-4 text-brand-600" />
-              Astuce de localisation
+              {t.jobsComponents.location.hintLabel}
             </label>
 
             {/* Quick suggestion chips */}
@@ -340,7 +347,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                 type="text"
                 value={data[hintField] || ""}
                 onChange={(e) => handleChange(hintField, e.target.value)}
-                placeholder="Ex: 3ème étage, code porte 4589, en face de la boulangerie"
+                placeholder={t.jobsComponents.location.hintPlaceholder}
                 className="w-full p-2.5 pr-8 border rounded-lg text-sm focus:ring-2 focus:ring-accent-500 bg-brand-600/5"
               />
               {data[hintField] && (
@@ -368,12 +375,12 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
         </div>
         <div>
           <h4 className="font-semibold text-brand-800">
-            Astuce de localisation
+            {t.jobsComponents.location.bannerTitle}
           </h4>
           <p className="text-sm text-brand-600">
-            Cliquez <strong>&quot;Ma position&quot;</strong> pour remplir
-            automatiquement via GPS. Ajoutez étage, code porte ou repère pour
-            guider le livreur.
+            {t.jobsComponents.location.bannerBefore}{" "}
+            <strong>{t.jobsComponents.location.bannerBtn}</strong>{" "}
+            {t.jobsComponents.location.bannerAfter}
           </p>
         </div>
       </div>
@@ -381,11 +388,16 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
       <div className="space-y-4">
         {renderLocationSection(
           "pickup",
-          "Point de Départ",
+          t.jobsComponents.location.pickupTitle,
           "orange",
           pickupGps,
         )}
-        {renderLocationSection("dropoff", "Destination", "green", dropoffGps)}
+        {renderLocationSection(
+          "dropoff",
+          t.jobsComponents.location.dropoffTitle,
+          "green",
+          dropoffGps,
+        )}
       </div>
     </div>
   );

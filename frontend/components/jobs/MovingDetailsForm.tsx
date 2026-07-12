@@ -11,6 +11,7 @@ import {
   Box,
 } from "lucide-react";
 import { PhotoUploader } from "./PhotoUploader";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -23,22 +24,6 @@ interface MovingDetailsFormProps {
   onChange: (data: Partial<JobFormData>) => void;
 }
 
-const ROOM_OPTIONS = [
-  { value: "studio", label: "Studio / S+0" },
-  { value: "1", label: "S+1 — 1 pièce" },
-  { value: "2", label: "S+2 — 2 pièces" },
-  { value: "3", label: "S+3 — 3 pièces" },
-  { value: "4", label: "S+4 — 4 pièces" },
-  { value: "5+", label: "Villa / Grand appartement" },
-  { value: "office", label: "Bureau / Local commercial" },
-];
-
-const ELEVATOR_OPTIONS = [
-  { value: "yes", label: "Oui" },
-  { value: "no", label: "Non" },
-  { value: "small", label: "Oui mais trop petit pour meubles" },
-];
-
 const HELPER_OPTIONS = [1, 2, 3, 4];
 
 /* -------------------------------------------------------------------------- */
@@ -46,7 +31,24 @@ const HELPER_OPTIONS = [1, 2, 3, 4];
 /* -------------------------------------------------------------------------- */
 
 export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
+  const { t } = useAppI18n();
   const specs = data.specifications || {};
+
+  const ROOM_OPTIONS = [
+    { value: "studio", label: t.jobsComponents.moving.roomStudio },
+    { value: "1", label: t.jobsComponents.moving.room1 },
+    { value: "2", label: t.jobsComponents.moving.room2 },
+    { value: "3", label: t.jobsComponents.moving.room3 },
+    { value: "4", label: t.jobsComponents.moving.room4 },
+    { value: "5+", label: t.jobsComponents.moving.room5 },
+    { value: "office", label: t.jobsComponents.moving.roomOffice },
+  ];
+
+  const ELEVATOR_OPTIONS = [
+    { value: "yes", label: t.jobsComponents.moving.elevatorYes },
+    { value: "no", label: t.jobsComponents.moving.elevatorNo },
+    { value: "small", label: t.jobsComponents.moving.elevatorSmall },
+  ];
 
   const update = (field: string, value: unknown) => {
     onChange({
@@ -70,21 +72,21 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
       <section>
         <h3 className="text-base font-semibold text-neutral-800 flex items-center gap-2 mb-4">
           <Home className="w-5 h-5 text-brand-600" />
-          Logement & Volume
+          {t.jobsComponents.moving.housingSection}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Room count */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              Nombre de pièces
+              {t.jobsComponents.moving.roomCount}
             </label>
             <select
               value={specs.room_count || ""}
               onChange={(e) => update("room_count", e.target.value)}
               className="w-full p-3 border border-neutral-300 rounded-xl bg-white focus:ring-2 focus:ring-accent-500 focus:border-brand-600 transition-colors"
             >
-              <option value="">— Sélectionner —</option>
+              <option value="">{t.jobsComponents.moving.select}</option>
               {ROOM_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
@@ -97,7 +99,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
               <Box className="inline w-4 h-4 mr-1 text-neutral-500" />
-              Volume estimé (m³)
+              {t.jobsComponents.moving.volumeLabel}
             </label>
             <input
               type="number"
@@ -105,11 +107,11 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
               step="0.5"
               value={specs.volume || ""}
               onChange={(e) => update("volume", e.target.value)}
-              placeholder="Ex: 15"
+              placeholder={t.jobsComponents.moving.volumePlaceholder}
               className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-brand-600 transition-colors"
             />
             <p className="text-xs text-neutral-400 mt-1">
-              Astuce : un studio ≈ 10 m³, un S+2 ≈ 25-35 m³
+              {t.jobsComponents.moving.volumeHint}
             </p>
           </div>
         </div>
@@ -121,16 +123,18 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
       <section>
         <h3 className="text-base font-semibold text-neutral-800 flex items-center gap-2 mb-4">
           <ArrowUpDown className="w-5 h-5 text-purple-600" />
-          Accès — Départ & Arrivée
+          {t.jobsComponents.moving.accessSection}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Departure */}
           <div className="space-y-3 p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-            <p className="text-sm font-semibold text-neutral-700">📤 Départ</p>
+            <p className="text-sm font-semibold text-neutral-700">
+              {t.jobsComponents.moving.departure}
+            </p>
             <div>
               <label className="block text-xs font-medium text-neutral-600 mb-1">
-                Étage
+                {t.jobsComponents.moving.floor}
               </label>
               <input
                 type="number"
@@ -140,20 +144,20 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
                 onChange={(e) =>
                   update("floor_departure", parseInt(e.target.value) || 0)
                 }
-                placeholder="0 pour RDC"
+                placeholder={t.jobsComponents.moving.floorPlaceholder}
                 className="w-full p-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-accent-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-neutral-600 mb-1">
-                Ascenseur
+                {t.jobsComponents.moving.elevator}
               </label>
               <select
                 value={specs.elevator_departure || ""}
                 onChange={(e) => update("elevator_departure", e.target.value)}
                 className="w-full p-2.5 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-accent-500"
               >
-                <option value="">— Sélectionner —</option>
+                <option value="">{t.jobsComponents.moving.select}</option>
                 {ELEVATOR_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
@@ -165,10 +169,12 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
 
           {/* Arrival */}
           <div className="space-y-3 p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-            <p className="text-sm font-semibold text-neutral-700">📥 Arrivée</p>
+            <p className="text-sm font-semibold text-neutral-700">
+              {t.jobsComponents.moving.arrival}
+            </p>
             <div>
               <label className="block text-xs font-medium text-neutral-600 mb-1">
-                Étage
+                {t.jobsComponents.moving.floor}
               </label>
               <input
                 type="number"
@@ -178,20 +184,20 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
                 onChange={(e) =>
                   update("floor_arrival", parseInt(e.target.value) || 0)
                 }
-                placeholder="0 pour RDC"
+                placeholder={t.jobsComponents.moving.floorPlaceholder}
                 className="w-full p-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-accent-500"
               />
             </div>
             <div>
               <label className="block text-xs font-medium text-neutral-600 mb-1">
-                Ascenseur
+                {t.jobsComponents.moving.elevator}
               </label>
               <select
                 value={specs.elevator_arrival || ""}
                 onChange={(e) => update("elevator_arrival", e.target.value)}
                 className="w-full p-2.5 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-accent-500"
               >
-                <option value="">— Sélectionner —</option>
+                <option value="">{t.jobsComponents.moving.select}</option>
                 {ELEVATOR_OPTIONS.map((o) => (
                   <option key={o.value} value={o.value}>
                     {o.label}
@@ -209,7 +215,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
       <section>
         <h3 className="text-base font-semibold text-neutral-800 flex items-center gap-2 mb-4">
           <Wrench className="w-5 h-5 text-emerald-600" />
-          Services demandés
+          {t.jobsComponents.moving.servicesSection}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -217,22 +223,22 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
             [
               {
                 key: "needs_disassembly",
-                label: "Démontage / remontage meubles",
+                label: t.jobsComponents.moving.serviceDisassembly,
                 icon: Wrench,
               },
               {
                 key: "needs_packing",
-                label: "Emballage par le transporteur",
+                label: t.jobsComponents.moving.servicePacking,
                 icon: Package,
               },
               {
                 key: "has_fragile",
-                label: "Articles fragiles à protéger",
+                label: t.jobsComponents.moving.serviceFragile,
                 icon: ShieldAlert,
               },
               {
                 key: "packing_materials_provided",
-                label: "Matériaux d'emballage fournis",
+                label: t.jobsComponents.moving.serviceMaterials,
                 icon: Box,
               },
             ] as const
@@ -290,7 +296,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
         <div className="mt-4">
           <label className="block text-sm font-medium text-neutral-700 mb-2">
             <Users className="inline w-4 h-4 mr-1 text-neutral-500" />
-            Manutentionnaires souhaités
+            {t.jobsComponents.moving.helpersLabel}
           </label>
           <div className="flex gap-2">
             {HELPER_OPTIONS.map((n) => (
@@ -309,7 +315,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
             ))}
           </div>
           <p className="text-xs text-neutral-400 mt-1">
-            Nombre d&apos;aides pour le chargement / déchargement
+            {t.jobsComponents.moving.helpersHint}
           </p>
         </div>
       </section>
@@ -321,12 +327,12 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
         <section className="bg-amber-50 border border-amber-200 rounded-xl p-4">
           <h3 className="text-base font-semibold text-amber-800 flex items-center gap-2 mb-3">
             <ShieldAlert className="w-5 h-5" />
-            Détails articles fragiles
+            {t.jobsComponents.moving.fragileSection}
           </h3>
           <textarea
             value={specs.fragile_description || ""}
             onChange={(e) => update("fragile_description", e.target.value)}
-            placeholder="Ex: Miroir ancien 1.5m × 1m, vaisselle fine (3 cartons), écran TV 55 pouces..."
+            placeholder={t.jobsComponents.moving.fragilePlaceholder}
             className="w-full p-3 border border-amber-300 rounded-lg bg-white focus:ring-2 focus:ring-amber-400 min-h-[80px] text-sm"
           />
         </section>
@@ -337,12 +343,12 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
       {/* ------------------------------------------------------------------ */}
       <section>
         <h3 className="text-base font-semibold text-neutral-800 mb-3">
-          Description & instructions spéciales
+          {t.jobsComponents.moving.descriptionSection}
         </h3>
         <textarea
           value={data.description || ""}
           onChange={(e) => handleDescriptionChange(e.target.value)}
-          placeholder="Décrivez votre déménagement : mobilier principal, contraintes d'accès, horaires préférés..."
+          placeholder={t.jobsComponents.moving.descriptionPlaceholder}
           className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 min-h-[100px]"
         />
       </section>

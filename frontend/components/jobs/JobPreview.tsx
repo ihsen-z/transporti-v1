@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import {
@@ -12,6 +14,8 @@ import {
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getMediaUrl } from "@/lib/imageUtils";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 import type { JobSpecifications } from "@/lib/types/jobs";
 
@@ -43,6 +47,7 @@ interface JobPreviewProps {
 }
 
 export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
+  const { t } = useAppI18n();
   const isTransport = data.job_type === "TRANSPORT";
 
   return (
@@ -58,10 +63,12 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
           </div>
           <div>
             <h3 className="font-bold text-xl">
-              {isTransport ? "Transport de Marchandises" : "Déménagement"}
+              {isTransport
+                ? t.jobsComponents.preview.transportTitle
+                : t.newJob.moving}
             </h3>
             <p className="text-blue-200 text-sm">
-              Récapitulatif de votre demande
+              {t.jobsComponents.preview.summary}
             </p>
           </div>
         </div>
@@ -72,7 +79,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
             <MapPin className="w-5 h-5 mt-1 text-orange-300" />
             <div className="flex-1">
               <p className="text-xs text-primary-200 uppercase font-semibold">
-                Départ
+                {t.jobsComponents.preview.departure}
               </p>
               <p className="font-medium">{data.pickup_address}</p>
               <p className="text-sm text-blue-200">
@@ -83,7 +90,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                       "EEEE d MMMM yyyy à HH:mm",
                       { locale: fr },
                     )
-                  : "Date non spécifiée"}
+                  : t.jobsComponents.preview.dateUnspecified}
               </p>
               {data.pickup_lat && data.pickup_lng && (
                 <p className="text-xs text-primary-200 mt-1 flex items-center gap-1">
@@ -96,7 +103,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                     rel="noopener noreferrer"
                     className="ml-1 text-blue-200 hover:text-white underline"
                   >
-                    Maps →
+                    {t.jobsComponents.preview.maps}
                   </a>
                 </p>
               )}
@@ -114,7 +121,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
             <MapPin className="w-5 h-5 mt-1 text-green-300" />
             <div className="flex-1">
               <p className="text-xs text-primary-200 uppercase font-semibold">
-                Arrivée
+                {t.jobsComponents.preview.arrival}
               </p>
               <p className="font-medium">{data.dropoff_address}</p>
               {data.dropoff_lat && data.dropoff_lng && (
@@ -128,7 +135,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                     rel="noopener noreferrer"
                     className="ml-1 text-blue-200 hover:text-white underline"
                   >
-                    Maps →
+                    {t.jobsComponents.preview.maps}
                   </a>
                 </p>
               )}
@@ -146,29 +153,33 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
       <div className="bg-white border rounded-xl p-6 shadow-sm">
         <h4 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
           <Package className="w-5 h-5 text-neutral-500" />
-          Détails de la mission
+          {t.jobsComponents.preview.missionDetails}
         </h4>
 
         {isTransport ? (
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="bg-neutral-50 p-3 rounded-lg">
-              <span className="block text-neutral-500 text-xs">Poids</span>
+              <span className="block text-neutral-500 text-xs">
+                {t.jobsComponents.preview.weight}
+              </span>
               <span className="font-medium">
                 {data.specifications?.weight || "-"} kg
               </span>
             </div>
             <div className="bg-neutral-50 p-3 rounded-lg">
-              <span className="block text-neutral-500 text-xs">Volume</span>
+              <span className="block text-neutral-500 text-xs">
+                {t.jobsComponents.preview.volume}
+              </span>
               <span className="font-medium">
                 {data.specifications?.volume || "-"} m³
               </span>
             </div>
             <div className="col-span-2 bg-neutral-50 p-3 rounded-lg">
               <span className="block text-neutral-500 text-xs mb-1">
-                Description
+                {t.jobsComponents.preview.description}
               </span>
               <p className="text-neutral-700">
-                {data.description || "Aucune description"}
+                {data.description || t.jobsComponents.preview.noDescription}
               </p>
             </div>
           </div>
@@ -176,7 +187,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div className="bg-neutral-50 p-3 rounded-lg">
               <span className="block text-neutral-500 text-xs">
-                Type de logement
+                {t.jobsComponents.preview.housingType}
               </span>
               <span className="font-medium">
                 {data.specifications?.room_count || "-"}
@@ -184,7 +195,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
             </div>
             <div className="bg-neutral-50 p-3 rounded-lg">
               <span className="block text-neutral-500 text-xs">
-                Volume estimé
+                {t.jobsComponents.preview.estimatedVolume}
               </span>
               <span className="font-medium">
                 {data.specifications?.volume || "-"} m³
@@ -192,39 +203,48 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
             </div>
             <div className="bg-neutral-50 p-3 rounded-lg">
               <span className="block text-neutral-500 text-xs text-orange-600 font-semibold mb-1">
-                📤 Départ (Étage)
+                {t.jobsComponents.preview.departureFloor}
               </span>
               <span className="font-medium">
-                {data.specifications?.floor_departure ?? 0} (Asc:{" "}
-                {data.specifications?.elevator_departure || "Non"})
+                {data.specifications?.floor_departure ?? 0} (
+                {t.jobsComponents.preview.elevatorShort}{" "}
+                {data.specifications?.elevator_departure ||
+                  t.jobsComponents.preview.no}
+                )
               </span>
             </div>
             <div className="bg-neutral-50 p-3 rounded-lg">
               <span className="block text-neutral-500 text-xs text-green-600 font-semibold mb-1">
-                📥 Arrivée (Étage)
+                {t.jobsComponents.preview.arrivalFloor}
               </span>
               <span className="font-medium">
-                {data.specifications?.floor_arrival ?? 0} (Asc:{" "}
-                {data.specifications?.elevator_arrival || "Non"})
+                {data.specifications?.floor_arrival ?? 0} (
+                {t.jobsComponents.preview.elevatorShort}{" "}
+                {data.specifications?.elevator_arrival ||
+                  t.jobsComponents.preview.no}
+                )
               </span>
             </div>
             <div className="col-span-2 bg-neutral-50 p-3 rounded-lg border-l-4 border-primary-400">
               <span className="block text-neutral-500 text-xs mb-1">
-                Services & Aides
+                {t.jobsComponents.preview.servicesHelpers}
               </span>
               <p className="text-neutral-700 font-medium whitespace-pre-line">
-                {data.specifications?.helpers_count} manutentionnaires souhaités
+                {interpolate(t.jobsComponents.preview.helpersWanted, {
+                  n: data.specifications?.helpers_count ?? 0,
+                })}
                 {data.specifications?.needs_disassembly &&
-                  "\n• Besoin de démontage/remontage"}
-                {data.specifications?.needs_packing && "\n• Besoin d'emballage"}
+                  t.jobsComponents.preview.needDisassembly}
+                {data.specifications?.needs_packing &&
+                  t.jobsComponents.preview.needPacking}
               </p>
             </div>
             <div className="col-span-2 bg-neutral-50 p-3 rounded-lg">
               <span className="block text-neutral-500 text-xs mb-1">
-                Description
+                {t.jobsComponents.preview.description}
               </span>
               <p className="text-neutral-700">
-                {data.description || "Aucune description"}
+                {data.description || t.jobsComponents.preview.noDescription}
               </p>
             </div>
           </div>
@@ -233,7 +253,9 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
         {data.photos && data.photos.length > 0 && (
           <div className="mt-4">
             <span className="block text-neutral-500 text-xs mb-2">
-              Photos ({data.photos.length})
+              {interpolate(t.jobsComponents.preview.photos, {
+                n: data.photos.length,
+              })}
             </span>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {data.photos.map((url: string, i: number) => (
@@ -254,10 +276,11 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
           <div className="mt-6 pt-6 border-t">
             <div className="flex justify-between items-center">
               <span className="text-neutral-600 font-medium">
-                Budget estimé
+                {t.jobsComponents.preview.estimatedBudget}
               </span>
               <span className="text-xl font-bold text-neutral-900">
-                {data.price_tnd_min || "0"} - {data.price_tnd_max || "?"} TND
+                {data.price_tnd_min || "0"} - {data.price_tnd_max || "?"}{" "}
+                {t.jobsComponents.preview.tnd}
               </span>
             </div>
           </div>
@@ -267,9 +290,8 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
       {isOwner && (
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
           <p className="text-sm text-orange-800">
-            <strong>Note :</strong> Une fois publiée, votre demande sera visible
-            par les transporteurs vérifiés. Vous recevrez des offres sous forme
-            d'enchères inversées.
+            <strong>{t.jobsComponents.preview.noteLabel}</strong>{" "}
+            {t.jobsComponents.preview.noteText}
           </p>
         </div>
       )}

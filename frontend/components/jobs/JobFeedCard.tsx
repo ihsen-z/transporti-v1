@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
 import {
@@ -13,12 +15,15 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 interface JobFeedCardProps {
   job: any;
 }
 
 export function JobFeedCard({ job }: JobFeedCardProps) {
+  const { t } = useAppI18n();
   const isTransport = job.job_type === "TRANSPORT";
 
   // Urgency: job date < 48h from now
@@ -46,27 +51,34 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
                   : "bg-orange-100 text-orange-800"
               }`}
             >
-              {isTransport ? "Transport" : "Déménagement"}
+              {isTransport ? t.jobsComponents.feed.transport : t.newJob.moving}
             </span>
             <span className="text-xs text-neutral-500 flex items-center gap-1">
               <Clock className="w-3 h-3" />
-              Publié {format(new Date(job.created_at), "d MMM", { locale: fr })}
+              {interpolate(t.jobsComponents.feed.publishedOn, {
+                date: format(new Date(job.created_at), "d MMM", { locale: fr }),
+              })}
             </span>
             {isUrgent && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-200">
                 <Zap className="w-3 h-3" />
-                Urgent
+                {t.jobsComponents.feed.urgent}
               </span>
             )}
             {job.is_return_trip && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                🔄 Trajet retour
+                {t.jobsComponents.feed.returnTrip}
               </span>
             )}
             {offerCount > 0 && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
                 <Users className="w-3 h-3" />
-                {offerCount} offre{offerCount > 1 ? "s" : ""}
+                {interpolate(
+                  offerCount > 1
+                    ? t.jobsComponents.feed.offers
+                    : t.jobsComponents.feed.offer,
+                  { n: offerCount },
+                )}
               </span>
             )}
           </div>
@@ -75,12 +87,12 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
               <p className="font-bold text-neutral-900">
                 {job.price_tnd_min || "0"} - {job.price_tnd_max || "?"}{" "}
                 <span className="text-xs font-normal text-neutral-500">
-                  TND
+                  {t.jobsComponents.feed.tnd}
                 </span>
               </p>
             ) : (
               <p className="text-sm font-medium text-neutral-400">
-                Budget non spécifié
+                {t.jobsComponents.feed.budgetUnspecified}
               </p>
             )}
           </div>
@@ -137,11 +149,15 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
               <>
                 <span className="flex items-center gap-1">
                   <Home className="w-4 h-4 text-neutral-400" />
-                  {job.specifications?.rooms || "?"} pièces
+                  {interpolate(t.jobsComponents.feed.rooms, {
+                    n: job.specifications?.rooms || "?",
+                  })}
                 </span>
                 <span className="flex items-center gap-1">
                   <BuildingIcon className="w-4 h-4 text-neutral-400" />
-                  Étage {job.specifications?.floor_pickup || "0"}
+                  {interpolate(t.jobsComponents.feed.floor, {
+                    n: job.specifications?.floor_pickup || "0",
+                  })}
                 </span>
               </>
             )}
@@ -151,7 +167,7 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
             href={`/jobs/${job.id}`}
             className="px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-800 transition-colors"
           >
-            Voir l'offre
+            {t.common.viewOffer}
           </Link>
         </div>
       </div>

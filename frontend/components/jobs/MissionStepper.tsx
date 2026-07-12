@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   FileText,
@@ -7,19 +9,13 @@ import {
   PackageCheck,
   Check,
 } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 interface MissionStepperProps {
   status: string;
   completedAt?: string;
 }
-
-const STEPS = [
-  { key: "PUBLISHED", label: "Publiée", icon: FileText },
-  { key: "HAS_OFFERS", label: "Offres reçues", icon: Inbox },
-  { key: "IN_PROGRESS", label: "Assignée", icon: UserCheck },
-  { key: "DELIVERING", label: "En cours", icon: Truck },
-  { key: "COMPLETED", label: "Livrée", icon: PackageCheck },
-];
 
 function getActiveIndex(status: string): number {
   switch (status) {
@@ -45,7 +41,16 @@ function getActiveIndex(status: string): number {
  * Responsive: horizontal on desktop, vertical on mobile.
  */
 export function MissionStepper({ status, completedAt }: MissionStepperProps) {
+  const { t } = useAppI18n();
   const activeIndex = getActiveIndex(status);
+
+  const STEPS = [
+    { key: "PUBLISHED", label: t.jobsComponents.stepper.published, icon: FileText },
+    { key: "HAS_OFFERS", label: t.jobsComponents.stepper.offersReceived, icon: Inbox },
+    { key: "IN_PROGRESS", label: t.jobsComponents.stepper.assigned, icon: UserCheck },
+    { key: "DELIVERING", label: t.jobsComponents.stepper.inProgress, icon: Truck },
+    { key: "COMPLETED", label: t.jobsComponents.stepper.delivered, icon: PackageCheck },
+  ];
 
   if (status === "DRAFT" || status === "CANCELLED") return null;
 
@@ -141,7 +146,7 @@ export function MissionStepper({ status, completedAt }: MissionStepperProps) {
               </span>
               {isActive && (
                 <span className="ml-auto text-xs bg-brand-600/10 text-brand-600 px-2 py-0.5 rounded-full font-medium">
-                  En cours
+                  {t.jobsComponents.stepper.inProgressBadge}
                 </span>
               )}
             </div>
@@ -152,13 +157,14 @@ export function MissionStepper({ status, completedAt }: MissionStepperProps) {
       {/* Completion timestamp */}
       {status === "COMPLETED" && completedAt && (
         <p className="text-xs text-neutral-500 text-center mt-3">
-          ✅ Livré le{" "}
-          {new Date(completedAt).toLocaleDateString("fr-FR", {
-            day: "numeric",
-            month: "long",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
+          {interpolate(t.jobsComponents.stepper.deliveredOn, {
+            date: new Date(completedAt).toLocaleDateString("fr-FR", {
+              day: "numeric",
+              month: "long",
+              year: "numeric",
+              hour: "2-digit",
+              minute: "2-digit",
+            }),
           })}
         </p>
       )}

@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import { Truck, Home } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 interface JobTypeSelectorProps {
   selectedType: string | null;
@@ -10,6 +13,7 @@ export function JobTypeSelector({
   selectedType,
   onSelect,
 }: JobTypeSelectorProps) {
+  const { t } = useAppI18n();
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* Transport Option */}
@@ -29,10 +33,11 @@ export function JobTypeSelector({
           <Truck className="w-8 h-8" />
         </div>
         <div className="text-center">
-          <h3 className="font-bold text-lg">Transport de Marchandises</h3>
+          <h3 className="font-bold text-lg">
+            {t.jobsComponents.typeSelector.transportTitle}
+          </h3>
           <p className="text-sm text-neutral-500 mt-2">
-            Pour vos colis, meubles, ou équipements. Idéal pour les livraisons
-            rapides.
+            {t.jobsComponents.typeSelector.transportDesc}
           </p>
         </div>
       </button>
@@ -54,10 +59,9 @@ export function JobTypeSelector({
           <Home className="w-8 h-8" />
         </div>
         <div className="text-center">
-          <h3 className="font-bold text-lg">Déménagement</h3>
+          <h3 className="font-bold text-lg">{t.newJob.moving}</h3>
           <p className="text-sm text-neutral-500 mt-2">
-            Service complet pour changer de domicile. Inclus estimation du
-            volume.
+            {t.jobsComponents.typeSelector.movingDesc}
           </p>
         </div>
       </button>

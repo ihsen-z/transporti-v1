@@ -1,7 +1,10 @@
+"use client";
+
 import React from "react";
 import { Weight, Box } from "lucide-react";
 import { PhotoUploader } from "./PhotoUploader";
 import type { JobFormData } from "@/lib/types/jobs";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 interface TransportDetailsFormProps {
   data: JobFormData;
@@ -12,6 +15,7 @@ export function TransportDetailsForm({
   data,
   onChange,
 }: TransportDetailsFormProps) {
+  const { t } = useAppI18n();
   const handleChange = (field: string, value: unknown) => {
     // Parent handleFormData uses a functional update to merge correctly.
     onChange({ [field]: value } as Partial<JobFormData>);
@@ -21,12 +25,12 @@ export function TransportDetailsForm({
     <div className="space-y-6">
       <div>
         <label className="block text-sm font-medium text-neutral-700 mb-1">
-          Description des articles
+          {t.jobsComponents.transportForm.itemsDesc}
         </label>
         <textarea
           value={data.description || ""}
           onChange={(e) => handleChange("description", e.target.value)}
-          placeholder="Ex: Un canapé 3 places et deux fauteuils..."
+          placeholder={t.jobsComponents.transportForm.itemsPlaceholder}
           className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500 min-h-[100px]"
         />
       </div>
@@ -34,7 +38,8 @@ export function TransportDetailsForm({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
-            <Weight className="inline w-4 h-4 mr-1" /> Poids estimé (kg)
+            <Weight className="inline w-4 h-4 mr-1" />{" "}
+            {t.jobsComponents.transportForm.weightLabel}
           </label>
           <input
             type="number"
@@ -43,12 +48,13 @@ export function TransportDetailsForm({
               handleChange("specifications", { weight: e.target.value })
             }
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500"
-            placeholder="Ex: 50"
+            placeholder={t.jobsComponents.transportForm.weightPlaceholder}
           />
         </div>
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
-            <Box className="inline w-4 h-4 mr-1" /> Volume estimé (m³)
+            <Box className="inline w-4 h-4 mr-1" />{" "}
+            {t.jobsComponents.transportForm.volumeLabel}
           </label>
           <input
             type="number"
@@ -58,7 +64,7 @@ export function TransportDetailsForm({
               handleChange("specifications", { volume: e.target.value })
             }
             className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500"
-            placeholder="Ex: 2.5"
+            placeholder={t.jobsComponents.transportForm.volumePlaceholder}
           />
         </div>
       </div>

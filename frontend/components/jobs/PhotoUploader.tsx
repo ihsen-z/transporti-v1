@@ -4,6 +4,8 @@ import React, { useRef, useState, useCallback } from "react";
 import { Camera, ImagePlus, X, Loader2 } from "lucide-react";
 import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
 import { compressImage, validateImageFile, getMediaUrl } from "@/lib/imageUtils";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 interface PhotoUploaderProps {
   /** Current list of photo URLs */
@@ -31,6 +33,7 @@ export function PhotoUploader({
   onPhotosChange,
   maxPhotos = 5,
 }: PhotoUploaderProps) {
+  const { t } = useAppI18n();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -51,7 +54,10 @@ export function PhotoUploader({
     // Check slot limit
     if (fileArray.length > remainingSlots) {
       setError(
-        `Maximum ${maxPhotos} photos. Il reste ${remainingSlots} emplacement(s).`,
+        interpolate(t.jobsComponents.photos.limitError, {
+          max: maxPhotos,
+          n: remainingSlots,
+        }),
       );
       return;
     }
@@ -89,7 +95,7 @@ export function PhotoUploader({
       }
     } catch (err: unknown) {
       console.error("Photo upload error:", err);
-      setError((err instanceof ApiError && err.body?.error) || getErrorMessage(err) || "Erreur lors de l'upload.");
+      setError((err instanceof ApiError && err.body?.error) || getErrorMessage(err) || t.jobsComponents.photos.uploadError);
     } finally {
       setUploading(false);
       // Reset inputs so the same file can be selected again
@@ -142,11 +148,11 @@ export function PhotoUploader({
     } catch (err: unknown) {
       console.error("Camera access error:", err);
       if (err instanceof Error && err.name === "NotAllowedError") {
-        setError("Accès à la caméra refusé. Vérifiez les permissions de votre navigateur.");
+        setError(t.jobsComponents.photos.cameraDenied);
       } else if (err instanceof Error && err.name === "NotFoundError") {
-        setError("Aucune caméra détectée sur cet appareil.");
+        setError(t.jobsComponents.photos.cameraNotFound);
       } else {
-        setError("Impossible d'accéder à la caméra. Utilisez la galerie.");
+        setError(t.jobsComponents.photos.cameraError);
       }
     }
   };
@@ -168,7 +174,7 @@ export function PhotoUploader({
     canvas.toBlob(
       async (blob) => {
         if (!blob) {
-          setError("Erreur lors de la capture.");
+          setError(t.jobsComponents.photos.captureError);
           return;
         }
 
@@ -200,7 +206,10 @@ export function PhotoUploader({
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-neutral-700">
-        Photos ({photos.length}/{maxPhotos})
+        {interpolate(t.jobsComponents.photos.label, {
+          n: photos.length,
+          max: maxPhotos,
+        })}
       </label>
 
       {/* Action buttons */}
@@ -237,7 +246,7 @@ export function PhotoUploader({
           ) : (
             <ImagePlus className="w-4 h-4" />
           )}
-          Galerie
+          {t.jobsComponents.photos.gallery}
         </button>
 
         {/* Camera button */}
@@ -248,12 +257,12 @@ export function PhotoUploader({
           className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
           <Camera className="w-4 h-4" />
-          Caméra
+          {t.jobsComponents.photos.camera}
         </button>
 
         {uploading && (
           <span className="text-sm text-neutral-500 self-center ml-2">
-            Compression et upload en cours...
+            {t.jobsComponents.photos.uploading}
           </span>
         )}
       </div>
@@ -274,7 +283,7 @@ export function PhotoUploader({
               type="button"
               onClick={capturePhoto}
               className="w-14 h-14 rounded-full bg-white border-4 border-brand-600 shadow-lg hover:scale-105 transition-transform flex items-center justify-center"
-              title="Prendre la photo"
+              title={t.jobsComponents.photos.takePhoto}
             >
               <Camera className="w-6 h-6 text-brand-600" />
             </button>
@@ -283,7 +292,7 @@ export function PhotoUploader({
               type="button"
               onClick={stopCameraStream}
               className="w-10 h-10 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-colors flex items-center justify-center self-center"
-              title="Fermer la caméra"
+              title={t.jobsComponents.photos.closeCamera}
             >
               <X className="w-5 h-5" />
             </button>
@@ -308,15 +317,19 @@ export function PhotoUploader({
             >
               <img
                 src={getMediaUrl(photo)}
-                alt={`Photo ${index + 1}`}
+                alt={interpolate(t.jobsComponents.photos.photoAlt, {
+                  n: index + 1,
+                })}
                 className="object-cover w-full h-full"
               />
               <button
                 type="button"
                 onClick={() => removePhoto(index)}
                 className="absolute top-1 right-1 p-2 bg-red-500 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity shadow-md"
-                title="Supprimer"
-                aria-label={`Supprimer la photo ${index + 1}`}
+                title={t.jobsComponents.photos.remove}
+                aria-label={interpolate(t.jobsComponents.photos.removePhoto, {
+                  n: index + 1,
+                })}
               >
                 <X className="w-4 h-4" />
               </button>
@@ -328,7 +341,7 @@ export function PhotoUploader({
       {/* Helper text */}
       {remainingSlots > 0 && photos.length === 0 && (
         <p className="text-xs text-neutral-400">
-          JPEG, PNG ou WebP • Max 5 MB par photo • {maxPhotos} photos maximum
+          {interpolate(t.jobsComponents.photos.helper, { max: maxPhotos })}
         </p>
       )}
     </div>

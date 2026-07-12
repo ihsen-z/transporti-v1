@@ -2,6 +2,7 @@
 
 import { Check, Clock, Package, Truck, MapPin } from "lucide-react";
 import type { Job } from "@/lib/services/types";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 interface JobTimelineProps {
   status: Job["status"];
@@ -13,13 +14,6 @@ interface TimelineStep {
   icon: React.ReactNode;
 }
 
-const timelineSteps: TimelineStep[] = [
-  { id: "PENDING", label: "Créé", icon: <Package className="w-4 h-4" /> },
-  { id: "ACCEPTED", label: "Accepté", icon: <Check className="w-4 h-4" /> },
-  { id: "IN_PROGRESS", label: "En cours", icon: <Truck className="w-4 h-4" /> },
-  { id: "COMPLETED", label: "Livré", icon: <MapPin className="w-4 h-4" /> },
-];
-
 // Map status to step index for progression
 const statusToIndex: Record<string, number> = {
   PENDING: 0,
@@ -30,13 +24,37 @@ const statusToIndex: Record<string, number> = {
 };
 
 export default function JobTimeline({ status }: JobTimelineProps) {
+  const { t } = useAppI18n();
   const currentIndex = statusToIndex[status] ?? -1;
   const isCancelled = status === "CANCELLED";
+
+  const timelineSteps: TimelineStep[] = [
+    {
+      id: "PENDING",
+      label: t.jobsComponents.timeline.created,
+      icon: <Package className="w-4 h-4" />,
+    },
+    {
+      id: "ACCEPTED",
+      label: t.jobsComponents.timeline.accepted,
+      icon: <Check className="w-4 h-4" />,
+    },
+    {
+      id: "IN_PROGRESS",
+      label: t.jobsComponents.timeline.inProgress,
+      icon: <Truck className="w-4 h-4" />,
+    },
+    {
+      id: "COMPLETED",
+      label: t.jobsComponents.timeline.delivered,
+      icon: <MapPin className="w-4 h-4" />,
+    },
+  ];
 
   return (
     <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
       <h3 className="text-lg font-bold text-neutral-900 mb-6">
-        Progression du transport
+        {t.jobsComponents.timeline.title}
       </h3>
 
       {isCancelled ? (
@@ -45,9 +63,11 @@ export default function JobTimeline({ status }: JobTimelineProps) {
             <Clock className="w-5 h-5" />
           </div>
           <div>
-            <p className="font-medium text-neutral-700">Transport annulé</p>
+            <p className="font-medium text-neutral-700">
+              {t.jobsComponents.timeline.cancelledTitle}
+            </p>
             <p className="text-sm text-neutral-500">
-              Ce transport a été annulé
+              {t.jobsComponents.timeline.cancelledDesc}
             </p>
           </div>
         </div>
@@ -160,7 +180,7 @@ export default function JobTimeline({ status }: JobTimelineProps) {
                       </span>
                       {isCurrent && (
                         <p className="text-xs text-brand-600 mt-0.5">
-                          Étape actuelle
+                          {t.jobsComponents.timeline.currentStep}
                         </p>
                       )}
                     </div>

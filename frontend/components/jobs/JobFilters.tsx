@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import { Filter, MapPin, Truck, Home } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 export interface JobFiltersValue {
   job_type: string;
@@ -13,6 +16,7 @@ interface JobFiltersProps {
 }
 
 export function JobFilters({ filters, onChange }: JobFiltersProps) {
+  const { t } = useAppI18n();
   const handleChange = (field: keyof JobFiltersValue, value: string) => {
     onChange({ ...filters, [field]: value });
   };
@@ -21,14 +25,14 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
     <div className="bg-white p-4 rounded-xl shadow-sm border border-neutral-200">
       <div className="flex items-center gap-2 mb-4 text-neutral-900 font-semibold">
         <Filter className="w-5 h-5" />
-        <h3>Filtres</h3>
+        <h3>{t.jobsComponents.filters.title}</h3>
       </div>
 
       <div className="space-y-6">
         {/* Type of Service */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Type de service
+            {t.jobsComponents.filters.serviceType}
           </label>
           <div className="space-y-2">
             <label className="flex items-center gap-2 cursor-pointer">
@@ -39,7 +43,7 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
                 onChange={() => handleChange("job_type", "")}
                 className="text-brand-600"
               />
-              <span className="text-sm">Tous</span>
+              <span className="text-sm">{t.jobsComponents.filters.all}</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -50,7 +54,9 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
                 className="text-brand-600"
               />
               <Truck className="w-4 h-4 text-neutral-500" />
-              <span className="text-sm">Transport</span>
+              <span className="text-sm">
+                {t.jobsComponents.filters.transport}
+              </span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
               <input
@@ -61,7 +67,7 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
                 className="text-brand-600"
               />
               <Home className="w-4 h-4 text-neutral-500" />
-              <span className="text-sm">Déménagement</span>
+              <span className="text-sm">{t.newJob.moving}</span>
             </label>
           </div>
         </div>
@@ -70,14 +76,14 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
             <MapPin className="inline w-4 h-4 mr-1" />
-            Gouvernorat (Départ)
+            {t.jobsComponents.filters.pickupGov}
           </label>
           <select
             value={filters.pickup_governorate || ""}
             onChange={(e) => handleChange("pickup_governorate", e.target.value)}
             className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent-500"
           >
-            <option value="">Tous</option>
+            <option value="">{t.jobsComponents.filters.all}</option>
             <option value="Tunis">Tunis</option>
             <option value="Ariana">Ariana</option>
             <option value="Ben Arous">Ben Arous</option>
