@@ -470,16 +470,6 @@ export const ar = {
     errorNetwork: "مشكلة في الأنترنات، ثبت كونكسيون.",
   },
 
-  offersTabs: {
-    tabsAccepted: "مقبولة",
-    tabsRejected: "مرفوضة",
-    tabsExpired: "وفات",
-    tabsWithdrawn: "مسحوبة",
-    actionWithdraw: "اسحب العرض",
-    confirmWithdrawTitle: "تسحب العرض؟",
-    confirmWithdrawDesc: "متأكد تحب تسحب العرض؟ ماتنجمش ترجعو مبعد.",
-  },
-
   booking: {
     pageTitle: "الحجز",
     backToJobs: "← ارجع للخدمات",
