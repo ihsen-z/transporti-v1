@@ -10,29 +10,59 @@ import type {
     ActivityLog,
     SystemAlert,
 } from './services/types';
+import type { AppLocale } from './i18n/locales/fr';
+import { getCurrentLocale } from './i18n/currentLocale';
 
 /* -------------------------------------------------------------------------- */
-/*  Currency & dates                                                          */
+/*  Currency & dates — locale-aware                                           */
+/*                                                                            */
+/*  Le paramètre `locale` est optionnel et défaute sur getCurrentLocale()     */
+/*  (source de vérité synchronisée par AppI18nProvider), donc les call sites  */
+/*  existants restent inchangés. En Tunisie on garde les chiffres latins même */
+/*  en arabe (`-u-nu-latn`).                                                  */
 /* -------------------------------------------------------------------------- */
 
-export function formatCurrency(amount: number): string {
-    return new Intl.NumberFormat('fr-TN', {
+const NUM_LOCALE: Record<AppLocale, string> = {
+    fr: 'fr-TN',
+    ar: 'ar-TN-u-nu-latn',
+};
+const CURRENCY_SUFFIX: Record<AppLocale, string> = {
+    fr: 'TND',
+    ar: 'د.ت',
+};
+
+export function formatCurrency(
+    amount: number,
+    locale: AppLocale = getCurrentLocale(),
+): string {
+    const n = new Intl.NumberFormat(NUM_LOCALE[locale], {
         style: 'decimal',
         minimumFractionDigits: 2,
         maximumFractionDigits: 2,
-    }).format(amount) + ' TND';
+    }).format(amount);
+    return `${n} ${CURRENCY_SUFFIX[locale]}`;
 }
 
-export function formatDate(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('fr-TN', {
+// Alias sémantique pour le sweep des `${x} TND` concaténés à la main.
+export const formatTND = formatCurrency;
+
+export function formatDate(
+    dateString: string,
+    locale: AppLocale = getCurrentLocale(),
+    options: Intl.DateTimeFormatOptions = {
         day: '2-digit',
         month: 'short',
         year: 'numeric',
-    });
+    },
+): string {
+    return new Date(dateString).toLocaleDateString(NUM_LOCALE[locale], options);
 }
 
-export function formatDateTime(dateString: string): string {
-    return new Date(dateString).toLocaleDateString('fr-TN', {
+export function formatDateTime(
+    dateString: string,
+    locale: AppLocale = getCurrentLocale(),
+): string {
+    return new Date(dateString).toLocaleDateString(NUM_LOCALE[locale], {
         day: '2-digit',
         month: 'short',
         hour: '2-digit',
@@ -40,31 +70,59 @@ export function formatDateTime(dateString: string): string {
     });
 }
 
-export function formatTimeAgoShort(dateString: string): string {
-    const now = new Date();
-    const date = new Date(dateString);
-    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+// Libellés « il y a … » en fr + derja tunisien. Inline (pas d'import d'ar.ts,
+// pour préserver le code-splitting du dictionnaire arabe).
+const TIME_AGO_LABELS = {
+    fr: {
+        now: "À l'instant",
+        minShort: (n: number) => `${n}min`,
+        hourShort: (n: number) => `${n}h`,
+        dayShort: (n: number) => `${n}j`,
+        min: (n: number) => `Il y a ${n} min`,
+        hour: (n: number) => `Il y a ${n}h`,
+        day: (n: number) => `Il y a ${n}j`,
+    },
+    ar: {
+        now: 'توّا',
+        minShort: (n: number) => `${n} دق`,
+        hourShort: (n: number) => `${n} س`,
+        dayShort: (n: number) => `${n} ي`,
+        min: (n: number) => `عندها ${n} دقيقة`,
+        hour: (n: number) => `عندها ${n} ساعة`,
+        day: (n: number) => `عندها ${n} يّام`,
+    },
+} as const;
 
-    if (seconds < 60) return 'À l\'instant';
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}min`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h`;
-    return `${Math.floor(seconds / 86400)}j`;
+export function formatTimeAgoShort(
+    dateString: string,
+    locale: AppLocale = getCurrentLocale(),
+): string {
+    const L = TIME_AGO_LABELS[locale];
+    const seconds = Math.floor((Date.now() - new Date(dateString).getTime()) / 1000);
+
+    if (seconds < 60) return L.now;
+    if (seconds < 3600) return L.minShort(Math.floor(seconds / 60));
+    if (seconds < 86400) return L.hourShort(Math.floor(seconds / 3600));
+    return L.dayShort(Math.floor(seconds / 86400));
 }
 
-export function formatTimeAgo(dateString: string): string {
+export function formatTimeAgo(
+    dateString: string,
+    locale: AppLocale = getCurrentLocale(),
+): string {
+    const L = TIME_AGO_LABELS[locale];
     const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
+    const diffMs = Date.now() - date.getTime();
     const diffMins = Math.floor(diffMs / 60000);
     const diffHours = Math.floor(diffMs / 3600000);
     const diffDays = Math.floor(diffMs / 86400000);
 
-    if (diffMins < 1) return "À l'instant";
-    if (diffMins < 60) return `Il y a ${diffMins} min`;
-    if (diffHours < 24) return `Il y a ${diffHours}h`;
-    if (diffDays < 7) return `Il y a ${diffDays}j`;
+    if (diffMins < 1) return L.now;
+    if (diffMins < 60) return L.min(diffMins);
+    if (diffHours < 24) return L.hour(diffHours);
+    if (diffDays < 7) return L.day(diffDays);
 
-    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+    return date.toLocaleDateString(NUM_LOCALE[locale], { day: 'numeric', month: 'short' });
 }
 
 /* -------------------------------------------------------------------------- */
