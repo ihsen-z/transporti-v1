@@ -27,6 +27,8 @@ import {
 import JobCard from "@/components/dashboard/JobCard";
 import { useJobs } from "@/hooks/useJobs";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 import { apiClient } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import LoadingState from "@/components/ui/LoadingState";
@@ -41,23 +43,20 @@ type MissionFilter = "ALL" | "IN_PROGRESS" | "COMPLETED" | "RETURN_TRIP";
 
 const MISSION_TABS: {
   id: MissionFilter;
-  label: string;
   icon: React.ElementType;
 }[] = [
-  { id: "ALL", label: "Toutes", icon: FileText },
-  { id: "IN_PROGRESS", label: "En cours", icon: Clock },
-  { id: "COMPLETED", label: "Terminées", icon: CheckCircle },
-  { id: "RETURN_TRIP", label: "Trajets retour", icon: RotateCcw },
+  { id: "ALL", icon: FileText },
+  { id: "IN_PROGRESS", icon: Clock },
+  { id: "COMPLETED", icon: CheckCircle },
+  { id: "RETURN_TRIP", icon: RotateCcw },
 ];
 
 const JOB_TYPE_CONFIG = {
   TRANSPORT: {
-    label: "Transport",
     icon: Truck,
     className: "bg-brand-600/5 text-brand-600",
   },
   MOVING: {
-    label: "Déménagement",
     icon: Home,
     className: "bg-purple-50 text-purple-600",
   },
@@ -166,10 +165,16 @@ function StatCard({
 /* -------------------------------------------------------------------------- */
 
 const MissionCard = React.memo(function MissionCardInner({ mission }: { mission: TransporterMission }) {
+  const { t } = useAppI18n();
   const typeConfig =
     JOB_TYPE_CONFIG[mission.job_type] || JOB_TYPE_CONFIG.TRANSPORT;
   const TypeIcon = typeConfig.icon;
+  const typeLabel =
+    mission.job_type === "MOVING" ? t.jobsList.typeMoving : t.jobsList.typeTransport;
   const statusConfig = getStatusConfig(mission.status);
+  const statusLabel =
+    (t.status.job as Record<string, string>)[mission.status] ??
+    statusConfig.label;
   const isMuted =
     mission.status === "CANCELLED" || mission.status === "DISPUTED";
 
@@ -191,7 +196,7 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
           {mission.is_return_trip && (
             <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-600 mb-2">
               <RotateCcw className="w-3 h-3" />
-              Trajet retour
+              {t.jobsList.returnTripBadge}
             </span>
           )}
 
@@ -224,11 +229,11 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
               className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold ${typeConfig.className}`}
             >
               <TypeIcon className="w-3 h-3" />
-              {typeConfig.label}
+              {typeLabel}
             </span>
             {!mission.is_return_trip && mission.client_name && (
               <span className="text-neutral-400">
-                Client : {mission.client_name}
+                {interpolate(t.jobsList.client, { name: mission.client_name })}
               </span>
             )}
           </div>
@@ -238,7 +243,7 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
         <span
           className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border flex-shrink-0 ${statusConfig.bgColor} ${statusConfig.color}`}
         >
-          {statusConfig.label}
+          {statusLabel}
         </span>
       </div>
 
@@ -250,13 +255,13 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
               <div className="flex items-center justify-center gap-1 text-neutral-400 mb-1">
                 <Banknote className="w-3 h-3" />
                 <p className="text-[10px] font-medium uppercase tracking-wider">
-                  Prix accepté
+                  {t.jobsList.acceptedPrice}
                 </p>
               </div>
               <p className="text-sm font-bold text-neutral-900">
                 {mission.offer_price.toFixed(0)}{" "}
                 <span className="text-xs font-medium text-neutral-500">
-                  TND
+                  {t.jobsList.tnd}
                 </span>
               </p>
             </div>
@@ -264,24 +269,24 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
               <div className="flex items-center justify-center gap-1 text-neutral-400 mb-1">
                 <TrendingUp className="w-3 h-3" />
                 <p className="text-[10px] font-medium uppercase tracking-wider">
-                  Commission
+                  {t.jobsList.commission}
                 </p>
               </div>
               <p className="text-sm font-semibold text-red-500">
                 -{mission.offer_commission.toFixed(0)}{" "}
-                <span className="text-xs font-normal">TND</span>
+                <span className="text-xs font-normal">{t.jobsList.tnd}</span>
               </p>
             </div>
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
                 <Wallet className="w-3 h-3" />
                 <p className="text-[10px] font-medium uppercase tracking-wider">
-                  Gain net
+                  {t.jobsList.netGain}
                 </p>
               </div>
               <p className="text-sm font-bold text-emerald-600">
                 {mission.offer_price_net.toFixed(0)}{" "}
-                <span className="text-xs font-medium">TND</span>
+                <span className="text-xs font-medium">{t.jobsList.tnd}</span>
               </p>
             </div>
           </div>
@@ -305,7 +310,7 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-white hover:bg-brand-600 px-3 py-1.5 rounded-lg transition-all duration-200 border border-brand-600/20 hover:border-brand-600"
         >
           <Eye className="w-3.5 h-3.5" />
-          Détails
+          {t.jobsList.details}
         </Link>
 
         {mission.status === "IN_PROGRESS" && (
@@ -314,7 +319,7 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-white hover:bg-emerald-500 px-3 py-1.5 rounded-lg transition-all duration-200 border border-emerald-200 hover:border-emerald-500"
           >
             <MessageSquare className="w-3.5 h-3.5" />
-            Messages
+            {t.jobsList.messages}
           </Link>
         )}
       </div>
@@ -327,6 +332,7 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
 /* -------------------------------------------------------------------------- */
 
 function TransporterMissionsView() {
+  const { t } = useAppI18n();
   const { showToast } = useToast();
   const [missions, setMissions] = useState<TransporterMission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -347,13 +353,13 @@ function TransporterMissionsView() {
         setMissions(list);
       } catch (e) {
         console.error("Failed to fetch missions:", e);
-        if (!silent) showToast("error", "Impossible de charger vos missions.");
+        if (!silent) showToast("error", t.jobsList.loadError);
       } finally {
         setLoading(false);
         setRefreshing(false);
       }
     },
-    [showToast],
+    [showToast, t],
   );
 
   useEffect(() => {
@@ -412,9 +418,9 @@ function TransporterMissionsView() {
       <div className="p-6 lg:p-8 max-w-4xl mx-auto">
         <div className="mb-8">
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-            Mes Missions
+            {t.jobsList.title}
           </h1>
-          <p className="text-neutral-500 mt-1">Chargement...</p>
+          <p className="text-neutral-500 mt-1">{t.jobsList.loading}</p>
         </div>
         <div className="flex items-center justify-center py-20">
           <div className="w-16 h-16 bg-brand-600/5 rounded-2xl flex items-center justify-center">
@@ -431,10 +437,10 @@ function TransporterMissionsView() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-            Mes Missions
+            {t.jobsList.title}
           </h1>
           <p className="text-neutral-500 mt-1 text-sm">
-            Suivez vos missions assignées et gérez vos trajets retour.
+            {t.jobsList.subtitle}
           </p>
         </div>
         <div className="flex gap-2">
@@ -443,13 +449,13 @@ function TransporterMissionsView() {
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
           >
             <RotateCcw className="w-4 h-4" />
-            Proposer un trajet retour
+            {t.jobsList.proposeReturnTrip}
           </Link>
           <button
             onClick={() => fetchMissions()}
             disabled={refreshing}
             className="p-2.5 text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 rounded-xl transition-all disabled:opacity-50 group"
-            title="Rafraîchir"
+            title={t.jobsList.refresh}
           >
             <RefreshCw
               className={`w-5 h-5 group-hover:rotate-180 transition-transform duration-500 ${refreshing ? "animate-spin" : ""}`}
@@ -462,29 +468,29 @@ function TransporterMissionsView() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-8">
         <StatCard
           icon={FileText}
-          label="Total"
+          label={t.jobsList.statTotal}
           value={String(missions.filter((m) => !m.is_return_trip).length)}
           iconColor="bg-brand-600/10 text-brand-600"
           valueColor="text-neutral-900"
         />
         <StatCard
           icon={Clock}
-          label="En cours"
+          label={t.jobsList.statInProgress}
           value={String(inProgressCount)}
           iconColor="bg-amber-100 text-amber-600"
           valueColor="text-amber-600"
         />
         <StatCard
           icon={CheckCircle}
-          label="Terminées"
+          label={t.jobsList.statCompleted}
           value={String(completedCount)}
           iconColor="bg-emerald-100 text-emerald-600"
           valueColor="text-emerald-600"
         />
         <StatCard
           icon={Wallet}
-          label="Gains totaux"
-          value={`${totalEarnings.toFixed(0)} TND`}
+          label={t.jobsList.statEarnings}
+          value={`${totalEarnings.toFixed(0)} ${t.jobsList.tnd}`}
           iconColor="bg-emerald-100 text-emerald-600"
           valueColor="text-emerald-700"
           highlight
@@ -518,7 +524,13 @@ function TransporterMissionsView() {
               <tab.icon
                 className={`w-4 h-4 ${isActive ? "text-brand-600" : ""}`}
               />
-              {tab.label}
+              {tab.id === "ALL"
+                ? t.jobsList.tabAll
+                : tab.id === "IN_PROGRESS"
+                  ? t.jobsList.tabInProgress
+                  : tab.id === "COMPLETED"
+                    ? t.jobsList.tabCompleted
+                    : t.jobsList.tabReturnTrip}
               <span
                 className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                   isActive
@@ -541,7 +553,7 @@ function TransporterMissionsView() {
           <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Rechercher par adresse ou client..."
+            placeholder={t.jobsList.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 outline-none transition-all"
@@ -561,20 +573,20 @@ function TransporterMissionsView() {
             </div>
             <p className="text-neutral-700 font-semibold mb-1">
               {activeTab === "RETURN_TRIP"
-                ? "Aucun trajet retour publié."
-                : "Aucune mission pour le moment."}
+                ? t.jobsList.emptyReturnTitle
+                : t.jobsList.emptyMissionsTitle}
             </p>
             <p className="text-sm text-neutral-400 max-w-md mx-auto">
               {activeTab === "RETURN_TRIP"
-                ? "Proposez un trajet retour pour éviter les retours à vide."
-                : "Parcourez les missions disponibles pour soumettre vos offres."}
+                ? t.jobsList.emptyReturnDesc
+                : t.jobsList.emptyMissionsDesc}
             </p>
             <div className="flex gap-3 justify-center mt-5">
               <Link
                 href="/jobs/browse"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
               >
-                Trouver une mission
+                {t.jobsList.findMission}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               {activeTab === "RETURN_TRIP" && (
@@ -583,7 +595,7 @@ function TransporterMissionsView() {
                   className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 px-5 py-2.5 rounded-xl transition-all border border-purple-200"
                 >
                   <RotateCcw className="w-4 h-4" />
-                  Proposer un trajet
+                  {t.jobsList.proposeTrip}
                 </Link>
               )}
             </div>
@@ -617,6 +629,7 @@ function TransporterMissionsView() {
 /* -------------------------------------------------------------------------- */
 
 function ClientJobsView() {
+  const { t } = useAppI18n();
   const { data: jobs, loading } = useJobs();
   const [clientPage, setClientPage] = useState(1);
   const CLIENT_PAGE_SIZE = 10;
@@ -635,10 +648,10 @@ function ClientJobsView() {
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
           <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-            Mes Transports
+            {t.jobsList.clientTitle}
           </h1>
           <p className="text-neutral-600">
-            Gérez et suivez tous vos transports
+            {t.jobsList.clientSubtitle}
           </p>
         </div>
         <Link
@@ -646,7 +659,7 @@ function ClientJobsView() {
           className="bg-brand-700 hover:bg-brand-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
-          Nouveau transport
+          {t.jobsList.newTransport}
         </Link>
       </div>
 
@@ -654,25 +667,25 @@ function ClientJobsView() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
           <p className="text-2xl font-bold text-neutral-900">{jobs.length}</p>
-          <p className="text-sm text-neutral-600">Total</p>
+          <p className="text-sm text-neutral-600">{t.jobsList.clientStatTotal}</p>
         </div>
         <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
           <p className="text-2xl font-bold text-orange-600">
             {jobs.filter((j) => j.status === "PUBLISHED").length}
           </p>
-          <p className="text-sm text-neutral-600">Publiées</p>
+          <p className="text-sm text-neutral-600">{t.jobsList.clientStatPublished}</p>
         </div>
         <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
           <p className="text-2xl font-bold text-accent-600">
             {jobs.filter((j) => j.status === "IN_PROGRESS").length}
           </p>
-          <p className="text-sm text-neutral-600">En cours</p>
+          <p className="text-sm text-neutral-600">{t.jobsList.clientStatInProgress}</p>
         </div>
         <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
           <p className="text-2xl font-bold text-green-600">
             {jobs.filter((j) => j.status === "COMPLETED").length}
           </p>
-          <p className="text-sm text-neutral-600">Terminés</p>
+          <p className="text-sm text-neutral-600">{t.jobsList.clientStatCompleted}</p>
         </div>
       </div>
 
@@ -683,16 +696,16 @@ function ClientJobsView() {
             <Package className="w-8 h-8 text-neutral-400" />
           </div>
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-            Aucun transport
+            {t.jobsList.clientEmptyTitle}
           </h3>
           <p className="text-neutral-600 mb-4">
-            Commencez par créer votre premier transport
+            {t.jobsList.clientEmptyDesc}
           </p>
           <Link
             href="/jobs/new"
             className="bg-brand-700 hover:bg-brand-800 text-white font-medium px-6 py-2 rounded-lg transition-colors inline-block"
           >
-            Créer un transport
+            {t.jobsList.clientEmptyCta}
           </Link>
         </div>
       ) : (

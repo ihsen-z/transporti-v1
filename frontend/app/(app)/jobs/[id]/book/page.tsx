@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { BookingSummary } from "@/components/booking/BookingSummary";
 import { PaymentMethodSelector } from "@/components/booking/PaymentMethodSelector";
 import { PaymentGateway } from "@/components/booking/PaymentGateway";
@@ -52,6 +53,7 @@ export default function BookingPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
+  const { t } = useAppI18n();
 
   const jobId = Number(params.id);
   const offerId = searchParams.get("offer")
@@ -117,12 +119,12 @@ export default function BookingPage() {
   if (!job || !offer) {
     return (
       <div className="p-6 lg:p-8 max-w-2xl mx-auto text-center">
-        <p className="text-neutral-500">Données de réservation introuvables.</p>
+        <p className="text-neutral-500">{t.bookingPage.notFound}</p>
         <button
           onClick={() => router.back()}
           className="mt-4 text-brand-600 hover:underline"
         >
-          Retour
+          {t.bookingPage.back}
         </button>
       </div>
     );
@@ -136,30 +138,29 @@ export default function BookingPage() {
             <PartyPopper className="w-10 h-10 text-emerald-500" />
           </div>
           <h1 className="text-2xl font-bold text-neutral-900 mb-2">
-            Réservation confirmée !
+            {t.bookingPage.successTitle}
           </h1>
           <p className="text-neutral-500 mb-8 max-w-md mx-auto">
-            Votre transporteur a été notifié. Vous pouvez suivre l'avancement de
-            votre mission depuis votre tableau de bord.
+            {t.bookingPage.successDesc}
           </p>
 
           <div className="bg-neutral-50 rounded-xl p-4 mb-8 text-left space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-500">Numéro de commande</span>
+              <span className="text-neutral-500">{t.bookingPage.orderNumber}</span>
               <span className="font-mono font-medium text-neutral-900">
                 TRN-{job.id.toString().padStart(6, "0")}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-500">Mode de paiement</span>
+              <span className="text-neutral-500">{t.bookingPage.paymentMethod}</span>
               <span className="font-medium text-neutral-900">
                 {paymentMethod === "DIGITAL"
-                  ? "Paiement digital (Escrow)"
-                  : "Paiement à la livraison"}
+                  ? t.bookingPage.paymentDigital
+                  : t.bookingPage.paymentCOD}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-500">Montant total</span>
+              <span className="text-neutral-500">{t.bookingPage.totalAmount}</span>
               <span className="font-semibold text-brand-600">
                 {offer.total_price.toFixed(2)} TND
               </span>
@@ -172,19 +173,19 @@ export default function BookingPage() {
               className="inline-flex items-center justify-center gap-2 bg-brand-600 text-white px-6 py-3 rounded-xl font-semibold hover:bg-brand-700 transition-colors"
             >
               <MessageSquare className="w-5 h-5" />
-              Contacter le transporteur
+              {t.bookingPage.contactTransporter}
             </Link>
             <Link
               href={`/jobs/${job.id}`}
               className="inline-flex items-center justify-center gap-2 bg-neutral-100 text-neutral-700 px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors"
             >
-              Suivre la mission
+              {t.bookingPage.trackMission}
             </Link>
             <Link
               href="/dashboard"
               className="inline-flex items-center justify-center gap-2 bg-neutral-100 text-neutral-700 px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors"
             >
-              Retour au tableau de bord
+              {t.bookingPage.backToDashboard}
             </Link>
           </div>
         </div>
@@ -201,20 +202,24 @@ export default function BookingPage() {
           className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 mb-4 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Retour
+          {t.bookingPage.back}
         </button>
         <h1 className="text-2xl font-bold text-neutral-900">
-          Finaliser la réservation
+          {t.bookingPage.finalizeTitle}
         </h1>
         <p className="text-neutral-500 mt-1">
-          Vérifiez les détails et choisissez votre mode de paiement.
+          {t.bookingPage.finalizeSubtitle}
         </p>
       </div>
 
       {/* Progress Steps */}
       <div className="flex items-center gap-2 mb-8">
         {(["review", "payment", "confirm"] as BookingStep[]).map((s, i) => {
-          const labels = ["Récapitulatif", "Paiement", "Confirmation"];
+          const labels = [
+            t.bookingPage.stepReview,
+            t.bookingPage.stepPayment,
+            t.bookingPage.stepConfirm,
+          ];
           const isActive = step === s;
           const isDone = ["review", "payment", "confirm"].indexOf(step) > i;
           return (
@@ -251,7 +256,7 @@ export default function BookingPage() {
               {offer.message && (
                 <div className="bg-white rounded-2xl border border-neutral-100 p-6">
                   <h3 className="text-sm font-semibold text-neutral-900 mb-2">
-                    Message du transporteur
+                    {t.bookingPage.transporterMessage}
                   </h3>
                   <p className="text-sm text-neutral-600 italic">
                     "{offer.message}"
@@ -262,7 +267,7 @@ export default function BookingPage() {
                 onClick={() => setStep("payment")}
                 className="w-full bg-brand-600 text-white py-3.5 rounded-xl font-semibold hover:bg-brand-700 transition-colors shadow-lg shadow-primary-600/20"
               >
-                Continuer vers le paiement
+                {t.bookingPage.continueToPayment}
               </button>
             </>
           )}
@@ -297,7 +302,7 @@ export default function BookingPage() {
                     onClick={() => setStep("review")}
                     className="flex-1 bg-neutral-100 text-neutral-700 py-3.5 rounded-xl font-semibold hover:bg-neutral-200 transition-colors"
                   >
-                    Retour
+                    {t.bookingPage.back}
                   </button>
                   <button
                     onClick={() => {
@@ -310,8 +315,8 @@ export default function BookingPage() {
                     className="flex-[2] bg-brand-600 text-white py-3.5 rounded-xl font-semibold hover:bg-brand-700 transition-colors shadow-lg shadow-primary-600/20"
                   >
                     {paymentMethod === "DIGITAL"
-                      ? "Procéder au paiement"
-                      : "Vérifier et confirmer"}
+                      ? t.bookingPage.proceedToPayment
+                      : t.bookingPage.verifyAndConfirm}
                   </button>
                 </div>
               )}
@@ -322,31 +327,31 @@ export default function BookingPage() {
             <>
               <div className="bg-white rounded-2xl border border-neutral-100 p-6">
                 <h3 className="text-lg font-semibold text-neutral-900 mb-4">
-                  Confirmation finale
+                  {t.bookingPage.finalConfirmation}
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm py-2 border-b border-neutral-50">
-                    <span className="text-neutral-500">Trajet</span>
+                    <span className="text-neutral-500">{t.bookingPage.route}</span>
                     <span className="text-neutral-900 font-medium text-right max-w-[60%]">
                       {job.pickup_address} → {job.dropoff_address}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm py-2 border-b border-neutral-50">
-                    <span className="text-neutral-500">Transporteur</span>
+                    <span className="text-neutral-500">{t.bookingPage.transporter}</span>
                     <span className="text-neutral-900 font-medium">
                       {offer.transporter_name}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm py-2 border-b border-neutral-50">
-                    <span className="text-neutral-500">Mode de paiement</span>
+                    <span className="text-neutral-500">{t.bookingPage.paymentMethod}</span>
                     <span className="text-neutral-900 font-medium">
                       {paymentMethod === "DIGITAL"
-                        ? "Paiement digital (Escrow)"
-                        : "Paiement à la livraison"}
+                        ? t.bookingPage.paymentDigital
+                        : t.bookingPage.paymentCOD}
                     </span>
                   </div>
                   <div className="flex justify-between text-base py-2 font-bold">
-                    <span className="text-neutral-900">Total</span>
+                    <span className="text-neutral-900">{t.bookingPage.total}</span>
                     <span className="text-brand-600">
                       {offer.total_price.toFixed(2)} TND
                     </span>
@@ -355,11 +360,11 @@ export default function BookingPage() {
               </div>
 
               <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
-                En confirmant cette réservation, vous acceptez les{" "}
+                {t.bookingPage.termsPre}
                 <a href="#" className="underline font-medium">
-                  conditions générales
-                </a>{" "}
-                de Transporti.
+                  {t.bookingPage.termsLink}
+                </a>
+                {t.bookingPage.termsPost}
               </div>
 
               <div className="flex gap-3">
@@ -367,7 +372,7 @@ export default function BookingPage() {
                   onClick={() => setStep("payment")}
                   className="flex-1 bg-neutral-100 text-neutral-700 py-3.5 rounded-xl font-semibold hover:bg-neutral-200 transition-colors"
                 >
-                  Retour
+                  {t.bookingPage.back}
                 </button>
                 <button
                   onClick={handleConfirmBooking}
@@ -377,12 +382,12 @@ export default function BookingPage() {
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Traitement en cours...
+                      {t.bookingPage.processing}
                     </>
                   ) : (
                     <>
                       <CheckCircle2 className="w-5 h-5" />
-                      Confirmer la réservation
+                      {t.bookingPage.confirmBooking}
                     </>
                   )}
                 </button>
@@ -395,23 +400,25 @@ export default function BookingPage() {
         <div className="lg:col-span-2 space-y-4 hidden lg:block">
           <div className="bg-white rounded-2xl border border-neutral-100 p-6 sticky top-24">
             <h3 className="text-sm font-semibold text-neutral-900 mb-4">
-              Votre commande
+              {t.bookingPage.yourOrder}
             </h3>
             <div className="space-y-3 text-sm">
               <div className="flex justify-between">
-                <span className="text-neutral-500">Type</span>
+                <span className="text-neutral-500">{t.bookingPage.type}</span>
                 <span className="font-medium text-neutral-900">
-                  {job.job_type === "TRANSPORT" ? "Transport" : "Déménagement"}
+                  {job.job_type === "TRANSPORT"
+                    ? t.bookingPage.typeTransport
+                    : t.bookingPage.typeMoving}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Transporteur</span>
+                <span className="text-neutral-500">{t.bookingPage.transporter}</span>
                 <span className="font-medium text-neutral-900">
                   {offer.transporter_name}
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">Date</span>
+                <span className="text-neutral-500">{t.bookingPage.date}</span>
                 <span className="font-medium text-neutral-900">
                   {new Date(job.scheduled_time).toLocaleDateString("fr-TN", {
                     day: "numeric",
@@ -421,7 +428,7 @@ export default function BookingPage() {
               </div>
               <hr className="border-neutral-100" />
               <div className="flex justify-between text-base font-bold">
-                <span className="text-neutral-900">Total</span>
+                <span className="text-neutral-900">{t.bookingPage.total}</span>
                 <span className="text-brand-600">
                   {offer.total_price.toFixed(2)} TND
                 </span>

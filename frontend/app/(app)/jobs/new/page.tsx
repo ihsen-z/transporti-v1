@@ -13,6 +13,8 @@ import {
 } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 import type { JobFormData } from "@/lib/types/jobs";
 import { JobTypeSelector } from "@/components/jobs/JobTypeSelector";
 import { LocationPicker } from "@/components/jobs/LocationPicker";
@@ -21,11 +23,11 @@ import { MovingDetailsForm } from "@/components/jobs/MovingDetailsForm";
 import { JobPreview } from "@/components/jobs/JobPreview";
 
 const STEPS = [
-  { id: "type", title: "Type de service" },
-  { id: "location", title: "Adresses" },
-  { id: "details", title: "Détails" },
-  { id: "schedule", title: "Date & Budget" },
-  { id: "preview", title: "Confirmation" },
+  { id: "type" },
+  { id: "location" },
+  { id: "details" },
+  { id: "schedule" },
+  { id: "preview" },
 ];
 
 // Délai minimum avant la date souhaitée — règle unique, affichée et validée.
@@ -36,21 +38,6 @@ const MIN_SCHEDULE_DELAY_MS = 24 * 60 * 60 * 1000;
 const toLocalDatetimeValue = (date: Date) => {
   const pad = (n: number) => String(n).padStart(2, "0");
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
-};
-
-// Libellés français des champs pour rendre lisibles les erreurs backend.
-const FIELD_LABELS: Record<string, string> = {
-  job_type: "Type de service",
-  pickup_address: "Adresse de départ",
-  pickup_governorate: "Gouvernorat de départ",
-  dropoff_address: "Adresse de destination",
-  dropoff_governorate: "Gouvernorat de destination",
-  description: "Description",
-  photos: "Photos",
-  scheduled_time: "Date et heure",
-  price_tnd_min: "Budget min",
-  price_tnd_max: "Budget max",
-  available_capacity: "Capacité disponible",
 };
 
 const makeInitialFormData = (isReturnTrip: boolean): JobFormData => ({
@@ -82,6 +69,14 @@ export default function NewJobPage() {
   const searchParams = useSearchParams();
   const isReturnTrip = searchParams.get("return_trip") === "true";
   const { user } = useAuth();
+  const { t } = useAppI18n();
+  const stepTitles = [
+    t.newJob.step1,
+    t.newJob.step2,
+    t.newJob.step3,
+    t.newJob.step4,
+    t.newJob.step5,
+  ];
   const [currentStep, setCurrentStep] = useState(isReturnTrip ? 1 : 0); // skip type for return trips
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
@@ -208,33 +203,33 @@ export default function NewJobPage() {
   const validateStep = (step: number): string | null => {
     switch (step) {
       case 0:
-        if (!formData.job_type) return "Veuillez choisir un type de service.";
+        if (!formData.job_type) return t.newJob.chooseServiceType;
         return null;
       case 1: {
         const missing: string[] = [];
-        if (!formData.pickup_address.trim()) missing.push("l'adresse de départ");
+        if (!formData.pickup_address.trim())
+          missing.push(t.newJob.fieldPickupAddress);
         if (!formData.pickup_governorate)
-          missing.push("le gouvernorat de départ");
+          missing.push(t.newJob.fieldPickupGovLower);
         if (!formData.dropoff_address.trim())
-          missing.push("l'adresse de destination");
+          missing.push(t.newJob.fieldDropoffAddress);
         if (!formData.dropoff_governorate)
-          missing.push("le gouvernorat de destination");
+          missing.push(t.newJob.fieldDropoffGovLower);
         if (missing.length > 0)
-          return `Veuillez renseigner ${missing.join(", ")}.`;
+          return interpolate(t.newJob.fillFields, { fields: missing.join(", ") });
         return null;
       }
       case 3: {
-        if (!formData.scheduled_time)
-          return "Veuillez sélectionner une date et heure.";
+        if (!formData.scheduled_time) return t.newJob.selectDateTime;
         const selected = new Date(formData.scheduled_time);
         if (selected.getTime() < Date.now() + MIN_SCHEDULE_DELAY_MS)
-          return "La date doit être au moins 24 heures dans le futur.";
+          return t.newJob.dateMin24h;
         if (
           formData.price_tnd_min &&
           formData.price_tnd_max &&
           Number(formData.price_tnd_min) > Number(formData.price_tnd_max)
         )
-          return "Le budget minimum ne peut pas dépasser le budget maximum.";
+          return t.newJob.budgetMinMax;
         return null;
       }
       default:
@@ -312,25 +307,28 @@ export default function NewJobPage() {
     } catch (error: unknown) {
       console.error("Publish Error:", error);
 
-      let errorMessage = "Une erreur est survenue lors de la publication.";
+      let errorMessage: string = t.newJob.publishGenericError;
 
       if (error instanceof ApiError && error.body) {
         // Erreurs par champ traduites en libellés lisibles, affichées dans
         // une bannière persistante (un toast de 4 s est illisible ici).
+        const fieldLabels = t.newJob.fieldLabels as Record<string, string>;
         const fieldErrors = Object.entries(error.body)
           .map(([key, val]) => {
-            const label = FIELD_LABELS[key] || key;
+            const label = fieldLabels[key] || key;
             const text = Array.isArray(val) ? val.join(", ") : String(val);
             return `${label} : ${text}`;
           })
           .join(" — ");
-        errorMessage = `Publication impossible. ${fieldErrors}`;
+        errorMessage = interpolate(t.newJob.publishImpossible, {
+          errors: fieldErrors,
+        });
       } else if (error instanceof Error && error.message) {
         errorMessage = error.message;
       }
 
       setValidationError(errorMessage);
-      showToast("error", "Publication impossible. Vérifiez le formulaire.");
+      showToast("error", t.newJob.publishCheckForm);
     } finally {
       setLoading(false);
     }
@@ -372,7 +370,7 @@ export default function NewJobPage() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-neutral-700 mb-1">
-                Date et heure souhaitées
+                {t.newJob.dateTimeLabel}
               </label>
               <input
                 type="datetime-local"
@@ -397,7 +395,7 @@ export default function NewJobPage() {
                 </p>
               ) : (
                 <p className="text-sm text-neutral-500 mt-1">
-                  Minimum 24h à l&apos;avance pour maximiser les offres reçues.
+                  {t.newJob.dateTimeHint}
                 </p>
               )}
             </div>
@@ -408,25 +406,30 @@ export default function NewJobPage() {
                 <Lightbulb className="w-5 h-5 text-accent-600 flex-shrink-0" />
                 <div>
                   <span className="font-semibold text-accent-800">
-                    Prix estimé : {priceEstimate.min} – {priceEstimate.max} TND
+                    {interpolate(t.newJob.priceEstimate, {
+                      min: priceEstimate.min,
+                      max: priceEstimate.max,
+                    })}
                   </span>
                   <span className="text-accent-600 ml-2 inline-flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
-                    {priceEstimate.distance_km} km
+                    {interpolate(t.newJob.distanceKm, {
+                      km: priceEstimate.distance_km,
+                    })}
                   </span>
                 </div>
               </div>
             )}
             {estimateLoading && (
               <div className="p-3 bg-neutral-50 border border-neutral-200 rounded-xl text-sm text-neutral-500 animate-pulse">
-                Calcul de l&apos;estimation en cours...
+                {t.newJob.estimateLoading}
               </div>
             )}
 
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Budget Min (TND)
+                  {t.newJob.budgetMinShort}
                 </label>
                 <input
                   type="number"
@@ -435,14 +438,16 @@ export default function NewJobPage() {
                     updateFormData({ price_tnd_min: e.target.value })
                   }
                   placeholder={
-                    priceEstimate ? String(priceEstimate.min) : "Optionnel"
+                    priceEstimate
+                      ? String(priceEstimate.min)
+                      : t.newJob.budgetOptional
                   }
                   className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Budget Max (TND)
+                  {t.newJob.budgetMaxShort}
                 </label>
                 <input
                   type="number"
@@ -451,7 +456,9 @@ export default function NewJobPage() {
                     updateFormData({ price_tnd_max: e.target.value })
                   }
                   placeholder={
-                    priceEstimate ? String(priceEstimate.max) : "Optionnel"
+                    priceEstimate
+                      ? String(priceEstimate.max)
+                      : t.newJob.budgetOptional
                   }
                   className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
@@ -462,7 +469,7 @@ export default function NewJobPage() {
             {isReturnTrip && (
               <div>
                 <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Capacité disponible
+                  {t.newJob.capacityLabel}
                 </label>
                 <input
                   type="text"
@@ -470,11 +477,11 @@ export default function NewJobPage() {
                   onChange={(e) =>
                     updateFormData({ available_capacity: e.target.value })
                   }
-                  placeholder="Ex: 2 tonnes, camion bâché 12m³"
+                  placeholder={t.newJob.capacityPlaceholder}
                   className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
                 />
                 <p className="text-sm text-neutral-500 mt-1">
-                  Décrivez la capacité disponible pour attirer les bons clients.
+                  {t.newJob.capacityHint}
                 </p>
               </div>
             )}
@@ -513,7 +520,7 @@ export default function NewJobPage() {
                   )}
                 </div>
                 <span className="text-xs mt-2 text-neutral-600 hidden sm:block">
-                  {step.title}
+                  {stepTitles[index]}
                 </span>
 
                 {/* Connecting Line */}
@@ -532,17 +539,17 @@ export default function NewJobPage() {
         <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
           <h2 className="text-2xl font-bold text-neutral-900 mb-6">
             {isReturnTrip && currentStep === 0
-              ? "Trajet retour"
-              : STEPS[currentStep].title}
+              ? t.newJob.returnTripTitle
+              : stepTitles[currentStep]}
           </h2>
 
           {/* Return trip header info */}
           {isReturnTrip && currentStep <= 1 && (
             <div className="mb-6 bg-purple-50 border border-purple-200 rounded-xl p-4">
               <p className="text-sm text-purple-700 font-medium">
-                🔄 Vous créez un <strong>trajet retour</strong> — les clients
-                qui cherchent un transport sur votre itinéraire pourront voir
-                votre disponibilité.
+                {t.newJob.returnBannerPre}
+                <strong>{t.newJob.returnBannerBold}</strong>
+                {t.newJob.returnBannerPost}
               </p>
             </div>
           )}
@@ -551,14 +558,14 @@ export default function NewJobPage() {
           {draftRestored && (
             <div className="mb-6 flex items-center justify-between gap-3 bg-brand-600/5 border border-brand-600/20 rounded-xl p-3 text-sm">
               <p className="text-brand-700">
-                Votre brouillon a été restauré — reprenez là où vous en étiez.
+                {t.newJob.draftRestored}
               </p>
               <button
                 type="button"
                 onClick={discardDraft}
                 className="flex-shrink-0 text-brand-600 font-medium hover:underline"
               >
-                Recommencer à zéro
+                {t.newJob.draftRestart}
               </button>
             </div>
           )}
@@ -589,7 +596,7 @@ export default function NewJobPage() {
                 }`}
             >
               <ChevronLeft className="w-5 h-5" />
-              Retour
+              {t.newJob.backBtn}
             </button>
 
             <button
@@ -598,12 +605,12 @@ export default function NewJobPage() {
               className="flex items-center gap-2 px-8 py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
-                "Publication..."
+                t.newJob.publishing
               ) : currentStep === STEPS.length - 1 ? (
-                "Publier ma demande"
+                t.newJob.publishRequest
               ) : (
                 <>
-                  Suivant
+                  {t.newJob.nextBtn}
                   <ChevronRight className="w-5 h-5" />
                 </>
               )}

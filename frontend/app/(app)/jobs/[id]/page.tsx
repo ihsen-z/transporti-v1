@@ -12,6 +12,8 @@ import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { MissionStepper } from "@/components/jobs/MissionStepper";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useToast } from "@/components/ui/Toast";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
@@ -62,6 +64,7 @@ export default function JobDetailsPage() {
   const [cancelReason, setCancelReason] = useState("");
   const [transporterCancelling, setTransporterCancelling] = useState(false);
   const { showToast } = useToast();
+  const { t } = useAppI18n();
 
   // Return trip booking state
   const [showBookingModal, setShowBookingModal] = useState(false);
@@ -75,17 +78,11 @@ export default function JobDetailsPage() {
   useEffect(() => {
     const paymentStatus = searchParams?.get("payment");
     if (paymentStatus === "success") {
-      showToast(
-        "success",
-        "Paiement effectué avec succès ! Votre escrow est actif.",
-      );
+      showToast("success", t.jobDetail.paymentSuccess);
       // Clean URL
       router.replace(`/jobs/${jobId}`, { scroll: false });
     } else if (paymentStatus === "failed") {
-      showToast(
-        "error",
-        "Le paiement a échoué. Veuillez réessayer depuis votre réservation.",
-      );
+      showToast("error", t.jobDetail.paymentFailed);
       router.replace(`/jobs/${jobId}`, { scroll: false });
     }
   }, [searchParams]);
@@ -129,19 +126,13 @@ export default function JobDetailsPage() {
       await apiClient.post("/api/payments/confirm-completion/", {
         job_id: job!.id,
       });
-      showToast(
-        "success",
-        "Livraison confirmée ! Le paiement a été libéré au transporteur.",
-      );
+      showToast("success", t.jobDetail.deliveryConfirmed);
       fetchJob();
     } catch (error) {
       if (error instanceof ApiError && error.body) {
-        showToast(
-          "error",
-          error.body?.error || "Erreur lors de la confirmation.",
-        );
+        showToast("error", error.body?.error || t.jobDetail.confirmError);
       } else {
-        showToast("error", "Une erreur est survenue.");
+        showToast("error", t.jobDetail.genericError);
       }
     } finally {
       setConfirming(false);
@@ -150,7 +141,7 @@ export default function JobDetailsPage() {
 
   const handleBookReturnTrip = async () => {
     if (!bookingPrice || parseFloat(bookingPrice) <= 0) {
-      showToast("error", "Veuillez saisir un prix valide.");
+      showToast("error", t.jobDetail.invalidPrice);
       return;
     }
     setBookingLoading(true);
@@ -159,20 +150,14 @@ export default function JobDetailsPage() {
         proposed_price: bookingPrice,
         payment_method: bookingPayment,
       });
-      showToast(
-        "success",
-        "🚀 Trajet retour réservé avec succès ! La mission est en cours.",
-      );
+      showToast("success", t.jobDetail.returnBooked);
       setShowBookingModal(false);
       fetchJob();
     } catch (error) {
       if (error instanceof ApiError && error.body) {
-        showToast(
-          "error",
-          error.body?.error || "Erreur lors de la réservation.",
-        );
+        showToast("error", error.body?.error || t.jobDetail.bookingError);
       } else {
-        showToast("error", "Une erreur est survenue.");
+        showToast("error", t.jobDetail.genericError);
       }
     } finally {
       setBookingLoading(false);
@@ -184,16 +169,13 @@ export default function JobDetailsPage() {
     setCancelling(true);
     try {
       await apiClient.post(`/api/jobs/${job!.id}/cancel/`, {});
-      showToast("success", "Mission annulée avec succès.");
+      showToast("success", t.jobDetail.cancelSuccess);
       fetchJob();
     } catch (error) {
       if (error instanceof ApiError && error.body) {
-        showToast(
-          "error",
-          error.body?.error || "Erreur lors de l'annulation.",
-        );
+        showToast("error", error.body?.error || t.jobDetail.cancelError);
       } else {
-        showToast("error", "Une erreur est survenue.");
+        showToast("error", t.jobDetail.genericError);
       }
     } finally {
       setCancelling(false);
@@ -205,19 +187,13 @@ export default function JobDetailsPage() {
     setCompleting(true);
     try {
       await apiClient.post(`/api/jobs/${job!.id}/complete/`);
-      showToast(
-        "success",
-        "Mission marquée comme terminée ! Le client va confirmer la réception.",
-      );
+      showToast("success", t.jobDetail.markedDelivered);
       fetchJob();
     } catch (err) {
       if (err instanceof ApiError && err.body) {
-        showToast(
-          "error",
-          String(err.body?.error || "Erreur lors de la confirmation."),
-        );
+        showToast("error", String(err.body?.error || t.jobDetail.confirmError));
       } else {
-        showToast("error", "Erreur réseau. Veuillez réessayer.");
+        showToast("error", t.jobDetail.networkRetry);
       }
     } finally {
       setCompleting(false);
@@ -233,13 +209,13 @@ export default function JobDetailsPage() {
       });
       setActiveDialog(null);
       setCancelReason("");
-      showToast("success", "Mission annulée. Le client a été notifié.");
+      showToast("success", t.jobDetail.transporterCancelSuccess);
       fetchJob();
     } catch (err) {
       if (err instanceof ApiError && err.body) {
-        showToast("error", String(err.body?.error || "Erreur inattendue."));
+        showToast("error", String(err.body?.error || t.jobDetail.unexpectedError));
       } else {
-        showToast("error", "Erreur réseau.");
+        showToast("error", t.jobDetail.networkError);
       }
     } finally {
       setTransporterCancelling(false);
@@ -248,29 +224,29 @@ export default function JobDetailsPage() {
 
   if (loading)
     return (
-      <div className="p-8 text-center text-neutral-500">Chargement...</div>
+      <div className="p-8 text-center text-neutral-500">{t.jobDetail.loading}</div>
     );
   if (!job) {
     if (fetchError === "network")
       return (
         <div role="alert" className="p-8 text-center">
           <p className="text-neutral-900 font-medium">
-            Impossible de charger la mission.
+            {t.jobDetail.loadFailTitle}
           </p>
           <p className="text-neutral-500 text-sm mt-1">
-            Vérifiez votre connexion internet puis réessayez.
+            {t.jobDetail.loadFailDesc}
           </p>
           <button
             onClick={fetchJob}
             className="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors"
           >
-            Réessayer
+            {t.jobDetail.retry}
           </button>
         </div>
       );
     return (
       <div className="p-8 text-center text-red-500">
-        Job introuvable ou accès refusé.
+        {t.jobDetail.notFound}
       </div>
     );
   }
@@ -318,7 +294,7 @@ export default function JobDetailsPage() {
         {/* Status Banner */}
         <div className="flex items-center justify-between">
           <h1 className="text-2xl font-bold text-neutral-900">
-            Détail de la mission #{job.id}
+            {interpolate(t.jobDetail.title, { id: job.id })}
           </h1>
           <StatusBadge status={job.status} />
         </div>
@@ -333,7 +309,10 @@ export default function JobDetailsPage() {
         {isOwner && (job.view_count ?? 0) > 0 && (
           <div className="flex items-center gap-1.5 text-xs text-neutral-500 justify-end">
             <Eye className="w-3.5 h-3.5" />
-            {job.view_count} vue{(job.view_count ?? 0) > 1 ? "s" : ""}
+            {interpolate(t.jobDetail.viewCount, {
+              count: job.view_count ?? 0,
+              s: (job.view_count ?? 0) > 1 ? "s" : "",
+            })}
           </div>
         )}
 
@@ -348,7 +327,7 @@ export default function JobDetailsPage() {
                 <div className="mt-6 bg-white rounded-xl shadow-sm border border-neutral-200 p-5">
                   <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
                     <Truck className="w-4 h-4 text-brand-600" />
-                    Transporteur assigné
+                    {t.jobDetail.assignedTransporter}
                   </h3>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
@@ -377,7 +356,7 @@ export default function JobDetailsPage() {
                       <p className="text-lg font-bold text-neutral-900">
                         {job.accepted_transporter.total_price} TND
                       </p>
-                      <p className="text-xs text-neutral-500">Prix accepté</p>
+                      <p className="text-xs text-neutral-500">{t.jobDetail.acceptedPrice}</p>
                     </div>
                   </div>
                   {/* P2-06: Quick link to profile */}
@@ -385,7 +364,7 @@ export default function JobDetailsPage() {
                     href={`/profile/${job.accepted_transporter.id}`}
                     className="mt-3 w-full py-2 text-sm text-brand-600 border border-brand-600/20 rounded-lg font-medium hover:bg-brand-600/5 transition-colors flex items-center justify-center gap-1.5"
                   >
-                    Voir le profil complet
+                    {t.jobDetail.viewFullProfile}
                     <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
@@ -400,19 +379,18 @@ export default function JobDetailsPage() {
                 <div className="flex items-center gap-2 mb-2">
                   <ShieldAlert className="w-5 h-5 text-amber-600" />
                   <h3 className="font-semibold text-amber-800">
-                    Vérification requise
+                    {t.jobDetail.verifRequired}
                   </h3>
                 </div>
                 <p className="text-sm text-amber-700 mb-3">
-                  Vous devez compléter votre vérification avant de soumettre des
-                  offres.
+                  {t.jobDetail.verifRequiredDesc}
                 </p>
                 <Link
                   href="/verification"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
                 >
                   <ShieldAlert className="w-4 h-4" />
-                  Compléter ma vérification
+                  {t.jobDetail.completeVerif}
                 </Link>
               </div>
             )}
@@ -425,7 +403,7 @@ export default function JobDetailsPage() {
                 priceTndMin={job.price_tnd_min != null ? Number(job.price_tnd_min) : undefined}
                 priceTndMax={job.price_tnd_max != null ? Number(job.price_tnd_max) : undefined}
                 onOfferSubmitted={() => {
-                  showToast("success", "Offre envoyée avec succès !");
+                  showToast("success", t.jobDetail.offerSent);
                   fetchJob();
                 }}
               />
@@ -438,7 +416,7 @@ export default function JobDetailsPage() {
                 className="block bg-white rounded-xl shadow-sm p-4 border border-neutral-200 hover:border-brand-300 hover:shadow-md transition-all group"
               >
                 <h3 className="text-sm font-semibold text-neutral-700 mb-3">
-                  Client
+                  {t.jobDetail.client}
                 </h3>
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-brand-600/10 flex items-center justify-center text-brand-600 font-bold text-sm">
@@ -447,13 +425,13 @@ export default function JobDetailsPage() {
                   <div className="flex-1">
                     <p className="text-sm font-medium text-neutral-900 group-hover:text-brand-600 transition-colors">
                       {job.owner.name ||
-                        `${job.owner.first_name || "Client"} ${(job.owner.last_name || "")[0]}.`}
+                        `${job.owner.first_name || t.jobDetail.client} ${(job.owner.last_name || "")[0]}.`}
                     </p>
                     {job.owner.rating && (
                       <div className="flex items-center gap-1 text-xs text-neutral-500">
                         <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
                         {job.owner.rating.toFixed(1)} ·{" "}
-                        {job.owner.review_count || 0} avis
+                        {job.owner.review_count || 0} {t.profile.reviews}
                       </div>
                     )}
                   </div>
@@ -467,7 +445,7 @@ export default function JobDetailsPage() {
               <div className="bg-white rounded-xl shadow-sm p-4 border border-neutral-200">
                 <h3 className="text-sm font-semibold text-neutral-700 mb-2 flex items-center gap-2">
                   <Route className="w-4 h-4 text-brand-600" />
-                  Estimation trajet
+                  {t.jobDetail.routeEstimation}
                 </h3>
                 <div className="flex items-center gap-4 text-sm">
                   <div className="flex items-center gap-1 text-neutral-600">
@@ -488,7 +466,7 @@ export default function JobDetailsPage() {
               <div className="bg-white rounded-xl shadow-sm p-4 border">
                 <h3 className="font-bold text-neutral-900 mb-4 flex items-center gap-2">
                   <BadgeCheck className="w-5 h-5 text-purple-600" />
-                  Offres reçues
+                  {t.jobDetail.offersReceived}
                 </h3>
                 <OfferList
                   jobId={job.id}
@@ -507,10 +485,10 @@ export default function JobDetailsPage() {
                   </div>
                   <div>
                     <h3 className="font-bold text-purple-900">
-                      Trajet retour disponible
+                      {t.jobDetail.returnAvailable}
                     </h3>
                     <p className="text-xs text-purple-600">
-                      Tarif réduit — camion sur le retour
+                      {t.jobDetail.returnReducedRate}
                     </p>
                   </div>
                 </div>
@@ -524,11 +502,11 @@ export default function JobDetailsPage() {
                     <div>
                       <p className="text-sm font-medium text-neutral-900">
                         {job.owner?.name ||
-                          `${job.owner?.first_name || "Transporteur"}`}
+                          `${job.owner?.first_name || t.jobDetail.defaultTransporter}`}
                       </p>
                       <div className="flex items-center gap-1 text-xs text-neutral-500">
                         <UserCheck className="w-3 h-3 text-green-500" />
-                        Transporteur vérifié
+                        {t.jobDetail.verifiedTransporter}
                       </div>
                     </div>
                   </div>
@@ -538,14 +516,18 @@ export default function JobDetailsPage() {
                 {job.available_capacity && (
                   <div className="flex items-center gap-2 text-sm text-purple-700 mb-3">
                     <Package className="w-4 h-4" />
-                    <span>Capacité : {job.available_capacity}</span>
+                    <span>
+                      {interpolate(t.jobDetail.capacity, {
+                        cap: job.available_capacity,
+                      })}
+                    </span>
                   </div>
                 )}
 
                 {/* Price */}
                 {(job.price_tnd_min || job.price_tnd_max) && (
                   <div className="text-center bg-white rounded-lg py-2 px-3 mb-3 border border-purple-100">
-                    <p className="text-xs text-neutral-500">Prix indicatif</p>
+                    <p className="text-xs text-neutral-500">{t.jobDetail.indicativePrice}</p>
                     <p className="text-xl font-bold text-purple-700">
                       {String(job.price_tnd_min || "0")} -{" "}
                       {String(job.price_tnd_max || "?")} TND
@@ -563,7 +545,7 @@ export default function JobDetailsPage() {
                   className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20 mb-2"
                 >
                   <Truck className="w-5 h-5" />
-                  Réserver ce trajet
+                  {t.jobDetail.bookThisTrip}
                 </button>
 
                 {/* Secondary CTA — Contacter */}
@@ -572,11 +554,11 @@ export default function JobDetailsPage() {
                   className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-purple-300 text-purple-700 rounded-xl font-medium hover:bg-purple-50 transition-colors"
                 >
                   <MessageSquare className="w-4 h-4" />
-                  Contacter le transporteur
+                  {t.jobDetail.contactTransporter}
                 </Link>
                 <p className="text-xs text-purple-500 text-center mt-2 flex items-center justify-center gap-1">
                   <ShieldCheck className="w-3 h-3" />
-                  Paiement sécurisé par escrow
+                  {t.jobDetail.securePaymentEscrow}
                 </p>
               </div>
             )}
@@ -593,10 +575,10 @@ export default function JobDetailsPage() {
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-white">
-                          Confirmer la réservation
+                          {t.jobDetail.confirmBooking}
                         </h3>
                         <p className="text-sm text-purple-200">
-                          Trajet retour #{job.id}
+                          {interpolate(t.jobDetail.returnTripRef, { id: job.id })}
                         </p>
                       </div>
                     </div>
@@ -626,7 +608,7 @@ export default function JobDetailsPage() {
                     {/* Price input (negotiable) */}
                     <div>
                       <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
-                        Votre prix proposé (TND)
+                        {t.jobDetail.proposedPrice}
                       </label>
                       <div className="relative">
                         <input
@@ -636,22 +618,23 @@ export default function JobDetailsPage() {
                           value={bookingPrice}
                           onChange={(e) => setBookingPrice(e.target.value)}
                           className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-lg font-bold text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
-                          placeholder="Ex: 100"
+                          placeholder={t.jobDetail.priceExample}
                         />
                         <span className="absolute right-4 top-1/2 -translate-y-1/2 text-sm font-medium text-neutral-400">
-                          TND
+                          {t.jobsList.tnd}
                         </span>
                       </div>
                       <p className="text-xs text-neutral-500 mt-1">
-                        Prix indicatif du transporteur :{" "}
-                        {String(job.price_tnd_min || "—")} TND
+                        {interpolate(t.jobDetail.transporterIndicative, {
+                          price: String(job.price_tnd_min || "—"),
+                        })}
                       </p>
                     </div>
 
                     {/* Payment method */}
                     <div>
                       <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
-                        Mode de paiement
+                        {t.jobDetail.paymentMethod}
                       </label>
                       <div className="grid grid-cols-2 gap-2">
                         <button
@@ -664,7 +647,7 @@ export default function JobDetailsPage() {
                           }`}
                         >
                           <CreditCard className="w-4 h-4" />
-                          Paiement sécurisé
+                          {t.jobDetail.securePayment}
                         </button>
                         <button
                           type="button"
@@ -675,14 +658,15 @@ export default function JobDetailsPage() {
                               : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
                           }`}
                         >
-                          <Wallet className="w-4 h-4" />À la livraison
+                          <Wallet className="w-4 h-4" />
+                          {t.jobDetail.onDelivery}
                         </button>
                       </div>
                       {bookingPayment === "COD" &&
                         parseFloat(bookingPrice) > 300 && (
                           <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
                             <AlertCircle className="w-3 h-3" />
-                            Maximum 300 TND pour le paiement à la livraison
+                            {t.jobDetail.codMax}
                           </p>
                         )}
                     </div>
@@ -695,7 +679,7 @@ export default function JobDetailsPage() {
                       disabled={bookingLoading}
                       className="flex-1 py-3 border-2 border-neutral-200 text-neutral-700 rounded-xl font-medium hover:bg-neutral-100 transition-colors"
                     >
-                      Annuler
+                      {t.common.cancel}
                     </button>
                     <button
                       onClick={handleBookReturnTrip}
@@ -729,12 +713,12 @@ export default function JobDetailsPage() {
                               d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
                             />
                           </svg>
-                          Réservation...
+                          {t.jobDetail.booking}
                         </span>
                       ) : (
                         <>
                           <CheckCircle className="w-4 h-4" />
-                          Confirmer
+                          {t.jobDetail.confirm}
                         </>
                       )}
                     </button>
@@ -747,26 +731,24 @@ export default function JobDetailsPage() {
             <div className="bg-white rounded-xl shadow-sm p-4 border border-neutral-200">
               <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-green-600" />
-                Confiance & Sécurité
+                {t.jobDetail.trustTitle}
               </h3>
               <ul className="space-y-2">
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
                   <ShieldCheck className="w-3.5 h-3.5 text-green-500 flex-shrink-0 mt-0.5" />
-                  <span>Transporteurs vérifiés (CIN, patente, assurance)</span>
+                  <span>{t.jobDetail.trustVerified}</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
                   <Wallet className="w-3.5 h-3.5 text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>
-                    Paiement sécurisé par escrow — libéré après confirmation
-                  </span>
+                  <span>{t.jobDetail.trustEscrow}</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
                   <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
-                  <span>Résolution de litiges sous 24-48h</span>
+                  <span>{t.jobDetail.trustDisputes}</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
                   <Star className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
-                  <span>Avis authentiques de clients vérifiés</span>
+                  <span>{t.jobDetail.trustReviews}</span>
                 </li>
               </ul>
             </div>
@@ -776,12 +758,12 @@ export default function JobDetailsPage() {
               <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-brand-700">
                 <h3 className="font-bold flex items-center gap-2 mb-2">
                   <Clock className="w-5 h-5" />
-                  Mission en cours
+                  {t.jobDetail.missionInProgress}
                 </h3>
                 <p className="text-sm">
                   {isAssignedTransporter
-                    ? "Vous êtes assigné à cette mission. Marquez-la comme livrée une fois terminée."
-                    : "Le transporteur a été assigné. Coordonnez-vous via la messagerie."}
+                    ? t.jobDetail.assignedToYou
+                    : t.jobDetail.transporterAssignedInfo}
                 </p>
                 <div className="mt-3 space-y-2">
                   {/* P0-01: CTA "Marquer comme livré" — Transporteur uniquement */}
@@ -797,8 +779,8 @@ export default function JobDetailsPage() {
                         <Package className="w-4 h-4" />
                       )}
                       {completing
-                        ? "Confirmation..."
-                        : "📦 Marquer comme livré"}
+                        ? t.jobDetail.confirming
+                        : t.jobDetail.markDelivered}
                     </button>
                   )}
                   <button
@@ -806,14 +788,14 @@ export default function JobDetailsPage() {
                     className="w-full py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2"
                   >
                     <MessageSquare className="w-4 h-4" />
-                    Ouvrir la messagerie
+                    {t.jobDetail.openMessaging}
                   </button>
                   <Link
                     href={`/booking/${job.id}`}
                     className="w-full py-2 border border-brand-600/30 text-brand-700 rounded-lg font-medium hover:bg-brand-600/5 flex items-center justify-center gap-2"
                   >
                     <FileText className="w-4 h-4" />
-                    Voir la réservation
+                    {t.jobDetail.viewBooking}
                   </Link>
                   {/* P2-03: Cancel mutuel — transporteur peut annuler */}
                   {isAssignedTransporter && (
@@ -822,7 +804,7 @@ export default function JobDetailsPage() {
                       className="w-full py-2 border border-red-300 text-red-600 rounded-lg font-medium hover:bg-red-50 flex items-center justify-center gap-2 text-sm transition-colors"
                     >
                       <XCircle className="w-4 h-4" />
-                      Annuler la mission
+                      {t.jobDetail.cancelMission}
                     </button>
                   )}
                 </div>
@@ -840,11 +822,10 @@ export default function JobDetailsPage() {
                   <div className="bg-amber-50 border border-amber-300 rounded-xl p-5 animate-fade-in-up">
                     <h3 className="font-bold flex items-center gap-2 mb-2 text-amber-900">
                       <AlertCircle className="w-5 h-5" />
-                      Confirmer la livraison
+                      {t.jobDetail.confirmDeliveryTitle}
                     </h3>
                     <p className="text-sm text-amber-800 mb-4">
-                      Le transporteur a marqué cette mission comme terminée.
-                      Confirmez la bonne réception pour libérer le paiement.
+                      {t.jobDetail.confirmDeliveryDesc}
                     </p>
                     <button
                       onClick={() => setActiveDialog("confirmDelivery")}
@@ -852,11 +833,11 @@ export default function JobDetailsPage() {
                       className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       {confirming ? (
-                        "Confirmation..."
+                        t.jobDetail.confirming
                       ) : (
                         <>
                           <CheckCircle className="w-5 h-5" />
-                          Confirmer la réception & Libérer le paiement
+                          {t.jobDetail.confirmReceiveRelease}
                         </>
                       )}
                     </button>
@@ -869,7 +850,7 @@ export default function JobDetailsPage() {
                     <div className="flex items-center gap-2 text-green-800">
                       <ShieldCheck className="w-5 h-5" />
                       <span className="font-semibold">
-                        Livraison confirmée — Paiement libéré ✓
+                        {t.jobDetail.deliveryReleasedBadge}
                       </span>
                     </div>
                   </div>
@@ -880,11 +861,10 @@ export default function JobDetailsPage() {
                   <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-brand-700">
                     <h3 className="font-bold flex items-center gap-2 mb-2">
                       <Clock className="w-5 h-5" />
-                      En attente de confirmation
+                      {t.jobDetail.awaitingConfirmation}
                     </h3>
                     <p className="text-sm">
-                      Le client doit confirmer la bonne réception avant que
-                      votre paiement soit libéré.
+                      {t.jobDetail.awaitingConfirmationDesc}
                     </p>
                   </div>
                 )}
@@ -906,7 +886,7 @@ export default function JobDetailsPage() {
                   <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 flex items-center gap-2 text-neutral-600">
                     <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
                     <span className="text-sm">
-                      Vous avez déjà laissé un avis pour cette mission.
+                      {t.jobDetail.alreadyReviewed}
                     </span>
                   </div>
                 )}
@@ -915,10 +895,10 @@ export default function JobDetailsPage() {
                 <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
                   <h3 className="font-bold flex items-center gap-2 mb-1">
                     <CheckCircle className="w-5 h-5" />
-                    Mission terminée
+                    {t.jobDetail.missionCompleted}
                   </h3>
                   <p className="text-sm">
-                    Le transport a été effectué avec succès.
+                    {t.jobDetail.missionCompletedDesc}
                   </p>
                 </div>
               </div>
@@ -932,11 +912,11 @@ export default function JobDetailsPage() {
                 className="flex items-center justify-center gap-2 w-full py-3 border border-neutral-300 bg-white text-neutral-700 rounded-xl text-sm font-semibold hover:bg-neutral-50 hover:border-neutral-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {cancelling ? (
-                  "Annulation..."
+                  t.jobDetail.cancelling
                 ) : (
                   <>
                     <XCircle className="w-4 h-4" />
-                    Annuler cette mission
+                    {t.jobDetail.cancelThisMission}
                   </>
                 )}
               </button>
@@ -949,7 +929,7 @@ export default function JobDetailsPage() {
                 className="flex items-center justify-center gap-2 w-full py-3 border border-red-200 bg-red-50 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors"
               >
                 <AlertTriangle className="w-4 h-4" />
-                Signaler un problème
+                {t.jobDetail.reportProblem}
               </Link>
             )}
           </div>
@@ -962,9 +942,9 @@ export default function JobDetailsPage() {
 
       <ConfirmModal
         open={activeDialog === "confirmDelivery"}
-        title="Confirmer la réception"
-        message="Confirmez-vous la bonne réception de votre livraison ? Cette action libérera le paiement au transporteur."
-        confirmLabel="Confirmer la réception"
+        title={t.jobDetail.confirmReceptionTitle}
+        message={t.jobDetail.confirmReceptionMsg}
+        confirmLabel={t.jobDetail.confirmReceptionLabel}
         confirmColor="brand"
         loading={confirming}
         onConfirm={handleConfirmDelivery}
@@ -973,10 +953,10 @@ export default function JobDetailsPage() {
 
       <ConfirmModal
         open={activeDialog === "cancelJob"}
-        title="Annuler la mission"
-        message="Êtes-vous sûr de vouloir annuler cette mission ? Cette action est irréversible."
-        confirmLabel="Annuler la mission"
-        cancelLabel="Retour"
+        title={t.jobDetail.cancelJobTitle}
+        message={t.jobDetail.cancelJobMsg}
+        confirmLabel={t.jobDetail.cancelJobLabel}
+        cancelLabel={t.jobDetail.backLabel}
         confirmColor="red"
         loading={cancelling}
         onConfirm={handleCancelJob}
@@ -985,9 +965,9 @@ export default function JobDetailsPage() {
 
       <ConfirmModal
         open={activeDialog === "markDelivered"}
-        title="Marquer comme livré"
-        message="Confirmez-vous avoir livré la marchandise ? Le client sera notifié pour confirmer la réception."
-        confirmLabel="Oui, c'est livré"
+        title={t.jobDetail.markDeliveredTitle}
+        message={t.jobDetail.markDeliveredMsg}
+        confirmLabel={t.jobDetail.markDeliveredLabel}
         confirmColor="brand"
         loading={completing}
         onConfirm={handleMarkDelivered}
@@ -996,7 +976,7 @@ export default function JobDetailsPage() {
 
       <Modal
         open={activeDialog === "transporterCancel"}
-        title="Annuler la mission"
+        title={t.jobDetail.cancelJobTitle}
         onClose={() => {
           setActiveDialog(null);
           setCancelReason("");
@@ -1013,32 +993,31 @@ export default function JobDetailsPage() {
                 setCancelReason("");
               }}
             >
-              Retour
+              {t.jobDetail.backLabel}
             </Button>
             <Button
               variant="danger"
               fullWidth
               loading={transporterCancelling}
-              loadingLabel="Annulation..."
+              loadingLabel={t.jobDetail.cancelling}
               disabled={!cancelReason.trim()}
               onClick={handleTransporterCancel}
             >
-              Annuler la mission
+              {t.jobDetail.cancelJobLabel}
             </Button>
           </>
         }
       >
         <p className="text-sm text-neutral-500 mb-4">
-          La mission sera remise en ligne et le client sera notifié. Expliquez
-          la raison de votre annulation.
+          {t.jobDetail.transporterCancelBody}
         </p>
         <Textarea
-          label="Raison de l'annulation"
+          label={t.jobDetail.cancelReasonLabel}
           required
           rows={3}
           value={cancelReason}
           onChange={(e) => setCancelReason(e.target.value)}
-          placeholder="Ex : panne de véhicule, empêchement de dernière minute…"
+          placeholder={t.jobDetail.cancelReasonPlaceholder}
         />
       </Modal>
     </div>
