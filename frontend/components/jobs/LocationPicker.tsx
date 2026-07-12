@@ -71,9 +71,11 @@ const HINT_SUGGESTIONS = [
   },
 ];
 
+import type { JobFormData } from "@/lib/types/jobs";
+
 interface LocationPickerProps {
-  data: any;
-  onChange: (data: any) => void;
+  data: JobFormData;
+  onChange: (data: Partial<JobFormData>) => void;
 }
 
 interface GpsState {
@@ -94,8 +96,8 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
     done: !!data.dropoff_lat,
   });
 
-  const handleChange = (field: string, value: any) => {
-    onChange({ [field]: value });
+  const handleChange = (field: string, value: unknown) => {
+    onChange({ [field]: value } as Partial<JobFormData>);
   };
 
   /* -------------- GPS geolocation -------------- */
@@ -170,7 +172,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
 
   /* -------------- Hint chip click -------------- */
   const addHintChip = (target: "pickup" | "dropoff", prefix: string) => {
-    const field = `${target}_hint`;
+    const field = `${target}_hint` as const;
     const current = data[field] || "";
     const separator = current ? " • " : "";
     handleChange(field, current + separator + prefix);
@@ -180,21 +182,27 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
   const renderLocationSection = (
     target: "pickup" | "dropoff",
     title: string,
-    color: string,
+    color: "orange" | "green",
     gpsState: GpsState,
   ) => {
-    const addressField = `${target}_address`;
-    const govField = `${target}_governorate`;
-    const postalField = `${target}_postal_code`;
-    const hintField = `${target}_hint`;
-    const latField = `${target}_lat`;
-    const lngField = `${target}_lng`;
+    // Tailwind ne compile pas les classes interpolées (`text-${color}-600`) :
+    // les variantes doivent apparaître en toutes lettres dans le source.
+    const colorClasses = {
+      orange: { title: "text-orange-600", ring: "focus:ring-orange-500" },
+      green: { title: "text-green-600", ring: "focus:ring-green-500" },
+    }[color];
+    const addressField = `${target}_address` as const;
+    const govField = `${target}_governorate` as const;
+    const postalField = `${target}_postal_code` as const;
+    const hintField = `${target}_hint` as const;
+    const latField = `${target}_lat` as const;
+    const lngField = `${target}_lng` as const;
 
     return (
       <div className="border rounded-xl p-4 bg-white shadow-sm">
         <div className="flex items-center justify-between mb-3">
           <div
-            className={`flex items-center gap-2 text-${color}-600 font-semibold`}
+            className={`flex items-center gap-2 ${colorClasses.title} font-semibold`}
           >
             <MapPin className="w-5 h-5" />
             <h3>{title}</h3>
@@ -268,7 +276,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                   ? "Ex: 12 Rue de la République, Tunis"
                   : "Ex: Zone Industrielle, Sfax"
               }
-              className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-${color}-500`}
+              className={`w-full p-3 border rounded-lg focus:ring-2 ${colorClasses.ring}`}
             />
           </div>
 
@@ -333,7 +341,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                 value={data[hintField] || ""}
                 onChange={(e) => handleChange(hintField, e.target.value)}
                 placeholder="Ex: 3ème étage, code porte 4589, en face de la boulangerie"
-                className="w-full p-2.5 pr-8 border rounded-lg text-sm focus:ring-2 focus:ring-accent-500 bg-brand-600/5/30"
+                className="w-full p-2.5 pr-8 border rounded-lg text-sm focus:ring-2 focus:ring-accent-500 bg-brand-600/5"
               />
               {data[hintField] && (
                 <button

@@ -44,6 +44,9 @@ export default function JobDetailsPage() {
   const searchParams = useSearchParams();
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState<"network" | "not_found" | null>(
+    null,
+  );
   const [confirming, setConfirming] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -85,11 +88,24 @@ export default function JobDetailsPage() {
   }, [jobId]);
 
   const fetchJob = async () => {
+    setLoading(true);
+    setFetchError(null);
     try {
       const data = await apiClient.get<JobDetail>(`/api/jobs/${jobId}/`);
       setJob(data as JobDetail);
     } catch (error) {
       console.error("Error fetching job:", error);
+      // Distinguer "le job n'existe pas / accès refusé" (4xx) d'une panne
+      // réseau ou serveur, pour ne pas afficher un faux "introuvable".
+      if (
+        error instanceof ApiError &&
+        error.status >= 400 &&
+        error.status < 500
+      ) {
+        setFetchError("not_found");
+      } else {
+        setFetchError("network");
+      }
     } finally {
       setLoading(false);
     }
@@ -117,7 +133,7 @@ export default function JobDetailsPage() {
       if (error instanceof ApiError && error.body) {
         showToast(
           "error",
-          (error.body as any)?.error || "Erreur lors de la confirmation.",
+          error.body?.error || "Erreur lors de la confirmation.",
         );
       } else {
         showToast("error", "Une erreur est survenue.");
@@ -148,7 +164,7 @@ export default function JobDetailsPage() {
       if (error instanceof ApiError && error.body) {
         showToast(
           "error",
-          (error.body as any)?.error || "Erreur lors de la réservation.",
+          error.body?.error || "Erreur lors de la réservation.",
         );
       } else {
         showToast("error", "Une erreur est survenue.");
@@ -175,7 +191,7 @@ export default function JobDetailsPage() {
       if (error instanceof ApiError && error.body) {
         showToast(
           "error",
-          (error.body as any)?.error || "Erreur lors de l'annulation.",
+          error.body?.error || "Erreur lors de l'annulation.",
         );
       } else {
         showToast("error", "Une erreur est survenue.");
@@ -189,18 +205,36 @@ export default function JobDetailsPage() {
     return (
       <div className="p-8 text-center text-neutral-500">Chargement...</div>
     );
-  if (!job)
+  if (!job) {
+    if (fetchError === "network")
+      return (
+        <div role="alert" className="p-8 text-center">
+          <p className="text-neutral-900 font-medium">
+            Impossible de charger la mission.
+          </p>
+          <p className="text-neutral-500 text-sm mt-1">
+            Vérifiez votre connexion internet puis réessayez.
+          </p>
+          <button
+            onClick={fetchJob}
+            className="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors"
+          >
+            Réessayer
+          </button>
+        </div>
+      );
     return (
       <div className="p-8 text-center text-red-500">
         Job introuvable ou accès refusé.
       </div>
     );
+  }
 
   const isOwner = user?.id === job.owner?.id;
   const isClient = user?.role?.toUpperCase() === "CLIENT";
   const isTransporter = user?.role?.toUpperCase() === "TRANSPORTER";
   const isVerified = user?.is_verified === true;
-  const isReturnTrip = (job as any).is_return_trip === true;
+  const isReturnTrip = job.is_return_trip === true;
   const isClientViewingReturnTrip =
     isClient && !isOwner && isReturnTrip && job.status === "PUBLISHED";
   const showOfferForm =
@@ -247,14 +281,14 @@ export default function JobDetailsPage() {
         {/* P1-02: Mission progress stepper */}
         <MissionStepper
           status={job.status}
-          completedAt={(job as any).completed_at}
+          completedAt={job.completed_at ?? undefined}
         />
 
         {/* P1-05: View counter (visible to job owner) */}
-        {isOwner && (job as any).view_count > 0 && (
+        {isOwner && (job.view_count ?? 0) > 0 && (
           <div className="flex items-center gap-1.5 text-xs text-neutral-500 justify-end">
             <Eye className="w-3.5 h-3.5" />
-            {(job as any).view_count} vue{(job as any).view_count > 1 ? "s" : ""}
+            {job.view_count} vue{(job.view_count ?? 0) > 1 ? "s" : ""}
           </div>
         )}
 
@@ -343,8 +377,8 @@ export default function JobDetailsPage() {
               <OfferForm
                 jobId={job.id}
                 jobType={job.job_type}
-                priceTndMin={(job as any).price_tnd_min}
-                priceTndMax={(job as any).price_tnd_max}
+                priceTndMin={job.price_tnd_min != null ? Number(job.price_tnd_min) : undefined}
+                priceTndMax={job.price_tnd_max != null ? Number(job.price_tnd_max) : undefined}
                 onOfferSubmitted={() => {
                   showToast("success", "Offre envoyée avec succès !");
                   fetchJob();
@@ -456,10 +490,10 @@ export default function JobDetailsPage() {
                 </div>
 
                 {/* Capacity Info */}
-                {(job as any).available_capacity && (
+                {job.available_capacity && (
                   <div className="flex items-center gap-2 text-sm text-purple-700 mb-3">
                     <Package className="w-4 h-4" />
-                    <span>Capacité : {(job as any).available_capacity}</span>
+                    <span>Capacité : {job.available_capacity}</span>
                   </div>
                 )}
 
@@ -728,7 +762,7 @@ export default function JobDetailsPage() {
                         } catch (err) {
                           if (err instanceof ApiError && err.body) {
                             const msg =
-                              (err.body as any).error ||
+                              err.body?.error ||
                               "Erreur lors de la confirmation.";
                             showToast("error", String(msg));
                           } else {
@@ -797,7 +831,7 @@ export default function JobDetailsPage() {
                             showToast(
                               "error",
                               String(
-                                (err.body as any).error || "Erreur inattendue.",
+                                err.body?.error || "Erreur inattendue.",
                               ),
                             );
                           } else {

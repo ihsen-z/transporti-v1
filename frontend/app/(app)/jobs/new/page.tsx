@@ -11,8 +11,9 @@ import {
   Lightbulb,
   MapPin,
 } from "lucide-react";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
+import type { JobFormData } from "@/lib/types/jobs";
 import { JobTypeSelector } from "@/components/jobs/JobTypeSelector";
 import { LocationPicker } from "@/components/jobs/LocationPicker";
 import { TransportDetailsForm } from "@/components/jobs/TransportDetailsForm";
@@ -27,6 +28,55 @@ const STEPS = [
   { id: "preview", title: "Confirmation" },
 ];
 
+// Délai minimum avant la date souhaitée — règle unique, affichée et validée.
+const MIN_SCHEDULE_DELAY_MS = 24 * 60 * 60 * 1000;
+
+// datetime-local attend une valeur en heure LOCALE ; toISOString() (UTC)
+// décalerait la borne d'une heure en Tunisie.
+const toLocalDatetimeValue = (date: Date) => {
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
+};
+
+// Libellés français des champs pour rendre lisibles les erreurs backend.
+const FIELD_LABELS: Record<string, string> = {
+  job_type: "Type de service",
+  pickup_address: "Adresse de départ",
+  pickup_governorate: "Gouvernorat de départ",
+  dropoff_address: "Adresse de destination",
+  dropoff_governorate: "Gouvernorat de destination",
+  description: "Description",
+  photos: "Photos",
+  scheduled_time: "Date et heure",
+  price_tnd_min: "Budget min",
+  price_tnd_max: "Budget max",
+  available_capacity: "Capacité disponible",
+};
+
+const makeInitialFormData = (isReturnTrip: boolean): JobFormData => ({
+  job_type: (isReturnTrip ? "TRANSPORT" : null) as
+    | "TRANSPORT"
+    | "MOVING"
+    | null,
+  pickup_address: "",
+  pickup_governorate: "",
+  pickup_lat: null as number | null,
+  pickup_lng: null as number | null,
+  pickup_hint: "",
+  dropoff_address: "",
+  dropoff_governorate: "",
+  dropoff_lat: null as number | null,
+  dropoff_lng: null as number | null,
+  dropoff_hint: "",
+  description: "",
+  photos: [] as string[],
+  specifications: {},
+  scheduled_time: "",
+  price_tnd_min: "",
+  price_tnd_max: "",
+  available_capacity: "", // For return trips only
+});
+
 export default function NewJobPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -35,31 +85,63 @@ export default function NewJobPage() {
   const [currentStep, setCurrentStep] = useState(isReturnTrip ? 1 : 0); // skip type for return trips
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
-  const [formData, setFormData] = useState({
-    job_type: (isReturnTrip ? "TRANSPORT" : null) as
-      | "TRANSPORT"
-      | "MOVING"
-      | null,
-    pickup_address: "",
-    pickup_governorate: "",
-    pickup_lat: null as number | null,
-    pickup_lng: null as number | null,
-    pickup_hint: "",
-    dropoff_address: "",
-    dropoff_governorate: "",
-    dropoff_lat: null as number | null,
-    dropoff_lng: null as number | null,
-    dropoff_hint: "",
-    description: "",
-    photos: [] as string[],
-    specifications: {},
-    scheduled_time: "",
-    price_tnd_min: "",
-    price_tnd_max: "",
-    available_capacity: "", // For return trips only
-  });
+  const [formData, setFormData] = useState<JobFormData>(() =>
+    makeInitialFormData(isReturnTrip),
+  );
 
   const [validationError, setValidationError] = useState<string | null>(null);
+
+  /* -------------- Brouillon (localStorage) -------------- */
+  const DRAFT_KEY = isReturnTrip
+    ? "transporti-job-draft-return"
+    : "transporti-job-draft";
+  const [draftRestored, setDraftRestored] = useState(false);
+  const [draftLoaded, setDraftLoaded] = useState(false);
+
+  // Restauration au montage — un refresh ou un retour arrière ne perd plus le formulaire.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        const draft = JSON.parse(raw);
+        if (draft?.formData) {
+          setFormData((prev) => ({ ...prev, ...draft.formData }));
+          if (
+            typeof draft.currentStep === "number" &&
+            draft.currentStep >= 0 &&
+            draft.currentStep < STEPS.length
+          ) {
+            setCurrentStep(draft.currentStep);
+          }
+          setDraftRestored(true);
+        }
+      }
+    } catch {
+      // brouillon corrompu — on repart de zéro
+    }
+    setDraftLoaded(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sauvegarde à chaque modification (après la restauration initiale).
+  useEffect(() => {
+    if (!draftLoaded) return;
+    try {
+      localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData, currentStep }));
+    } catch {
+      // stockage plein/indisponible — non bloquant
+    }
+  }, [formData, currentStep, draftLoaded, DRAFT_KEY]);
+
+  const discardDraft = () => {
+    try {
+      localStorage.removeItem(DRAFT_KEY);
+    } catch {}
+    setFormData(makeInitialFormData(isReturnTrip));
+    setCurrentStep(isReturnTrip ? 1 : 0);
+    setDraftRestored(false);
+    setValidationError(null);
+  };
 
   // L5: Price estimation state
   const [priceEstimate, setPriceEstimate] = useState<{
@@ -121,24 +203,49 @@ export default function NewJobPage() {
     formData.job_type,
   ]);
 
-  const handleNext = () => {
-    setValidationError(null);
-
-    // Step 3 validation: date is required and ≥ 15m from now
-    if (currentStep === 3 && !formData.scheduled_time) {
-      setValidationError("Veuillez sélectionner une date et heure.");
-      return;
-    }
-    if (currentStep === 3 && formData.scheduled_time) {
-      const selected = new Date(formData.scheduled_time);
-      const minDate = new Date(Date.now() + 15 * 60 * 1000);
-      if (selected < minDate) {
-        setValidationError(
-          "La date doit être au moins 15 minutes dans le futur.",
-        );
-        return;
+  // Validation bloquante par étape — les erreurs apparaissent avant "Suivant",
+  // pas au moment de la publication.
+  const validateStep = (step: number): string | null => {
+    switch (step) {
+      case 0:
+        if (!formData.job_type) return "Veuillez choisir un type de service.";
+        return null;
+      case 1: {
+        const missing: string[] = [];
+        if (!formData.pickup_address.trim()) missing.push("l'adresse de départ");
+        if (!formData.pickup_governorate)
+          missing.push("le gouvernorat de départ");
+        if (!formData.dropoff_address.trim())
+          missing.push("l'adresse de destination");
+        if (!formData.dropoff_governorate)
+          missing.push("le gouvernorat de destination");
+        if (missing.length > 0)
+          return `Veuillez renseigner ${missing.join(", ")}.`;
+        return null;
       }
+      case 3: {
+        if (!formData.scheduled_time)
+          return "Veuillez sélectionner une date et heure.";
+        const selected = new Date(formData.scheduled_time);
+        if (selected.getTime() < Date.now() + MIN_SCHEDULE_DELAY_MS)
+          return "La date doit être au moins 24 heures dans le futur.";
+        if (
+          formData.price_tnd_min &&
+          formData.price_tnd_max &&
+          Number(formData.price_tnd_min) > Number(formData.price_tnd_max)
+        )
+          return "Le budget minimum ne peut pas dépasser le budget maximum.";
+        return null;
+      }
+      default:
+        return null;
     }
+  };
+
+  const handleNext = () => {
+    const error = validateStep(currentStep);
+    setValidationError(error);
+    if (error) return;
 
     if (currentStep < STEPS.length - 1) {
       setCurrentStep(currentStep + 1);
@@ -150,6 +257,7 @@ export default function NewJobPage() {
 
   const handleBack = () => {
     if (currentStep > 0) {
+      setValidationError(null);
       setCurrentStep(currentStep - 1);
       window.scrollTo(0, 0);
     }
@@ -190,36 +298,45 @@ export default function NewJobPage() {
       }>(endpoint, payload);
 
       if (data && data.job) {
+        // Publication réussie : le brouillon n'a plus de raison d'être.
+        try {
+          localStorage.removeItem(DRAFT_KEY);
+        } catch {}
         router.push(`/jobs/${data.job.id}`);
       } else {
+        try {
+          localStorage.removeItem(DRAFT_KEY);
+        } catch {}
         router.push("/jobs");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Publish Error:", error);
 
-      // Extract detailed error message if available
       let errorMessage = "Une erreur est survenue lors de la publication.";
 
-      if (error.body && typeof error.body === "object") {
-        // Show backend field-level errors
+      if (error instanceof ApiError && error.body) {
+        // Erreurs par champ traduites en libellés lisibles, affichées dans
+        // une bannière persistante (un toast de 4 s est illisible ici).
         const fieldErrors = Object.entries(error.body)
-          .map(
-            ([key, val]) =>
-              `${key}: ${Array.isArray(val) ? val.join(", ") : val}`,
-          )
-          .join("\n");
-        errorMessage += "\n\n" + fieldErrors;
-      } else if (error.message) {
+          .map(([key, val]) => {
+            const label = FIELD_LABELS[key] || key;
+            const text = Array.isArray(val) ? val.join(", ") : String(val);
+            return `${label} : ${text}`;
+          })
+          .join(" — ");
+        errorMessage = `Publication impossible. ${fieldErrors}`;
+      } else if (error instanceof Error && error.message) {
         errorMessage = error.message;
       }
 
-      showToast("error", errorMessage);
+      setValidationError(errorMessage);
+      showToast("error", "Publication impossible. Vérifiez le formulaire.");
     } finally {
       setLoading(false);
     }
   };
 
-  const updateFormData = (newData: any) => {
+  const updateFormData = (newData: Partial<JobFormData>) => {
     setFormData((prev) => {
       const updated = { ...prev, ...newData };
       // Ensure specifications is merged, not replaced
@@ -260,9 +377,9 @@ export default function NewJobPage() {
               <input
                 type="datetime-local"
                 value={formData.scheduled_time}
-                min={new Date(Date.now() + 24 * 60 * 60 * 1000)
-                  .toISOString()
-                  .slice(0, 16)}
+                min={toLocalDatetimeValue(
+                  new Date(Date.now() + MIN_SCHEDULE_DELAY_MS),
+                )}
                 onChange={(e) => {
                   updateFormData({ scheduled_time: e.target.value });
                   setValidationError(null);
@@ -430,7 +547,34 @@ export default function NewJobPage() {
             </div>
           )}
 
+          {/* Brouillon restauré */}
+          {draftRestored && (
+            <div className="mb-6 flex items-center justify-between gap-3 bg-brand-600/5 border border-brand-600/20 rounded-xl p-3 text-sm">
+              <p className="text-brand-700">
+                Votre brouillon a été restauré — reprenez là où vous en étiez.
+              </p>
+              <button
+                type="button"
+                onClick={discardDraft}
+                className="flex-shrink-0 text-brand-600 font-medium hover:underline"
+              >
+                Recommencer à zéro
+              </button>
+            </div>
+          )}
+
           {renderStep()}
+
+          {/* Erreur de validation (l'étape Date & Budget a son affichage inline) */}
+          {validationError && currentStep !== 3 && (
+            <div
+              role="alert"
+              className="mt-6 flex items-start gap-2 bg-error-50 border border-error-200 rounded-xl p-3 text-sm text-error-700"
+            >
+              <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+              <p>{validationError}</p>
+            </div>
+          )}
 
           {/* Actions */}
           <div className="mt-8 flex justify-between pt-6 border-t">

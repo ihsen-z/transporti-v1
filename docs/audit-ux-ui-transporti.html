@@ -1,0 +1,176 @@
+<title>Audit UX/UI — Transporti V1</title>
+<style>
+  :root{
+    --paper:#F6F8FB; --card:#FFFFFF; --ink:#1B2337; --ink-2:#4B5468; --ink-3:#7A8299;
+    --brand:#1E3A8A; --brand-soft:#E4EAF8; --accent:#0E9F6E;
+    --p0:#B42318; --p0-bg:#FDECEA; --p1:#B45309; --p1-bg:#FDF3E1; --p2:#175CD3; --p2-bg:#E7F0FE;
+    --line:#E3E7F0; --mono-bg:#EEF1F7;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --paper:#12161F; --card:#1A2030; --ink:#E8EBF3; --ink-2:#B4BBCC; --ink-3:#828BA3;
+      --brand:#8FA8E8; --brand-soft:#232C45; --accent:#34C08B;
+      --p0:#F58E82; --p0-bg:#3A1F1C; --p1:#F0B45C; --p1-bg:#382A14; --p2:#7FB0F5; --p2-bg:#1B2A45;
+      --line:#2A3145; --mono-bg:#232A3D;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#12161F; --card:#1A2030; --ink:#E8EBF3; --ink-2:#B4BBCC; --ink-3:#828BA3;
+    --brand:#8FA8E8; --brand-soft:#232C45; --accent:#34C08B;
+    --p0:#F58E82; --p0-bg:#3A1F1C; --p1:#F0B45C; --p1-bg:#382A14; --p2:#7FB0F5; --p2-bg:#1B2A45;
+    --line:#2A3145; --mono-bg:#232A3D;
+  }
+  :root[data-theme="light"]{
+    --paper:#F6F8FB; --card:#FFFFFF; --ink:#1B2337; --ink-2:#4B5468; --ink-3:#7A8299;
+    --brand:#1E3A8A; --brand-soft:#E4EAF8; --accent:#0E9F6E;
+    --p0:#B42318; --p0-bg:#FDECEA; --p1:#B45309; --p1-bg:#FDF3E1; --p2:#175CD3; --p2-bg:#E7F0FE;
+    --line:#E3E7F0; --mono-bg:#EEF1F7;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--paper); color:var(--ink); font:16px/1.65 "Segoe UI", system-ui, -apple-system, sans-serif; margin:0; padding:0 20px 80px;}
+  main{max-width:820px; margin:0 auto;}
+  h1,h2,h3{line-height:1.25; text-wrap:balance; font-weight:650;}
+  h1{font-size:2rem; margin:.2em 0 .1em;}
+  h2{font-size:1.35rem; margin:2.4em 0 .6em; padding-top:1.2em; border-top:1px solid var(--line); color:var(--brand);}
+  h3{font-size:1.05rem; margin:1.6em 0 .4em;}
+  p{margin:.5em 0; color:var(--ink-2); max-width:70ch;}
+  .eyebrow{letter-spacing:.14em; text-transform:uppercase; font-size:.72rem; color:var(--ink-3); margin:48px 0 4px; font-weight:600;}
+  .lede{font-size:1.08rem; color:var(--ink-2); max-width:66ch;}
+  .meta{font-size:.82rem; color:var(--ink-3); margin-bottom:8px;}
+  code{font:.84em ui-monospace,"Cascadia Mono",Consolas,monospace; background:var(--mono-bg); padding:.1em .35em; border-radius:4px; word-break:break-all;}
+  .chip{display:inline-block; font-size:.72rem; font-weight:700; letter-spacing:.05em; padding:.15em .55em; border-radius:99px; vertical-align:middle;}
+  .chip.p0{color:var(--p0); background:var(--p0-bg);}
+  .chip.p1{color:var(--p1); background:var(--p1-bg);}
+  .chip.p2{color:var(--p2); background:var(--p2-bg);}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:12px; margin:20px 0;}
+  .stat{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 16px;}
+  .stat .n{font-size:1.7rem; font-weight:700; font-variant-numeric:tabular-nums; color:var(--brand);}
+  .stat .n.bad{color:var(--p0);}
+  .stat .l{font-size:.8rem; color:var(--ink-3); line-height:1.4;}
+  .verdict{background:var(--card); border:1px solid var(--line); border-left:4px solid var(--brand); border-radius:10px; padding:16px 20px; margin:24px 0;}
+  .verdict p{margin:.4em 0;}
+  ul{padding-left:1.2em; color:var(--ink-2);}
+  li{margin:.45em 0;}
+  li strong{color:var(--ink);}
+  table{border-collapse:collapse; width:100%; font-size:.88rem; margin:14px 0;}
+  .tablewrap{overflow-x:auto;}
+  th{text-align:left; font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; color:var(--ink-3); padding:8px 10px; border-bottom:2px solid var(--line);}
+  td{padding:9px 10px; border-bottom:1px solid var(--line); vertical-align:top; color:var(--ink-2);}
+  td:first-child{white-space:nowrap;}
+  .good{color:var(--accent); font-weight:600;}
+  .bad{color:var(--p0); font-weight:600;}
+  .mid{color:var(--p1); font-weight:600;}
+  .roadmap{display:grid; gap:12px; margin:16px 0;}
+  .sprint{background:var(--card); border:1px solid var(--line); border-radius:10px; padding:14px 18px;}
+  .sprint h3{margin:.1em 0 .3em;}
+  .sprint .tag{font-size:.72rem; color:var(--ink-3); letter-spacing:.08em; text-transform:uppercase; font-weight:600;}
+  footer{margin-top:60px; font-size:.8rem; color:var(--ink-3); border-top:1px solid var(--line); padding-top:16px;}
+</style>
+
+<main>
+  <p class="eyebrow">Transporti V1 · Frontend Next.js</p>
+  <h1>Audit UX/UI complet</h1>
+  <p class="meta">Revue menée le 12 juillet 2026 · 4 axes analysés en parallèle : design system, parcours utilisateur, i18n/RTL, accessibilité &amp; responsive · ~120 fichiers frontend</p>
+  <p class="lede">Les fondations sont saines — palette de marque définie, police Cairo pour l'arabe, parité quasi parfaite des traductions fr/ar, patterns modernes (skeletons, cartes lazy, bottom nav mobile). Mais l'absence de composants de base (Button, Input, Modal) et la généralisation incomplète des bons patterns produisent une dérive systémique : chaque page réinvente ses styles, ses états d'erreur et ses dialogues.</p>
+
+  <div class="grid">
+    <div class="stat"><div class="n bad">3</div><div class="l">bugs bloquants côté confiance : faux états vides, paiement simulé, classes CSS mortes</div></div>
+    <div class="stat"><div class="n bad">~500</div><div class="l">chaînes UI non traduites — 2/3 des fichiers ignorent le hook i18n</div></div>
+    <div class="stat"><div class="n bad">420+</div><div class="l">classes directionnelles (ml-/pr-/left-) qui cassent l'affichage RTL arabe</div></div>
+    <div class="stat"><div class="n">848</div><div class="l">clés de traduction fr — toutes présentes en arabe (excellente parité)</div></div>
+  </div>
+
+  <div class="verdict">
+    <p><strong>Verdict global :</strong> l'app est fonctionnelle en français/LTR sur les parcours principaux, mais <strong>pas prête pour un public arabophone</strong> (RTL fragile, 2/3 des écrans non traduits) ni pour une mise en production du <strong>flux de paiement</strong> en l'état (champs carte jamais transmis, faux ID de transaction, promesse de redirection non tenue).</p>
+    <p><strong>Le point fort à protéger :</strong> le parcours post-livraison (stepper de mission, confirmation escrow, avis) est le mieux conçu de l'app — c'est le standard de qualité à généraliser vers l'amont.</p>
+  </div>
+
+  <h2>Scorecard par dimension</h2>
+  <div class="tablewrap"><table>
+    <tr><th>Dimension</th><th>État</th><th>Résumé</th></tr>
+    <tr><td>Design system</td><td class="mid">Moyen</td><td>Tokens et palette existent, mais aucune primitive Button/Input/Card → 2 couleurs de CTA primaire, 3 systèmes de badges de statut contradictoires, 3 couleurs de focus ring, classes CSS mortes (<code>error-600</code> sans CSS généré).</td></tr>
+    <tr><td>Parcours utilisateur</td><td class="mid">Moyen</td><td>Structure des flux solide (wizard 5 étapes, offres, escrow), mais erreurs réseau affichées comme « Aucun résultat », wizard sans validation ni sauvegarde, filtres tronqués (8 gouvernorats sur 24), paiement factice.</td></tr>
+    <tr><td>i18n / RTL</td><td class="bad">Insuffisant</td><td>Mécanisme propre et parité fr/ar excellente sur les clés existantes, mais couverture réelle ~1/3 des fichiers ; RTL géré par un patch CSS couvrant &lt;10 % des cas ; dates/devise jamais localisées en arabe.</td></tr>
+    <tr><td>Accessibilité</td><td class="bad">Insuffisant</td><td>Labels non associés partout hors auth (y compris les champs de paiement), modales sans focus trap ni Escape, contrastes sous WCAG AA, boutons-icônes muets pour les lecteurs d'écran.</td></tr>
+    <tr><td>Responsive / mobile</td><td class="mid">Moyen</td><td>Bonne base (bottom nav + safe-area, onglets scrollables) mais bouton « supprimer photo » invisible au tactile, cibles &lt; 44 px, tables admin 9 colonnes sans vue mobile, filtres browse qui poussent les résultats hors écran.</td></tr>
+  </table></div>
+
+  <h2>Top 10 des priorités</h2>
+  <p>Classement transverse aux 4 audits, par impact utilisateur et risque business.</p>
+  <div class="tablewrap"><table>
+    <tr><th>#</th><th>Priorité</th><th>Problème</th><th>Où</th></tr>
+    <tr><td>1</td><td><span class="chip p0">P0</span></td><td><strong>Flux de paiement factice.</strong> Les champs carte (numéro, expiration, CVV) sont collectés mais jamais envoyés ; le texte promet une redirection PSP qui n'a pas lieu ; l'ID de transaction affiché est un fallback généré côté client. Risque de confiance et de conformité majeur.</td><td><code>components/booking/PaymentGateway.tsx:91-103, 216-271</code></td></tr>
+    <tr><td>2</td><td><span class="chip p0">P0</span></td><td><strong>Erreurs réseau affichées comme états vides.</strong> Un timeout montre « Aucun résultat » / « Aucune offre » / « Job introuvable » sans bouton réessayer — un transporteur sur 3G croit que la plateforme est vide et part.</td><td><code>jobs/browse/page.tsx:75-77</code>, <code>OfferList.tsx:49-51</code>, <code>jobs/[id]/page.tsx:91-93</code></td></tr>
+    <tr><td>3</td><td><span class="chip p0">P0</span></td><td><strong>Wizard de création sans validation ni sauvegarde.</strong> On franchit les étapes sans rien saisir ; les erreurs arrivent à la publication en dump technique anglais dans un toast de 4 s ; un refresh perd les 4 étapes remplies.</td><td><code>jobs/new/page.tsx:204-217</code></td></tr>
+    <tr><td>4</td><td><span class="chip p0">P0</span></td><td><strong>RTL non viable en l'état.</strong> 420+ classes directionnelles non couvertes par le patch CSS global (qui ne flippe que ml-1..4, mr-1..4, pl-3, pr-2/3/12) ; icônes flèches jamais retournées ; suffixe « TND » qui chevauche le texte en arabe.</td><td><code>globals.css:539-558</code> + 33 fichiers d'icônes</td></tr>
+    <tr><td>5</td><td><span class="chip p0">P0</span></td><td><strong>Classes CSS mortes.</strong> <code>error-600</code>, <code>bg-error-50</code>, <code>warning-*</code> numériques n'existent pas dans le config Tailwind → le bouton « danger » et les alertes sont sans couleur. Idem les classes dynamiques <code>text-…-600</code> interpolées dans LocationPicker (purge JIT).</td><td><code>JobActions.tsx:209-236</code>, <code>StatCard.tsx:39</code>, <code>LocationPicker.tsx:199,273</code></td></tr>
+    <tr><td>6</td><td><span class="chip p0">P0</span></td><td><strong>Champs de paiement et formulaires sans labels accessibles.</strong> <code>htmlFor</code>/<code>id</code> n'existe que sur les 4 pages auth ; un lecteur d'écran annonce « édition, vide » sur le numéro de carte.</td><td><code>PaymentGateway.tsx:213-249</code>, <code>LocationPicker.tsx:261-304</code>, <code>JobFilters.tsx:71-78</code></td></tr>
+    <tr><td>7</td><td><span class="chip p1">P1</span></td><td><strong>2/3 des écrans non traduits.</strong> Pages entières sans hook i18n : jobs/[id] (946 lignes), jobs/new, messages, booking, verification, reset-password. Un utilisateur arabe navigue dans un mélange arabe/français. + ~25 dates hardcodées <code>fr-FR</code> et ~30 montants « TND » jamais localisés.</td><td><code>app/(app)/**</code></td></tr>
+    <tr><td>8</td><td><span class="chip p1">P1</span></td><td><strong>Filtres browse incomplets.</strong> Pas de filtre destination (le state existe pourtant), 8 gouvernorats sur 24 dans la liste — un transporteur de Gabès ne peut pas filtrer sa région. Filtres perdus au refresh (pas dans l'URL).</td><td><code>JobFilters.tsx:80-89</code>, <code>browse/page.tsx:23-27</code></td></tr>
+    <tr><td>9</td><td><span class="chip p1">P1</span></td><td><strong>Dialogues natifs pour les actions critiques.</strong> <code>window.confirm</code>/<code>prompt()</code> pour confirmer la livraison, annuler une mission, saisir un motif — non stylés, non traduits, motif limité à une ligne. Les autres modales n'ont ni focus trap, ni Escape, ni <code>role="dialog"</code> (sauf ConfirmModal, exemplaire).</td><td><code>jobs/[id]/page.tsx:98-168, 775</code></td></tr>
+    <tr><td>10</td><td><span class="chip p1">P1</span></td><td><strong>Bouton « supprimer photo » inutilisable au tactile.</strong> ~20 px, visible uniquement au hover (<code>opacity-0 group-hover:opacity-100</code>) — sur mobile, impossible de retirer une photo. Public cible majoritairement mobile.</td><td><code>PhotoUploader.tsx:314-321</code></td></tr>
+  </table></div>
+
+  <h2>1 · Design system</h2>
+  <p><strong>Ce qui existe :</strong> palette de marque (bleu royal <code>brand</code> #1E3A8A, vert <code>accent</code>, orange <code>cta</code>), tokens d'espacement base 8 px, z-index sémantiques, Inter + Cairo via next/font, dark mode… mais uniquement sur l'admin.</p>
+  <ul>
+    <li><strong>Aucune primitive UI.</strong> Pas de Button, Input, Card, Badge génériques — <code>components/ui/</code> ne contient que 8 utilitaires. Chaque page recopie de longues chaînes Tailwind, d'où toutes les dérives ci-dessous.</li>
+    <li><strong>Le CTA primaire est-il vert ou bleu ?</strong> Auth = vert <code>accent-500/600</code>, app = bleu <code>brand-600</code>, dashboard = vert, landing = orange <code>cta-500</code>. Décision de marque à trancher, puis à encoder dans un composant Button.</li>
+    <li><strong>3 systèmes de badges de statut contradictoires</strong> (<code>ui/StatusBadge</code>, <code>admin/StatusBadge</code>, <code>lib/format.ts:getStatusColor</code>) : le même statut « PUBLISHED » est vert, orange ou cyan selon la page. Labels FR en dur dans les trois.</li>
+    <li><strong>Doublons :</strong> 2 Pagination, 2 StatCard (dont un hex hardcodé <code>#1e293b</code>), 2 systèmes de skeleton, keyframes dupliquées entre <code>tailwind.config.ts</code> et <code>globals.css</code>.</li>
+    <li><strong>3 échelles de bleu concurrentes</strong> (<code>brand</code>, <code>primary</code>, <code>blue-*</code> natif — 49 usages bruts dans 26 fichiers) et 84 hex littéraux dans les composants.</li>
+    <li><strong>Dark mode déconnecté :</strong> 0 <code>dark:</code> dans <code>app/(app)/</code> ; les variables CSS <code>--color-neutral-*</code> inversées en <code>.dark</code> sont inopérantes car Tailwind est configuré en hex statiques.</li>
+  </ul>
+
+  <h2>2 · Parcours utilisateur</h2>
+  <ul>
+    <li><strong>Auth :</strong> mot de passe min. 6 à l'inscription vs min. 8 au reset ; username dérivé de l'email (collisions) ; pas de validation du téléphone tunisien ; boutons sociaux absents de /register ; logout sans redirection ; reset-password non traduit.</li>
+    <li><strong>Création de job :</strong> règle de date contradictoire (attribut min = +24 h, JS = +15 min, texte d'aide = 24 h, calcul en UTC → décalage d'1 h) ; champ <code>postal_code</code> fantôme non initialisé dans le state ; pas de carte interactive pour pointer la destination (le GPS ne sert que pour la position actuelle) ; pas de lien « Modifier » par section sur l'écran de confirmation.</li>
+    <li><strong>Offres :</strong> le client ne peut pas décliner une offre (accepter ou ignorer seulement) — le transporteur reste « En attente » jusqu'à expiration.</li>
+    <li><strong>Photos :</strong> erreurs d'upload écrasées les unes par les autres — impossible de savoir quelles photos ont été rejetées.</li>
+    <li><strong>Point fort :</strong> le flux post-livraison (stepper → confirmation client → libération escrow → avis, avec gate de vérification transporteur) est le standard de qualité de l'app.</li>
+  </ul>
+
+  <h2>3 · i18n &amp; RTL (arabe)</h2>
+  <ul>
+    <li><strong>Mécanisme sain :</strong> provider maison typé, ar.ts code-splitté, persistance localStorage, <code>dir</code>/<code>lang</code> posés dynamiquement. Parité excellente : les 848 clés fr existent toutes en ar (une section morte <code>offersTabs</code> à supprimer dans <code>ar.ts:450</code>).</li>
+    <li><strong>Mais couverture réelle ~1/3 :</strong> 39 fichiers sur ~119 utilisent le hook. Estimation 400–600 chaînes en dur, dont 33 placeholders, 7 aria-labels (mélange FR/EN), 17 toasts et les <code>confirm()</code> natifs.</li>
+    <li><strong>RTL :</strong> zéro propriété logique Tailwind (<code>ms-/me-/ps-/pe-</code>) dans le code ; le patch global <code>globals.css:539-558</code> contient des règles mortes (un sélecteur qui applique du padding au lieu de margin, un no-op <code>flex-row</code>) ; la classe <code>rotate-flip</code> définie pour les icônes est utilisée 0 fois.</li>
+    <li><strong>SSR :</strong> <code>useAppI18n.tsx:109</code> fait <code>return null</code> tant que la locale n'est pas chargée → flash blanc, rien côté SSR, et <code>&lt;html lang="fr"&gt;</code> statique → FOUC de direction pour les arabophones.</li>
+    <li><strong>Formats :</strong> ~25 dates en <code>fr-FR</code>/<code>fr-TN</code> hardcodées même en arabe ; devise jamais via <code>Intl.NumberFormat</code>.</li>
+  </ul>
+
+  <h2>4 · Accessibilité &amp; responsive</h2>
+  <ul>
+    <li><strong>Critique :</strong> labels non associés hors auth (paiement inclus) ; modales sans sémantique ni clavier (sauf ConfirmModal) ; StarRating de l'avis inutilisable au lecteur d'écran (5 boutons sans nom, focus supprimé) ; boutons-icônes muets (supprimer photo, afficher mot de passe, actions admin).</li>
+    <li><strong>Majeur :</strong> contrastes sous WCAG AA (<code>text-neutral-400</code> ≈ 2.5:1 pour du texte porteur d'information, mentions escrow incluses) ; erreurs jamais annoncées (<code>role="alert"</code> absent) ; pas de style global <code>:focus-visible</code> ni de skip-link ; hamburger sans <code>aria-expanded</code>.</li>
+    <li><strong>Mobile :</strong> cibles tactiles &lt; 44 px (checkboxes admin ~20 px, chips de suggestion ~28 px) ; tables admin 9 colonnes en scroll horizontal avec les actions hors écran ; modale de réservation sans <code>max-h</code>/<code>overflow-y-auto</code> (footer coupé avec le clavier virtuel) ; sidebar de filtres qui pousse les résultats sous la ligne de flottaison.</li>
+    <li><strong>Performance perçue :</strong> bonne base (next/image majoritaire, cartes en dynamic import, 19 fichiers avec skeletons) ; à corriger : <code>&lt;img&gt;</code> natif dans PhotoUploader et DocumentReviewDrawer, fetch browse sans AbortController (réponses désordonnées sur 3G), « loading » texte brut sur browse.</li>
+  </ul>
+
+  <h2>Feuille de route suggérée</h2>
+  <div class="roadmap">
+    <div class="sprint">
+      <span class="tag">Sprint 1 · Confiance &amp; bugs réels</span>
+      <h3>Réparer ce qui trompe l'utilisateur</h3>
+      <p>Flux de paiement (brancher réellement ou simplifier honnêtement) · faux états vides → bannière erreur + réessayer · classes CSS mortes (error-*, warning-*, classes dynamiques LocationPicker) · validation par étape du wizard + brouillon localStorage · bouton supprimer photo visible et ≥ 44 px.</p>
+    </div>
+    <div class="sprint">
+      <span class="tag">Sprint 2 · Fondations design system</span>
+      <h3>Créer les primitives et trancher la marque</h3>
+      <p>Décider la couleur du CTA primaire (vert ou bleu) · créer Button, Input, Card, Modal accessible (généraliser le pattern ConfirmModal) · unifier les 3 StatusBadge sur i18n · fusionner Pagination/StatCard/Skeleton · remplacer confirm()/prompt() par les modales.</p>
+    </div>
+    <div class="sprint">
+      <span class="tag">Sprint 3 · Marché arabophone</span>
+      <h3>i18n complet + RTL propre</h3>
+      <p>Internationaliser les pages critiques (jobs/[id], jobs/new, messages, booking, verification) · migrer vers les propriétés logiques Tailwind et supprimer le patch CSS · helpers formatDate/formatTND avec Intl · flipper les icônes directionnelles · SSR de la locale (cookie) pour éliminer le FOUC.</p>
+    </div>
+    <div class="sprint">
+      <span class="tag">Sprint 4 · Finitions a11y &amp; mobile</span>
+      <h3>Généraliser les bons patterns</h3>
+      <p>Labels htmlFor/id partout · :focus-visible global + suppression des outline-none orphelins · contrastes (neutral-400 → 500/600) · role="alert" sur les erreurs · vue mobile des tables admin · filtres browse complets (24 gouvernorats + destination + URL) et repliables sur mobile.</p>
+    </div>
+  </div>
+
+  <footer>Audit réalisé par 4 agents d'analyse en parallèle sur le code source (lecture seule, aucune modification). Les références fichier:ligne pointent vers l'état du code au 12 juillet 2026, branche master.</footer>
+</main>

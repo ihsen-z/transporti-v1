@@ -232,6 +232,17 @@ export const ar = {
     creatingAccount: "قاعدين نصنعو في الكونت...",
     registerButton: "اصنع الكونت متاعي",
     alreadyRegistered: "مقيد من قبل؟",
+    // Social role selection
+    selectRoleTitle: "اختار البروفيل متاعك",
+    selectRoleSubtitle: "كيفاش باش تستعمل Transporti؟",
+    welcomeUser: "مرحبا {name}! باقي خطوة وحدة.",
+    clientDescription: "نحب نلقى نقّالين للأغراض والدمناج متاعي.",
+    transporterDescription: "أنا نقّال ونحب نقبل المهمّات.",
+    confirmRole: "أكّد وكمّل",
+    settingRole: "يكونفيجيري...",
+    roleSetSuccess: "البروفيل تكونفيجيرا بنجاح!",
+    roleSetError: "صار مشكل وقت تكونفيجيراسيون البروفيل.",
+    roleChangeNote: "تنجّم تكلّم السوبّور باش تبدّل البروفيل من بعد.",
   },
 
   settings: {
@@ -386,6 +397,9 @@ export const ar = {
     sortPriceDesc: "أغلى سوم",
     noResultsTitle: "مفمّاش حتى خدمة",
     noResultsDesc: "بدّل الفيلتر ولا ارجع مبعد.",
+    errorTitle: "ما نجمناش نحمّلو الخدمات",
+    errorDesc: "تثبّت من الكونكسيون متاعك وعاود جرّب.",
+    retry: "عاود جرّب",
     accessDenied: "الدخول ممنوع",
     transportersOnly: "الترانسبورتور كهو ينجم يشوف الصفحة هذي.",
   },

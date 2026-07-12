@@ -247,6 +247,17 @@ export const fr = {
     creatingAccount: "Création du compte...",
     registerButton: "Créer mon compte",
     alreadyRegistered: "Déjà inscrit ?",
+    // Social role selection
+    selectRoleTitle: "Choisissez votre profil",
+    selectRoleSubtitle: "Comment allez-vous utiliser Transporti ?",
+    welcomeUser: "Bienvenue {name} ! Une dernière étape.",
+    clientDescription: "Je cherche des transporteurs pour mes envois et déménagements.",
+    transporterDescription: "Je suis transporteur et je veux recevoir des missions.",
+    confirmRole: "Confirmer et continuer",
+    settingRole: "Configuration...",
+    roleSetSuccess: "Profil configuré avec succès !",
+    roleSetError: "Erreur lors de la configuration du profil.",
+    roleChangeNote: "Vous pouvez contacter le support pour changer de profil plus tard.",
   },
 
   // Settings
@@ -410,6 +421,9 @@ export const fr = {
     sortPriceDesc: "Prix décroissant",
     noResultsTitle: "Aucune mission trouvée",
     noResultsDesc: "Essayez de modifier vos filtres ou revenez plus tard.",
+    errorTitle: "Impossible de charger les missions",
+    errorDesc: "Vérifiez votre connexion internet puis réessayez.",
+    retry: "Réessayer",
     accessDenied: "Accès Refusé",
     transportersOnly: "Seuls les transporteurs peuvent accéder à cette page.",
   },

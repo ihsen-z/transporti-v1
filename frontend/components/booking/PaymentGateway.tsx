@@ -6,11 +6,12 @@ import {
   Smartphone,
   Building2,
   Lock,
-  CheckCircle,
   XCircle,
   Loader2,
+  ExternalLink,
+  ShieldCheck,
 } from "lucide-react";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError } from "@/lib/api/client";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -19,124 +20,88 @@ import { apiClient } from "@/lib/api/client";
 interface PaymentGatewayProps {
   amount: number;
   jobId?: number;
-  offerId?: number;
-  onSuccess: (transactionId: string) => void;
   onCancel: () => void;
 }
 
-type PaymentMethod = "card" | "edinar" | "sobflous" | "d17";
-type PaymentStatus = "idle" | "processing" | "success" | "error";
+type PaymentStatus = "idle" | "processing" | "error";
 
-const METHODS: {
-  id: PaymentMethod;
+/*
+ * Le paiement passe par la passerelle configurée côté serveur :
+ * POST /api/payments/initiate/ retourne un `payment_url` vers lequel
+ * l'utilisateur est redirigé. La saisie de carte se fait sur la plateforme
+ * de paiement (jamais sur Transporti — conformité PCI), et le retour se fait
+ * sur /jobs/{id}?payment=success|failed, géré par la page de détail du job.
+ */
+
+const SUPPORTED_METHODS: {
   label: string;
   icon: React.ElementType;
   desc: string;
 }[] = [
-  {
-    id: "card",
-    label: "Carte bancaire",
-    icon: CreditCard,
-    desc: "Visa, Mastercard",
-  },
-  {
-    id: "edinar",
-    label: "E-Dinar",
-    icon: Smartphone,
-    desc: "La Poste Tunisienne",
-  },
-  {
-    id: "sobflous",
-    label: "Sobflous",
-    icon: Smartphone,
-    desc: "Paiement mobile",
-  },
-  { id: "d17", label: "D17", icon: Building2, desc: "Virement bancaire" },
+  { label: "Carte bancaire", icon: CreditCard, desc: "Visa, Mastercard" },
+  { label: "E-Dinar", icon: Smartphone, desc: "La Poste Tunisienne" },
+  { label: "Sobflous", icon: Smartphone, desc: "Paiement mobile" },
+  { label: "D17", icon: Building2, desc: "Virement bancaire" },
 ];
 
 /* -------------------------------------------------------------------------- */
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
-export function PaymentGateway({
-  amount,
-  jobId,
-  offerId,
-  onSuccess,
-  onCancel,
-}: PaymentGatewayProps) {
-  const [method, setMethod] = useState<PaymentMethod>("card");
+export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps) {
   const [status, setStatus] = useState<PaymentStatus>("idle");
-  const [cardNumber, setCardNumber] = useState("");
-  const [cardExpiry, setCardExpiry] = useState("");
-  const [cardCvv, setCardCvv] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
-  const formatCardNumber = (v: string) => {
-    const digits = v.replace(/\D/g, "").slice(0, 16);
-    return digits.replace(/(\d{4})(?=\d)/g, "$1 ");
-  };
-
-  const formatExpiry = (v: string) => {
-    const digits = v.replace(/\D/g, "").slice(0, 4);
-    if (digits.length > 2) return `${digits.slice(0, 2)}/${digits.slice(2)}`;
-    return digits;
-  };
-
   const handlePay = async () => {
+    if (!jobId) {
+      setStatus("error");
+      setErrorMessage(
+        "Référence de mission manquante. Rechargez la page et réessayez.",
+      );
+      return;
+    }
+
     setStatus("processing");
     setErrorMessage("");
 
     try {
       const response = await apiClient.post<{
-        transaction_id: string;
-        status: string;
-      }>("/api/payments/process/", {
-        amount,
-        method,
+        payment_url: string;
+        gateway_ref: string;
+      }>("/api/payments/initiate/", {
         job_id: jobId,
-        offer_id: offerId,
+        platform: "web",
       });
 
-      setStatus("success");
-      const txnId = response.transaction_id || `TXN-${Date.now()}`;
-      setTimeout(() => onSuccess(txnId), 1500);
-    } catch (error: any) {
+      if (response.payment_url) {
+        // Redirection vers la plateforme de paiement ; le retour arrive sur
+        // /jobs/{id}?payment=success|failed.
+        window.location.href = response.payment_url;
+      } else {
+        setStatus("error");
+        setErrorMessage(
+          "La plateforme de paiement n'a pas répondu. Veuillez réessayer.",
+        );
+      }
+    } catch (error: unknown) {
       setStatus("error");
       setErrorMessage(
-        error?.body?.detail || "Erreur lors du traitement du paiement.",
+        (error instanceof ApiError &&
+          (error.body?.error || error.body?.detail)) ||
+          "Erreur lors de l'initialisation du paiement.",
       );
     }
   };
 
-  // Success screen
-  if (status === "success") {
-    return (
-      <div className="text-center py-12 space-y-4">
-        <div className="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto">
-          <CheckCircle className="w-8 h-8 text-emerald-600" />
-        </div>
-        <h3 className="text-lg font-semibold text-neutral-900">
-          Paiement confirmé !
-        </h3>
-        <p className="text-sm text-neutral-500">
-          Votre paiement de <strong>{amount.toFixed(2)} TND</strong> a été
-          traité avec succès.
-        </p>
-        <p className="text-xs text-neutral-400">Redirection en cours...</p>
-      </div>
-    );
-  }
-
   // Error screen
   if (status === "error") {
     return (
-      <div className="text-center py-12 space-y-4">
+      <div role="alert" className="text-center py-12 space-y-4">
         <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
           <XCircle className="w-8 h-8 text-red-600" />
         </div>
         <h3 className="text-lg font-semibold text-neutral-900">
-          Paiement échoué
+          Paiement impossible
         </h3>
         <p className="text-sm text-neutral-500">
           {errorMessage ||
@@ -173,135 +138,66 @@ export function PaymentGateway({
         </p>
       </div>
 
-      {/* Method selector */}
+      {/* How it works */}
+      <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
+        <p className="text-sm text-neutral-700 font-medium flex items-center gap-2">
+          <ExternalLink className="w-4 h-4 text-brand-600" />
+          Vous allez être redirigé vers notre plateforme de paiement sécurisée.
+        </p>
+        <p className="text-xs text-neutral-500">
+          Vos informations bancaires sont saisies uniquement sur la plateforme
+          de paiement — jamais sur Transporti. Le montant est conservé en
+          escrow et libéré au transporteur après confirmation de la livraison.
+        </p>
+      </div>
+
+      {/* Supported methods */}
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-2">
-          Mode de paiement
-        </label>
+        <p className="block text-sm font-medium text-neutral-700 mb-2">
+          Moyens de paiement acceptés
+        </p>
         <div className="grid grid-cols-2 gap-2">
-          {METHODS.map((m) => (
-            <button
-              key={m.id}
-              type="button"
-              onClick={() => setMethod(m.id)}
-              className={`p-3 rounded-xl border-2 text-left transition-all ${
-                method === m.id
-                  ? "border-brand-600 bg-brand-600/5"
-                  : "border-neutral-200 hover:border-neutral-300"
-              }`}
+          {SUPPORTED_METHODS.map((m) => (
+            <div
+              key={m.label}
+              className="p-3 rounded-xl border border-neutral-200 text-left"
             >
               <div className="flex items-center gap-2">
-                <m.icon
-                  className={`w-5 h-5 ${method === m.id ? "text-brand-600" : "text-neutral-400"}`}
-                />
-                <span
-                  className={`text-sm font-medium ${method === m.id ? "text-brand-600" : "text-neutral-700"}`}
-                >
+                <m.icon className="w-5 h-5 text-neutral-400" />
+                <span className="text-sm font-medium text-neutral-700">
                   {m.label}
                 </span>
               </div>
-              <p className="text-xs text-neutral-400 mt-1 ml-7">{m.desc}</p>
-            </button>
+              <p className="text-xs text-neutral-500 mt-1 ml-7">{m.desc}</p>
+            </div>
           ))}
         </div>
       </div>
 
-      {/* Card fields (shown for card method) */}
-      {method === "card" && (
-        <div className="space-y-4 bg-neutral-50 rounded-xl p-4">
-          <div>
-            <label className="block text-xs font-medium text-neutral-600 mb-1">
-              Numéro de carte
-            </label>
-            <input
-              value={cardNumber}
-              onChange={(e) => setCardNumber(formatCardNumber(e.target.value))}
-              placeholder="4242 4242 4242 4242"
-              maxLength={19}
-              className="w-full p-3 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-accent-500 font-mono"
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-neutral-600 mb-1">
-                Expiration
-              </label>
-              <input
-                value={cardExpiry}
-                onChange={(e) => setCardExpiry(formatExpiry(e.target.value))}
-                placeholder="MM/AA"
-                maxLength={5}
-                className="w-full p-3 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-accent-500 font-mono"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-neutral-600 mb-1">
-                CVV
-              </label>
-              <input
-                value={cardCvv}
-                onChange={(e) =>
-                  setCardCvv(e.target.value.replace(/\D/g, "").slice(0, 3))
-                }
-                placeholder="123"
-                maxLength={3}
-                type="password"
-                className="w-full p-3 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-accent-500 font-mono"
-              />
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* E-Dinar / Sobflous / D17 instructions */}
-      {method !== "card" && (
-        <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
-          <p className="text-sm text-neutral-700 font-medium">
-            {method === "edinar" &&
-              "Vous serez redirigé vers la plateforme E-Dinar de La Poste Tunisienne."}
-            {method === "sobflous" &&
-              "Vous serez redirigé vers Sobflous pour finaliser le paiement."}
-            {method === "d17" &&
-              "Vous serez redirigé vers la plateforme D17 pour effectuer un virement."}
-          </p>
-          <p className="text-xs text-neutral-400">
-            Le montant sera débité après confirmation. Votre argent est protégé
-            par le système d&apos;escrow Transporti.
-          </p>
-        </div>
-      )}
-
-      {/* Security badges */}
-      <div className="flex items-center justify-center gap-4 text-xs text-neutral-400">
-        <span className="flex items-center gap-1">
-          <Lock className="w-3.5 h-3.5" /> SSL 256-bit
-        </span>
-        <span>•</span>
-        <span>Escrow protégé</span>
-        <span>•</span>
-        <span>Remboursement garanti</span>
+      {/* Escrow note */}
+      <div className="flex items-center justify-center gap-2 text-xs text-neutral-500">
+        <ShieldCheck className="w-4 h-4 text-accent-600" />
+        <span>Paiement protégé par le système d&apos;escrow Transporti</span>
       </div>
 
       {/* Actions */}
       <div className="flex gap-3">
         <button
           onClick={onCancel}
-          className="flex-1 px-4 py-3 border border-neutral-300 text-neutral-700 rounded-xl font-medium hover:bg-neutral-50 transition-colors"
+          disabled={status === "processing"}
+          className="flex-1 px-4 py-3 border border-neutral-300 text-neutral-700 rounded-xl font-medium hover:bg-neutral-50 transition-colors disabled:opacity-50"
         >
           Annuler
         </button>
         <button
           onClick={handlePay}
-          disabled={
-            status === "processing" ||
-            (method === "card" && (!cardNumber || !cardExpiry || !cardCvv))
-          }
+          disabled={status === "processing"}
           className="flex-1 px-4 py-3 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
         >
           {status === "processing" ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Traitement...
+              Redirection...
             </>
           ) : (
             <>

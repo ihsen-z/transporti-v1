@@ -3,6 +3,7 @@ import { useRouter } from "next/navigation";
 import { OfferCard } from "./OfferCard";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
+import type { JobOffer } from "@/lib/types/jobs";
 import {
   CreditCard,
   Banknote,
@@ -25,9 +26,10 @@ export function OfferList({
   onOfferAccepted,
 }: OfferListProps) {
   const router = useRouter();
-  const [offers, setOffers] = useState<any[]>([]);
+  const [offers, setOffers] = useState<JobOffer[]>([]);
   const [loading, setLoading] = useState(true);
-  const [selectedOffer, setSelectedOffer] = useState<any>(null);
+  const [fetchError, setFetchError] = useState(false);
+  const [selectedOffer, setSelectedOffer] = useState<JobOffer | null>(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [accepting, setAccepting] = useState(false);
   const { showToast } = useToast();
@@ -37,13 +39,19 @@ export function OfferList({
   }, [jobId]);
 
   const fetchOffers = async () => {
+    setLoading(true);
+    setFetchError(false);
     try {
-      const response = await apiClient.get<any>(`/api/jobs/${jobId}/offers/`);
-      const offersData =
-        response.results ?? (Array.isArray(response) ? response : []);
+      const response = await apiClient.get<JobOffer[] | { results?: JobOffer[] }>(
+        `/api/jobs/${jobId}/offers/`,
+      );
+      const offersData = Array.isArray(response)
+        ? response
+        : response.results ?? [];
       setOffers(offersData);
     } catch (error) {
       console.error("Error fetching offers:", error);
+      setFetchError(true);
     } finally {
       setLoading(false);
     }
@@ -51,7 +59,7 @@ export function OfferList({
 
   const handleAcceptOffer = (offerId: number) => {
     const offer = offers.find((o) => o.id === offerId);
-    setSelectedOffer(offer);
+    setSelectedOffer(offer ?? null);
     setShowPaymentModal(true);
   };
 
@@ -77,7 +85,7 @@ export function OfferList({
     } catch (error) {
       if (error instanceof ApiError && error.body) {
         const msg =
-          (error.body as any).error || Object.values(error.body).flat()[0];
+          error.body.error || Object.values(error.body).flat()[0];
         showToast("error", String(msg) || "Erreur lors de l'acceptation.");
       } else {
         console.error("Error accepting offer:", error);
@@ -95,6 +103,29 @@ export function OfferList({
       </div>
     );
 
+  if (fetchError) {
+    return (
+      <div
+        role="alert"
+        className="text-center py-8 bg-error-50 rounded-xl border border-error-200"
+      >
+        <div className="flex items-center justify-center gap-2 text-error-700 font-medium">
+          <AlertCircle className="w-5 h-5" />
+          <p>Impossible de charger les offres.</p>
+        </div>
+        <p className="text-sm text-neutral-500 mt-1">
+          Vérifiez votre connexion internet puis réessayez.
+        </p>
+        <button
+          onClick={fetchOffers}
+          className="mt-3 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
+
   if (offers.length === 0) {
     return (
       <div className="text-center py-8 bg-neutral-50 rounded-xl border border-dashed border-neutral-300">
@@ -108,7 +139,7 @@ export function OfferList({
     );
   }
 
-  const offerPrice = selectedOffer?.total_price || 0;
+  const offerPrice = Number(selectedOffer?.total_price || 0);
   const codEligible = offerPrice <= COD_MAX_TND;
 
   return (

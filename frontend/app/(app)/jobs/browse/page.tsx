@@ -1,11 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobFeedCard } from "@/components/jobs/JobFeedCard";
-import { Search, ChevronLeft, ChevronRight, SortAsc } from "lucide-react";
+import {
+  Search,
+  ChevronLeft,
+  ChevronRight,
+  SortAsc,
+  AlertTriangle,
+  RefreshCw,
+} from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 const PAGE_SIZE = 10;
@@ -15,6 +22,10 @@ export default function JobBrowsePage() {
   const { user, isLoading: authLoading } = useAuth();
   const [jobs, setJobs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(false);
+  // Identifie la requête la plus récente pour ignorer les réponses obsolètes
+  // (changement de filtre rapide sur connexion lente).
+  const fetchIdRef = useRef(0);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<"newest" | "price_asc" | "price_desc">(
@@ -35,7 +46,9 @@ export default function JobBrowsePage() {
   }, [filters, currentPage, sortBy]);
 
   const fetchJobs = async () => {
+    const fetchId = ++fetchIdRef.current;
     setLoading(true);
+    setFetchError(false);
     try {
       const queryParams = new URLSearchParams();
       if (filters.job_type) queryParams.append("job_type", filters.job_type);
@@ -59,6 +72,8 @@ export default function JobBrowsePage() {
         `/api/jobs/public/?${queryParams.toString()}`,
       );
 
+      if (fetchId !== fetchIdRef.current) return; // réponse obsolète
+
       if (response.results) {
         // Paginated (DRF pagination)
         setJobs(response.results);
@@ -73,9 +88,13 @@ export default function JobBrowsePage() {
         setTotalCount(0);
       }
     } catch (error) {
+      if (fetchId !== fetchIdRef.current) return;
       console.error("Error fetching jobs:", error);
+      setFetchError(true);
+      setJobs([]);
+      setTotalCount(0);
     } finally {
-      setLoading(false);
+      if (fetchId === fetchIdRef.current) setLoading(false);
     }
   };
 
@@ -119,7 +138,7 @@ export default function JobBrowsePage() {
                 <SortAsc className="w-4 h-4 text-neutral-400" />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as "newest" | "price_asc" | "price_desc")}
                   className="text-sm border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700 focus:ring-2 focus:ring-brand-500 outline-none"
                 >
                   <option value="newest">{t.browse.sortNewest}</option>
@@ -137,6 +156,26 @@ export default function JobBrowsePage() {
                     className="h-48 bg-neutral-200 rounded-xl animate-pulse"
                   />
                 ))}
+              </div>
+            ) : fetchError ? (
+              <div
+                role="alert"
+                className="bg-white rounded-xl p-12 text-center border border-error-200"
+              >
+                <div className="mx-auto w-12 h-12 bg-error-50 rounded-full flex items-center justify-center mb-4">
+                  <AlertTriangle className="w-6 h-6 text-error-600" />
+                </div>
+                <h3 className="text-lg font-medium text-neutral-900">
+                  {t.browse.errorTitle}
+                </h3>
+                <p className="text-neutral-500 mt-1">{t.browse.errorDesc}</p>
+                <button
+                  onClick={fetchJobs}
+                  className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg font-medium transition-colors"
+                >
+                  <RefreshCw className="w-4 h-4" />
+                  {t.browse.retry}
+                </button>
               </div>
             ) : jobs.length > 0 ? (
               <>

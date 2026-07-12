@@ -2,7 +2,7 @@
 
 import React, { useRef, useState, useCallback } from "react";
 import { Camera, ImagePlus, X, Loader2 } from "lucide-react";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
 import { compressImage, validateImageFile, getMediaUrl } from "@/lib/imageUtils";
 
 interface PhotoUploaderProps {
@@ -87,9 +87,9 @@ export function PhotoUploader({
       if (newUrls.length > 0) {
         onPhotosChange([...photos, ...newUrls]);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Photo upload error:", err);
-      setError(err?.body?.error || err?.message || "Erreur lors de l'upload.");
+      setError((err instanceof ApiError && err.body?.error) || getErrorMessage(err) || "Erreur lors de l'upload.");
     } finally {
       setUploading(false);
       // Reset inputs so the same file can be selected again
@@ -139,11 +139,11 @@ export function PhotoUploader({
           videoRef.current.play();
         }
       }, 100);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Camera access error:", err);
-      if (err.name === "NotAllowedError") {
+      if (err instanceof Error && err.name === "NotAllowedError") {
         setError("Accès à la caméra refusé. Vérifiez les permissions de votre navigateur.");
-      } else if (err.name === "NotFoundError") {
+      } else if (err instanceof Error && err.name === "NotFoundError") {
         setError("Aucune caméra détectée sur cet appareil.");
       } else {
         setError("Impossible d'accéder à la caméra. Utilisez la galerie.");
@@ -314,10 +314,11 @@ export function PhotoUploader({
               <button
                 type="button"
                 onClick={() => removePhoto(index)}
-                className="absolute top-1 right-1 p-1 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity shadow-md"
+                className="absolute top-1 right-1 p-2 bg-red-500 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity shadow-md"
                 title="Supprimer"
+                aria-label={`Supprimer la photo ${index + 1}`}
               >
-                <X className="w-3 h-3" />
+                <X className="w-4 h-4" />
               </button>
             </div>
           ))}

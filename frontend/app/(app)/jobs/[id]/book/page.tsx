@@ -287,10 +287,7 @@ export default function BookingPage() {
                 <div className="bg-white rounded-2xl border border-neutral-100 p-6">
                   <PaymentGateway
                     amount={offer.total_price}
-                    onSuccess={(txnId) => {
-                      console.log("Payment success:", txnId);
-                      setStep("success");
-                    }}
+                    jobId={jobId}
                     onCancel={() => setShowGateway(false)}
                   />
                 </div>
