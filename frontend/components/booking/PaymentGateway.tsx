@@ -12,6 +12,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -33,31 +35,31 @@ type PaymentStatus = "idle" | "processing" | "error";
  * sur /jobs/{id}?payment=success|failed, géré par la page de détail du job.
  */
 
-const SUPPORTED_METHODS: {
-  label: string;
-  icon: React.ElementType;
-  desc: string;
-}[] = [
-  { label: "Carte bancaire", icon: CreditCard, desc: "Visa, Mastercard" },
-  { label: "E-Dinar", icon: Smartphone, desc: "La Poste Tunisienne" },
-  { label: "Sobflous", icon: Smartphone, desc: "Paiement mobile" },
-  { label: "D17", icon: Building2, desc: "Virement bancaire" },
-];
-
 /* -------------------------------------------------------------------------- */
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
 export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps) {
+  const { t } = useAppI18n();
   const [status, setStatus] = useState<PaymentStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Libellés dans le corps pour accéder à `t` (E-Dinar/Sobflous/D17 = marques).
+  const SUPPORTED_METHODS: {
+    label: string;
+    icon: React.ElementType;
+    desc: string;
+  }[] = [
+    { label: t.booking.methodCard, icon: CreditCard, desc: t.booking.methodCardDesc },
+    { label: "E-Dinar", icon: Smartphone, desc: t.booking.methodEdinarDesc },
+    { label: "Sobflous", icon: Smartphone, desc: t.booking.methodSobflousDesc },
+    { label: "D17", icon: Building2, desc: t.booking.methodD17Desc },
+  ];
 
   const handlePay = async () => {
     if (!jobId) {
       setStatus("error");
-      setErrorMessage(
-        "Référence de mission manquante. Rechargez la page et réessayez.",
-      );
+      setErrorMessage(t.booking.missingJobRef);
       return;
     }
 
@@ -79,16 +81,14 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
         window.location.href = response.payment_url;
       } else {
         setStatus("error");
-        setErrorMessage(
-          "La plateforme de paiement n'a pas répondu. Veuillez réessayer.",
-        );
+        setErrorMessage(t.booking.gatewayNoResponse);
       }
     } catch (error: unknown) {
       setStatus("error");
       setErrorMessage(
         (error instanceof ApiError &&
           (error.body?.error || error.body?.detail)) ||
-          "Erreur lors de l'initialisation du paiement.",
+          t.booking.initPaymentError,
       );
     }
   };
@@ -101,24 +101,23 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
           <XCircle className="w-8 h-8 text-red-600" />
         </div>
         <h3 className="text-lg font-semibold text-neutral-900">
-          Paiement impossible
+          {t.booking.paymentImpossible}
         </h3>
         <p className="text-sm text-neutral-500">
-          {errorMessage ||
-            "Une erreur est survenue lors du traitement. Veuillez réessayer."}
+          {errorMessage || t.booking.genericProcessingError}
         </p>
         <div className="flex gap-3 justify-center">
           <button
             onClick={() => setStatus("idle")}
             className="px-6 py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors"
           >
-            Réessayer
+            {t.booking.retry}
           </button>
           <button
             onClick={onCancel}
             className="px-6 py-2.5 border border-neutral-300 text-neutral-700 rounded-lg font-medium hover:bg-neutral-50 transition-colors"
           >
-            Annuler
+            {t.booking.cancel}
           </button>
         </div>
       </div>
@@ -129,12 +128,12 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
     <div className="space-y-6">
       {/* Amount */}
       <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-center">
-        <p className="text-sm text-brand-600 font-medium">Montant à payer</p>
+        <p className="text-sm text-brand-600 font-medium">{t.booking.amountToPay}</p>
         <p className="text-3xl font-bold text-brand-600 mt-1">
           {amount.toFixed(2)} TND
         </p>
         <p className="text-xs text-brand-600 mt-1">
-          Prix fixe garanti — aucun frais caché
+          {t.booking.fixedPriceGuarantee}
         </p>
       </div>
 
@@ -142,19 +141,17 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
       <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
         <p className="text-sm text-neutral-700 font-medium flex items-center gap-2">
           <ExternalLink className="w-4 h-4 text-brand-600" />
-          Vous allez être redirigé vers notre plateforme de paiement sécurisée.
+          {t.booking.redirectSecurePlatform}
         </p>
         <p className="text-xs text-neutral-500">
-          Vos informations bancaires sont saisies uniquement sur la plateforme
-          de paiement — jamais sur Transporti. Le montant est conservé en
-          escrow et libéré au transporteur après confirmation de la livraison.
+          {t.booking.bankInfoDisclaimer}
         </p>
       </div>
 
       {/* Supported methods */}
       <div>
         <p className="block text-sm font-medium text-neutral-700 mb-2">
-          Moyens de paiement acceptés
+          {t.booking.acceptedMethods}
         </p>
         <div className="grid grid-cols-2 gap-2">
           {SUPPORTED_METHODS.map((m) => (
@@ -177,7 +174,7 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
       {/* Escrow note */}
       <div className="flex items-center justify-center gap-2 text-xs text-neutral-500">
         <ShieldCheck className="w-4 h-4 text-accent-600" />
-        <span>Paiement protégé par le système d&apos;escrow Transporti</span>
+        <span>{t.booking.escrowProtectedNote}</span>
       </div>
 
       {/* Actions */}
@@ -187,7 +184,7 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
           disabled={status === "processing"}
           className="flex-1 px-4 py-3 border border-neutral-300 text-neutral-700 rounded-xl font-medium hover:bg-neutral-50 transition-colors disabled:opacity-50"
         >
-          Annuler
+          {t.booking.cancel}
         </button>
         <button
           onClick={handlePay}
@@ -197,12 +194,12 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
           {status === "processing" ? (
             <>
               <Loader2 className="w-4 h-4 animate-spin" />
-              Redirection...
+              {t.booking.redirectingShort}
             </>
           ) : (
             <>
               <Lock className="w-4 h-4" />
-              Payer {amount.toFixed(2)} TND
+              {interpolate(t.booking.payAmount, { amount: amount.toFixed(2) })}
             </>
           )}
         </button>

@@ -10,6 +10,9 @@ import {
   Star,
   ShieldCheck,
 } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
+import { formatDate } from "@/lib/format";
 
 interface OfferInfo {
   id: number;
@@ -36,6 +39,7 @@ interface Props {
 }
 
 export function BookingSummary({ job, offer }: Props) {
+  const { t } = useAppI18n();
   const commissionAmount = offer.total_price * (offer.commission_rate || 0.15);
   const netPrice = offer.total_price - commissionAmount;
 
@@ -43,7 +47,7 @@ export function BookingSummary({ job, offer }: Props) {
     <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
       <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50">
         <h3 className="text-lg font-semibold text-neutral-900">
-          Récapitulatif de la commande
+          {t.booking.orderSummary}
         </h3>
       </div>
 
@@ -66,10 +70,12 @@ export function BookingSummary({ job, offer }: Props) {
           <div>
             <p className="text-sm font-medium text-neutral-900">
               {job.job_type === "TRANSPORT"
-                ? "Transport de marchandises"
-                : "Déménagement"}
+                ? t.booking.jobTypeTransport
+                : t.booking.jobTypeMoving}
             </p>
-            <p className="text-xs text-neutral-500">Commande #{job.id}</p>
+            <p className="text-xs text-neutral-500">
+              {interpolate(t.booking.orderNumberShort, { id: job.id })}
+            </p>
           </div>
         </div>
 
@@ -80,7 +86,7 @@ export function BookingSummary({ job, offer }: Props) {
               <div className="w-2 h-2 rounded-full bg-emerald-500" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Départ</p>
+              <p className="text-xs text-neutral-500">{t.booking.departure}</p>
               <p className="text-sm font-medium text-neutral-900">
                 {job.pickup_address}
               </p>
@@ -92,7 +98,7 @@ export function BookingSummary({ job, offer }: Props) {
               <MapPin className="w-3 h-3 text-red-500" />
             </div>
             <div>
-              <p className="text-xs text-neutral-500">Destination</p>
+              <p className="text-xs text-neutral-500">{t.booking.destination}</p>
               <p className="text-sm font-medium text-neutral-900">
                 {job.dropoff_address}
               </p>
@@ -104,7 +110,7 @@ export function BookingSummary({ job, offer }: Props) {
         <div className="flex items-center gap-3">
           <Calendar className="w-4 h-4 text-neutral-400" />
           <p className="text-sm text-neutral-700">
-            {new Date(job.scheduled_time).toLocaleDateString("fr-TN", {
+            {formatDate(job.scheduled_time, undefined, {
               weekday: "long",
               day: "numeric",
               month: "long",
@@ -145,21 +151,22 @@ export function BookingSummary({ job, offer }: Props) {
         {/* Price Breakdown */}
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
-            <span className="text-neutral-600">Prix du transport</span>
+            <span className="text-neutral-600">{t.booking.transportPrice}</span>
             <span className="text-neutral-900 font-medium">
               {offer.total_price.toFixed(2)} TND
             </span>
           </div>
           <div className="flex justify-between text-sm">
             <span className="text-neutral-600">
-              Commission plateforme (
-              {((offer.commission_rate || 0.15) * 100).toFixed(0)}%)
+              {interpolate(t.booking.platformFeePct, {
+                rate: ((offer.commission_rate || 0.15) * 100).toFixed(0),
+              })}
             </span>
-            <span className="text-neutral-500">inclus</span>
+            <span className="text-neutral-500">{t.booking.feeIncluded}</span>
           </div>
           <hr className="border-neutral-100" />
           <div className="flex justify-between text-base font-semibold">
-            <span className="text-neutral-900">Total à payer</span>
+            <span className="text-neutral-900">{t.booking.totalPay}</span>
             <span className="text-brand-600">
               {offer.total_price.toFixed(2)} TND
             </span>

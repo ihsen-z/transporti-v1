@@ -2,6 +2,8 @@
 
 import React from "react";
 import { CreditCard, Banknote, ShieldCheck, AlertTriangle } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 interface Props {
   selected: "DIGITAL" | "COD";
@@ -16,13 +18,14 @@ export function PaymentMethodSelector({
   totalPrice,
   codThreshold = 300,
 }: Props) {
+  const { t } = useAppI18n();
   const codBlocked = totalPrice > codThreshold;
 
   return (
     <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
       <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50">
         <h3 className="text-lg font-semibold text-neutral-900">
-          Mode de paiement
+          {t.booking.paymentMethodTitle}
         </h3>
       </div>
 
@@ -50,20 +53,19 @@ export function PaymentMethodSelector({
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <p className="font-semibold text-neutral-900">
-                  Paiement Digital
+                  {t.booking.paymentDigitalShort}
                 </p>
                 <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
-                  Recommandé
+                  {t.booking.recommended}
                 </span>
               </div>
               <p className="text-sm text-neutral-500 mt-1">
-                Paiement sécurisé par escrow. Les fonds sont protégés jusqu'à la
-                livraison.
+                {t.booking.digitalEscrowDesc}
               </p>
               <div className="flex items-center gap-1.5 mt-2">
                 <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
                 <span className="text-xs text-emerald-600 font-medium">
-                  Protection acheteur incluse
+                  {t.booking.buyerProtection}
                 </span>
               </div>
             </div>
@@ -105,17 +107,16 @@ export function PaymentMethodSelector({
             </div>
             <div className="flex-1">
               <p className="font-semibold text-neutral-900">
-                Paiement à la livraison
+                {t.booking.paymentCOD}
               </p>
               <p className="text-sm text-neutral-500 mt-1">
-                Payez en espèces directement au transporteur après la livraison.
+                {t.booking.codDesc}
               </p>
               {codBlocked && (
                 <div className="flex items-center gap-1.5 mt-2">
                   <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
                   <span className="text-xs text-red-600 font-medium">
-                    Indisponible au-delà de {codThreshold} TND (paiement digital
-                    obligatoire)
+                    {interpolate(t.booking.codUnavailable, { threshold: codThreshold })}
                   </span>
                 </div>
               )}
@@ -136,11 +137,10 @@ export function PaymentMethodSelector({
           <ShieldCheck className="w-5 h-5 text-brand-600 flex-shrink-0 mt-0.5" />
           <div>
             <p className="text-sm font-medium text-brand-800">
-              Paiement 100% sécurisé
+              {t.booking.secure100}
             </p>
             <p className="text-xs text-brand-600 mt-0.5">
-              Vos informations de paiement sont protégées par un cryptage de
-              bout en bout. En cas de litige, notre équipe est disponible 24/7.
+              {t.booking.secure100Desc}
             </p>
           </div>
         </div>

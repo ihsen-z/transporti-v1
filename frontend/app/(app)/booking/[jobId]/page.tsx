@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 import Link from "next/link";
 import {
   MapPin,
@@ -74,6 +76,7 @@ export default function BookingPage() {
   const router = useRouter();
   const { user } = useAuth();
   const { showToast } = useToast();
+  const { t } = useAppI18n();
 
   const jobId = params?.jobId
     ? parseInt(Array.isArray(params.jobId) ? params.jobId[0] : params.jobId)
@@ -137,18 +140,18 @@ export default function BookingPage() {
       });
 
       if (result.payment_url) {
-        showToast("success", "Redirection vers la plateforme de paiement...");
+        showToast("success", t.booking.redirectingToast);
         // Redirect to payment gateway
         window.location.href = result.payment_url;
       } else {
-        showToast("error", "URL de paiement non disponible.");
+        showToast("error", t.booking.paymentUrlUnavailable);
       }
     } catch (error) {
       if (error instanceof ApiError && error.body) {
-        const msg = (error.body as any)?.error || "Erreur lors du paiement.";
+        const msg = (error.body as any)?.error || t.booking.paymentError;
         showToast("error", msg);
       } else {
-        showToast("error", "Erreur réseau. Veuillez réessayer.");
+        showToast("error", t.booking.networkErrorRetry);
       }
     } finally {
       setInitiatingPayment(false);
@@ -166,9 +169,9 @@ export default function BookingPage() {
     });
 
   const jobTypeLabel: Record<string, string> = {
-    TRANSPORT: "Transport de marchandises",
-    MOVING: "Déménagement",
-    DELIVERY: "Livraison",
+    TRANSPORT: t.booking.jobTypeTransport,
+    MOVING: t.booking.jobTypeMoving,
+    DELIVERY: t.booking.jobTypeDelivery,
   };
 
   const escrowStatusConfig: Record<
@@ -176,27 +179,27 @@ export default function BookingPage() {
     { label: string; color: string; bg: string }
   > = {
     INITIATED: {
-      label: "En attente de paiement",
+      label: t.booking.escrowInitiated,
       color: "text-amber-700",
       bg: "bg-amber-50 border-amber-200",
     },
     HELD: {
-      label: "Fonds sécurisés (Escrow actif)",
+      label: t.booking.escrowHeld,
       color: "text-green-700",
       bg: "bg-green-50 border-green-200",
     },
     RELEASED: {
-      label: "Paiement libéré au transporteur",
+      label: t.booking.escrowReleasedStatus,
       color: "text-blue-700",
       bg: "bg-blue-50 border-blue-200",
     },
     REFUNDED: {
-      label: "Remboursé",
+      label: t.booking.escrowRefunded,
       color: "text-purple-700",
       bg: "bg-purple-50 border-purple-200",
     },
     FAILED: {
-      label: "Paiement échoué",
+      label: t.booking.escrowFailed,
       color: "text-red-700",
       bg: "bg-red-50 border-red-200",
     },
@@ -209,7 +212,7 @@ export default function BookingPage() {
         <div className="text-center">
           <Loader2 className="w-8 h-8 animate-spin text-brand-600 mx-auto mb-3" />
           <p className="text-neutral-500 text-sm">
-            Chargement de la réservation...
+            {t.booking.reservationLoading}
           </p>
         </div>
       </div>
@@ -221,16 +224,16 @@ export default function BookingPage() {
       <div className="p-8 text-center">
         <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
         <h2 className="text-lg font-bold text-neutral-900 mb-1">
-          Réservation introuvable
+          {t.booking.reservationNotFound}
         </h2>
         <p className="text-neutral-500 text-sm mb-4">
-          Cette mission n&apos;existe pas ou vous n&apos;y avez pas accès.
+          {t.booking.notFoundNoAccess}
         </p>
         <Link
           href="/jobs"
           className="text-brand-600 font-medium hover:text-brand-700"
         >
-          ← Retour aux missions
+          {t.booking.backToJobs}
         </Link>
       </div>
     );
@@ -262,7 +265,7 @@ export default function BookingPage() {
           className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-600 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
-          Retour à la mission #{jobId}
+          {interpolate(t.booking.backToMission, { id: jobId ?? "" })}
         </Link>
 
         {/* Header */}
@@ -271,10 +274,13 @@ export default function BookingPage() {
             <div className="w-10 h-10 bg-brand-600/10 rounded-xl flex items-center justify-center">
               <FileText className="w-5 h-5 text-brand-600" />
             </div>
-            Réservation
+            {t.booking.pageTitle}
           </h1>
           <p className="text-neutral-500 mt-1 text-sm">
-            Mission #{jobId} · {jobTypeLabel[job.job_type] || job.job_type}
+            {interpolate(t.booking.missionSubtitle, {
+              id: jobId ?? "",
+              type: jobTypeLabel[job.job_type] || job.job_type,
+            })}
           </p>
         </div>
 
@@ -285,7 +291,7 @@ export default function BookingPage() {
           <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
               <Truck className="w-4 h-4 text-brand-600" />
-              Détails du trajet
+              {t.booking.routeDetails}
             </h2>
             <div className="space-y-3">
               <div className="flex items-start gap-3">
@@ -293,7 +299,7 @@ export default function BookingPage() {
                   <MapPin className="w-4 h-4 text-orange-500" />
                 </div>
                 <div>
-                  <p className="text-xs text-neutral-400 font-medium">Départ</p>
+                  <p className="text-xs text-neutral-400 font-medium">{t.booking.departure}</p>
                   <p className="text-sm text-neutral-900">
                     {job.pickup_address || job.pickup_governorate}
                   </p>
@@ -306,7 +312,7 @@ export default function BookingPage() {
                 </div>
                 <div>
                   <p className="text-xs text-neutral-400 font-medium">
-                    Destination
+                    {t.booking.destination}
                   </p>
                   <p className="text-sm text-neutral-900">
                     {job.dropoff_address || job.dropoff_governorate}
@@ -330,7 +336,7 @@ export default function BookingPage() {
             <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
               <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
                 <User className="w-4 h-4 text-brand-600" />
-                Transporteur assigné
+                {t.booking.transportAssigned}
               </h2>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -359,19 +365,21 @@ export default function BookingPage() {
           <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
             <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
               <Wallet className="w-4 h-4 text-brand-600" />
-              Détails financiers
+              {t.booking.financialDetails}
             </h2>
 
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-600">Prix du transport</span>
+                <span className="text-neutral-600">{t.booking.transportPrice}</span>
                 <span className="font-medium text-neutral-900">
                   {price.toFixed(2)} TND
                 </span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-neutral-600">
-                  Commission plateforme ({commissionRate.toFixed(0)}%)
+                  {interpolate(t.booking.platformFeePct, {
+                    rate: commissionRate.toFixed(0),
+                  })}
                 </span>
                 <span className="text-neutral-500">
                   - {commissionAmount.toFixed(2)} TND
@@ -379,7 +387,7 @@ export default function BookingPage() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-neutral-600 font-medium">
-                  Net transporteur
+                  {t.booking.transporterNet}
                 </span>
                 <span className="font-semibold text-brand-600">
                   {netTransporteur.toFixed(2)} TND
@@ -387,7 +395,7 @@ export default function BookingPage() {
               </div>
               <div className="border-t border-neutral-100 pt-3 flex justify-between">
                 <span className="font-semibold text-neutral-900">
-                  Total à payer (Client)
+                  {t.booking.totalPayClient}
                 </span>
                 <span className="text-xl font-bold text-brand-600">
                   {price.toFixed(2)} TND
@@ -402,10 +410,10 @@ export default function BookingPage() {
                   <CreditCard className="w-5 h-5 text-brand-600" />
                   <div>
                     <p className="text-sm font-semibold text-neutral-900">
-                      Paiement Digital (Escrow)
+                      {t.booking.paymentDigital}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      Montant sécurisé, libéré après confirmation de livraison
+                      {t.booking.paymentDigitalDesc}
                     </p>
                   </div>
                 </div>
@@ -414,10 +422,10 @@ export default function BookingPage() {
                   <Banknote className="w-5 h-5 text-green-600" />
                   <div>
                     <p className="text-sm font-semibold text-neutral-900">
-                      Paiement à la livraison (COD)
+                      {t.booking.paymentCODParen}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      Payez en espèces au transporteur à la réception
+                      {t.booking.paymentCODAtDelivery}
                     </p>
                   </div>
                 </div>
@@ -426,10 +434,10 @@ export default function BookingPage() {
                   <Clock className="w-5 h-5 text-neutral-400" />
                   <div>
                     <p className="text-sm font-semibold text-neutral-900">
-                      Mode de paiement en attente
+                      {t.booking.paymentPending}
                     </p>
                     <p className="text-xs text-neutral-500">
-                      Le mode de paiement sera défini lors de l&apos;acceptation
+                      {t.booking.paymentPendingDesc}
                     </p>
                   </div>
                 </div>
@@ -444,7 +452,7 @@ export default function BookingPage() {
             <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
               <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-green-600" />
-                Statut du paiement sécurisé
+                {t.booking.escrowStatusTitle}
               </h2>
 
               {escrow ? (
@@ -467,7 +475,7 @@ export default function BookingPage() {
                     </span>
                   </div>
                   <p className="text-xs text-neutral-500 mt-2 mb-4">
-                    Montant : {escrow.amount} TND
+                    {interpolate(t.booking.escrowAmount, { amount: escrow.amount })}
                   </p>
                   
                   {/* Timeline */}
@@ -478,7 +486,7 @@ export default function BookingPage() {
                         <div className="flex items-center justify-center w-4 h-4 rounded-full border-2 border-white bg-neutral-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2" />
                         <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
                           <div className="flex items-center justify-between mb-1">
-                            <div className="font-medium text-xs text-neutral-900">Réservation créée</div>
+                            <div className="font-medium text-xs text-neutral-900">{t.booking.timelineBookingCreated}</div>
                             <time className="text-[10px] font-medium text-neutral-500">{formatDate(booking.created_at)}</time>
                           </div>
                         </div>
@@ -490,7 +498,7 @@ export default function BookingPage() {
                         <div className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "HELD" || escrow.status === "RELEASED" ? "bg-green-500" : "bg-neutral-300"}`} />
                         <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
                           <div className="flex items-center justify-between mb-1">
-                            <div className="font-medium text-xs text-neutral-900">Fonds sécurisés</div>
+                            <div className="font-medium text-xs text-neutral-900">{t.booking.timelineFundsSecured}</div>
                             <time className="text-[10px] font-medium text-neutral-500">{formatDate(escrow.created_at)}</time>
                           </div>
                         </div>
@@ -501,7 +509,7 @@ export default function BookingPage() {
                       <div className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "RELEASED" ? "bg-blue-500" : "bg-neutral-300"}`} />
                       <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
                         <div className="flex items-center justify-between mb-1">
-                          <div className="font-medium text-xs text-neutral-900">Fonds libérés</div>
+                          <div className="font-medium text-xs text-neutral-900">{t.booking.timelineFundsReleased}</div>
                         </div>
                       </div>
                     </div>
@@ -512,12 +520,11 @@ export default function BookingPage() {
                   <div className="flex items-center gap-2 text-amber-700">
                     <AlertCircle className="w-5 h-5" />
                     <span className="font-semibold">
-                      Paiement non encore effectué
+                      {t.booking.paymentNotYetDone}
                     </span>
                   </div>
                   <p className="text-xs text-amber-600 mt-1">
-                    Cliquez sur &ldquo;Payer maintenant&rdquo; pour sécuriser
-                    votre transaction.
+                    {t.booking.clickPayToSecure}
                   </p>
                 </div>
               )}
@@ -532,12 +539,14 @@ export default function BookingPage() {
                   {initiatingPayment ? (
                     <>
                       <Loader2 className="w-5 h-5 animate-spin" />
-                      Redirection en cours...
+                      {t.booking.redirecting}
                     </>
                   ) : (
                     <>
                       <CreditCard className="w-5 h-5" />
-                      Payer maintenant — {price.toFixed(2)} TND
+                      {interpolate(t.booking.payNowAmount, {
+                        amount: price.toFixed(2),
+                      })}
                     </>
                   )}
                 </button>
@@ -547,11 +556,10 @@ export default function BookingPage() {
               {escrowActive && (
                 <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl text-center">
                   <p className="text-sm font-semibold text-green-800">
-                    ✅ Votre paiement est sécurisé
+                    {t.booking.escrowSecuredTitle}
                   </p>
                   <p className="text-xs text-green-600 mt-1">
-                    Les fonds seront libérés au transporteur après votre
-                    confirmation de livraison.
+                    {t.booking.escrowSecuredDesc}
                   </p>
                 </div>
               )}
@@ -559,11 +567,10 @@ export default function BookingPage() {
               {escrowReleased && (
                 <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-center">
                   <p className="text-sm font-semibold text-blue-800">
-                    💸 Paiement libéré au transporteur
+                    {t.booking.escrowReleasedTitle}
                   </p>
                   <p className="text-xs text-blue-600 mt-1">
-                    La transaction est finalisée. Merci d&apos;avoir utilisé
-                    Transporti !
+                    {t.booking.escrowReleasedDesc}
                   </p>
                 </div>
               )}
@@ -577,26 +584,26 @@ export default function BookingPage() {
             <div className="flex items-center gap-2 mb-3">
               <ShieldCheck className="w-5 h-5 text-brand-600" />
               <h3 className="font-semibold text-neutral-900 text-sm">
-                Votre transaction est protégée
+                {t.booking.protectedTitle}
               </h3>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
               <div className="flex items-start gap-2">
                 <ShieldCheck className="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-neutral-600">
-                  Transporteur vérifié avec documents validés
+                  {t.booking.protectedVerified}
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <Wallet className="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-neutral-600">
-                  Escrow sécurisé — pas de paiement direct
+                  {t.booking.protectedEscrow}
                 </p>
               </div>
               <div className="flex items-start gap-2">
                 <Star className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-neutral-600">
-                  Support 24/48h en cas de litige
+                  {t.booking.protectedSupport}
                 </p>
               </div>
             </div>
