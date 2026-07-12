@@ -15,6 +15,8 @@ import {
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/hooks/useAuth";
+import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -49,7 +51,7 @@ interface ConversationItem {
 /* -------------------------------------------------------------------------- */
 
 /** Relative time formatting (il y a 2h, Hier, etc.) */
-function relativeTime(dateStr: string): string {
+function relativeTime(dateStr: string, t: AppTranslationKeys): string {
   try {
     const d = new Date(dateStr);
     const now = new Date();
@@ -58,44 +60,39 @@ function relativeTime(dateStr: string): string {
     const diffH = Math.floor(diffMs / 3600000);
     const diffD = Math.floor(diffMs / 86400000);
 
-    if (diffMin < 1) return "À l'instant";
-    if (diffMin < 60) return `Il y a ${diffMin} min`;
-    if (diffH < 24) return `Il y a ${diffH}h`;
-    if (diffD === 1) return "Hier";
-    if (diffD < 7) return `Il y a ${diffD}j`;
+    if (diffMin < 1) return t.messages.justNow;
+    if (diffMin < 60) return interpolate(t.messages.minutesAgo, { n: diffMin });
+    if (diffH < 24) return interpolate(t.messages.hoursAgo, { n: diffH });
+    if (diffD === 1) return t.messages.yesterday;
+    if (diffD < 7) return interpolate(t.messages.daysAgo, { n: diffD });
     return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
   } catch {
     return "";
   }
 }
 
-/** Status badge config with dot color */
-const STATUS_CONFIGS: Record<
+/** Status badge dot colors (labels come from the i18n dictionary) */
+const STATUS_STYLES: Record<
   string,
-  { label: string; dotColor: string; className: string }
+  { dotColor: string; className: string }
 > = {
   IN_PROGRESS: {
-    label: "En cours",
     dotColor: "bg-brand-600",
     className: "bg-brand-600/5 text-brand-600",
   },
   COMPLETED: {
-    label: "Terminée",
     dotColor: "bg-emerald-500",
     className: "bg-emerald-50 text-emerald-600",
   },
   DISPUTED: {
-    label: "Litige",
     dotColor: "bg-red-500",
     className: "bg-red-50 text-red-600",
   },
   MATCHED: {
-    label: "Confirmée",
     dotColor: "bg-brand-600",
     className: "bg-brand-600/5 text-brand-600",
   },
   CANCELLED: {
-    label: "Annulée",
     dotColor: "bg-neutral-400",
     className: "bg-neutral-100 text-neutral-500",
   },
@@ -106,14 +103,21 @@ const STATUS_CONFIGS: Record<
 /* -------------------------------------------------------------------------- */
 
 function StatusBadge({ status }: { status: string }) {
-  const cfg = STATUS_CONFIGS[status];
-  if (!cfg) return null;
+  const { t } = useAppI18n();
+  const style = STATUS_STYLES[status];
+  if (!style) return null;
+  // MATCHED garde son libellé spécifique à la messagerie ("Confirmée").
+  const label =
+    status === "MATCHED"
+      ? t.messages.statusConfirmed
+      : (t.status.job as Record<string, string>)[status];
+  if (!label) return null;
   return (
     <span
-      className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${cfg.className}`}
+      className={`inline-flex items-center gap-1.5 text-[10px] font-semibold px-2 py-0.5 rounded-full ${style.className}`}
     >
-      <span className={`w-1.5 h-1.5 rounded-full ${cfg.dotColor}`} />
-      {cfg.label}
+      <span className={`w-1.5 h-1.5 rounded-full ${style.dotColor}`} />
+      {label}
     </span>
   );
 }
@@ -123,12 +127,13 @@ function StatusBadge({ status }: { status: string }) {
 /* -------------------------------------------------------------------------- */
 
 const ConversationCard = React.memo(function ConversationCardInner({ conv }: { conv: ConversationItem }) {
+  const { t } = useAppI18n();
   const hasUnread = conv.unread_count > 0;
   const isLocked = conv.is_locked;
   const time = conv.last_message
-    ? relativeTime(conv.last_message.created_at)
-    : relativeTime(conv.updated_at);
-  const isRecent = time === "À l'instant" || time.includes("min");
+    ? relativeTime(conv.last_message.created_at, t)
+    : relativeTime(conv.updated_at, t);
+  const isRecent = time === t.messages.justNow || time.includes("min");
 
   return (
     <Link
@@ -209,7 +214,7 @@ const ConversationCard = React.memo(function ConversationCardInner({ conv }: { c
           {conv.last_message?.is_system && (
             <span className="inline-block mr-1 text-brand-600">🤖</span>
           )}
-          {conv.last_message?.content || "Aucun message encore."}
+          {conv.last_message?.content || t.messages.noMessageYet}
         </p>
       </div>
 
@@ -240,6 +245,7 @@ const POLL_INTERVAL_MS = 30_000;
 
 export default function MessagesInboxPage() {
   const { isAuthenticated, user } = useAuth();
+  const { t } = useAppI18n();
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -261,14 +267,12 @@ export default function MessagesInboxPage() {
       setConversations(items);
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : "Erreur lors du chargement des conversations.";
+        err instanceof Error ? err.message : t.messages.loadErrorDesc;
       if (!silent) setError(message);
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -314,8 +318,8 @@ export default function MessagesInboxPage() {
   // FIX #8: Adapt empty state message to user role
   const emptyMessage =
     role === "TRANSPORTER"
-      ? "Vos conversations apparaîtront ici une fois qu'un client aura accepté votre offre."
-      : "Vos conversations apparaîtront ici une fois qu'un transporteur aura accepté votre demande.";
+      ? t.messages.emptyTransporter
+      : t.messages.emptyClient;
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto">
@@ -323,17 +327,27 @@ export default function MessagesInboxPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-            Messages
+            {t.messages.title}
           </h1>
           <p className="text-sm text-neutral-500 mt-1">
             {loading
-              ? "Chargement..."
-              : `${filteredConversations.length} conversation${filteredConversations.length > 1 ? "s" : ""}`}
+              ? t.common.loading
+              : interpolate(
+                  filteredConversations.length > 1
+                    ? t.messages.conversationsCountPlural
+                    : t.messages.conversationsCount,
+                  { n: filteredConversations.length },
+                )}
             {totalUnread > 0 && !loading && (
               <span className="ml-2 inline-flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-brand-600 rounded-full animate-pulse" />
                 <span className="text-brand-600 font-semibold">
-                  {totalUnread} non lu{totalUnread > 1 ? "s" : ""}
+                  {interpolate(
+                    totalUnread > 1
+                      ? t.messages.unreadCountPlural
+                      : t.messages.unreadCount,
+                    { n: totalUnread },
+                  )}
                 </span>
               </span>
             )}
@@ -344,7 +358,7 @@ export default function MessagesInboxPage() {
             onClick={() => fetchConversations()}
             disabled={loading}
             className="p-2.5 hover:bg-brand-600/5 rounded-xl transition-colors disabled:opacity-50 group"
-            title="Actualiser"
+            title={t.messages.refresh}
           >
             <RefreshCw
               className={`w-4 h-4 text-neutral-400 group-hover:text-brand-600 transition-colors ${loading ? "animate-spin" : ""}`}
@@ -354,7 +368,7 @@ export default function MessagesInboxPage() {
             <Search className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder="Rechercher..."
+              placeholder={t.common.search}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 pr-4 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 outline-none w-52 transition-all bg-neutral-50/50 focus:bg-white placeholder:text-neutral-400"
@@ -371,7 +385,7 @@ export default function MessagesInboxPage() {
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium text-red-800">
-              Erreur de chargement
+              {t.messages.loadError}
             </p>
             <p className="text-xs text-red-600 mt-0.5">{error}</p>
           </div>
@@ -379,7 +393,7 @@ export default function MessagesInboxPage() {
             onClick={() => fetchConversations()}
             className="text-sm font-semibold text-red-600 hover:text-red-800 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
           >
-            Réessayer
+            {t.common.retry}
           </button>
         </div>
       )}
@@ -391,7 +405,7 @@ export default function MessagesInboxPage() {
             <Loader2 className="w-8 h-8 text-brand-600 animate-spin" />
           </div>
           <p className="text-sm text-neutral-500 font-medium">
-            Chargement des conversations...
+            {t.messages.loadingConversations}
           </p>
         </div>
       )}
@@ -406,11 +420,11 @@ export default function MessagesInboxPage() {
             </div>
           </div>
           <h3 className="text-lg font-bold text-neutral-900 mb-2">
-            {searchQuery ? "Aucun résultat" : "Aucun message"}
+            {searchQuery ? t.messages.emptyNoResults : t.messages.emptyNoMessages}
           </h3>
           <p className="text-neutral-500 text-sm max-w-sm mx-auto leading-relaxed">
             {searchQuery
-              ? `Aucune conversation ne correspond à "${searchQuery}".`
+              ? interpolate(t.messages.noMatch, { query: searchQuery })
               : emptyMessage}
           </p>
           {!searchQuery && (
@@ -419,8 +433,8 @@ export default function MessagesInboxPage() {
               className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
               {role === "TRANSPORTER"
-                ? "Trouver une mission"
-                : "Publier une annonce"}
+                ? t.messages.findMission
+                : t.messages.publishAd}
               <ArrowRight className="w-4 h-4" />
             </Link>
           )}

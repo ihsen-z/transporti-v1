@@ -8,6 +8,8 @@ import { ContactReveal } from "@/components/messaging/ContactReveal";
 import { checkForBypass } from "@/lib/antiBypass";
 import { apiClient, ApiError } from "@/lib/api/client";
 import StatusBadge from "@/components/ui/StatusBadge";
+import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 import {
   ArrowLeft,
   Send,
@@ -85,15 +87,15 @@ function shortAddr(addr: string, max = 35): string {
 }
 
 /** Format a date for separator display */
-function dateSeparatorLabel(dateStr: string): string {
+function dateSeparatorLabel(dateStr: string, t: AppTranslationKeys): string {
   const d = new Date(dateStr);
   const now = new Date();
   const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   const msgDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
   const diffDays = Math.floor((today.getTime() - msgDay.getTime()) / 86400000);
 
-  if (diffDays === 0) return "Aujourd'hui";
-  if (diffDays === 1) return "Hier";
+  if (diffDays === 0) return t.messages.today;
+  if (diffDays === 1) return t.messages.yesterday;
   return d.toLocaleDateString("fr-FR", {
     weekday: "long",
     day: "numeric",
@@ -120,6 +122,7 @@ export default function MessagingPage() {
   const params = useParams();
   const router = useRouter();
   const { user } = useAuth();
+  const { t } = useAppI18n();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -165,27 +168,25 @@ export default function MessagingPage() {
         if (err instanceof ApiError) {
           if (err.status === 403) {
             setErrorType("403");
-            setError("Vous n'avez pas accès à cette conversation.");
+            setError(t.messages.error403);
           } else if (err.status === 404) {
             setErrorType("404");
-            setError(
-              "Aucune conversation trouvée pour cette mission. La conversation sera créée automatiquement après l'acceptation d'une offre.",
-            );
+            setError(t.messages.error404);
           } else {
             setErrorType("other");
-            setError(err.message || "Erreur lors du chargement.");
+            setError(err.message || t.messages.loadingError);
           }
         } else {
           setErrorType("other");
           const message =
-            err instanceof Error ? err.message : "Erreur lors du chargement.";
+            err instanceof Error ? err.message : t.messages.loadingError;
           setError(message);
         }
       } finally {
         setLoading(false);
       }
     },
-    [jobId],
+    [jobId, t],
   );
 
   // Initial fetch
@@ -216,9 +217,7 @@ export default function MessagingPage() {
     if (job && job.status === "PUBLISHED") {
       const bypassCheck = checkForBypass(newMessage);
       if (bypassCheck.hasBypass) {
-        setBypassWarning(
-          "Votre message contient des informations de contact. Pour votre sécurité, les échanges de coordonnées ne sont autorisés qu'après confirmation de la réservation.",
-        );
+        setBypassWarning(t.messages.bypassWarning);
         return;
       }
     }
@@ -238,10 +237,10 @@ export default function MessagingPage() {
     } catch (err: unknown) {
       if (err instanceof ApiError && err.body) {
         const errorMsg =
-          err.body.error || err.body.detail || "Erreur lors de l'envoi.";
+          err.body.error || err.body.detail || t.messages.sendError;
         setBypassWarning(String(errorMsg));
       } else {
-        setBypassWarning("Erreur réseau. Veuillez réessayer.");
+        setBypassWarning(t.messages.networkError);
       }
     } finally {
       setSending(false);
@@ -264,7 +263,7 @@ export default function MessagingPage() {
       >
         <Loader2 className="w-8 h-8 text-brand-600 animate-spin mb-4" />
         <p className="text-sm text-neutral-500">
-          Chargement de la conversation...
+          {t.messages.loadingConversation}
         </p>
       </div>
     );
@@ -305,10 +304,10 @@ export default function MessagingPage() {
             }`}
           >
             {errorType === "403"
-              ? "Accès refusé"
+              ? t.messages.accessDenied
               : errorType === "404"
-                ? "Conversation introuvable"
-                : "Erreur"}
+                ? t.messages.conversationNotFound
+                : t.messages.errorTitle}
           </h3>
           <p
             className={`text-sm mb-4 ${
@@ -325,7 +324,7 @@ export default function MessagingPage() {
             onClick={() => router.push("/messages")}
             className="text-sm font-medium text-brand-600 hover:text-brand-700"
           >
-            ← Retour aux messages
+            {t.messages.backToMessages}
           </button>
         </div>
       </div>
@@ -353,7 +352,7 @@ export default function MessagingPage() {
 
         <div className="flex-1 min-w-0">
           <p className="text-sm font-semibold text-neutral-900 truncate">
-            {otherParty?.name || "Conversation"}
+            {otherParty?.name || t.messages.conversationFallback}
           </p>
           {job && (
             <div
@@ -384,7 +383,9 @@ export default function MessagingPage() {
             className="w-full px-4 py-2 flex items-center justify-between text-xs text-emerald-700 bg-emerald-50/50 hover:bg-emerald-50 transition-colors"
           >
             <span className="flex items-center gap-1.5 font-medium">
-              📞 Coordonnées de {otherParty.name || "votre contact"}
+              {interpolate(t.messages.contactOf, {
+                name: otherParty.name || t.messages.yourContact,
+              })}
             </span>
             {showContact ? (
               <ChevronUp className="w-3.5 h-3.5" />
@@ -408,10 +409,7 @@ export default function MessagingPage() {
         <div className="px-4 py-2 bg-neutral-50 border-b border-neutral-200 flex-shrink-0">
           <div className="flex items-center gap-2 text-xs text-neutral-500">
             <Lock className="w-3.5 h-3.5 text-neutral-400" />
-            <span>
-              Coordonnées protégées — débloquées après confirmation de
-              réservation
-            </span>
+            <span>{t.messages.contactProtected}</span>
           </div>
         </div>
       )}
@@ -425,7 +423,7 @@ export default function MessagingPage() {
           <div className="bg-neutral-100 rounded-full px-4 py-1.5 flex items-center gap-2">
             <Info className="w-3.5 h-3.5 text-neutral-400" />
             <span className="text-xs text-neutral-500">
-              Conversation liée à la mission #{jobId}
+              {interpolate(t.messages.linkedToMission, { id: jobId })}
             </span>
           </div>
         </div>
@@ -433,7 +431,7 @@ export default function MessagingPage() {
         {messages.length === 0 && (
           <div className="text-center py-12">
             <p className="text-sm text-neutral-400">
-              Aucun message encore. Envoyez le premier message !
+              {t.messages.noMessageStart}
             </p>
           </div>
         )}
@@ -450,7 +448,7 @@ export default function MessagingPage() {
                 <div className="flex items-center gap-3 my-4">
                   <div className="flex-1 h-px bg-neutral-200" />
                   <span className="text-xs text-neutral-400 font-medium px-2">
-                    {dateSeparatorLabel(msg.created_at)}
+                    {dateSeparatorLabel(msg.created_at, t)}
                   </span>
                   <div className="flex-1 h-px bg-neutral-200" />
                 </div>
@@ -471,7 +469,7 @@ export default function MessagingPage() {
                   timestamp={msg.created_at}
                   isSender={msg.sender === currentUserId}
                   senderName={
-                    msg.sender === currentUserId ? "Vous" : msg.sender_name
+                    msg.sender === currentUserId ? t.messages.you : msg.sender_name
                   }
                   isRead={msg.is_read}
                 />
@@ -506,7 +504,7 @@ export default function MessagingPage() {
         <div className="bg-neutral-50 border-t border-neutral-200 px-4 py-4 flex-shrink-0">
           <div className="flex items-center justify-center gap-2 text-neutral-500">
             <Lock className="w-4 h-4" />
-            <span className="text-sm">Cette conversation est verrouillée.</span>
+            <span className="text-sm">{t.messages.conversationLocked}</span>
           </div>
         </div>
       ) : (
@@ -519,7 +517,7 @@ export default function MessagingPage() {
                 if (bypassWarning) setBypassWarning(null);
               }}
               onKeyDown={handleKeyDown}
-              placeholder="Tapez votre message..."
+              placeholder={t.messages.messagePlaceholder}
               rows={1}
               className="flex-1 p-3 border border-neutral-300 rounded-xl resize-none focus:ring-2 focus:ring-accent-500 focus:border-brand-600 text-sm max-h-32"
             />

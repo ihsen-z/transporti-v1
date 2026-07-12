@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import Image from "next/image";
 import Link from "next/link";
@@ -18,6 +20,8 @@ import {
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getMediaUrl } from "@/lib/imageUtils";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 import type { JobOffer } from "@/lib/types/jobs";
 
 interface OfferCardProps {
@@ -27,6 +31,7 @@ interface OfferCardProps {
 }
 
 export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
+  const { t } = useAppI18n();
   const rating = offer.transporter_rating ?? 0;
   const jobsCount = offer.transporter_jobs_count ?? 0;
   const completionRate = offer.transporter_completion_rate ?? null;
@@ -50,7 +55,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
                 {offer.transporter_avatar ? (
                   <Image
                     src={getMediaUrl(offer.transporter_avatar)}
-                    alt={offer.transporter_name || "Transporteur"}
+                    alt={offer.transporter_name || t.offersComponents.transporterAlt}
                     width={48}
                     height={48}
                     className="w-full h-full object-cover"
@@ -91,7 +96,14 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
               <span className="text-neutral-300">•</span>
               <span className="inline-flex items-center gap-0.5 truncate">
                 <Truck className="w-3 h-3 flex-shrink-0" />
-                <span className="truncate">{jobsCount} mission{jobsCount !== 1 ? "s" : ""}</span>
+                <span className="truncate">
+                  {interpolate(
+                    jobsCount !== 1
+                      ? t.offersComponents.missionsCountPlural
+                      : t.offersComponents.missionsCount,
+                    { n: jobsCount },
+                  )}
+                </span>
               </span>
               {completionRate !== null && (
                 <>
@@ -119,7 +131,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
 
       {/* Message Box */}
       <div className="bg-neutral-50 p-3 rounded-lg text-sm text-neutral-700 break-words">
-        <p className="line-clamp-3">{offer.message || "Aucun message."}</p>
+        <p className="line-clamp-3">{offer.message || t.offersComponents.noMessage}</p>
       </div>
 
       {/* Trust Badges */}
@@ -127,19 +139,19 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
         {offer.transporter_verified && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-green-50 text-green-700 text-[11px] font-medium rounded-full border border-green-200 whitespace-nowrap">
             <ShieldCheck className="w-3 h-3" />
-            Vérifié
+            {t.profile.verified}
           </span>
         )}
         {isMovingSpecialist && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 text-[11px] font-medium rounded-full border border-purple-200 whitespace-nowrap">
             <Award className="w-3 h-3" />
-            Spécialiste déménagement
+            {t.offersComponents.movingSpecialist}
           </span>
         )}
         {jobsCount >= 20 && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-[11px] font-medium rounded-full border border-amber-200 whitespace-nowrap">
             <Star className="w-3 h-3" />
-            Expérimenté
+            {t.offersComponents.experienced}
           </span>
         )}
         {trustScore !== null && (
@@ -153,18 +165,23 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
             }`}
           >
             <Shield className="w-3 h-3" />
-            Confiance {trustScore}/100
+            {interpolate(t.offersComponents.trust, { n: trustScore })}
           </span>
         )}
         {codEligible && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-medium rounded-full border border-blue-200 whitespace-nowrap">
-            💵 COD disponible
+            {t.offersComponents.codAvailable}
           </span>
         )}
         {hasWorkedTogether && (
           <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-full border border-indigo-200 whitespace-nowrap">
             <Handshake className="w-3 h-3" />
-            Déjà {pastJobsCount} mission{pastJobsCount > 1 ? "s" : ""}
+            {interpolate(
+              pastJobsCount > 1
+                ? t.offersComponents.alreadyWorkedPlural
+                : t.offersComponents.alreadyWorked,
+              { n: pastJobsCount },
+            )}
           </span>
         )}
       </div>
@@ -178,7 +195,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
             className="w-full flex items-center justify-center gap-2 py-2.5 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-sm"
           >
             <CheckCircle className="w-4 h-4 flex-shrink-0" />
-            <span className="truncate">Accepter cette offre</span>
+            <span className="truncate">{t.offersComponents.acceptOffer}</span>
           </button>
 
           {/* Secondary Actions */}
@@ -189,7 +206,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
                 className="flex-1 flex items-center justify-center gap-2 py-2 border border-neutral-300 text-neutral-700 rounded-xl font-medium hover:bg-neutral-50 transition-colors text-sm min-w-0"
               >
                 <MessageCircle className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">Poser une question</span>
+                <span className="truncate">{t.offersComponents.askQuestion}</span>
               </Link>
             )}
 
@@ -199,7 +216,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
                 className="flex-1 flex items-center justify-center gap-2 py-2 border border-neutral-300 text-neutral-700 rounded-xl font-medium hover:bg-neutral-50 transition-colors text-sm min-w-0"
               >
                 <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">Voir le profil</span>
+                <span className="truncate">{t.offersComponents.viewProfile}</span>
               </Link>
             )}
           </div>
@@ -209,7 +226,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
       {offer.status === "ACCEPTED" && (
         <div className="w-full py-2.5 mt-2 bg-green-50 text-green-700 rounded-xl font-semibold text-center border border-green-200 flex items-center justify-center gap-2">
           <CheckCircle className="w-4 h-4 flex-shrink-0" />
-          <span className="truncate">Offre acceptée</span>
+          <span className="truncate">{t.offersComponents.offerAccepted}</span>
         </div>
       )}
     </div>

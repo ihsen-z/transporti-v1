@@ -4,8 +4,10 @@ import { useState } from "react";
 import Link from "next/link";
 import { ArrowLeft, Mail, Loader2, CheckCircle } from "lucide-react";
 import { AuthLogo } from "@/components/brand/TransportiLogo";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 export default function ForgotPasswordPage() {
+  const { t } = useAppI18n();
   const [email, setEmail] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -36,10 +38,10 @@ export default function ForgotPasswordPage() {
           <AuthLogo />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">
-          Mot de passe oublié
+          {t.forgotPassword.title}
         </h1>
         <p className="text-blue-200 text-sm">
-          Entrez votre email pour recevoir un lien de réinitialisation
+          {t.forgotPassword.subtitle}
         </p>
       </div>
 
@@ -50,22 +52,22 @@ export default function ForgotPasswordPage() {
               <CheckCircle className="w-8 h-8 text-accent-600" />
             </div>
             <h2 className="text-lg font-semibold text-neutral-900">
-              Email envoyé !
+              {t.forgotPassword.emailSentTitle}
             </h2>
             <p className="text-sm text-neutral-500 max-w-sm mx-auto">
-              Si un compte existe avec l&apos;adresse{" "}
-              <strong className="text-neutral-700">{email}</strong>, vous
-              recevrez un lien de réinitialisation sous quelques minutes.
+              {t.forgotPassword.emailSentBefore}{" "}
+              <strong className="text-neutral-700">{email}</strong>
+              {t.forgotPassword.emailSentAfter}
             </p>
             <p className="text-xs text-neutral-400">
-              Pensez à vérifier vos spams.
+              {t.forgotPassword.checkSpam}
             </p>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-medium mt-4 transition-colors"
             >
               <ArrowLeft className="w-4 h-4" />
-              Retour à la connexion
+              {t.forgotPassword.backToLogin}
             </Link>
           </div>
         ) : (
@@ -75,7 +77,7 @@ export default function ForgotPasswordPage() {
                 htmlFor="reset-email"
                 className="block text-sm font-medium text-neutral-700 mb-1"
               >
-                Adresse email
+                {t.auth.emailLabel}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -84,7 +86,7 @@ export default function ForgotPasswordPage() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="votre@email.com"
+                  placeholder={t.auth.emailPlaceholder}
                   className="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
                   autoComplete="email"
                   required
@@ -100,10 +102,10 @@ export default function ForgotPasswordPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Envoi en cours...
+                  {t.forgotPassword.sending}
                 </>
               ) : (
-                "Envoyer le lien de réinitialisation"
+                t.forgotPassword.sendLink
               )}
             </button>
 
@@ -113,7 +115,7 @@ export default function ForgotPasswordPage() {
                 className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Retour à la connexion
+                {t.forgotPassword.backToLogin}
               </Link>
             </div>
           </form>

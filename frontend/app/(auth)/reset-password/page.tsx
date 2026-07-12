@@ -11,8 +11,10 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { AuthLogo } from "@/components/brand/TransportiLogo";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 export default function ResetPasswordPage() {
+  const { t } = useAppI18n();
   const params = useSearchParams();
   const uid = params.get("uid") || "";
   const token = params.get("token") || "";
@@ -46,7 +48,7 @@ export default function ResetPasswordPage() {
       const { ApiError } = await import("@/lib/api/client");
       setError(
         (err instanceof ApiError && err.body?.error) ||
-          "Le lien est invalide ou expiré. Veuillez refaire la demande.",
+          t.resetPassword.linkInvalidError,
       );
     } finally {
       setIsSubmitting(false);
@@ -58,21 +60,23 @@ export default function ResetPasswordPage() {
       <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
         <div className="bg-gradient-to-r from-brand-600 to-brand-900 px-6 py-8 text-center">
           <AuthLogo />
-          <h1 className="text-2xl font-bold text-white mt-3">Lien invalide</h1>
+          <h1 className="text-2xl font-bold text-white mt-3">
+            {t.resetPassword.invalidTitle}
+          </h1>
         </div>
         <div className="px-6 py-8 text-center space-y-4">
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto">
             <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
           <p className="text-neutral-600">
-            Ce lien de réinitialisation est invalide ou a expiré.
+            {t.resetPassword.invalidDesc}
           </p>
           <Link
             href="/forgot-password"
             className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-medium transition-colors"
           >
             <ArrowLeft className="w-4 h-4" />
-            Demander un nouveau lien
+            {t.resetPassword.requestNewLink}
           </Link>
         </div>
       </div>
@@ -86,10 +90,10 @@ export default function ResetPasswordPage() {
           <AuthLogo />
         </div>
         <h1 className="text-2xl font-bold text-white mb-2">
-          Nouveau mot de passe
+          {t.resetPassword.title}
         </h1>
         <p className="text-blue-200 text-sm">
-          Choisissez un nouveau mot de passe sécurisé
+          {t.resetPassword.subtitle}
         </p>
       </div>
 
@@ -100,17 +104,16 @@ export default function ResetPasswordPage() {
               <CheckCircle className="w-8 h-8 text-accent-600" />
             </div>
             <h2 className="text-lg font-semibold text-neutral-900">
-              Mot de passe réinitialisé !
+              {t.resetPassword.successTitle}
             </h2>
             <p className="text-sm text-neutral-500">
-              Vous pouvez maintenant vous connecter avec votre nouveau mot de
-              passe.
+              {t.resetPassword.successDesc}
             </p>
             <Link
               href="/login"
               className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all mt-2"
             >
-              Se connecter
+              {t.auth.loginButton}
             </Link>
           </div>
         ) : (
@@ -126,7 +129,7 @@ export default function ResetPasswordPage() {
                 htmlFor="new-password"
                 className="block text-sm font-medium text-neutral-700 mb-1"
               >
-                Nouveau mot de passe
+                {t.resetPassword.newPasswordLabel}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -135,7 +138,7 @@ export default function ResetPasswordPage() {
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder="Min. 8 caractères"
+                  placeholder={t.resetPassword.newPasswordPlaceholder}
                   className="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
                   minLength={8}
                   required
@@ -148,7 +151,7 @@ export default function ResetPasswordPage() {
                 htmlFor="confirm-password"
                 className="block text-sm font-medium text-neutral-700 mb-1"
               >
-                Confirmer le mot de passe
+                {t.auth.passwordConfirmLabel}
               </label>
               <div className="relative">
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
@@ -157,7 +160,7 @@ export default function ResetPasswordPage() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder="Confirmer"
+                  placeholder={t.resetPassword.confirmPasswordPlaceholder}
                   className={`w-full pl-11 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent-500 transition-colors ${
                     confirmPassword && !passwordsMatch
                       ? "border-red-300 focus:border-red-500"
@@ -168,7 +171,7 @@ export default function ResetPasswordPage() {
               </div>
               {confirmPassword && !passwordsMatch && (
                 <p className="text-red-500 text-xs mt-1">
-                  Les mots de passe ne correspondent pas
+                  {t.resetPassword.passwordsMismatch}
                 </p>
               )}
             </div>
@@ -181,10 +184,10 @@ export default function ResetPasswordPage() {
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-5 h-5 animate-spin" />
-                  Réinitialisation...
+                  {t.resetPassword.resetting}
                 </>
               ) : (
-                "Réinitialiser le mot de passe"
+                t.resetPassword.resetButton
               )}
             </button>
 
@@ -194,7 +197,7 @@ export default function ResetPasswordPage() {
                 className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
               >
                 <ArrowLeft className="w-4 h-4" />
-                Retour à la connexion
+                {t.resetPassword.backToLogin}
               </Link>
             </div>
           </form>

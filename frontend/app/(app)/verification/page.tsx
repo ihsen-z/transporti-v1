@@ -17,6 +17,8 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { getMediaUrl } from "@/lib/imageUtils";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -32,35 +34,20 @@ interface VerificationDoc {
   reviewed_at: string | null;
 }
 
-const DOC_TYPE_LABELS: Record<string, string> = {
-  CIN_FRONT: "Carte d'identité (Recto)",
-  CIN_BACK: "Carte d'identité (Verso)",
-  LICENSE_FRONT: "Permis de conduire (Recto)",
-  LICENSE_BACK: "Permis de conduire (Verso)",
-  CARTE_GRISE_FRONT: "Carte grise (Recto)",
-  CARTE_GRISE_BACK: "Carte grise (Verso)",
-  INSURANCE_FRONT: "Assurance véhicule (Recto)",
-  INSURANCE_BACK: "Assurance véhicule (Verso)",
-  SELFIE: "Selfie avec pièce d'identité",
-  // Legacy
-  CARTE_GRISE: "Carte grise",
-  INSURANCE: "Assurance véhicule",
-  LICENSE: "Licence professionnelle",
-  ID_CARD: "Carte d'identité",
-  DRIVING_LICENSE: "Permis de conduire",
-  VEHICLE_REGISTRATION: "Carte grise",
-};
-
 /* -------------------------------------------------------------------------- */
 /*  Component                                                                  */
 /* -------------------------------------------------------------------------- */
 
 export default function VerificationPage() {
   const { user } = useAuth();
+  const { t } = useAppI18n();
   const [status, setStatus] = useState<string>("LOADING");
   const [documents, setDocuments] = useState<VerificationDoc[]>([]);
   const [loading, setLoading] = useState(true);
   const { showToast } = useToast();
+
+  const docTypeLabel = (type: string): string =>
+    (t.verify.docTypes as Record<string, string>)[type] || type;
 
   useEffect(() => {
     fetchStatus();
@@ -95,11 +82,11 @@ export default function VerificationPage() {
   const handleSubmitReview = async () => {
     try {
       await apiClient.put("/api/trust/submit/", {});
-      showToast("success", "Profil soumis pour vérification !");
+      showToast("success", t.verify.submitSuccess);
       fetchStatus();
     } catch (e) {
       console.error(e);
-      showToast("error", "Erreur lors de la soumission.");
+      showToast("error", t.verify.submitError);
     }
   };
 
@@ -108,7 +95,7 @@ export default function VerificationPage() {
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600 mx-auto mb-3" />
-          <p className="text-neutral-500">Chargement...</p>
+          <p className="text-neutral-500">{t.common.loading}</p>
         </div>
       </div>
     );
@@ -119,8 +106,8 @@ export default function VerificationPage() {
       case "VERIFIED":
         return {
           icon: <ShieldCheck className="w-10 h-10 text-accent-600" />,
-          title: "Profil Vérifié ✓",
-          desc: "Félicitations ! Votre identité est confirmée. Vous pouvez répondre aux offres.",
+          title: t.verify.verified,
+          desc: t.verify.verifiedDescPage,
           bgClass:
             "bg-gradient-to-r from-accent-50 to-accent-100/50 border-accent-300",
           textClass: "text-accent-800",
@@ -128,8 +115,8 @@ export default function VerificationPage() {
       case "PENDING":
         return {
           icon: <Clock className="w-10 h-10 text-brand-600" />,
-          title: "En cours de vérification",
-          desc: "Nos équipes examinent vos documents. Délai estimé : 24-48h.",
+          title: t.verify.pending,
+          desc: t.verify.pendingDescPage,
           bgClass:
             "bg-gradient-to-r from-brand-600/5 to-brand-600/10 border-brand-600/20",
           textClass: "text-brand-600",
@@ -137,8 +124,8 @@ export default function VerificationPage() {
       case "PARTIALLY_REVIEWED":
         return {
           icon: <ShieldAlert className="w-10 h-10 text-amber-600" />,
-          title: "Vérification en cours",
-          desc: "Certains documents ont été vérifiés. Consultez le détail ci-dessous.",
+          title: t.verify.partialTitle,
+          desc: t.verify.partialDesc,
           bgClass:
             "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200",
           textClass: "text-amber-800",
@@ -146,16 +133,16 @@ export default function VerificationPage() {
       case "REJECTED":
         return {
           icon: <AlertTriangle className="w-10 h-10 text-red-600" />,
-          title: "Vérification Refusée",
-          desc: "Un ou plusieurs documents ne sont pas valides. Consultez les motifs ci-dessous.",
+          title: t.verify.rejected,
+          desc: t.verify.rejectedDescPage,
           bgClass: "bg-gradient-to-r from-red-50 to-rose-50 border-red-200",
           textClass: "text-red-800",
         };
       default:
         return {
           icon: <FileText className="w-10 h-10 text-brand-600" />,
-          title: "Vérification Requise",
-          desc: "Pour répondre aux offres, vous devez vérifier votre identité.",
+          title: t.verify.requiredTitle,
+          desc: t.verify.requiredDesc,
           bgClass:
             "bg-gradient-to-r from-neutral-50 to-neutral-100 border-neutral-200",
           textClass: "text-neutral-800",
@@ -218,7 +205,7 @@ export default function VerificationPage() {
             <div className="p-5 border-b border-neutral-100">
               <div className="flex items-center justify-between mb-3">
                 <h2 className="text-lg font-bold text-neutral-900">
-                  État de vos documents
+                  {t.verify.docsStatusTitle}
                 </h2>
                 <button
                   onClick={() => {
@@ -226,7 +213,7 @@ export default function VerificationPage() {
                     fetchDocuments();
                   }}
                   className="p-1.5 rounded-lg text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 transition-colors"
-                  title="Rafraîchir"
+                  title={t.verify.refreshTitle}
                 >
                   <RefreshCw className="w-4 h-4" />
                 </button>
@@ -235,10 +222,10 @@ export default function VerificationPage() {
               {/* Progress Bar */}
               <div className="space-y-2">
                 <div className="flex justify-between text-xs text-neutral-500">
-                  <span>Progression de la vérification</span>
+                  <span>{t.verify.progressLabel}</span>
                   <span className="font-semibold text-neutral-700">
-                    {approvedCount}/{documents.length} approuvé
-                    {approvedCount > 1 ? "s" : ""}
+                    {approvedCount}/{documents.length}{" "}
+                    {approvedCount > 1 ? t.verify.approvedPlural : t.verify.approved}
                   </span>
                 </div>
                 <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
@@ -259,14 +246,18 @@ export default function VerificationPage() {
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-green-500" />
                     <span className="text-neutral-500">
-                      {approvedCount} approuvé{approvedCount > 1 ? "s" : ""}
+                      {approvedCount}{" "}
+                      {approvedCount > 1 ? t.verify.approvedPlural : t.verify.approved}
                     </span>
                   </span>
                   {rejectedCount > 0 && (
                     <span className="flex items-center gap-1">
                       <span className="w-2 h-2 rounded-full bg-red-500" />
                       <span className="text-neutral-500">
-                        {rejectedCount} rejeté{rejectedCount > 1 ? "s" : ""}
+                        {rejectedCount}{" "}
+                        {rejectedCount > 1
+                          ? t.verify.rejectedWordPlural
+                          : t.verify.rejectedWord}
                       </span>
                     </span>
                   )}
@@ -274,7 +265,7 @@ export default function VerificationPage() {
                     <span className="flex items-center gap-1">
                       <span className="w-2 h-2 rounded-full bg-neutral-300" />
                       <span className="text-neutral-500">
-                        {pendingCount} en attente
+                        {pendingCount} {t.verify.pendingWord}
                       </span>
                     </span>
                   )}
@@ -286,8 +277,7 @@ export default function VerificationPage() {
             <div className="divide-y divide-neutral-100">
               {documents.map((doc) => {
                 const docStatus = getDocStatus(doc);
-                const label =
-                  DOC_TYPE_LABELS[doc.document_type] || doc.document_type;
+                const label = docTypeLabel(doc.document_type);
 
                 return (
                   <div
@@ -331,16 +321,19 @@ export default function VerificationPage() {
                                   : "bg-neutral-100 text-neutral-500"
                             }`}
                           >
-                            {docStatus === "approved" && "✓ Approuvé"}
-                            {docStatus === "rejected" && "✗ Rejeté"}
-                            {docStatus === "pending" && "⏳ En attente"}
+                            {docStatus === "approved" && t.verify.badgeApproved}
+                            {docStatus === "rejected" && t.verify.badgeRejected}
+                            {docStatus === "pending" && t.verify.badgePending}
                           </span>
                         </div>
 
                         <p className="text-xs text-neutral-400 mt-0.5">
-                          Soumis le {formatDate(doc.uploaded_at)}
+                          {t.verify.submittedOn} {formatDate(doc.uploaded_at)}
                           {doc.reviewed_at && (
-                            <> · Vérifié le {formatDate(doc.reviewed_at)}</>
+                            <>
+                              {" · "}
+                              {t.verify.verifiedOn} {formatDate(doc.reviewed_at)}
+                            </>
                           )}
                         </p>
 
@@ -351,7 +344,7 @@ export default function VerificationPage() {
                               <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
                               <div>
                                 <p className="text-xs font-medium text-red-800">
-                                  Motif du rejet :
+                                  {t.verify.rejectionReason}
                                 </p>
                                 <p className="text-xs text-red-700 mt-0.5">
                                   {doc.rejection_reason}
@@ -369,7 +362,7 @@ export default function VerificationPage() {
                           target="_blank"
                           rel="noopener noreferrer"
                           className="flex-shrink-0 p-1.5 rounded-lg text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 transition-colors"
-                          title="Voir le document"
+                          title={t.verify.viewDocument}
                         >
                           <Eye className="w-4 h-4" />
                         </a>
@@ -387,37 +380,37 @@ export default function VerificationPage() {
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-200 space-y-6">
             <h2 className="text-lg font-bold text-neutral-900">
               {status === "REJECTED"
-                ? "Renvoyer vos documents"
-                : "Documents requis"}
+                ? t.verify.resendDocs
+                : t.verify.requiredDocs}
             </h2>
 
             {status === "REJECTED" && (
               <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
-                💡 Corrigez les documents rejetés ci-dessus, puis renvoyez-les.
+                {t.verify.correctHint}
               </div>
             )}
 
             <VerificationUpload
               category="ID_CARD"
-              label="Carte d'identité (Recto/Verso)"
+              label={t.verify.uploadIdLabel}
               onUploadSuccess={fetchDocuments}
             />
 
             <VerificationUpload
               category="DRIVING_LICENSE"
-              label="Permis de conduire (Recto/Verso)"
+              label={t.verify.uploadLicenseLabel}
               onUploadSuccess={fetchDocuments}
             />
 
             <VerificationUpload
               category="VEHICLE_REGISTRATION"
-              label="Carte grise (Recto/Verso)"
+              label={t.verify.uploadRegistrationLabel}
               onUploadSuccess={fetchDocuments}
             />
 
             <VerificationUpload
               category="INSURANCE"
-              label="Assurance véhicule (Recto/Verso)"
+              label={t.verify.uploadInsuranceLabel}
               onUploadSuccess={fetchDocuments}
             />
 
@@ -427,12 +420,11 @@ export default function VerificationPage() {
                 disabled={!hasDocuments}
                 className="w-full py-3.5 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-xl font-bold hover:from-accent-600 hover:to-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-accent-500/25 hover:scale-[1.01]"
               >
-                Soumettre pour vérification
+                {t.verify.submitForReview}
               </button>
               {!hasDocuments && (
                 <p className="text-xs text-center text-neutral-500 mt-2">
-                  Veuillez télécharger au moins le recto et verso de votre pièce
-                  d&apos;identité et de votre permis de conduire.
+                  {t.verify.minDocsHint}
                 </p>
               )}
             </div>
