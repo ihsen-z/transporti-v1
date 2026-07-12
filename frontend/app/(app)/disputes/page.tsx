@@ -475,7 +475,7 @@ export default function DisputesPage() {
             {tab.label}
             {tab.count > 0 && (
               <span
-                className={`ml-1.5 px-1.5 py-0.5 rounded-full text-xs ${
+                className={`ms-1.5 px-1.5 py-0.5 rounded-full text-xs ${
                   statusFilter === tab.id
                     ? "bg-white/20 text-white"
                     : "bg-neutral-200 text-neutral-500"
@@ -633,7 +633,7 @@ export default function DisputesPage() {
           <AlertTriangle className="w-5 h-5 text-brand-600" />
           {t.howItWorks}
         </h3>
-        <ul className="text-sm text-neutral-600 space-y-2 ml-7">
+        <ul className="text-sm text-neutral-600 space-y-2 ms-7">
           <li className="list-disc">{t.how1}</li>
           <li className="list-disc">{t.how2}</li>
           <li className="list-disc">{t.how3}</li>

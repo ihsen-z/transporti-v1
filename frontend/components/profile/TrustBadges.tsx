@@ -95,7 +95,7 @@ export function TrustBadges({
         >
           <badge.icon className="w-5 h-5 flex-shrink-0" />
           <span className="text-sm font-semibold">{badge.label}</span>
-          {badge.active && <Zap className="w-3 h-3 ml-auto opacity-50" />}
+          {badge.active && <Zap className="w-3 h-3 ms-auto opacity-50" />}
         </div>
       ))}
     </div>

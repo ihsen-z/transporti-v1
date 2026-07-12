@@ -18,7 +18,7 @@ function AdminLayoutInner({ children }: { children: React.ReactNode }) {
       <AdminHeader />
 
       {/* Main Content — RTL: margin flips */}
-      <main className={`pt-16 min-h-screen ${isRTL ? "lg:mr-64" : "lg:ml-64"}`}>
+      <main className={`pt-16 min-h-screen ${isRTL ? "lg:me-64" : "lg:ms-64"}`}>
         <div className="p-6">{children}</div>
       </main>
     </div>

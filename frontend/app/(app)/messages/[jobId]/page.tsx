@@ -490,7 +490,7 @@ export default function MessagingPage() {
           <p className="text-xs text-amber-700">{bypassWarning}</p>
           <button
             onClick={() => setBypassWarning(null)}
-            className="text-amber-600 hover:text-amber-800 text-xs font-medium ml-auto flex-shrink-0"
+            className="text-amber-600 hover:text-amber-800 text-xs font-medium ms-auto flex-shrink-0"
           >
             ✕
           </button>

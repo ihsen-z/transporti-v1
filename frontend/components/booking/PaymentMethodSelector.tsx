@@ -33,7 +33,7 @@ export function PaymentMethodSelector({
         {/* Digital Payment */}
         <button
           onClick={() => onSelect("DIGITAL")}
-          className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200
+          className={`w-full text-start p-4 rounded-xl border-2 transition-all duration-200
                         ${
                           selected === "DIGITAL"
                             ? "border-brand-600 bg-brand-600/5/50 shadow-sm"
@@ -84,7 +84,7 @@ export function PaymentMethodSelector({
         <button
           onClick={() => !codBlocked && onSelect("COD")}
           disabled={codBlocked}
-          className={`w-full text-left p-4 rounded-xl border-2 transition-all duration-200
+          className={`w-full text-start p-4 rounded-xl border-2 transition-all duration-200
                         ${
                           codBlocked
                             ? "border-neutral-100 bg-neutral-50 opacity-60 cursor-not-allowed"

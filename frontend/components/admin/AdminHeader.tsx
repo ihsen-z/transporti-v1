@@ -26,8 +26,8 @@ export default function AdminHeader({
     <header
       className={`fixed top-0 h-16 bg-white dark:bg-[#1e293b] border-b border-neutral-200 dark:border-neutral-700 z-30 transition-colors duration-300 ${
         isRTL
-          ? "lg:mr-64 left-0 right-0 lg:right-64"
-          : "lg:ml-64 left-0 right-0 lg:left-64"
+          ? "lg:me-64 left-0 right-0 lg:right-64"
+          : "lg:ms-64 left-0 right-0 lg:left-64"
       }`}
     >
       <div className="h-full px-6 flex items-center justify-between">

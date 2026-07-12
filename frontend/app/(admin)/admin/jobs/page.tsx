@@ -140,12 +140,12 @@ export default function AdminJobsPage() {
   /* ---- Sort icon component ---- */
   const SortIcon = ({ colKey }: { colKey: SortKey }) => {
     if (sortKey !== colKey) {
-      return <ArrowUpDown className="w-3.5 h-3.5 text-neutral-300 ml-1" />;
+      return <ArrowUpDown className="w-3.5 h-3.5 text-neutral-300 ms-1" />;
     }
     return sortDir === "asc" ? (
-      <ArrowUp className="w-3.5 h-3.5 text-brand-600 ml-1" />
+      <ArrowUp className="w-3.5 h-3.5 text-brand-600 ms-1" />
     ) : (
-      <ArrowDown className="w-3.5 h-3.5 text-brand-600 ml-1" />
+      <ArrowDown className="w-3.5 h-3.5 text-brand-600 ms-1" />
     );
   };
 
@@ -501,7 +501,7 @@ export default function AdminJobsPage() {
                   >
                     {tab.label}
                     <span
-                      className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
+                      className={`ms-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
                     >
                       {count}
                     </span>
@@ -518,7 +518,7 @@ export default function AdminJobsPage() {
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={t.jobs.searchPlaceholder}
-                className="pl-9 pr-4 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 w-full sm:w-80"
+                className="ps-9 pe-4 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 w-full sm:w-80"
               />
             </div>
           </div>
@@ -530,7 +530,7 @@ export default function AdminJobsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   {t.jobs.totalDisplayed}:
                 </span>
-                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
+                <span className="ms-2 font-semibold text-neutral-900 dark:text-white">
                   {filteredJobs.length} jobs
                 </span>
               </div>
@@ -538,7 +538,7 @@ export default function AdminJobsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   {t.jobs.totalValue}:
                 </span>
-                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
+                <span className="ms-2 font-semibold text-neutral-900 dark:text-white">
                   {formatCurrency(
                     filteredJobs.reduce((sum, j) => sum + (j.price || 0), 0),
                   )}
@@ -548,7 +548,7 @@ export default function AdminJobsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   {t.jobs.totalOffers}:
                 </span>
-                <span className="ml-2 font-semibold text-brand-600 dark:text-brand-400">
+                <span className="ms-2 font-semibold text-brand-600 dark:text-brand-400">
                   {filteredJobs.reduce(
                     (sum, j) => sum + (j.offersCount || 0),
                     0,

@@ -40,7 +40,7 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
         className={`absolute left-0 top-0 bottom-0 w-1 ${isTransport ? "bg-brand-600" : "bg-orange-500"}`}
       />
 
-      <div className="pl-3">
+      <div className="ps-3">
         {/* Header */}
         <div className="flex justify-between items-start mb-3">
           <div className="flex items-center gap-2">
@@ -82,7 +82,7 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
               </span>
             )}
           </div>
-          <div className="text-right">
+          <div className="text-end">
             {job.price_tnd_min || job.price_tnd_max ? (
               <p className="font-bold text-neutral-900">
                 {job.price_tnd_min || "0"} - {job.price_tnd_max || "?"}{" "}

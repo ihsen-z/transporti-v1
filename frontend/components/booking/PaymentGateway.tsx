@@ -157,7 +157,7 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
           {SUPPORTED_METHODS.map((m) => (
             <div
               key={m.label}
-              className="p-3 rounded-xl border border-neutral-200 text-left"
+              className="p-3 rounded-xl border border-neutral-200 text-start"
             >
               <div className="flex items-center gap-2">
                 <m.icon className="w-5 h-5 text-neutral-400" />
@@ -165,7 +165,7 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
                   {m.label}
                 </span>
               </div>
-              <p className="text-xs text-neutral-500 mt-1 ml-7">{m.desc}</p>
+              <p className="text-xs text-neutral-500 mt-1 ms-7">{m.desc}</p>
             </div>
           ))}
         </div>

@@ -145,7 +145,7 @@ function LogoWordmark({
           xmlns="http://www.w3.org/2000/svg"
           width={iconSize}
           height={iconSize}
-          className={`${svgClass} object-contain flex-shrink-0 -mr-0.5`}
+          className={`${svgClass} object-contain flex-shrink-0 -me-0.5`}
           aria-hidden="true"
         >
           <path d={BLUE_PATH} fill={colors.bar} opacity={colors.barOpacity} />
@@ -156,7 +156,7 @@ function LogoWordmark({
         </span>
       </div>
       {subtitle && (
-        <span className={`text-[10px] font-medium ${subtitleColor} ml-0.5`}>
+        <span className={`text-[10px] font-medium ${subtitleColor} ms-0.5`}>
           {subtitle}
         </span>
       )}

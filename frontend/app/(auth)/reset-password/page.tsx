@@ -139,7 +139,7 @@ export default function ResetPasswordPage() {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   placeholder={t.resetPassword.newPasswordPlaceholder}
-                  className="w-full pl-11 pr-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
+                  className="w-full ps-11 pe-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
                   minLength={8}
                   required
                 />
@@ -161,7 +161,7 @@ export default function ResetPasswordPage() {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   placeholder={t.resetPassword.confirmPasswordPlaceholder}
-                  className={`w-full pl-11 pr-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent-500 transition-colors ${
+                  className={`w-full ps-11 pe-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent-500 transition-colors ${
                     confirmPassword && !passwordsMatch
                       ? "border-red-300 focus:border-red-500"
                       : "border-neutral-300 focus:border-accent-500"

@@ -75,7 +75,7 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
         {/* Location (Governorate) */}
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            <MapPin className="inline w-4 h-4 mr-1" />
+            <MapPin className="inline w-4 h-4 me-1" />
             {t.jobsComponents.filters.pickupGov}
           </label>
           <select

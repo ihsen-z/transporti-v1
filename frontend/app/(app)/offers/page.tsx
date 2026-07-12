@@ -443,7 +443,7 @@ export default function MyOffersPage() {
               <tab.icon className="w-4 h-4" />
               {t.offers[tab.labelKey as keyof typeof t.offers]}
               <span
-                className={`ml-1.5 py-0.5 px-2 rounded-full text-xs ${
+                className={`ms-1.5 py-0.5 px-2 rounded-full text-xs ${
                   activeTab === tab.id
                     ? "bg-brand-100 text-brand-700"
                     : "bg-neutral-100 text-neutral-600"

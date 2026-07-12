@@ -614,7 +614,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
               <MessageCircle className="w-5 h-5 text-amber-500" />
               Avis reçus
               {c.review_count > 0 && (
-                <span className="ml-auto text-sm font-medium text-neutral-400">
+                <span className="ms-auto text-sm font-medium text-neutral-400">
                   {c.review_count} avis
                 </span>
               )}
@@ -665,7 +665,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                         <span className="text-xs text-neutral-400">{dateLabel}</span>
                       </div>
                       {r.comment && (
-                        <p className="text-sm text-neutral-600 leading-relaxed ml-12">
+                        <p className="text-sm text-neutral-600 leading-relaxed ms-12">
                           &ldquo;{r.comment}&rdquo;
                         </p>
                       )}

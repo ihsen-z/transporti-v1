@@ -437,7 +437,7 @@ export default function Home() {
                 <AnimatedSection key={i} delay={i * 0.08}>
                   <details className="group bg-neutral-50 rounded-xl border border-neutral-200 overflow-hidden transition-all duration-300 hover:border-primary-200 hover:shadow-sm">
                     <summary className="flex items-center justify-between p-6 cursor-pointer hover:bg-neutral-100 transition-colors duration-200">
-                      <span className="font-semibold text-neutral-900 pr-4">
+                      <span className="font-semibold text-neutral-900 pe-4">
                         {faq.q}
                       </span>
                       <svg

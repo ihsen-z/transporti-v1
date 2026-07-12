@@ -136,7 +136,7 @@ export default function HelpCenterPage() {
                   >
                     <button
                       onClick={() => toggleQuestion(key)}
-                      className="w-full flex items-center justify-between px-4 py-3 text-left hover:bg-neutral-50 transition-colors"
+                      className="w-full flex items-center justify-between px-4 py-3 text-start hover:bg-neutral-50 transition-colors"
                     >
                       <span className="text-sm font-medium text-neutral-800">
                         {item.q}

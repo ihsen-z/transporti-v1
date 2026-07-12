@@ -145,7 +145,7 @@ export function MissionStepper({ status, completedAt }: MissionStepperProps) {
                 {step.label}
               </span>
               {isActive && (
-                <span className="ml-auto text-xs bg-brand-600/10 text-brand-600 px-2 py-0.5 rounded-full font-medium">
+                <span className="ms-auto text-xs bg-brand-600/10 text-brand-600 px-2 py-0.5 rounded-full font-medium">
                   {t.jobsComponents.stepper.inProgressBadge}
                 </span>
               )}

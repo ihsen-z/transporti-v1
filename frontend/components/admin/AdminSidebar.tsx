@@ -72,7 +72,7 @@ export default function AdminSidebar() {
                 flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all
                 ${
                   isActive
-                    ? `bg-white/15 text-white ${isRTL ? "border-r-2 border-accent-400" : "border-l-2 border-accent-400"}`
+                    ? `bg-white/15 text-white ${isRTL ? "border-e-2 border-accent-400" : "border-s-2 border-accent-400"}`
                     : "text-white/60 hover:bg-white/5 hover:text-white"
                 }
               `}

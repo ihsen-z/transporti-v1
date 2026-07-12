@@ -305,7 +305,7 @@ export default function BookingPage() {
                   </p>
                 </div>
               </div>
-              <div className="ml-4 border-l-2 border-dashed border-neutral-200 h-4" />
+              <div className="ms-4 border-s-2 border-dashed border-neutral-200 h-4" />
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-green-50 rounded-lg flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-4 h-4 text-green-500" />
@@ -479,7 +479,7 @@ export default function BookingPage() {
                   </p>
                   
                   {/* Timeline */}
-                  <div className="space-y-3 relative before:absolute before:inset-0 before:ml-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-neutral-200 before:to-transparent">
+                  <div className="space-y-3 relative before:absolute before:inset-0 before:ms-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-neutral-200 before:to-transparent">
                     {/* Booking Created */}
                     {booking?.created_at && (
                       <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">

@@ -200,7 +200,7 @@ export function OfferList({
               <button
                 onClick={() => confirmAccept("DIGITAL")}
                 disabled={accepting}
-                className="w-full flex items-start gap-4 p-4 border-2 border-brand-600/20 rounded-xl hover:border-brand-600 hover:bg-brand-600/5 transition-all text-left disabled:opacity-50"
+                className="w-full flex items-start gap-4 p-4 border-2 border-brand-600/20 rounded-xl hover:border-brand-600 hover:bg-brand-600/5 transition-all text-start disabled:opacity-50"
               >
                 <div className="w-12 h-12 rounded-xl bg-brand-600/10 flex items-center justify-center flex-shrink-0">
                   <CreditCard className="w-6 h-6 text-brand-600" />
@@ -223,7 +223,7 @@ export function OfferList({
               <button
                 onClick={() => codEligible && confirmAccept("COD")}
                 disabled={accepting || !codEligible}
-                className={`w-full flex items-start gap-4 p-4 border-2 rounded-xl text-left transition-all ${
+                className={`w-full flex items-start gap-4 p-4 border-2 rounded-xl text-start transition-all ${
                   codEligible
                     ? "border-green-200 hover:border-green-500 hover:bg-green-50"
                     : "border-neutral-200 bg-neutral-50 opacity-60 cursor-not-allowed"

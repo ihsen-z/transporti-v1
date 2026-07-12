@@ -56,35 +56,35 @@ const STATUS_CONFIG = {
     label: "En attente",
     color: "bg-amber-50 text-amber-700 border-amber-200",
     dotColor: "bg-amber-400",
-    borderAccent: "border-l-amber-400",
+    borderAccent: "border-s-amber-400",
     icon: Clock,
   },
   ACCEPTED: {
     label: "Acceptée",
     color: "bg-emerald-50 text-emerald-700 border-emerald-200",
     dotColor: "bg-emerald-500",
-    borderAccent: "border-l-emerald-500",
+    borderAccent: "border-s-emerald-500",
     icon: CheckCircle,
   },
   REJECTED: {
     label: "Refusée",
     color: "bg-red-50 text-red-700 border-red-200",
     dotColor: "bg-red-400",
-    borderAccent: "border-l-red-400",
+    borderAccent: "border-s-red-400",
     icon: XCircle,
   },
   EXPIRED: {
     label: "Expirée",
     color: "bg-neutral-100 text-neutral-500 border-neutral-200",
     dotColor: "bg-neutral-400",
-    borderAccent: "border-l-neutral-300",
+    borderAccent: "border-s-neutral-300",
     icon: AlertCircle,
   },
   WITHDRAWN: {
     label: "Retirée",
     color: "bg-neutral-100 text-neutral-500 border-neutral-200",
     dotColor: "bg-neutral-400",
-    borderAccent: "border-l-neutral-300",
+    borderAccent: "border-s-neutral-300",
     icon: Undo2,
   },
 };
@@ -149,7 +149,7 @@ function OfferStatusCardInner({
   return (
     <div
       className={`
-        group bg-white rounded-2xl border border-l-[3px] transition-all duration-200
+        group bg-white rounded-2xl border border-s-[3px] transition-all duration-200
         ${effectiveConfig.borderAccent}
         ${
           effectiveStatus === "ACCEPTED"

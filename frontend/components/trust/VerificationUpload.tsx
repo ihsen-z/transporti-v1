@@ -134,7 +134,7 @@ function SideUpload({ sideLabel, backendType, onUploadSuccess }: SideUploadProps
           <span className="text-sm text-green-700 font-medium">Envoyé ✓</span>
           <button
             onClick={handleReset}
-            className="ml-auto p-1 rounded text-neutral-400 hover:text-neutral-600 transition-colors"
+            className="ms-auto p-1 rounded text-neutral-400 hover:text-neutral-600 transition-colors"
             title="Remplacer"
           >
             <RotateCcw className="w-3.5 h-3.5" />

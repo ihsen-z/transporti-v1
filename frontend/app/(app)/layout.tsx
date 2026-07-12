@@ -13,7 +13,7 @@ export default function AppLayout({
     children: React.ReactNode;
 }) {
     const { isRTL } = useAppI18n();
-    const sidebarMargin = isRTL ? 'lg:mr-64' : 'lg:ml-64';
+    const sidebarMargin = isRTL ? 'lg:me-64' : 'lg:ms-64';
 
     return (
         <AuthGuard allowedRoles={['client', 'transporter', 'admin']}>

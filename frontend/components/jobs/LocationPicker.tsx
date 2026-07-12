@@ -258,7 +258,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
               href={`https://www.google.com/maps?q=${data[latField]},${data[lngField]}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="ml-auto text-brand-600 hover:underline"
+              className="ms-auto text-brand-600 hover:underline"
             >
               {t.jobsComponents.location.viewOnMaps}
             </a>
@@ -348,7 +348,7 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                 value={data[hintField] || ""}
                 onChange={(e) => handleChange(hintField, e.target.value)}
                 placeholder={t.jobsComponents.location.hintPlaceholder}
-                className="w-full p-2.5 pr-8 border rounded-lg text-sm focus:ring-2 focus:ring-accent-500 bg-brand-600/5"
+                className="w-full p-2.5 pe-8 border rounded-lg text-sm focus:ring-2 focus:ring-accent-500 bg-brand-600/5"
               />
               {data[hintField] && (
                 <button

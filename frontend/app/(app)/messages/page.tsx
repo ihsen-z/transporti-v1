@@ -142,7 +142,7 @@ const ConversationCard = React.memo(function ConversationCardInner({ conv }: { c
         group relative flex items-center gap-4 p-4 rounded-2xl border transition-all duration-200
         ${
           hasUnread
-            ? "bg-brand-600/[0.02] border-brand-600/20 border-l-[3px] border-l-brand-600 hover:shadow-md hover:-translate-y-0.5"
+            ? "bg-brand-600/[0.02] border-brand-600/20 border-s-[3px] border-s-brand-600 hover:shadow-md hover:-translate-y-0.5"
             : isLocked
               ? "bg-neutral-50/50 border-neutral-200 opacity-70 hover:opacity-100"
               : "bg-white border-neutral-100 hover:border-brand-600/20 hover:shadow-sm hover:-translate-y-0.5"
@@ -190,7 +190,7 @@ const ConversationCard = React.memo(function ConversationCardInner({ conv }: { c
             )}
           </div>
           <span
-            className={`text-xs flex-shrink-0 ml-2 ${
+            className={`text-xs flex-shrink-0 ms-2 ${
               isRecent && hasUnread
                 ? "font-semibold text-brand-600"
                 : "text-neutral-400"
@@ -212,7 +212,7 @@ const ConversationCard = React.memo(function ConversationCardInner({ conv }: { c
           }`}
         >
           {conv.last_message?.is_system && (
-            <span className="inline-block mr-1 text-brand-600">🤖</span>
+            <span className="inline-block me-1 text-brand-600">🤖</span>
           )}
           {conv.last_message?.content || t.messages.noMessageYet}
         </p>
@@ -339,7 +339,7 @@ export default function MessagesInboxPage() {
                   { n: filteredConversations.length },
                 )}
             {totalUnread > 0 && !loading && (
-              <span className="ml-2 inline-flex items-center gap-1">
+              <span className="ms-2 inline-flex items-center gap-1">
                 <span className="w-1.5 h-1.5 bg-brand-600 rounded-full animate-pulse" />
                 <span className="text-brand-600 font-semibold">
                   {interpolate(
@@ -371,7 +371,7 @@ export default function MessagesInboxPage() {
               placeholder={t.common.search}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 pr-4 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 outline-none w-52 transition-all bg-neutral-50/50 focus:bg-white placeholder:text-neutral-400"
+              className="ps-9 pe-4 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 outline-none w-52 transition-all bg-neutral-50/50 focus:bg-white placeholder:text-neutral-400"
             />
           </div>
         </div>

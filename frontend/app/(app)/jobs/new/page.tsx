@@ -411,7 +411,7 @@ export default function NewJobPage() {
                       max: priceEstimate.max,
                     })}
                   </span>
-                  <span className="text-accent-600 ml-2 inline-flex items-center gap-1">
+                  <span className="text-accent-600 ms-2 inline-flex items-center gap-1">
                     <MapPin className="w-3 h-3" />
                     {interpolate(t.newJob.distanceKm, {
                       km: priceEstimate.distance_km,

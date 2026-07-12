@@ -451,7 +451,7 @@ export default function AdminPaymentsPage() {
               placeholder={t.payments?.searchPlaceholder || "Rechercher..."}
               value={searchQuery}
               onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
-              className="w-full pl-10 pr-4 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 transition-colors"
+              className="w-full ps-10 pe-4 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 transition-colors"
             />
           </div>
 
@@ -475,7 +475,7 @@ export default function AdminPaymentsPage() {
               >
                 {tab.label}
                 {tab.key !== "ALL" && (
-                  <span className="ml-1.5 opacity-70">
+                  <span className="ms-1.5 opacity-70">
                     ({payments.filter((p) => p.status === tab.key).length})
                   </span>
                 )}
@@ -513,7 +513,7 @@ export default function AdminPaymentsPage() {
       {/* Admin Escrow Info */}
       <div className="bg-brand-50 dark:bg-brand-900/20 border border-brand-200 dark:border-brand-800 rounded-xl p-4 text-center">
         <p className="text-sm text-brand-700 dark:text-brand-300">
-          <ShieldCheck className="w-4 h-4 inline mr-1" />
+          <ShieldCheck className="w-4 h-4 inline me-1" />
           Actions d&apos;escrow disponibles — Utilisez les boutons{" "}
           <Unlock className="w-3.5 h-3.5 inline text-green-600" /> (Libérer) et{" "}
           <RotateCcw className="w-3.5 h-3.5 inline text-red-600" /> (Rembourser)

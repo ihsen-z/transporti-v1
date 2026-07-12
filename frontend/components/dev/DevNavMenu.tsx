@@ -266,7 +266,7 @@ export function DevNavMenu() {
                     className={`text-xs font-bold uppercase tracking-wider ${group.color}`}
                   >
                     {group.title}
-                    <span className="ml-2 text-[10px] opacity-60">
+                    <span className="ms-2 text-[10px] opacity-60">
                       ({group.routes.length})
                     </span>
                   </span>
@@ -307,12 +307,12 @@ export function DevNavMenu() {
                           />
                           <span className="truncate">{route.label}</span>
                           {route.dynamic && (
-                            <span className="ml-auto text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 font-mono">
+                            <span className="ms-auto text-[9px] px-1.5 py-0.5 rounded bg-orange-500/20 text-orange-400 font-mono">
                               [id]
                             </span>
                           )}
                           {isActive && (
-                            <span className="ml-auto w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
+                            <span className="ms-auto w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
                           )}
                         </Link>
                       );

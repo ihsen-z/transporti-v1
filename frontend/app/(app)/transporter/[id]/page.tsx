@@ -75,7 +75,7 @@ export default function TransporterProfilePage() {
   const reviews = MOCK_REVIEWS;
 
   return (
-    <div className={`p-6 lg:p-8 max-w-5xl mx-auto ${isRTL ? "text-right" : ""}`} dir={isRTL ? "rtl" : "ltr"}>
+    <div className={`p-6 lg:p-8 max-w-5xl mx-auto ${isRTL ? "text-end" : ""}`} dir={isRTL ? "rtl" : "ltr"}>
       {/* Header Actions */}
       <div className="flex items-center justify-between mb-6">
         <button

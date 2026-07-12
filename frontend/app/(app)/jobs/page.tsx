@@ -181,12 +181,12 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
   return (
     <div
       className={`
-      group bg-white rounded-2xl border border-l-[3px] transition-all duration-200 p-5
-      ${mission.status === "IN_PROGRESS" ? "border-l-brand-600 border-brand-600/20 hover:shadow-md hover:-translate-y-0.5" : ""}
-      ${mission.status === "COMPLETED" ? "border-l-emerald-500 border-emerald-200 shadow-sm shadow-emerald-50" : ""}
-      ${mission.is_return_trip ? "border-l-purple-400 border-purple-200" : ""}
-      ${isMuted ? "border-l-neutral-300 border-neutral-200 opacity-70 hover:opacity-100" : ""}
-      ${!mission.is_return_trip && mission.status !== "IN_PROGRESS" && mission.status !== "COMPLETED" && !isMuted ? "border-l-amber-400 border-neutral-100 hover:shadow-md hover:-translate-y-0.5" : ""}
+      group bg-white rounded-2xl border border-s-[3px] transition-all duration-200 p-5
+      ${mission.status === "IN_PROGRESS" ? "border-s-brand-600 border-brand-600/20 hover:shadow-md hover:-translate-y-0.5" : ""}
+      ${mission.status === "COMPLETED" ? "border-s-emerald-500 border-emerald-200 shadow-sm shadow-emerald-50" : ""}
+      ${mission.is_return_trip ? "border-s-purple-400 border-purple-200" : ""}
+      ${isMuted ? "border-s-neutral-300 border-neutral-200 opacity-70 hover:opacity-100" : ""}
+      ${!mission.is_return_trip && mission.status !== "IN_PROGRESS" && mission.status !== "COMPLETED" && !isMuted ? "border-s-amber-400 border-neutral-100 hover:shadow-md hover:-translate-y-0.5" : ""}
     `}
     >
       {/* Header: Route + Status */}
@@ -556,7 +556,7 @@ function TransporterMissionsView() {
             placeholder={t.jobsList.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 outline-none transition-all"
+            className="w-full ps-10 pe-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 outline-none transition-all"
           />
         </div>
       </div>

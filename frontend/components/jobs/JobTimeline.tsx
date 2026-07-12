@@ -138,7 +138,7 @@ export default function JobTimeline({ status }: JobTimelineProps) {
                 return (
                   <div key={step.id} className="flex items-start">
                     {/* Left side - Circle and Line */}
-                    <div className="flex flex-col items-center mr-4">
+                    <div className="flex flex-col items-center me-4">
                       {/* Step Circle */}
                       <div
                         className={`

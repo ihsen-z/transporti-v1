@@ -235,7 +235,7 @@ function DashboardContent() {
           <DashboardSettingsButton />
           <div className="text-sm text-neutral-500 dark:text-neutral-400">
             {prefs.autoRefresh && (
-              <span className="inline-flex items-center gap-1 mr-2 px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
+              <span className="inline-flex items-center gap-1 me-2 px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
                 <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
                 Auto
               </span>

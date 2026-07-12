@@ -98,7 +98,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
           {/* Estimated volume */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1">
-              <Box className="inline w-4 h-4 mr-1 text-neutral-500" />
+              <Box className="inline w-4 h-4 me-1 text-neutral-500" />
               {t.jobsComponents.moving.volumeLabel}
             </label>
             <input
@@ -266,7 +266,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
                 {label}
               </span>
               <div
-                className={`ml-auto w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                className={`ms-auto w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
                   specs[key]
                     ? "bg-brand-600 border-brand-600"
                     : "border-neutral-300"
@@ -295,7 +295,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
         {/* Helpers count */}
         <div className="mt-4">
           <label className="block text-sm font-medium text-neutral-700 mb-2">
-            <Users className="inline w-4 h-4 mr-1 text-neutral-500" />
+            <Users className="inline w-4 h-4 me-1 text-neutral-500" />
             {t.jobsComponents.moving.helpersLabel}
           </label>
           <div className="flex gap-2">

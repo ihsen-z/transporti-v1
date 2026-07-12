@@ -38,7 +38,7 @@ export function TransportDetailsForm({
       <div className="grid grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
-            <Weight className="inline w-4 h-4 mr-1" />{" "}
+            <Weight className="inline w-4 h-4 me-1" />{" "}
             {t.jobsComponents.transportForm.weightLabel}
           </label>
           <input
@@ -53,7 +53,7 @@ export function TransportDetailsForm({
         </div>
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
-            <Box className="inline w-4 h-4 mr-1" />{" "}
+            <Box className="inline w-4 h-4 me-1" />{" "}
             {t.jobsComponents.transportForm.volumeLabel}
           </label>
           <input

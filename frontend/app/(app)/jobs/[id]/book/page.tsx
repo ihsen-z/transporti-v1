@@ -144,7 +144,7 @@ export default function BookingPage() {
             {t.bookingPage.successDesc}
           </p>
 
-          <div className="bg-neutral-50 rounded-xl p-4 mb-8 text-left space-y-2">
+          <div className="bg-neutral-50 rounded-xl p-4 mb-8 text-start space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-neutral-500">{t.bookingPage.orderNumber}</span>
               <span className="font-mono font-medium text-neutral-900">
@@ -332,7 +332,7 @@ export default function BookingPage() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm py-2 border-b border-neutral-50">
                     <span className="text-neutral-500">{t.bookingPage.route}</span>
-                    <span className="text-neutral-900 font-medium text-right max-w-[60%]">
+                    <span className="text-neutral-900 font-medium text-end max-w-[60%]">
                       {job.pickup_address} → {job.dropoff_address}
                     </span>
                   </div>

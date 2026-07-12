@@ -89,7 +89,7 @@ export function ReviewsList({ reviews, totalCount }: Props) {
                   </div>
                   <StarRating rating={review.rating} />
                   <p className="text-sm text-neutral-600 mt-2.5 leading-relaxed">
-                    <Quote className="w-3 h-3 text-accent-400 inline mr-1 -mt-1" />
+                    <Quote className="w-3 h-3 text-accent-400 inline me-1 -mt-1" />
                     {review.comment}
                   </p>
 

@@ -36,7 +36,7 @@ export function MessageBubble({
       <div className={`max-w-[75%] ${isSender ? "order-2" : ""}`}>
         {/* Sender Name */}
         {!isSender && (
-          <p className="text-xs font-medium text-neutral-500 mb-1 ml-1">
+          <p className="text-xs font-medium text-neutral-500 mb-1 ms-1">
             {senderName}
           </p>
         )}

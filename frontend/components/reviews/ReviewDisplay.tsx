@@ -75,7 +75,7 @@ export function ReviewDisplay({ review }: ReviewDisplayProps) {
             </p>
           </div>
         </div>
-        <div className="text-right">
+        <div className="text-end">
           {renderStars(r.rating)}
           <p className="text-[10px] text-neutral-400 mt-1 flex items-center gap-1 justify-end">
             <Calendar className="w-3 h-3" />

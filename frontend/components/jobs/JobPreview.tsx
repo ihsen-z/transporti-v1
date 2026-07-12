@@ -101,7 +101,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                     href={`https://www.google.com/maps?q=${data.pickup_lat},${data.pickup_lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-1 text-blue-200 hover:text-white underline"
+                    className="ms-1 text-blue-200 hover:text-white underline"
                   >
                     {t.jobsComponents.preview.maps}
                   </a>
@@ -133,7 +133,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                     href={`https://www.google.com/maps?q=${data.dropoff_lat},${data.dropoff_lng}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="ml-1 text-blue-200 hover:text-white underline"
+                    className="ms-1 text-blue-200 hover:text-white underline"
                   >
                     {t.jobsComponents.preview.maps}
                   </a>
@@ -225,7 +225,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                 )
               </span>
             </div>
-            <div className="col-span-2 bg-neutral-50 p-3 rounded-lg border-l-4 border-primary-400">
+            <div className="col-span-2 bg-neutral-50 p-3 rounded-lg border-s-4 border-primary-400">
               <span className="block text-neutral-500 text-xs mb-1">
                 {t.jobsComponents.preview.servicesHelpers}
               </span>

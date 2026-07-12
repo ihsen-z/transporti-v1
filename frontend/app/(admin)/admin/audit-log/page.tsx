@@ -187,7 +187,7 @@ export default function AdminAuditLogPage() {
           </button>
           {data && (
             <>
-              <div className="text-right">
+              <div className="text-end">
                 <p className="text-2xl font-bold text-neutral-900 dark:text-white">
                   {data.totalCount}
                 </p>
@@ -195,7 +195,7 @@ export default function AdminAuditLogPage() {
                   {t.audit.totalActions}
                 </p>
               </div>
-              <div className="text-right">
+              <div className="text-end">
                 <p className="text-2xl font-bold text-brand-600 dark:text-brand-400">
                   {data.todayCount}
                 </p>
@@ -246,7 +246,7 @@ export default function AdminAuditLogPage() {
             </select>
           </div>
 
-          <span className="text-sm text-neutral-400 ml-auto">
+          <span className="text-sm text-neutral-400 ms-auto">
             {entries.length} entrée{entries.length !== 1 ? "s" : ""}
           </span>
         </div>
@@ -340,7 +340,7 @@ export default function AdminAuditLogPage() {
                   </div>
 
                   {/* Meta (right side) */}
-                  <div className="flex-shrink-0 text-right">
+                  <div className="flex-shrink-0 text-end">
                     <div className="flex items-center gap-1.5 text-xs text-neutral-500">
                       <Clock className="w-3.5 h-3.5" />
                       {formatTimeAgo(entry.createdAt)}

@@ -296,11 +296,11 @@ export default function AdminJobDetailPage() {
                       </div>
                     </div>
                     {offer.message && (
-                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2 pl-11 italic">
+                      <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-2 ps-11 italic">
                         &ldquo;{offer.message}&rdquo;
                       </p>
                     )}
-                    <div className="flex items-center gap-4 mt-2 pl-11 text-xs text-neutral-400">
+                    <div className="flex items-center gap-4 mt-2 ps-11 text-xs text-neutral-400">
                       <span>{formatDate(offer.createdAt)}</span>
                       {offer.commission != null && (
                         <span>

@@ -349,7 +349,7 @@ export default function ReturnTripPage() {
                 key={vt.value}
                 type="button"
                 onClick={() => update("vehicle_type", vt.value)}
-                className={`text-left px-3.5 py-3 rounded-xl border-2 transition-all duration-200 ${
+                className={`text-start px-3.5 py-3 rounded-xl border-2 transition-all duration-200 ${
                   form.vehicle_type === vt.value
                     ? "border-purple-500 bg-purple-50 shadow-sm shadow-purple-100"
                     : "border-neutral-100 hover:border-neutral-200 hover:bg-neutral-50"
@@ -450,7 +450,7 @@ export default function ReturnTripPage() {
 
       {/* Missing fields helper */}
       {!canSubmit && form.pickup_governorate && (
-        <div className="mt-4 text-xs text-neutral-400 text-right">
+        <div className="mt-4 text-xs text-neutral-400 text-end">
           {!form.dropoff_governorate && "→ Choisissez une destination · "}
           {!form.scheduled_time && "→ Choisissez une date · "}
           {!form.vehicle_type && "→ Choisissez un véhicule"}

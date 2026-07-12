@@ -336,7 +336,7 @@ export default function AdminReviewsPage() {
                   >
                     {tab.label}
                     <span
-                      className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
+                      className={`ms-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
                     >
                       {count}
                     </span>
@@ -352,7 +352,7 @@ export default function AdminReviewsPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Rechercher un avis..."
-                className="pl-9 pr-4 py-2 bg-white dark:bg-[#0f172a] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 w-full sm:w-64"
+                className="ps-9 pe-4 py-2 bg-white dark:bg-[#0f172a] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 w-full sm:w-64"
               />
             </div>
           </div>
@@ -364,7 +364,7 @@ export default function AdminReviewsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Total:
                 </span>
-                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
+                <span className="ms-2 font-semibold text-neutral-900 dark:text-white">
                   {allReviews.length}
                 </span>
               </div>
@@ -372,7 +372,7 @@ export default function AdminReviewsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Visibles:
                 </span>
-                <span className="ml-2 font-semibold text-green-600">
+                <span className="ms-2 font-semibold text-green-600">
                   {allReviews.filter((r) => !r.isHidden).length}
                 </span>
               </div>
@@ -380,7 +380,7 @@ export default function AdminReviewsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Masqués:
                 </span>
-                <span className="ml-2 font-semibold text-red-600">
+                <span className="ms-2 font-semibold text-red-600">
                   {allReviews.filter((r) => r.isHidden).length}
                 </span>
               </div>

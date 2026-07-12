@@ -223,7 +223,7 @@ const NotificationItem = React.memo(function NotificationItemInner({
                       className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 hover:bg-brand-50 hover:text-brand-700 transition-colors border border-neutral-200"
                     >
                       Mission #{notification.metadata.job_id}
-                      <ExternalLink className="w-3 h-3 ml-1" />
+                      <ExternalLink className="w-3 h-3 ms-1" />
                     </Link>
                   )}
                   {notification.metadata.rating && (
@@ -462,7 +462,7 @@ export default function NotificationsPage() {
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                   placeholder={t.search}
-                  className="pl-9 pr-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 w-48"
+                  className="ps-9 pe-3 py-2 bg-neutral-50 border border-neutral-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 w-48"
                 />
               </div>
 
@@ -510,7 +510,7 @@ export default function NotificationsPage() {
           <p className="text-red-700 text-sm">{error}</p>
           <button
             onClick={() => fetchNotifications()}
-            className="ml-auto text-red-600 hover:text-red-700 text-sm font-medium"
+            className="ms-auto text-red-600 hover:text-red-700 text-sm font-medium"
           >
             {t.retry}
           </button>

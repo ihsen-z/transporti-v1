@@ -240,7 +240,7 @@ export function OfferForm({
               required
               value={priceNet}
               onChange={(e) => setPriceNet(e.target.value)}
-              className="w-full pl-3 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-accent-500 font-bold text-lg"
+              className="w-full ps-3 pe-12 py-3 border rounded-lg focus:ring-2 focus:ring-accent-500 font-bold text-lg"
               placeholder="0.00"
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">

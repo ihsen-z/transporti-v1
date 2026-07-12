@@ -658,7 +658,7 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                             placeholder="+216 XX XXX XXX"
                           />
                         </div>
-                        {formErrors.phone && <span className="text-red-300 text-[10px] mt-0.5 ml-5">{formErrors.phone}</span>}
+                        {formErrors.phone && <span className="text-red-300 text-[10px] mt-0.5 ms-5">{formErrors.phone}</span>}
                       </div>
                     </div>
                   )}
@@ -777,7 +777,7 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                               }`}
                             >
                               {selected && (
-                                <Check className="w-2.5 h-2.5 inline mr-0.5" />
+                                <Check className="w-2.5 h-2.5 inline me-0.5" />
                               )}
                               {gov}
                             </button>
@@ -889,7 +889,7 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                     className="w-full px-3 py-2 rounded-xl border border-neutral-200 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 resize-none"
                     placeholder={t_i18n.profile.aboutPlaceholder}
                   />
-                  <p className="text-right text-[10px] text-neutral-400">{editBio.length}/500</p>
+                  <p className="text-end text-[10px] text-neutral-400">{editBio.length}/500</p>
                 </div>
               ) : (
                 <p className="text-sm text-neutral-600 leading-relaxed">

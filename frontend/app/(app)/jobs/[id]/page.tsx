@@ -352,7 +352,7 @@ export default function JobDetailsPage() {
                         )}
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-end">
                       <p className="text-lg font-bold text-neutral-900">
                         {job.accepted_transporter.total_price} TND
                       </p>

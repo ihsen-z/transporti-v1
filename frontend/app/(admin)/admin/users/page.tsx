@@ -471,7 +471,7 @@ function UserDetailDrawer({
                 </p>
                 <p className="text-sm font-semibold text-neutral-800 mt-1">
                   {detail.trustScore}/100
-                  <span className="text-xs text-neutral-400 ml-1">
+                  <span className="text-xs text-neutral-400 ms-1">
                     {detail.trustLevel}
                   </span>
                 </p>
@@ -584,7 +584,7 @@ function UserDetailDrawer({
                             }`}
                           />
                         ))}
-                        <span className="text-xs text-neutral-400 ml-2">
+                        <span className="text-xs text-neutral-400 ms-2">
                           {new Date(r.createdAt).toLocaleDateString("fr-FR")}
                         </span>
                       </div>
@@ -848,7 +848,7 @@ export default function AdminUsersPage() {
                 e.stopPropagation();
                 setDetailUserId(user.id);
               }}
-              className="font-medium text-neutral-900 hover:text-brand-600 hover:underline transition-colors text-left"
+              className="font-medium text-neutral-900 hover:text-brand-600 hover:underline transition-colors text-start"
             >
               {user.name}
             </button>
@@ -884,7 +884,7 @@ export default function AdminUsersPage() {
           </span>
           <span className="text-neutral-400"> {t.users.ended}</span>
           {user.jobsActive > 0 && (
-            <span className="text-brand-600 ml-2">
+            <span className="text-brand-600 ms-2">
               ({user.jobsActive} actifs)
             </span>
           )}
@@ -899,7 +899,7 @@ export default function AdminUsersPage() {
           {user.role === "CLIENT"
             ? formatCurrency(user.totalSpent || 0)
             : formatCurrency(user.totalEarned || 0)}
-          <span className="text-xs text-neutral-400 ml-1">
+          <span className="text-xs text-neutral-400 ms-1">
             {user.role === "CLIENT" ? t.users.spent : t.users.earned}
           </span>
         </span>
@@ -1101,7 +1101,7 @@ export default function AdminUsersPage() {
                   >
                     {tab.label}
                     <span
-                      className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
+                      className={`ms-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100 dark:bg-neutral-700"}`}
                     >
                       {count}
                     </span>
@@ -1118,7 +1118,7 @@ export default function AdminUsersPage() {
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={t.users.searchPlaceholder}
-                className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                className="w-full ps-10 pe-4 py-2.5 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
               />
               {searchQuery && (
                 <button
@@ -1138,7 +1138,7 @@ export default function AdminUsersPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   {t.users.displayed}:
                 </span>
-                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
+                <span className="ms-2 font-semibold text-neutral-900 dark:text-white">
                   {filteredUsers.length}
                 </span>
               </div>
@@ -1146,7 +1146,7 @@ export default function AdminUsersPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   {t.users.activeCount}:
                 </span>
-                <span className="ml-2 font-semibold text-green-600">
+                <span className="ms-2 font-semibold text-green-600">
                   {activeUsers}
                 </span>
               </div>
@@ -1154,7 +1154,7 @@ export default function AdminUsersPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   {t.users.suspended}:
                 </span>
-                <span className="ml-2 font-semibold text-red-600">
+                <span className="ms-2 font-semibold text-red-600">
                   {suspendedUsers}
                 </span>
               </div>
@@ -1162,7 +1162,7 @@ export default function AdminUsersPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   {t.users.avgTrust}:
                 </span>
-                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
+                <span className="ms-2 font-semibold text-neutral-900 dark:text-white">
                   {avgTrustScore}/100
                 </span>
               </div>

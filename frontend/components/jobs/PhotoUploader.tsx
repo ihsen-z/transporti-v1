@@ -261,7 +261,7 @@ export function PhotoUploader({
         </button>
 
         {uploading && (
-          <span className="text-sm text-neutral-500 self-center ml-2">
+          <span className="text-sm text-neutral-500 self-center ms-2">
             {t.jobsComponents.photos.uploading}
           </span>
         )}

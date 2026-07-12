@@ -389,7 +389,7 @@ export default function SettingsPage() {
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-brand-600" />
-                  <span className="ml-2 text-neutral-500">
+                  <span className="ms-2 text-neutral-500">
                     Chargement du profil...
                   </span>
                 </div>
@@ -551,7 +551,7 @@ export default function SettingsPage() {
                     type={showPasswords ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 pr-10 outline-none"
+                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 pe-10 outline-none"
                   />
                   <button
                     type="button"

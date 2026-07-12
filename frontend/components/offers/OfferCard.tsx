@@ -119,7 +119,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
         </div>
 
         {/* Right: Price */}
-        <div className="text-right flex-shrink-0 flex flex-col items-end">
+        <div className="text-end flex-shrink-0 flex flex-col items-end">
           <p className="text-xl font-bold text-brand-600 whitespace-nowrap">
             {offer.total_price} TND
           </p>

@@ -592,7 +592,7 @@ export default function AdminVerificationsPage() {
                 >
                   {tab.label}
                   <span
-                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
+                    className={`ms-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
                   >
                     {count}
                   </span>
@@ -608,7 +608,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Affichés:
                 </span>
-                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
+                <span className="ms-2 font-semibold text-neutral-900 dark:text-white">
                   {filteredProfiles.length}
                 </span>
               </div>
@@ -616,7 +616,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Avec documents:
                 </span>
-                <span className="ml-2 font-semibold text-purple-600">
+                <span className="ms-2 font-semibold text-purple-600">
                   {profilesWithDocs.length}
                 </span>
               </div>
@@ -624,7 +624,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   À vérifier:
                 </span>
-                <span className="ml-2 font-semibold text-orange-600">
+                <span className="ms-2 font-semibold text-orange-600">
                   {profilesNeedingReview.length}
                 </span>
               </div>
@@ -632,7 +632,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Vérifiés:
                 </span>
-                <span className="ml-2 font-semibold text-green-600">
+                <span className="ms-2 font-semibold text-green-600">
                   {
                     allProfiles.filter(
                       (p) => p.verificationStatus === "VERIFIED",
@@ -676,7 +676,7 @@ export default function AdminVerificationsPage() {
                 >
                   {tab.label}
                   <span
-                    className={`ml-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
+                    className={`ms-2 px-1.5 py-0.5 rounded text-xs ${isActive ? "bg-white/20" : "bg-neutral-100"}`}
                   >
                     {count}
                   </span>
@@ -692,7 +692,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Affichées:
                 </span>
-                <span className="ml-2 font-semibold text-neutral-900 dark:text-white">
+                <span className="ms-2 font-semibold text-neutral-900 dark:text-white">
                   {filteredVerifications.length}
                 </span>
               </div>
@@ -700,7 +700,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   En attente:
                 </span>
-                <span className="ml-2 font-semibold text-orange-600">
+                <span className="ms-2 font-semibold text-orange-600">
                   {pendingCount}
                 </span>
               </div>
@@ -708,7 +708,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Approuvées:
                 </span>
-                <span className="ml-2 font-semibold text-green-600">
+                <span className="ms-2 font-semibold text-green-600">
                   {
                     allVerifications.filter((v) => v.status === "APPROVED")
                       .length
@@ -719,7 +719,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Rejetées:
                 </span>
-                <span className="ml-2 font-semibold text-red-600">
+                <span className="ms-2 font-semibold text-red-600">
                   {
                     allVerifications.filter((v) => v.status === "REJECTED")
                       .length

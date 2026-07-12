@@ -49,7 +49,7 @@ export default function DataTable<T extends { id: number | string }>({
               {columns.map((column) => (
                 <th
                   key={String(column.key)}
-                  className={`px-4 py-3 text-left text-xs font-semibold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider ${column.width || ""}`}
+                  className={`px-4 py-3 text-start text-xs font-semibold text-neutral-600 dark:text-neutral-400 uppercase tracking-wider ${column.width || ""}`}
                 >
                   <div className="flex items-center gap-1">
                     {column.header}
