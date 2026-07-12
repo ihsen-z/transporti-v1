@@ -12,6 +12,10 @@ import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { MissionStepper } from "@/components/jobs/MissionStepper";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useToast } from "@/components/ui/Toast";
+import ConfirmModal from "@/components/ui/ConfirmModal";
+import Modal from "@/components/ui/Modal";
+import Button from "@/components/ui/Button";
+import { Textarea } from "@/components/ui/Input";
 import {
   BadgeCheck,
   Clock,
@@ -50,6 +54,13 @@ export default function JobDetailsPage() {
   const [confirming, setConfirming] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [completing, setCompleting] = useState(false);
+  // Dialogues applicatifs — remplacent window.confirm()/prompt() (non stylés,
+  // non traduits, motif limité à une ligne).
+  const [activeDialog, setActiveDialog] = useState<
+    "confirmDelivery" | "cancelJob" | "markDelivered" | "transporterCancel" | null
+  >(null);
+  const [cancelReason, setCancelReason] = useState("");
+  const [transporterCancelling, setTransporterCancelling] = useState(false);
   const { showToast } = useToast();
 
   // Return trip booking state
@@ -112,13 +123,7 @@ export default function JobDetailsPage() {
   };
 
   const handleConfirmDelivery = async () => {
-    if (
-      !confirm(
-        "Confirmez-vous la bonne réception de votre livraison ? Cette action libérera le paiement au transporteur.",
-      )
-    ) {
-      return;
-    }
+    setActiveDialog(null);
     setConfirming(true);
     try {
       await apiClient.post("/api/payments/confirm-completion/", {
@@ -175,13 +180,7 @@ export default function JobDetailsPage() {
   };
 
   const handleCancelJob = async () => {
-    if (
-      !confirm(
-        "Êtes-vous sûr de vouloir annuler cette mission ? Cette action est irréversible.",
-      )
-    ) {
-      return;
-    }
+    setActiveDialog(null);
     setCancelling(true);
     try {
       await apiClient.post(`/api/jobs/${job!.id}/cancel/`, {});
@@ -198,6 +197,52 @@ export default function JobDetailsPage() {
       }
     } finally {
       setCancelling(false);
+    }
+  };
+
+  const handleMarkDelivered = async () => {
+    setActiveDialog(null);
+    setCompleting(true);
+    try {
+      await apiClient.post(`/api/jobs/${job!.id}/complete/`);
+      showToast(
+        "success",
+        "Mission marquée comme terminée ! Le client va confirmer la réception.",
+      );
+      fetchJob();
+    } catch (err) {
+      if (err instanceof ApiError && err.body) {
+        showToast(
+          "error",
+          String(err.body?.error || "Erreur lors de la confirmation."),
+        );
+      } else {
+        showToast("error", "Erreur réseau. Veuillez réessayer.");
+      }
+    } finally {
+      setCompleting(false);
+    }
+  };
+
+  const handleTransporterCancel = async () => {
+    if (!cancelReason.trim()) return;
+    setTransporterCancelling(true);
+    try {
+      await apiClient.post(`/api/jobs/${job!.id}/transporter-cancel/`, {
+        reason: cancelReason.trim(),
+      });
+      setActiveDialog(null);
+      setCancelReason("");
+      showToast("success", "Mission annulée. Le client a été notifié.");
+      fetchJob();
+    } catch (err) {
+      if (err instanceof ApiError && err.body) {
+        showToast("error", String(err.body?.error || "Erreur inattendue."));
+      } else {
+        showToast("error", "Erreur réseau.");
+      }
+    } finally {
+      setTransporterCancelling(false);
     }
   };
 
@@ -742,39 +787,7 @@ export default function JobDetailsPage() {
                   {/* P0-01: CTA "Marquer comme livré" — Transporteur uniquement */}
                   {showMarkDelivered && (
                     <button
-                      onClick={async () => {
-                        if (
-                          !window.confirm(
-                            "Confirmez-vous avoir livré la marchandise ? Le client sera notifié pour confirmer la réception.",
-                          )
-                        )
-                          return;
-                        setCompleting(true);
-                        try {
-                          await apiClient.post(
-                            `/api/jobs/${job.id}/complete/`,
-                          );
-                          showToast(
-                            "success",
-                            "Mission marquée comme terminée ! Le client va confirmer la réception.",
-                          );
-                          fetchJob();
-                        } catch (err) {
-                          if (err instanceof ApiError && err.body) {
-                            const msg =
-                              err.body?.error ||
-                              "Erreur lors de la confirmation.";
-                            showToast("error", String(msg));
-                          } else {
-                            showToast(
-                              "error",
-                              "Erreur réseau. Veuillez réessayer.",
-                            );
-                          }
-                        } finally {
-                          setCompleting(false);
-                        }
-                      }}
+                      onClick={() => setActiveDialog("markDelivered")}
                       disabled={completing}
                       className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 hover:shadow-md hover:shadow-emerald-600/20"
                     >
@@ -805,40 +818,7 @@ export default function JobDetailsPage() {
                   {/* P2-03: Cancel mutuel — transporteur peut annuler */}
                   {isAssignedTransporter && (
                     <button
-                      onClick={async () => {
-                        const reason = window.prompt(
-                          "Raison de l'annulation (obligatoire) :",
-                        );
-                        if (!reason || !reason.trim()) return;
-                        if (
-                          !window.confirm(
-                            "Êtes-vous sûr de vouloir annuler cette mission ? La mission sera remise en ligne.",
-                          )
-                        )
-                          return;
-                        try {
-                          await apiClient.post(
-                            `/api/jobs/${job.id}/transporter-cancel/`,
-                            { reason: reason.trim() },
-                          );
-                          showToast(
-                            "success",
-                            "Mission annulée. Le client a été notifié.",
-                          );
-                          fetchJob();
-                        } catch (err) {
-                          if (err instanceof ApiError && err.body) {
-                            showToast(
-                              "error",
-                              String(
-                                err.body?.error || "Erreur inattendue.",
-                              ),
-                            );
-                          } else {
-                            showToast("error", "Erreur réseau.");
-                          }
-                        }
-                      }}
+                      onClick={() => setActiveDialog("transporterCancel")}
                       className="w-full py-2 border border-red-300 text-red-600 rounded-lg font-medium hover:bg-red-50 flex items-center justify-center gap-2 text-sm transition-colors"
                     >
                       <XCircle className="w-4 h-4" />
@@ -867,7 +847,7 @@ export default function JobDetailsPage() {
                       Confirmez la bonne réception pour libérer le paiement.
                     </p>
                     <button
-                      onClick={handleConfirmDelivery}
+                      onClick={() => setActiveDialog("confirmDelivery")}
                       disabled={confirming}
                       className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                     >
@@ -947,7 +927,7 @@ export default function JobDetailsPage() {
             {/* Cancel Button — visible on PUBLISHED/MATCHED for client owner */}
             {showCancelButton && (
               <button
-                onClick={handleCancelJob}
+                onClick={() => setActiveDialog("cancelJob")}
                 disabled={cancelling}
                 className="flex items-center justify-center gap-2 w-full py-3 border border-neutral-300 bg-white text-neutral-700 rounded-xl text-sm font-semibold hover:bg-neutral-50 hover:border-neutral-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
@@ -975,6 +955,92 @@ export default function JobDetailsPage() {
           </div>
         </div>
       </div>
+
+      {/* ============================================ */}
+      {/* DIALOGUES — remplacent window.confirm/prompt */}
+      {/* ============================================ */}
+
+      <ConfirmModal
+        open={activeDialog === "confirmDelivery"}
+        title="Confirmer la réception"
+        message="Confirmez-vous la bonne réception de votre livraison ? Cette action libérera le paiement au transporteur."
+        confirmLabel="Confirmer la réception"
+        confirmColor="brand"
+        loading={confirming}
+        onConfirm={handleConfirmDelivery}
+        onCancel={() => setActiveDialog(null)}
+      />
+
+      <ConfirmModal
+        open={activeDialog === "cancelJob"}
+        title="Annuler la mission"
+        message="Êtes-vous sûr de vouloir annuler cette mission ? Cette action est irréversible."
+        confirmLabel="Annuler la mission"
+        cancelLabel="Retour"
+        confirmColor="red"
+        loading={cancelling}
+        onConfirm={handleCancelJob}
+        onCancel={() => setActiveDialog(null)}
+      />
+
+      <ConfirmModal
+        open={activeDialog === "markDelivered"}
+        title="Marquer comme livré"
+        message="Confirmez-vous avoir livré la marchandise ? Le client sera notifié pour confirmer la réception."
+        confirmLabel="Oui, c'est livré"
+        confirmColor="brand"
+        loading={completing}
+        onConfirm={handleMarkDelivered}
+        onCancel={() => setActiveDialog(null)}
+      />
+
+      <Modal
+        open={activeDialog === "transporterCancel"}
+        title="Annuler la mission"
+        onClose={() => {
+          setActiveDialog(null);
+          setCancelReason("");
+        }}
+        closeDisabled={transporterCancelling}
+        footer={
+          <>
+            <Button
+              variant="outline"
+              fullWidth
+              disabled={transporterCancelling}
+              onClick={() => {
+                setActiveDialog(null);
+                setCancelReason("");
+              }}
+            >
+              Retour
+            </Button>
+            <Button
+              variant="danger"
+              fullWidth
+              loading={transporterCancelling}
+              loadingLabel="Annulation..."
+              disabled={!cancelReason.trim()}
+              onClick={handleTransporterCancel}
+            >
+              Annuler la mission
+            </Button>
+          </>
+        }
+      >
+        <p className="text-sm text-neutral-500 mb-4">
+          La mission sera remise en ligne et le client sera notifié. Expliquez
+          la raison de votre annulation.
+        </p>
+        <Textarea
+          label="Raison de l'annulation"
+          required
+          rows={3}
+          value={cancelReason}
+          onChange={(e) => setCancelReason(e.target.value)}
+          placeholder="Ex : panne de véhicule, empêchement de dernière minute…"
+        />
+      </Modal>
     </div>
   );
 }
