@@ -92,6 +92,10 @@ interface AuthContextType {
   loginWithSocialToken: (
     provider: "google" | "facebook",
     accessToken: string,
+  ) => Promise<{ success: boolean; role?: UserRole; isNewUser?: boolean; error?: string }>;
+  /** Set role for new social users (called from /select-role page) */
+  setUserRole: (
+    newRole: "CLIENT" | "TRANSPORTER",
   ) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
   logout: () => void;
   switchRole: (role: Exclude<UserRole, "guest">) => void;
@@ -286,10 +290,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (
       provider: "google" | "facebook",
       accessToken: string,
-    ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
+    ): Promise<{ success: boolean; role?: UserRole; isNewUser?: boolean; error?: string }> => {
       setIsLoading(true);
       try {
-        const data = await apiClient.post<AuthApiResponse>(
+        const data = await apiClient.post<AuthApiResponse & { is_new_user?: boolean }>(
           `/api/auth/social/${provider}/`,
           { access_token: accessToken },
           { skipAuth: true },
@@ -305,13 +309,52 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(STORAGE_KEY, authUser.role);
         localStorage.setItem(USER_DATA_KEY, JSON.stringify(authUser));
 
-        return { success: true, role: authUser.role };
+        return { success: true, role: authUser.role, isNewUser: !!data.is_new_user };
       } catch (err) {
         if (err instanceof ApiError && err.body) {
           const messages = Object.values(err.body).flat();
           return {
             success: false,
             error: String(messages[0] || "Social login failed."),
+          };
+        }
+        return { success: false, error: "Network error. Please try again." };
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [],
+  );
+
+  /** Set role for new social users */
+  const setUserRole = useCallback(
+    async (
+      newRole: "CLIENT" | "TRANSPORTER",
+    ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
+      setIsLoading(true);
+      try {
+        const data = await apiClient.post<AuthApiResponse>(
+          `/api/auth/social/set-role/`,
+          { role: newRole },
+        );
+
+        // Store refreshed JWT tokens (contain updated role claim)
+        storeTokens(data.tokens);
+
+        // Map to frontend user shape
+        const authUser = toAuthUser(data.user);
+        setUser(authUser);
+        setRole(authUser.role);
+        localStorage.setItem(STORAGE_KEY, authUser.role);
+        localStorage.setItem(USER_DATA_KEY, JSON.stringify(authUser));
+
+        return { success: true, role: authUser.role };
+      } catch (err) {
+        if (err instanceof ApiError && err.body) {
+          const messages = Object.values(err.body).flat();
+          return {
+            success: false,
+            error: String(messages[0] || "Failed to set role."),
           };
         }
         return { success: false, error: "Network error. Please try again." };
@@ -356,6 +399,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     loginWithCredentials,
     registerWithCredentials,
     loginWithSocialToken,
+    setUserRole,
     logout,
     switchRole,
     updateUser,

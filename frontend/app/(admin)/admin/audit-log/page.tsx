@@ -19,7 +19,7 @@ import {
   EyeOff,
   Clock,
 } from "lucide-react";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
 interface AuditEntry {
@@ -123,8 +123,8 @@ export default function AdminAuditLogPage() {
       if (actionFilter) url += `&action=${actionFilter}`;
       const result = await apiClient.get<AuditResponse>(url);
       setData(result);
-    } catch (err: any) {
-      setError(err?.message || "Erreur de chargement");
+    } catch (err: unknown) {
+      setError(getErrorMessage(err) || "Erreur de chargement");
     } finally {
       setLoading(false);
     }

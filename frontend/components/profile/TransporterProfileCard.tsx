@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import {
   User,
   ShieldCheck,
@@ -68,9 +69,11 @@ export function TransporterProfileCard({
           {/* Avatar */}
           <div className="w-24 h-24 rounded-2xl bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden ring-2 ring-accent-200/50">
             {avatarUrl ? (
-              <img
+              <Image
                 src={getMediaUrl(avatarUrl)}
                 alt={`${firstName} ${lastName}`}
+                width={96}
+                height={96}
                 className="w-full h-full object-cover"
               />
             ) : (

@@ -107,7 +107,7 @@ const JOB_TYPE_CONFIG = {
   },
 };
 
-export function OfferStatusCard({
+function OfferStatusCardInner({
   offer,
   fullPickup,
   fullDropoff,
@@ -346,3 +346,6 @@ export function OfferStatusCard({
     </div>
   );
 }
+
+// Memoized: list re-rendered by 30s polling — skip unchanged cards
+export const OfferStatusCard = React.memo(OfferStatusCardInner);

@@ -236,7 +236,7 @@ export default function ReturnTripsPage() {
                 <SortAsc className="w-4 h-4 text-neutral-400" />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as any)}
+                  onChange={(e) => setSortBy(e.target.value as "newest" | "price_asc" | "price_desc")}
                   className="text-sm border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700 focus:ring-2 focus:ring-purple-500 outline-none"
                 >
                   <option value="newest">{t.returnTrips.sortNewest}</option>

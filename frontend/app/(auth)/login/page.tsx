@@ -69,10 +69,15 @@ export default function LoginPage() {
     const result = await loginWithGoogle();
 
     if (result.success) {
-      const userRole = result.role || "client";
-      const redirectTo =
-        searchParams.get("redirect") || getDefaultRedirect(userRole);
-      router.push(redirectTo);
+      if (result.isNewUser) {
+        // New social user → role selection first
+        router.push("/select-role");
+      } else {
+        const userRole = result.role || "client";
+        const redirectTo =
+          searchParams.get("redirect") || getDefaultRedirect(userRole);
+        router.push(redirectTo);
+      }
     }
 
     setIsSocialLoading(null);
@@ -86,10 +91,15 @@ export default function LoginPage() {
     const result = await loginWithFacebook();
 
     if (result.success) {
-      const userRole = result.role || "client";
-      const redirectTo =
-        searchParams.get("redirect") || getDefaultRedirect(userRole);
-      router.push(redirectTo);
+      if (result.isNewUser) {
+        // New social user → role selection first
+        router.push("/select-role");
+      } else {
+        const userRole = result.role || "client";
+        const redirectTo =
+          searchParams.get("redirect") || getDefaultRedirect(userRole);
+        router.push(redirectTo);
+      }
     }
 
     setIsSocialLoading(null);

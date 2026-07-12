@@ -122,7 +122,7 @@ function StatusBadge({ status }: { status: string }) {
 /*  ConversationCard — Premium list item                                       */
 /* -------------------------------------------------------------------------- */
 
-function ConversationCard({ conv }: { conv: ConversationItem }) {
+const ConversationCard = React.memo(function ConversationCardInner({ conv }: { conv: ConversationItem }) {
   const hasUnread = conv.unread_count > 0;
   const isLocked = conv.is_locked;
   const time = conv.last_message
@@ -230,7 +230,7 @@ function ConversationCard({ conv }: { conv: ConversationItem }) {
       </div>
     </Link>
   );
-}
+});
 
 /* -------------------------------------------------------------------------- */
 /*  Messages Inbox — Premium List (Variant A)                                  */

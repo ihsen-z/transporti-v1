@@ -1,13 +1,19 @@
 import React from "react";
 import { Filter, MapPin, Truck, Home } from "lucide-react";
 
+export interface JobFiltersValue {
+  job_type: string;
+  pickup_governorate: string;
+  dropoff_governorate: string;
+}
+
 interface JobFiltersProps {
-  filters: any;
-  onChange: (filters: any) => void;
+  filters: JobFiltersValue;
+  onChange: (filters: JobFiltersValue) => void;
 }
 
 export function JobFilters({ filters, onChange }: JobFiltersProps) {
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: keyof JobFiltersValue, value: string) => {
     onChange({ ...filters, [field]: value });
   };
 

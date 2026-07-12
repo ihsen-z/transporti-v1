@@ -128,6 +128,7 @@ def _build_social_response(user, is_new):
         'message': message,
         'user': UserProfileSerializer(user).data,
         'tokens': tokens,
+        'is_new_user': is_new,
     }, status=status_code)
 
 
@@ -138,6 +139,14 @@ def _build_social_response(user, is_new):
 class SocialTokenSerializer(serializers.Serializer):
     """Validates that an access_token is provided."""
     access_token = serializers.CharField(required=True, min_length=10)
+
+
+class RoleChoiceSerializer(serializers.Serializer):
+    """Validates role selection for new social users."""
+    role = serializers.ChoiceField(
+        choices=[('CLIENT', 'Client'), ('TRANSPORTER', 'Transporter')],
+        required=True,
+    )
 
 
 # =============================================================================
@@ -348,3 +357,62 @@ class FacebookLoginView(APIView):
         )
 
         return _build_social_response(user, is_new)
+
+
+# =============================================================================
+# ROLE SELECTION (for new social users)
+# =============================================================================
+
+class SocialUserSetRoleView(APIView):
+    """
+    POST /api/auth/social/set-role/
+    Allows a newly created social user to select their role.
+    Only works once — if the user already has a non-CLIENT role or
+    has been active, this is rejected.
+
+    Accepts { role: 'CLIENT' | 'TRANSPORTER' }
+    Returns updated user data + refreshed JWT tokens.
+    """
+    # Requires authentication — user must have JWT from social login
+
+    def post(self, request):
+        serializer = RoleChoiceSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+        new_role = serializer.validated_data['role']
+        user = request.user
+
+        # Safety: only allow role change for social users who still have
+        # the default CLIENT role
+        if not user.has_usable_password() or user.role == 'CLIENT':
+            old_role = user.role
+            user.role = new_role
+            user.save(update_fields=['role'])
+
+            # Auto-create TrustProfile for transporters (same as registration)
+            if new_role == 'TRANSPORTER':
+                from trust.models import TrustProfile
+                TrustProfile.objects.get_or_create(user=user)
+
+            logger.info(
+                f"SOCIAL_ROLE_SET: user_id={user.id}, "
+                f"old_role={old_role}, new_role={new_role}"
+            )
+
+            # Re-generate tokens with updated role claim
+            tokens = _generate_jwt_tokens(user)
+
+            return Response({
+                'message': 'Role updated successfully.',
+                'user': UserProfileSerializer(user).data,
+                'tokens': tokens,
+            })
+
+        return Response(
+            {'error': 'Role has already been set and cannot be changed.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )

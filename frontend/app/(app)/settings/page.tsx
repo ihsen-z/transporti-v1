@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { getMediaUrl } from "@/lib/imageUtils";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { getAccessToken } from "@/lib/api/tokenManager";
@@ -49,6 +51,20 @@ interface ProfileApiResponse {
     last_name: string;
     is_phone_verified: boolean;
     verification_status: string | null;
+    avatar_url?: string;
+    address_summary?: string;
+    language_pref?: string;
+  };
+}
+
+interface NotificationPrefsResponse {
+  data?: {
+    email_enabled?: boolean;
+    push_enabled?: boolean;
+    sms_enabled?: boolean;
+    notify_new_offer?: boolean;
+    notify_offer_accepted?: boolean;
+    notify_new_message?: boolean;
   };
 }
 
@@ -135,15 +151,15 @@ export default function SettingsPage() {
       setEmail(u.email || "");
       setPhone(u.phone || "");
       // Load saved avatar
-      if ((u as any).avatar_url) {
-        setAvatarPreview((u as any).avatar_url);
+      if (u.avatar_url) {
+        setAvatarPreview(u.avatar_url);
       }
       // Load profile fields
-      if ((u as any).address_summary) {
-        setGovernorate((u as any).address_summary);
+      if (u.address_summary) {
+        setGovernorate(u.address_summary);
       }
-      if ((u as any).language_pref) {
-        setLanguage((u as any).language_pref);
+      if (u.language_pref) {
+        setLanguage(u.language_pref);
       }
     } catch (err) {
       // Fallback: use auth context data
@@ -162,7 +178,7 @@ export default function SettingsPage() {
     fetchProfile();
     // Fetch notification preferences from backend
     apiClient
-      .get<{ data: any }>("/api/auth/notification-preferences/")
+      .get<NotificationPrefsResponse>("/api/auth/notification-preferences/")
       .then((res) => {
         const d = res.data;
         if (d) {
@@ -347,7 +363,7 @@ export default function SettingsPage() {
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                {(t.settings as any)[tab.labelKey] || tab.labelKey}
+                {(t.settings as unknown as Record<string, string>)[tab.labelKey] || tab.labelKey}
               </button>
             ))}
           </div>
@@ -383,9 +399,11 @@ export default function SettingsPage() {
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden">
                       {avatarPreview ? (
-                        <img
-                          src={avatarPreview}
+                        <Image
+                          src={getMediaUrl(avatarPreview)}
                           alt="Avatar"
+                          width={64}
+                          height={64}
                           className="w-full h-full object-cover"
                         />
                       ) : (

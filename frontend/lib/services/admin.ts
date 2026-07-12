@@ -68,21 +68,24 @@ export async function getAdminStats(): Promise<ServiceResult<AdminStats>> {
     return { data, source: 'api' };
 }
 
+/** Unwrap DRF list responses that may or may not be paginated. */
+function unwrapList<T>(response: T[] | { results?: T[] }): T[] {
+    return Array.isArray(response) ? response : response.results ?? [];
+}
+
 export async function getAdminJobs(): Promise<ServiceResult<AdminJob[]>> {
-    const response = await apiClient.get<any>('/api/admin/jobs/');
-    const data: AdminJob[] = response.results ?? (Array.isArray(response) ? response : []);
-    return { data, source: 'api' };
+    const response = await apiClient.get<AdminJob[] | { results?: AdminJob[] }>('/api/admin/jobs/');
+    return { data: unwrapList(response), source: 'api' };
 }
 
 export async function getAdminUsers(): Promise<ServiceResult<AdminUser[]>> {
-    const response = await apiClient.get<any>('/api/admin/users/');
-    const data: AdminUser[] = response.results ?? (Array.isArray(response) ? response : []);
-    return { data, source: 'api' };
+    const response = await apiClient.get<AdminUser[] | { results?: AdminUser[] }>('/api/admin/users/');
+    return { data: unwrapList(response), source: 'api' };
 }
 
 export async function getAdminPayments(): Promise<ServiceResult<AdminPayment[]>> {
-    const rawResponse = await apiClient.get<any>('/api/admin/escrow/');
-    const raw: BackendEscrow[] = rawResponse.results ?? (Array.isArray(rawResponse) ? rawResponse : []);
+    const rawResponse = await apiClient.get<BackendEscrow[] | { results?: BackendEscrow[] }>('/api/admin/escrow/');
+    const raw: BackendEscrow[] = unwrapList(rawResponse);
     const data: AdminPayment[] = raw.map(e => ({
         id: e.id,
         jobId: e.job_id,
@@ -112,9 +115,8 @@ export async function getSystemAlerts(): Promise<ServiceResult<SystemAlert[]>> {
 /* -------------------------------------------------------------------------- */
 
 export async function getAdminDisputes(): Promise<ServiceResult<BackendDispute[]>> {
-    const response = await apiClient.get<any>('/api/admin/disputes/?all=true');
-    const data: BackendDispute[] = response.results ?? (Array.isArray(response) ? response : []);
-    return { data, source: 'api' };
+    const response = await apiClient.get<BackendDispute[] | { results?: BackendDispute[] }>('/api/admin/disputes/?all=true');
+    return { data: unwrapList(response), source: 'api' };
 }
 
 export async function investigateDispute(disputeId: number): Promise<BackendDispute> {

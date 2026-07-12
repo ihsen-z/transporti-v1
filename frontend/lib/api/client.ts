@@ -5,16 +5,32 @@
 import { config } from '@/lib/config';
 import { getAccessToken, refreshAccessToken } from '@/lib/api/tokenManager';
 
+/** Shape of DRF error responses (error/detail/message + field errors). */
+export interface ApiErrorBody {
+    error?: string;
+    detail?: string;
+    message?: string;
+    errors?: Record<string, unknown>;
+    [key: string]: unknown;
+}
+
 export class ApiError extends Error {
     constructor(
         public status: number,
         public statusText: string,
-        public body?: Record<string, unknown>,
+        public body?: ApiErrorBody,
         message?: string,
     ) {
         super(message || `API Error: ${status} ${statusText}`);
         this.name = 'ApiError';
     }
+}
+
+/** Narrow an unknown catch value to a displayable message. */
+export function getErrorMessage(e: unknown): string | undefined {
+    if (e instanceof Error) return e.message;
+    if (typeof e === 'string') return e;
+    return undefined;
 }
 
 interface RequestOptions {

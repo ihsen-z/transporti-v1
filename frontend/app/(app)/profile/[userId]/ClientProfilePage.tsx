@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
 import { useAuth } from "@/hooks/useAuth";
+import Image from "next/image";
 import ImageCropper from "@/components/ImageCropper";
+import { getMediaUrl } from "@/lib/imageUtils";
 import {
   Loader2,
   ArrowLeft,
@@ -136,14 +138,20 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
         apiClient.get<ClientData>(
           `/api/client/profile/${userId}/`,
         ),
-        apiClient.get<any>(`/api/reviews/user/${userId}/`).catch(() => []),
+        apiClient
+          .get<ReviewData[] | { results?: ReviewData[] }>(
+            `/api/reviews/user/${userId}/`,
+          )
+          .catch(() => [] as ReviewData[]),
       ]);
       setClient(data);
-      const reviewsList = reviewsData?.results ?? (Array.isArray(reviewsData) ? reviewsData : []);
+      const reviewsList = Array.isArray(reviewsData)
+        ? reviewsData
+        : reviewsData.results ?? [];
       setReviews(reviewsList);
-    } catch (e: any) {
+    } catch (e: unknown) {
       console.error("Error fetching client profile:", e);
-      setError(e?.message || "Profil introuvable.");
+      setError(getErrorMessage(e) || "Profil introuvable.");
     } finally {
       setLoading(false);
     }
@@ -195,10 +203,10 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
       setEditAvatarUrl(res.avatar_url);
       setSaveMsg({ type: "ok", text: "Photo de profil mise à jour !" });
       setTimeout(() => setSaveMsg(null), 2500);
-    } catch (err: any) {
+    } catch (err: unknown) {
       setSaveMsg({
         type: "err",
-        text: err?.message || "Erreur upload avatar.",
+        text: getErrorMessage(err) || "Erreur upload avatar.",
       });
     } finally {
       setAvatarUploading(false);
@@ -239,13 +247,13 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
       setEditing(false);
       setSaveMsg({ type: "ok", text: "Profil enregistré avec succès !" });
       setTimeout(() => setSaveMsg(null), 3000);
-    } catch (err: any) {
-      const errBody = err?.body;
+    } catch (err: unknown) {
+      const errBody = err instanceof ApiError ? err.body : undefined;
       if (errBody?.errors) {
         const msgs = Object.values(errBody.errors).flat();
         setSaveMsg({ type: "err", text: String(msgs[0] || "Erreur de validation.") });
       } else {
-        const msg = typeof err?.message === "string" ? err.message : "Erreur lors de la sauvegarde.";
+        const msg = getErrorMessage(err) || "Erreur lors de la sauvegarde.";
         setSaveMsg({ type: "err", text: msg });
       }
     } finally {
@@ -394,9 +402,11 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                 {/* Avatar */}
                 <div className="relative group flex-shrink-0">
                   {avatarSrc ? (
-                    <img
-                      src={avatarSrc}
+                    <Image
+                      src={getMediaUrl(avatarSrc)}
                       alt={fullName}
+                      width={96}
+                      height={96}
                       className="w-24 h-24 rounded-full object-cover border-4 border-white/30 shadow-lg"
                     />
                   ) : (

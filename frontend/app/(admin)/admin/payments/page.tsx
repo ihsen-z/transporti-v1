@@ -129,8 +129,8 @@ export default function AdminPaymentsPage() {
       );
       refetchPayments();
       setTimeout(() => closeEscrowModal(), 1800);
-    } catch (err: any) {
-      setEscrowError(err?.message || "Une erreur est survenue");
+    } catch (err: unknown) {
+      setEscrowError((err instanceof Error ? err.message : undefined) || "Une erreur est survenue");
     } finally {
       setEscrowLoading(false);
     }

@@ -165,7 +165,7 @@ function StatCard({
 /*  MissionCard — For transporter's assigned missions                          */
 /* -------------------------------------------------------------------------- */
 
-function MissionCard({ mission }: { mission: TransporterMission }) {
+const MissionCard = React.memo(function MissionCardInner({ mission }: { mission: TransporterMission }) {
   const typeConfig =
     JOB_TYPE_CONFIG[mission.job_type] || JOB_TYPE_CONFIG.TRANSPORT;
   const TypeIcon = typeConfig.icon;
@@ -320,7 +320,7 @@ function MissionCard({ mission }: { mission: TransporterMission }) {
       </div>
     </div>
   );
-}
+});
 
 /* -------------------------------------------------------------------------- */
 /*  TransporterMissionsView — The new Mes Missions page                       */

@@ -40,6 +40,13 @@ export interface Job {
     offer_count?: number;
     owner_name?: string;
     created_at: string;
+    // Extended API fields (TransportJobDetailSerializer)
+    is_return_trip?: boolean;
+    completed_at?: string | null;
+    view_count?: number;
+    price_tnd_min?: number | string;
+    price_tnd_max?: number | string;
+    available_capacity?: string;
     // Legacy fields (backward compat with existing components)
     title?: string;
     pickup?: string;
@@ -103,6 +110,8 @@ export interface AdminJob extends Job {
     paymentMethod: 'ESCROW' | 'COD';
     cityFrom: string;
     cityTo: string;
+    /** Raw backend passthrough — count of offers on the job (admin list). */
+    offersCount?: number;
 }
 
 export interface AdminUser {

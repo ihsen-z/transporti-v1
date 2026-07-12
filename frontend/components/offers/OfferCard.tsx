@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   User,
@@ -17,9 +18,10 @@ import {
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getMediaUrl } from "@/lib/imageUtils";
+import type { JobOffer } from "@/lib/types/jobs";
 
 interface OfferCardProps {
-  offer: any;
+  offer: JobOffer;
   isOwner: boolean;
   onAccept: (offerId: number) => void;
 }
@@ -31,7 +33,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
   const isMovingSpecialist = offer.transporter_moving_specialist === true;
   const trustScore = offer.transporter_trust_score ?? null;
   const transporterId = offer.transporter_id;
-  const codEligible = (offer.total_price ?? 0) <= 300;
+  const codEligible = Number(offer.total_price ?? 0) <= 300;
   const hasWorkedTogether = offer.has_worked_together === true;
   const pastJobsCount = offer.past_jobs_count ?? 0;
 
@@ -46,9 +48,11 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
             <Link href={transporterId ? `/profile/${transporterId}` : "#"}>
               <div className="w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center overflow-hidden ring-2 ring-neutral-200 group-hover:ring-brand-300 transition-colors cursor-pointer">
                 {offer.transporter_avatar ? (
-                  <img
+                  <Image
                     src={getMediaUrl(offer.transporter_avatar)}
-                    alt={offer.transporter_name}
+                    alt={offer.transporter_name || "Transporteur"}
+                    width={48}
+                    height={48}
                     className="w-full h-full object-cover"
                   />
                 ) : (

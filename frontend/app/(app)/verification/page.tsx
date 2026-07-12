@@ -16,7 +16,7 @@ import {
   Eye,
   ShieldAlert,
 } from "lucide-react";
-import { getMediaUrl } from "@/lib/utils/media";
+import { getMediaUrl } from "@/lib/imageUtils";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */

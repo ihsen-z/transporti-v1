@@ -16,9 +16,11 @@ import { PhotoUploader } from "./PhotoUploader";
 /*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
 
+import type { JobFormData } from "@/lib/types/jobs";
+
 interface MovingDetailsFormProps {
-  data: any;
-  onChange: (data: any) => void;
+  data: JobFormData;
+  onChange: (data: Partial<JobFormData>) => void;
 }
 
 const ROOM_OPTIONS = [
@@ -46,7 +48,7 @@ const HELPER_OPTIONS = [1, 2, 3, 4];
 export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
   const specs = data.specifications || {};
 
-  const update = (field: string, value: any) => {
+  const update = (field: string, value: unknown) => {
     onChange({
       specifications: { [field]: value },
     });

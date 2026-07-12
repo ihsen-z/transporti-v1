@@ -42,9 +42,10 @@ export default function ResetPasswordPage() {
         new_password: newPassword,
       });
       setSuccess(true);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const { ApiError } = await import("@/lib/api/client");
       setError(
-        err?.body?.error ||
+        (err instanceof ApiError && err.body?.error) ||
           "Le lien est invalide ou expiré. Veuillez refaire la demande.",
       );
     } finally {

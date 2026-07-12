@@ -149,7 +149,7 @@ export default function RegisterPage() {
                   <span
                     className={`text-sm font-medium ${selectedRole === value ? "text-accent-700" : "text-neutral-600"}`}
                   >
-                    {(t.auth.roles as any)[value] || value}
+                    {(t.auth.roles as unknown as Record<string, string>)[value] || value}
                   </span>
                 </button>
               ))}

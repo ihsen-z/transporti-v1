@@ -1,4 +1,5 @@
 import React from "react";
+import Image from "next/image";
 import {
   MapPin,
   Calendar,
@@ -12,8 +13,32 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getMediaUrl } from "@/lib/imageUtils";
 
+import type { JobSpecifications } from "@/lib/types/jobs";
+
+/**
+ * Fields JobPreview actually renders — structurally satisfied by both the
+ * wizard form state (JobFormData) and the API job detail (JobDetail).
+ */
+interface JobPreviewData {
+  job_type?: string | null;
+  pickup_address?: string;
+  dropoff_address?: string;
+  pickup_lat?: number | null;
+  pickup_lng?: number | null;
+  dropoff_lat?: number | null;
+  dropoff_lng?: number | null;
+  pickup_hint?: string;
+  dropoff_hint?: string;
+  scheduled_time?: string;
+  description?: string;
+  photos?: string[];
+  specifications?: JobSpecifications;
+  price_tnd_min?: number | string;
+  price_tnd_max?: number | string;
+}
+
 interface JobPreviewProps {
-  data: any;
+  data: JobPreviewData;
   isOwner?: boolean;
 }
 
@@ -212,10 +237,12 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
             </span>
             <div className="flex gap-2 overflow-x-auto pb-2">
               {data.photos.map((url: string, i: number) => (
-                <img
+                <Image
                   key={i}
-                  src={url}
+                  src={getMediaUrl(url)}
                   alt=""
+                  width={64}
+                  height={64}
                   className="w-16 h-16 object-cover rounded-md border"
                 />
               ))}

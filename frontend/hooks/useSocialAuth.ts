@@ -153,6 +153,7 @@ export function useSocialAuth() {
   const loginWithGoogle = useCallback(async (): Promise<{
     success: boolean;
     role?: UserRole;
+    isNewUser?: boolean;
     error?: string;
   }> => {
     if (!googleClientId) {
@@ -217,6 +218,7 @@ export function useSocialAuth() {
   const loginWithFacebook = useCallback(async (): Promise<{
     success: boolean;
     role?: UserRole;
+    isNewUser?: boolean;
     error?: string;
   }> => {
     if (!facebookAppId) {

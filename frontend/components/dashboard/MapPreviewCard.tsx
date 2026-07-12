@@ -60,7 +60,7 @@ export default function MapPreviewCard({ job }: MapPreviewCardProps) {
         pickup={{ name: pickupName, coordinates: pickupCoords }}
         delivery={{ name: deliveryName, coordinates: deliveryCoords }}
         route={[pickupCoords, deliveryCoords]}
-        status={job.status as any}
+        status={job.status as "PENDING" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"}
         height="256px"
       />
     </div>

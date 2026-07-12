@@ -20,6 +20,11 @@ const nextConfig = {
                 hostname: '*.transporti.tn',
                 pathname: '/media/**',
             },
+            {
+                protocol: 'https',
+                hostname: '*.onrender.com',
+                pathname: '/media/**',
+            },
         ],
     },
 };

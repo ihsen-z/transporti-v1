@@ -148,6 +148,124 @@ function getActionLink(
 }
 
 /* -------------------------------------------------------------------------- */
+/*  NotificationItem — memoized card (list re-rendered by 30s polling)        */
+/* -------------------------------------------------------------------------- */
+
+const NotificationItem = React.memo(function NotificationItemInner({
+  notification,
+  t,
+  onMarkRead,
+}: {
+  notification: Notification;
+  t: NotificationsT;
+  onMarkRead: (id: number) => void;
+}) {
+  const Icon = categoryIcons[notification.category] || BellIcon;
+  const colorClasses =
+    categoryColors[notification.category] || categoryColors.SYSTEM;
+  const actionLink = getActionLink(notification, t);
+
+  return (
+    <div
+      className={`bg-white rounded-xl shadow-sm border transition-all hover:shadow-md group ${
+        !notification.is_read
+          ? "border-brand-200 bg-brand-50/30 ring-1 ring-brand-100"
+          : "border-neutral-200"
+      }`}
+    >
+      <div className="p-5">
+        <div className="flex gap-4">
+          {/* Category Icon */}
+          <div
+            className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center border ${colorClasses}`}
+          >
+            <Icon className="w-6 h-6" />
+          </div>
+
+          {/* Content */}
+          <div className="flex-1 min-w-0">
+            <div className="flex items-start justify-between gap-3 mb-1.5">
+              <div className="flex items-center gap-2">
+                <h3
+                  className={`text-base font-semibold ${
+                    !notification.is_read
+                      ? "text-neutral-900"
+                      : "text-neutral-700"
+                  }`}
+                >
+                  {notification.title}
+                </h3>
+                {!notification.is_read && (
+                  <span className="flex-shrink-0 w-2.5 h-2.5 bg-cta-500 rounded-full animate-pulse" />
+                )}
+              </div>
+              <span className="flex-shrink-0 text-xs text-neutral-500 pt-0.5">
+                {relativeTime(notification.created_at, t)}
+              </span>
+            </div>
+
+            <p className="text-neutral-600 text-sm mb-3 leading-relaxed">
+              {notification.message}
+            </p>
+
+            {/* Metadata Badges */}
+            {notification.metadata &&
+              Object.keys(notification.metadata).length > 0 && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {notification.metadata.amount && (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                      {notification.metadata.amount} TND
+                    </span>
+                  )}
+                  {notification.metadata.job_id && (
+                    <Link
+                      href={`/jobs/${notification.metadata.job_id}`}
+                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 hover:bg-brand-50 hover:text-brand-700 transition-colors border border-neutral-200"
+                    >
+                      Mission #{notification.metadata.job_id}
+                      <ExternalLink className="w-3 h-3 ml-1" />
+                    </Link>
+                  )}
+                  {notification.metadata.rating && (
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                      {"⭐".repeat(notification.metadata.rating)}
+                    </span>
+                  )}
+                </div>
+              )}
+
+            {/* Actions Row */}
+            <div className="flex items-center gap-3">
+              {/* Action Link (#4) */}
+              {actionLink && (
+                <Link
+                  href={actionLink.href}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  {actionLink.label}
+                </Link>
+              )}
+
+              {/* Mark as Read */}
+              {!notification.is_read && (
+                <button
+                  onClick={() => onMarkRead(notification.id)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-brand-600 hover:bg-neutral-100 rounded-lg transition-colors"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  {t.markRead}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+/* -------------------------------------------------------------------------- */
 /*  Polling Config                                                             */
 /* -------------------------------------------------------------------------- */
 
@@ -216,7 +334,7 @@ export default function NotificationsPage() {
   }, [isAuthenticated, fetchNotifications]);
 
   /* ---- Mark as read (Fix #2 — persist via API) ---- */
-  const handleMarkAsRead = async (id: number) => {
+  const handleMarkAsRead = useCallback(async (id: number) => {
     // Optimistic update
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
@@ -229,7 +347,7 @@ export default function NotificationsPage() {
         prev.map((n) => (n.id === id ? { ...n, is_read: false } : n)),
       );
     }
-  };
+  }, []);
 
   const handleMarkAllAsRead = async () => {
     const prevState = notifications.map((n) => ({ ...n }));
@@ -447,117 +565,14 @@ export default function NotificationsPage() {
 
               {/* Notification Cards */}
               <div className="space-y-3">
-                {group.items.map((notification) => {
-                  const Icon = categoryIcons[notification.category] || BellIcon;
-                  const colorClasses =
-                    categoryColors[notification.category] ||
-                    categoryColors.SYSTEM;
-                  const actionLink = getActionLink(notification, t);
-
-                  return (
-                    <div
-                      key={notification.id}
-                      className={`bg-white rounded-xl shadow-sm border transition-all hover:shadow-md group ${
-                        !notification.is_read
-                          ? "border-brand-200 bg-brand-50/30 ring-1 ring-brand-100"
-                          : "border-neutral-200"
-                      }`}
-                    >
-                      <div className="p-5">
-                        <div className="flex gap-4">
-                          {/* Category Icon */}
-                          <div
-                            className={`flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center border ${colorClasses}`}
-                          >
-                            <Icon className="w-6 h-6" />
-                          </div>
-
-                          {/* Content */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between gap-3 mb-1.5">
-                              <div className="flex items-center gap-2">
-                                <h3
-                                  className={`text-base font-semibold ${
-                                    !notification.is_read
-                                      ? "text-neutral-900"
-                                      : "text-neutral-700"
-                                  }`}
-                                >
-                                  {notification.title}
-                                </h3>
-                                {!notification.is_read && (
-                                  <span className="flex-shrink-0 w-2.5 h-2.5 bg-cta-500 rounded-full animate-pulse" />
-                                )}
-                              </div>
-                              <span className="flex-shrink-0 text-xs text-neutral-500 pt-0.5">
-                                {relativeTime(notification.created_at, t)}
-                              </span>
-                            </div>
-
-                            <p className="text-neutral-600 text-sm mb-3 leading-relaxed">
-                              {notification.message}
-                            </p>
-
-                            {/* Metadata Badges */}
-                            {notification.metadata &&
-                              Object.keys(notification.metadata).length > 0 && (
-                                <div className="flex flex-wrap gap-2 mb-3">
-                                  {notification.metadata.amount && (
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                                      {notification.metadata.amount} TND
-                                    </span>
-                                  )}
-                                  {notification.metadata.job_id && (
-                                    <Link
-                                      href={`/jobs/${notification.metadata.job_id}`}
-                                      className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 hover:bg-brand-50 hover:text-brand-700 transition-colors border border-neutral-200"
-                                    >
-                                      Mission #{notification.metadata.job_id}
-                                      <ExternalLink className="w-3 h-3 ml-1" />
-                                    </Link>
-                                  )}
-                                  {notification.metadata.rating && (
-                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
-                                      {"⭐".repeat(
-                                        notification.metadata.rating,
-                                      )}
-                                    </span>
-                                  )}
-                                </div>
-                              )}
-
-                            {/* Actions Row */}
-                            <div className="flex items-center gap-3">
-                              {/* Action Link (#4) */}
-                              {actionLink && (
-                                <Link
-                                  href={actionLink.href}
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-brand-600 hover:text-brand-700 bg-brand-50 hover:bg-brand-100 rounded-lg transition-colors"
-                                >
-                                  <ExternalLink className="w-3.5 h-3.5" />
-                                  {actionLink.label}
-                                </Link>
-                              )}
-
-                              {/* Mark as Read */}
-                              {!notification.is_read && (
-                                <button
-                                  onClick={() =>
-                                    handleMarkAsRead(notification.id)
-                                  }
-                                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-neutral-600 hover:text-brand-600 hover:bg-neutral-100 rounded-lg transition-colors"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                  {t.markRead}
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+                {group.items.map((notification) => (
+                  <NotificationItem
+                    key={notification.id}
+                    notification={notification}
+                    t={t}
+                    onMarkRead={handleMarkAsRead}
+                  />
+                ))}
               </div>
             </div>
           ))}

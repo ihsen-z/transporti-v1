@@ -1,19 +1,20 @@
 import React from "react";
 import { Weight, Box } from "lucide-react";
 import { PhotoUploader } from "./PhotoUploader";
+import type { JobFormData } from "@/lib/types/jobs";
 
 interface TransportDetailsFormProps {
-  data: any;
-  onChange: (data: any) => void;
+  data: JobFormData;
+  onChange: (data: Partial<JobFormData>) => void;
 }
 
 export function TransportDetailsForm({
   data,
   onChange,
 }: TransportDetailsFormProps) {
-  const handleChange = (field: string, value: any) => {
+  const handleChange = (field: string, value: unknown) => {
     // Parent handleFormData uses a functional update to merge correctly.
-    onChange({ [field]: value });
+    onChange({ [field]: value } as Partial<JobFormData>);
   };
 
   return (

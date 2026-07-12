@@ -42,7 +42,7 @@ import {
   Square,
   MinusSquare,
 } from "lucide-react";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
 type RoleFilter = "ALL" | "CLIENT" | "TRANSPORTER";
@@ -438,8 +438,8 @@ function UserDetailDrawer({
                         const refreshed = await apiClient.get<UserDetail>(`/api/admin/users/${detail.id}/`);
                         setDetail(refreshed);
                         onUserUpdated?.();
-                      } catch (err: any) {
-                        setEditError(err?.message || "Erreur lors de la modification");
+                      } catch (err: unknown) {
+                        setEditError(getErrorMessage(err) || "Erreur lors de la modification");
                       } finally {
                         setEditLoading(false);
                       }
@@ -778,9 +778,9 @@ export default function AdminUsersPage() {
       setSelectedUser(null);
       // Refresh user list
       refetch();
-    } catch (err: any) {
+    } catch (err: unknown) {
       const msg =
-        err?.body?.error || err?.message || "Une erreur est survenue.";
+        (err instanceof ApiError && err.body?.error) || getErrorMessage(err) || "Une erreur est survenue.";
       setErrorBanner(msg);
       setModalAction(null);
     } finally {

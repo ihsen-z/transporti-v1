@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Image from "next/image";
 import { Truck, Weight, FileCheck, ShieldCheck, ImageOff } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { getMediaUrl } from "@/lib/imageUtils";
@@ -39,9 +40,11 @@ export function VehicleGallery({
               key={idx}
               className="aspect-video bg-neutral-100 rounded-lg overflow-hidden"
             >
-              <img
+              <Image
                 src={getMediaUrl(photo)}
                 alt={`Véhicule ${idx + 1}`}
+                width={640}
+                height={360}
                 className="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
               />
             </div>

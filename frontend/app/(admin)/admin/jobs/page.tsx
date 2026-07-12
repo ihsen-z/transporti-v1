@@ -67,7 +67,7 @@ export default function AdminJobsPage() {
       if (filter !== "ALL") params.set("status", filter);
       if (searchQuery.trim()) params.set("search", searchQuery.trim());
 
-      const response = await apiClient.get<any>(
+      const response = await apiClient.get<{ results?: AdminJob[]; totalPages?: number; count?: number }>(
         `/api/admin/jobs/?${params.toString()}`,
       );
       setAllJobs(response.results || []);
@@ -312,7 +312,7 @@ export default function AdminJobsPage() {
       header: t.jobs.offers,
       width: "w-20",
       render: (job: AdminJob) => {
-        const count = (job as any).offersCount ?? 0;
+        const count = job.offersCount ?? 0;
         return (
           <div className="flex items-center gap-1.5">
             <MessageSquare className="w-3.5 h-3.5 text-neutral-400" />
@@ -550,7 +550,7 @@ export default function AdminJobsPage() {
                 </span>
                 <span className="ml-2 font-semibold text-brand-600 dark:text-brand-400">
                   {filteredJobs.reduce(
-                    (sum, j) => sum + ((j as any).offersCount || 0),
+                    (sum, j) => sum + (j.offersCount || 0),
                     0,
                   )}
                 </span>
