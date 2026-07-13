@@ -24,6 +24,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -414,7 +415,7 @@ export default function MyOffersPage() {
         <StatCard
           icon={DollarSign}
           label={t.offers.statsEarnings}
-          value={`${potentialEarnings.toLocaleString()} TND`}
+          value={`${formatTND(potentialEarnings)}`}
           iconColor="bg-amber-50 text-amber-600"
           valueColor="text-amber-700"
         />

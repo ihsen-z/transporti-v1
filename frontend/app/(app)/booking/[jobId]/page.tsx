@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
 import Link from "next/link";
 import {
@@ -372,7 +373,7 @@ export default function BookingPage() {
               <div className="flex justify-between text-sm">
                 <span className="text-neutral-600">{t.booking.transportPrice}</span>
                 <span className="font-medium text-neutral-900">
-                  {price.toFixed(2)} TND
+                  {formatTND(price)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -382,7 +383,7 @@ export default function BookingPage() {
                   })}
                 </span>
                 <span className="text-neutral-500">
-                  - {commissionAmount.toFixed(2)} TND
+                  - {formatTND(commissionAmount)}
                 </span>
               </div>
               <div className="flex justify-between text-sm">
@@ -390,7 +391,7 @@ export default function BookingPage() {
                   {t.booking.transporterNet}
                 </span>
                 <span className="font-semibold text-brand-600">
-                  {netTransporteur.toFixed(2)} TND
+                  {formatTND(netTransporteur)}
                 </span>
               </div>
               <div className="border-t border-neutral-100 pt-3 flex justify-between">
@@ -398,7 +399,7 @@ export default function BookingPage() {
                   {t.booking.totalPayClient}
                 </span>
                 <span className="text-xl font-bold text-brand-600">
-                  {price.toFixed(2)} TND
+                  {formatTND(price)}
                 </span>
               </div>
             </div>

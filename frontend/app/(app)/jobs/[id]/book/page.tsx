@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 import { BookingSummary } from "@/components/booking/BookingSummary";
 import { PaymentMethodSelector } from "@/components/booking/PaymentMethodSelector";
 import { PaymentGateway } from "@/components/booking/PaymentGateway";
@@ -162,7 +163,7 @@ export default function BookingPage() {
             <div className="flex justify-between text-sm">
               <span className="text-neutral-500">{t.bookingPage.totalAmount}</span>
               <span className="font-semibold text-brand-600">
-                {offer.total_price.toFixed(2)} TND
+                {formatTND(offer.total_price)}
               </span>
             </div>
           </div>
@@ -353,7 +354,7 @@ export default function BookingPage() {
                   <div className="flex justify-between text-base py-2 font-bold">
                     <span className="text-neutral-900">{t.bookingPage.total}</span>
                     <span className="text-brand-600">
-                      {offer.total_price.toFixed(2)} TND
+                      {formatTND(offer.total_price)}
                     </span>
                   </div>
                 </div>
@@ -430,7 +431,7 @@ export default function BookingPage() {
               <div className="flex justify-between text-base font-bold">
                 <span className="text-neutral-900">{t.bookingPage.total}</span>
                 <span className="text-brand-600">
-                  {offer.total_price.toFixed(2)} TND
+                  {formatTND(offer.total_price)}
                 </span>
               </div>
             </div>

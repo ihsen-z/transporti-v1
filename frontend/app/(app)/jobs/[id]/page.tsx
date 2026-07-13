@@ -13,6 +13,7 @@ import { MissionStepper } from "@/components/jobs/MissionStepper";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import Modal from "@/components/ui/Modal";
@@ -354,7 +355,7 @@ export default function JobDetailsPage() {
                     </div>
                     <div className="text-end">
                       <p className="text-lg font-bold text-neutral-900">
-                        {job.accepted_transporter.total_price} TND
+                        {formatTND(Number(job.accepted_transporter.total_price) || 0)}
                       </p>
                       <p className="text-xs text-neutral-500">{t.jobDetail.acceptedPrice}</p>
                     </div>

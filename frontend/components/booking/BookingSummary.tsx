@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatTND } from "@/lib/format";
 
 interface OfferInfo {
   id: number;
@@ -153,7 +153,7 @@ export function BookingSummary({ job, offer }: Props) {
           <div className="flex justify-between text-sm">
             <span className="text-neutral-600">{t.booking.transportPrice}</span>
             <span className="text-neutral-900 font-medium">
-              {offer.total_price.toFixed(2)} TND
+              {formatTND(offer.total_price)}
             </span>
           </div>
           <div className="flex justify-between text-sm">
@@ -168,7 +168,7 @@ export function BookingSummary({ job, offer }: Props) {
           <div className="flex justify-between text-base font-semibold">
             <span className="text-neutral-900">{t.booking.totalPay}</span>
             <span className="text-brand-600">
-              {offer.total_price.toFixed(2)} TND
+              {formatTND(offer.total_price)}
             </span>
           </div>
         </div>

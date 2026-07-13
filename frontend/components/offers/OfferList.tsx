@@ -6,6 +6,7 @@ import { OfferCard } from "./OfferCard";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
 import type { JobOffer } from "@/lib/types/jobs";
 import {
@@ -191,7 +192,7 @@ export function OfferList({
             <p className="text-sm text-neutral-500 mb-6">
               {t.offersComponents.amount}{" "}
               <span className="font-bold text-neutral-900">
-                {offerPrice} TND
+                {formatTND(offerPrice)}
               </span>
             </p>
 

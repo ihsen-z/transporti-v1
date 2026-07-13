@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Send, CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 
 interface OfferFormProps {
   jobId: number;
@@ -255,10 +256,10 @@ export function OfferForm({
                 {t.indicativeBudget}{" "}
                 <span className="font-semibold">
                   {priceTndMin && priceTndMax
-                    ? `${priceTndMin} — ${priceTndMax} TND`
+                    ? `${priceTndMin} — ${formatTND(Number(priceTndMax) || 0)}`
                     : priceTndMin
-                      ? `${t.from} ${priceTndMin} TND`
-                      : `${t.upTo} ${priceTndMax} TND`}
+                      ? `${t.from} ${formatTND(Number(priceTndMin) || 0)}`
+                      : `${t.upTo} ${formatTND(Number(priceTndMax) || 0)}`}
                 </span>
               </p>
             </div>
@@ -273,14 +274,14 @@ export function OfferForm({
         <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
           <div className="flex justify-between text-neutral-600">
             <span>{t.platformCommission} ({commissionPct}%)</span>
-            <span>{commission.toFixed(2)} TND</span>
+            <span>{formatTND(commission)}</span>
           </div>
           <div className="flex justify-between items-center pt-2 border-t border-neutral-200">
             <span className="font-semibold text-neutral-900">
               {t.totalPrice}
             </span>
             <span className="font-bold text-xl text-brand-600">
-              {total.toFixed(2)} TND
+              {formatTND(total)}
             </span>
           </div>
         </div>

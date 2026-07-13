@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 import {
   Truck,
   Package,
@@ -322,7 +323,7 @@ function TransporterDashboard({
         <StatCard
           icon={DollarSign}
           label={t.dashboard.totalEarnings}
-          value={`${stats.total_earnings} TND`}
+          value={`${formatTND(stats.total_earnings)}`}
           accent="bg-amber-50 text-amber-600"
         />
       </div>

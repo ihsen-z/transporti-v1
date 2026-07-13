@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
 
 /* -------------------------------------------------------------------------- */
@@ -130,7 +131,7 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
       <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-center">
         <p className="text-sm text-brand-600 font-medium">{t.booking.amountToPay}</p>
         <p className="text-3xl font-bold text-brand-600 mt-1">
-          {amount.toFixed(2)} TND
+          {formatTND(amount)}
         </p>
         <p className="text-xs text-brand-600 mt-1">
           {t.booking.fixedPriceGuarantee}

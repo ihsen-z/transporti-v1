@@ -20,6 +20,7 @@ import {
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 
 type NotificationsT = AppTranslationKeys["notifications"];
 
@@ -214,7 +215,7 @@ const NotificationItem = React.memo(function NotificationItemInner({
                 <div className="flex flex-wrap gap-2 mb-3">
                   {notification.metadata.amount && (
                     <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      {notification.metadata.amount} TND
+                      {formatTND(Number(notification.metadata.amount))}
                     </span>
                   )}
                   {notification.metadata.job_id && (

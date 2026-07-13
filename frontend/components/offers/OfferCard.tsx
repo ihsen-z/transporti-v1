@@ -21,6 +21,7 @@ import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { getMediaUrl } from "@/lib/imageUtils";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
 import type { JobOffer } from "@/lib/types/jobs";
 
@@ -121,7 +122,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
         {/* Right: Price */}
         <div className="text-end flex-shrink-0 flex flex-col items-end">
           <p className="text-xl font-bold text-brand-600 whitespace-nowrap">
-            {offer.total_price} TND
+            {formatTND(Number(offer.total_price) || 0)}
           </p>
           <p className="text-xs text-neutral-400 whitespace-nowrap mt-0.5">
             {format(new Date(offer.created_at), "d MMM HH:mm", { locale: fr })}
