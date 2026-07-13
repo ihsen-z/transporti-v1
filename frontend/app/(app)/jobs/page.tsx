@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
+import { formatDate } from "@/lib/format";
 import {
   Package,
   Search,
@@ -219,7 +220,7 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
           <div className="flex items-center gap-3 text-xs text-neutral-400">
             <span className="flex items-center gap-1">
               <Calendar className="w-3 h-3" />
-              {new Date(mission.scheduled_time).toLocaleDateString("fr-TN", {
+              {formatDate(mission.scheduled_time, undefined, {
                 day: "numeric",
                 month: "short",
                 year: "numeric",

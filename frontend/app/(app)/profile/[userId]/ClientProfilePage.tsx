@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 import ImageCropper from "@/components/ImageCropper";
 import { getMediaUrl } from "@/lib/imageUtils";
+import { formatDate } from "@/lib/format";
 import {
   Loader2,
   ArrowLeft,
@@ -297,7 +298,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
 
   const joinDate = (() => {
     try {
-      return new Date(c.joined_at).toLocaleDateString("fr-TN", {
+      return formatDate(c.joined_at, undefined, {
         month: "long",
         year: "numeric",
       });
@@ -630,7 +631,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                     .slice(0, 2);
                   const dateLabel = (() => {
                     try {
-                      return new Date(r.created_at).toLocaleDateString("fr-TN", {
+                      return formatDate(r.created_at, undefined, {
                         day: "numeric",
                         month: "short",
                         year: "numeric",

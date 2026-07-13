@@ -6,7 +6,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
-import { formatTND } from "@/lib/format";
+import { formatTND, formatDate } from "@/lib/format";
 import { BookingSummary } from "@/components/booking/BookingSummary";
 import { PaymentMethodSelector } from "@/components/booking/PaymentMethodSelector";
 import { PaymentGateway } from "@/components/booking/PaymentGateway";
@@ -421,7 +421,7 @@ export default function BookingPage() {
               <div className="flex justify-between">
                 <span className="text-neutral-500">{t.bookingPage.date}</span>
                 <span className="font-medium text-neutral-900">
-                  {new Date(job.scheduled_time).toLocaleDateString("fr-TN", {
+                  {formatDate(job.scheduled_time, undefined, {
                     day: "numeric",
                     month: "short",
                   })}

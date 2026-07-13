@@ -481,7 +481,7 @@ function UserDetailDrawer({
                   Inscrit le
                 </p>
                 <p className="text-sm font-semibold text-neutral-800 mt-1">
-                  {new Date(detail.dateJoined).toLocaleDateString("fr-FR")}
+                  {formatDate(detail.dateJoined)}
                 </p>
               </div>
               <div className="bg-neutral-50 rounded-xl p-4">
@@ -514,7 +514,7 @@ function UserDetailDrawer({
                           #{job.id} — {job.title}
                         </p>
                         <p className="text-xs text-neutral-400">
-                          {new Date(job.createdAt).toLocaleDateString("fr-FR")}
+                          {formatDate(job.createdAt)}
                         </p>
                       </div>
                       <span className="px-2 py-0.5 rounded text-xs font-medium bg-neutral-200 text-neutral-600">
@@ -546,7 +546,7 @@ function UserDetailDrawer({
                           #{d.id} — {d.reason}
                         </p>
                         <p className="text-xs text-neutral-400">
-                          {new Date(d.createdAt).toLocaleDateString("fr-FR")}
+                          {formatDate(d.createdAt)}
                         </p>
                       </div>
                       <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-200 text-amber-800">
@@ -585,7 +585,7 @@ function UserDetailDrawer({
                           />
                         ))}
                         <span className="text-xs text-neutral-400 ms-2">
-                          {new Date(r.createdAt).toLocaleDateString("fr-FR")}
+                          {formatDate(r.createdAt)}
                         </span>
                       </div>
                       {r.comment && (

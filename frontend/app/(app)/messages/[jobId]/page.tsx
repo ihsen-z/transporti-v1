@@ -7,6 +7,7 @@ import { MessageBubble } from "@/components/messaging/MessageBubble";
 import { ContactReveal } from "@/components/messaging/ContactReveal";
 import { checkForBypass } from "@/lib/antiBypass";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { formatDate } from "@/lib/format";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -96,7 +97,7 @@ function dateSeparatorLabel(dateStr: string, t: AppTranslationKeys): string {
 
   if (diffDays === 0) return t.messages.today;
   if (diffDays === 1) return t.messages.yesterday;
-  return d.toLocaleDateString("fr-FR", {
+  return formatDate(d.toISOString(), undefined, {
     weekday: "long",
     day: "numeric",
     month: "long",

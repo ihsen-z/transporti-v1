@@ -14,6 +14,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { apiClient } from "@/lib/api/client";
+import { formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -65,7 +66,7 @@ function relativeTime(dateStr: string, t: AppTranslationKeys): string {
     if (diffH < 24) return interpolate(t.messages.hoursAgo, { n: diffH });
     if (diffD === 1) return t.messages.yesterday;
     if (diffD < 7) return interpolate(t.messages.daysAgo, { n: diffD });
-    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+    return formatDate(d.toISOString(), undefined, { day: "numeric", month: "short" });
   } catch {
     return "";
   }

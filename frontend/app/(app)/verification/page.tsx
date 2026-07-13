@@ -17,6 +17,7 @@ import {
   ShieldAlert,
 } from "lucide-react";
 import { getMediaUrl } from "@/lib/imageUtils";
+import { formatDate as formatDateI18n } from "@/lib/format";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 
@@ -168,8 +169,7 @@ export default function VerificationPage() {
 
   const formatDate = (dateStr: string | null) => {
     if (!dateStr) return "";
-    const d = new Date(dateStr);
-    return d.toLocaleDateString("fr-FR", {
+    return formatDateI18n(dateStr, undefined, {
       day: "2-digit",
       month: "long",
       year: "numeric",

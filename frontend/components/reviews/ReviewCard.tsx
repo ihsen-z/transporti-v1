@@ -1,6 +1,7 @@
 "use client";
 
 import { Star } from "lucide-react";
+import { formatDate } from "@/lib/format";
 
 /* -------------------------------------------------------------------------- */
 /*  Shared ReviewCard — used by both Client & Transporter profiles (SCALE-T2) */
@@ -43,7 +44,7 @@ export default function ReviewCard({
 
   const dateLabel = (() => {
     try {
-      return new Date(r.created_at).toLocaleDateString("fr-TN", {
+      return formatDate(r.created_at, undefined, {
         day: "numeric",
         month: "short",
         year: "numeric",

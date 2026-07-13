@@ -1,4 +1,5 @@
 import React from "react";
+import { getCurrentLocale } from "@/lib/i18n/currentLocale";
 
 /* -------------------------------------------------------------------------- */
 /*  MessageBubble — Chat bubble for in-app messaging                          */
@@ -22,10 +23,13 @@ export function MessageBubble({
   const timeLabel = (() => {
     try {
       const d = new Date(timestamp);
-      return d.toLocaleTimeString("fr-TN", {
-        hour: "2-digit",
-        minute: "2-digit",
-      });
+      return d.toLocaleTimeString(
+        getCurrentLocale() === "ar" ? "ar-TN-u-nu-latn" : "fr-TN",
+        {
+          hour: "2-digit",
+          minute: "2-digit",
+        },
+      );
     } catch {
       return timestamp;
     }

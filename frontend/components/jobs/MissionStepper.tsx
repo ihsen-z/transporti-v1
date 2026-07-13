@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
+import { formatDate } from "@/lib/format";
 
 interface MissionStepperProps {
   status: string;
@@ -158,7 +159,7 @@ export function MissionStepper({ status, completedAt }: MissionStepperProps) {
       {status === "COMPLETED" && completedAt && (
         <p className="text-xs text-neutral-500 text-center mt-3">
           {interpolate(t.jobsComponents.stepper.deliveredOn, {
-            date: new Date(completedAt).toLocaleDateString("fr-FR", {
+            date: formatDate(completedAt, undefined, {
               day: "numeric",
               month: "long",
               year: "numeric",

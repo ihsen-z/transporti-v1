@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Pagination from "@/components/admin/Pagination";
+import { formatDate } from "@/lib/format";
 import {
   ScrollText,
   Filter,
@@ -96,7 +97,7 @@ function formatTimeAgo(dateStr: string): string {
 }
 
 function formatDateTime(dateStr: string): string {
-  return new Date(dateStr).toLocaleString("fr-FR", {
+  return formatDate(dateStr, undefined, {
     day: "2-digit",
     month: "short",
     year: "numeric",

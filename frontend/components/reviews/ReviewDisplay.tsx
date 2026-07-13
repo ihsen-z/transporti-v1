@@ -1,5 +1,6 @@
 import React from "react";
 import { Star, ThumbsUp, Calendar } from "lucide-react";
+import { formatDate } from "@/lib/format";
 
 /* -------------------------------------------------------------------------- */
 /*  ReviewDisplay — Single review card with aspects + recommendation          */
@@ -48,7 +49,7 @@ export function ReviewDisplay({ review }: ReviewDisplayProps) {
 
   const dateLabel = (() => {
     try {
-      return new Date(r.created_at).toLocaleDateString("fr-TN", {
+      return formatDate(r.created_at, undefined, {
         day: "numeric",
         month: "long",
         year: "numeric",

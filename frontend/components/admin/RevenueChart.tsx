@@ -10,7 +10,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
 
 interface RevenueChartProps {
   /** Number of days to show (7, 30, 90, 365) */
@@ -46,21 +46,21 @@ export default function RevenueChart({ days, jobs }: RevenueChartProps) {
     if (days <= 7) {
       bucketCount = 7;
       bucketLabel = (d: Date) =>
-        d.toLocaleDateString("fr-FR", { weekday: "short", day: "numeric" });
+        formatDate(d.toISOString(), undefined, { weekday: "short", day: "numeric" });
     } else if (days <= 30) {
       bucketCount = 30;
       bucketLabel = (d: Date) =>
-        d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+        formatDate(d.toISOString(), undefined, { day: "numeric", month: "short" });
     } else if (days <= 90) {
       // Weekly buckets
       bucketCount = Math.ceil(days / 7);
       bucketLabel = (d: Date) =>
-        `S${Math.ceil((d.getDate() + new Date(d.getFullYear(), d.getMonth(), 1).getDay()) / 7)} ${d.toLocaleDateString("fr-FR", { month: "short" })}`;
+        `S${Math.ceil((d.getDate() + new Date(d.getFullYear(), d.getMonth(), 1).getDay()) / 7)} ${formatDate(d.toISOString(), undefined, { month: "short" })}`;
     } else {
       // Monthly buckets
       bucketCount = 12;
       bucketLabel = (d: Date) =>
-        d.toLocaleDateString("fr-FR", { month: "short", year: "2-digit" });
+        formatDate(d.toISOString(), undefined, { month: "short", year: "2-digit" });
     }
 
     // Create daily buckets then aggregate

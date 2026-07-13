@@ -20,7 +20,7 @@ import {
 import { apiClient } from "@/lib/api/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
-import { formatTND } from "@/lib/format";
+import { formatTND, formatDate } from "@/lib/format";
 
 type NotificationsT = AppTranslationKeys["notifications"];
 
@@ -88,7 +88,7 @@ function relativeTime(dateStr: string, t: NotificationsT): string {
     if (diffH < 24) return `Il y a ${diffH}${t.hourAgo}`;
     if (diffD === 1) return t.yesterday;
     if (diffD < 7) return `Il y a ${diffD}${t.daysAgo}`;
-    return d.toLocaleDateString("fr-FR", { day: "numeric", month: "short" });
+    return formatDate(d.toISOString(), undefined, { day: "numeric", month: "short" });
   } catch {
     return "";
   }
@@ -104,7 +104,7 @@ function getDateGroup(dateStr: string, t: NotificationsT): string {
   if (notifDay.getTime() === today.getTime()) return t.today;
   if (notifDay.getTime() === yesterday.getTime()) return t.yesterday;
   if (now.getTime() - notifDay.getTime() < 7 * 86400000) return t.thisWeek;
-  return d.toLocaleDateString("fr-FR", {
+  return formatDate(d.toISOString(), undefined, {
     day: "numeric",
     month: "long",
     year: "numeric",

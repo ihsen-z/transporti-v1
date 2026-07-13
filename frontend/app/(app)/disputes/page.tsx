@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
+import { formatDate as formatDateI18n } from "@/lib/format";
 import {
   AlertTriangle,
   Plus,
@@ -410,7 +411,7 @@ export default function DisputesPage() {
       : disputes.filter((d) => d.status === statusFilter);
 
   const formatDate = (dateStr: string) =>
-    new Date(dateStr).toLocaleDateString("fr-TN", {
+    formatDateI18n(dateStr, undefined, {
       day: "numeric",
       month: "long",
       year: "numeric",

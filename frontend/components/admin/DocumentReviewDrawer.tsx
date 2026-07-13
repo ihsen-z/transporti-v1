@@ -9,6 +9,7 @@ import {
 } from "@/lib/services/admin";
 import { useToast } from "@/components/ui/Toast";
 import { getMediaUrl } from "@/lib/imageUtils";
+import { formatDate } from "@/lib/format";
 import {
   X,
   CheckCircle,
@@ -417,7 +418,7 @@ export default function DocumentReviewDrawer({
                       {/* Reviewed info */}
                       {doc.reviewedAt && (
                         <p className="text-[10px] text-neutral-400 mb-2">
-                          Par {doc.reviewedBy || "Admin"} · {new Date(doc.reviewedAt).toLocaleDateString("fr-FR")}
+                          Par {doc.reviewedBy || "Admin"} · {formatDate(doc.reviewedAt)}
                         </p>
                       )}
 
