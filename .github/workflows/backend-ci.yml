@@ -78,8 +78,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    # BLOQUANT — la config doit être valide
     - name: Run Django System Checks
-      run: python manage.py check --deploy 2>&1 || python manage.py check
+      run: python manage.py check
+
+    # Informatif — durcissement production (warnings attendus en env de test)
+    - name: Django Deploy Checks (informational)
+      run: python manage.py check --deploy
+      continue-on-error: true
 
     - name: Verify Migrations
       run: |
@@ -89,9 +95,15 @@ jobs:
     - name: Check for Missing Migrations
       run: python manage.py makemigrations --check --dry-run
 
-    - name: Run Tests
-      run: |
-        python manage.py test --verbosity=2 --parallel 2>&1 || echo "::warning::Tests incomplete — add tests before Go-Live"
+    # BLOQUANT — suites saines (doivent rester vertes)
+    - name: Run Tests (blocking)
+      run: python manage.py test trust payments messaging notifications reviews support --verbosity=2
+
+    # NON BLOQUANT — tests obsolètes connus (assertions périmées vs serializers
+    # actuels + flux register modifié par le social-auth). À corriger en
+    # Sprint 2 §6 de la roadmap, puis à basculer dans l'étape bloquante.
+    - name: Run Tests (stale suites — Sprint 2)
+      run: python manage.py test users logistics --verbosity=2 || echo "::warning::Suites users/logistics obsolètes — voir roadmap Sprint 2"
 
     - name: Validate Management Commands
       run: |

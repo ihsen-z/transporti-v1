@@ -29,6 +29,12 @@ IS_PRODUCTION = ENV in ('production', 'prod', 'live')
 # SECURITY: Debug mode - defaults to False for production safety
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
+# SECURITY: Seed endpoint (/api/auth/seed/) — double verrou : requiert DEBUG
+# ET l'opt-in explicite ENABLE_SEED_ENDPOINT. Jamais actif en production.
+ENABLE_SEED_ENDPOINT = DEBUG and os.environ.get(
+    'ENABLE_SEED_ENDPOINT', 'False'
+).lower() in ('true', '1', 'yes')
+
 # SECURITY: Load from environment variable, fail if not set in production
 _default_key = 'django-insecure-dev-only-replace-in-production'
 SECRET_KEY = os.environ.get('SECRET_KEY', _default_key)
@@ -175,32 +181,19 @@ WSGI_APPLICATION = 'transporti_core.wsgi.application'
 # DATABASE
 # =============================================================================
 
-# Database: PostgreSQL via DATABASE_URL (Docker) or SQLite fallback for dev
+# Database: PostgreSQL via DATABASE_URL (Docker/Render) or SQLite fallback for dev.
+# dj-database-url gère les schémas postgres:// et postgresql://, les ports
+# implicites et les query params Render (?sslmode=require).
 _db_url = os.environ.get('DB_URL_OVERRIDE') or os.environ.get('DATABASE_URL', '')
 if _db_url:
-    # Parse DATABASE_URL: postgres://user:password@host:port/dbname
-    import re
-    _match = re.match(
-        r'postgres(?:ql)?://(?P<user>[^:]+):(?P<password>[^@]+)@(?P<host>[^:/]+)(?::(?P<port>\d+))?/(?P<name>.+)',
-        _db_url
-    )
-    if _match:
-        DATABASES = {
-            'default': {
-                'ENGINE': 'django.db.backends.postgresql',
-                'NAME': _match.group('name'),
-                'USER': _match.group('user'),
-                'PASSWORD': _match.group('password'),
-                'HOST': _match.group('host'),
-                'PORT': _match.group('port') or '5432',
-                'CONN_MAX_AGE': 600,  # Connection pooling: 10 min
-                'OPTIONS': {
-                    'connect_timeout': 5,
-                },
-            }
-        }
-    else:
-        raise ValueError(f"Cannot parse DATABASE_URL: {_db_url}")
+    import dj_database_url
+    DATABASES = {
+        'default': dj_database_url.parse(
+            _db_url,
+            conn_max_age=600,  # Connection pooling: 10 min
+        )
+    }
+    DATABASES['default'].setdefault('OPTIONS', {})['connect_timeout'] = 5
 else:
     # SQLite fallback for local dev without Docker
     DATABASES = {
@@ -383,62 +376,6 @@ SIMPLE_JWT = {
 
 
 # =============================================================================
-# LOGGING CONFIGURATION
-# =============================================================================
-
-LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'verbose': {
-            'format': '{levelname} {asctime} {module} {process:d} {thread:d} {message}',
-            'style': '{',
-        },
-        'simple': {
-            'format': '{levelname} {asctime} {module} {message}',
-            'style': '{',
-        },
-    },
-    'handlers': {
-        'console': {
-            'class': 'logging.StreamHandler',
-            'formatter': 'simple',
-        },
-        'file': {
-            'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'transporti.log',
-            'formatter': 'verbose',
-        },
-    },
-    'loggers': {
-        'django': {
-            'handlers': ['console'],
-            'level': 'INFO',
-            'propagate': True,
-        },
-        'transporti': {
-            'handlers': ['console', 'file'] if not DEBUG else ['console'],
-            'level': 'DEBUG' if DEBUG else 'INFO',
-            'propagate': False,
-        },
-        'payments': {
-            'handlers': ['console', 'file'] if not DEBUG else ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-        'support': {
-            'handlers': ['console', 'file'] if not DEBUG else ['console'],
-            'level': 'INFO',
-            'propagate': False,
-        },
-    },
-}
-
-# Create logs directory if it doesn't exist
-(BASE_DIR / 'logs').mkdir(exist_ok=True)
-
-
-# =============================================================================
 # COMMISSION CONFIGURATION (Single Source of Truth)
 # =============================================================================
 
@@ -550,7 +487,11 @@ if _sentry_dsn:
     except ImportError:
         pass  # sentry-sdk not installed — skip silently
 
-# Structured logging
+# Structured logging — configuration UNIQUE (l'ancien doublon en double
+# définition écrasait le handler fichier ; fusionné ici).
+# Console partout ; fichier logs/transporti.log en plus quand DEBUG=False.
+_app_handlers = ['console'] if DEBUG else ['console', 'file']
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -569,11 +510,26 @@ LOGGING = {
             'class': 'logging.StreamHandler',
             'formatter': 'verbose',
         },
+        'file': {
+            'class': 'logging.FileHandler',
+            'filename': BASE_DIR / 'logs' / 'transporti.log',
+            'formatter': 'verbose',
+        },
     },
     'loggers': {
         'transporti': {
-            'handlers': ['console'],
+            'handlers': _app_handlers,
             'level': 'INFO' if IS_PRODUCTION else 'DEBUG',
+            'propagate': False,
+        },
+        'payments': {
+            'handlers': _app_handlers,
+            'level': 'INFO',
+            'propagate': False,
+        },
+        'support': {
+            'handlers': _app_handlers,
+            'level': 'INFO',
             'propagate': False,
         },
         'django': {
@@ -589,6 +545,9 @@ LOGGING = {
     },
 }
 
+# Create logs directory if it doesn't exist (needed by the file handler)
+(BASE_DIR / 'logs').mkdir(exist_ok=True)
+
 
 # =============================================================================
 # STATIC & MEDIA FILES (Phase 3: CDN-ready)
@@ -597,9 +556,28 @@ LOGGING = {
 STATIC_URL = os.environ.get('STATIC_CDN_URL', '/static/')
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').is_dir() else []
+
+# Media storage — S3-compatible object storage si AWS_STORAGE_BUCKET_NAME est
+# défini (S3, Cloudflare R2, Supabase Storage via AWS_S3_ENDPOINT_URL), sinon
+# FileSystemStorage local. IMPORTANT sur Render : le FS est éphémère, les
+# uploads sont perdus à chaque redeploy → configurer un bucket en production.
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
+if AWS_STORAGE_BUCKET_NAME:
+    AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID', '')
+    AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY', '')
+    AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME', 'auto')
+    AWS_S3_ENDPOINT_URL = os.environ.get('AWS_S3_ENDPOINT_URL') or None
+    AWS_S3_CUSTOM_DOMAIN = os.environ.get('AWS_S3_CUSTOM_DOMAIN') or None
+    AWS_DEFAULT_ACL = None          # bucket privé par défaut
+    AWS_QUERYSTRING_AUTH = True     # URLs signées (documents KYC sensibles)
+    AWS_S3_FILE_OVERWRITE = False   # pas d'écrasement silencieux
+    _default_storage_backend = "storages.backends.s3boto3.S3Boto3Storage"
+else:
+    _default_storage_backend = "django.core.files.storage.FileSystemStorage"
+
 STORAGES = {
     "default": {
-        "BACKEND": "django.core.files.storage.FileSystemStorage",
+        "BACKEND": _default_storage_backend,
     },
     "staticfiles": {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",

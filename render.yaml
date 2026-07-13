@@ -37,6 +37,43 @@ services:
         value: https://transporti-frontend.onrender.com
 
   # ---------------------------------------------------------
+  # SCHEDULER - Tâches périodiques (expiration des offres,
+  # auto-release escrow…) via la management command
+  # run_scheduled_tasks. Sans ce worker, aucune tâche planifiée
+  # ne tourne en production.
+  # ---------------------------------------------------------
+  - type: worker
+    name: transporti-scheduler
+    env: docker
+    rootDir: backend
+    region: frankfurt
+    plan: starter
+    # Remplace le CMD daphne du Dockerfile (l'entrypoint tourne aussi :
+    # migrate est idempotent, et le seed est sauté car RUN_SEED n'est pas défini)
+    dockerCommand: python manage.py run_scheduled_tasks
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: transporti-db
+          property: connectionString
+      - key: SECRET_KEY
+        fromService:
+          type: web
+          name: transporti-backend
+          envVarKey: SECRET_KEY
+      - key: JWT_SECRET_KEY
+        fromService:
+          type: web
+          name: transporti-backend
+          envVarKey: JWT_SECRET_KEY
+      - key: ENV
+        value: production
+      - key: DEBUG
+        value: "False"
+      - key: ALLOWED_HOSTS
+        value: transporti-v1.onrender.com
+
+  # ---------------------------------------------------------
   # FRONTEND - Next.js App (Node)
   # ---------------------------------------------------------
   - type: web

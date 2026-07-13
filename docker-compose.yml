@@ -33,13 +33,17 @@ services:
     ports:
       - "8000:8000"
     environment:
+      # Dev only — surchargez via un fichier .env à la racine (jamais commité).
+      # Voir backend/.env.example pour la liste complète des variables.
       - DATABASE_URL=postgres://transporti:transporti_dev@db:5432/transporti_v1
-      - SECRET_KEY=django-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-secret-key-2026
-      - JWT_SECRET_KEY=jwt-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-jwt-key-2026
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-compose-dev-only}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt-insecure-compose-dev-only}
       - DEBUG=True
       - ENV=development
       - ALLOWED_HOSTS=localhost,127.0.0.1,0.0.0.0,backend
       - CORS_ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+      - ENABLE_SEED_ENDPOINT=True
+      - RUN_SEED=true
     volumes:
       - ./backend:/app
       - backend_media:/app/media
@@ -88,8 +92,8 @@ services:
     restart: unless-stopped
     environment:
       - DATABASE_URL=postgres://transporti:transporti_dev@db:5432/transporti_v1
-      - SECRET_KEY=django-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-secret-key-2026
-      - JWT_SECRET_KEY=jwt-docker-xg8c9b26d9e64ajdr-dt-ognbnnnh-d72wi25-transporti-v1-jwt-key-2026
+      - SECRET_KEY=${SECRET_KEY:-django-insecure-compose-dev-only}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY:-jwt-insecure-compose-dev-only}
       - DEBUG=True
       - ENV=development
     volumes:

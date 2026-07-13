@@ -17,6 +17,9 @@ def seed_db_view(request):
     import traceback
     from django.core.management import call_command
     from django.http import HttpResponse
+    # SECURITY: 404 (et non 403) si non activé — ne révèle pas l'existence de la route.
+    if not getattr(django_settings, 'ENABLE_SEED_ENDPOINT', False):
+        return HttpResponse(status=404)
     try:
         out = io.StringIO()
         call_command('seed_test_data', stdout=out, stderr=out)
