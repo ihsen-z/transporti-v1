@@ -75,7 +75,7 @@ export default function ResetPasswordPage() {
             href="/forgot-password"
             className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-medium transition-colors"
           >
-            <ArrowLeft className="w-4 h-4" />
+            <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
             {t.resetPassword.requestNewLink}
           </Link>
         </div>
@@ -196,7 +196,7 @@ export default function ResetPasswordPage() {
                 href="/login"
                 className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
               >
-                <ArrowLeft className="w-4 h-4" />
+                <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
                 {t.resetPassword.backToLogin}
               </Link>
             </div>

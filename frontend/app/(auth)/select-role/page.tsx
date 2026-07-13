@@ -174,7 +174,7 @@ export default function SelectRolePage() {
           ) : (
             <>
               {t.auth.confirmRole}
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-5 h-5 rtl:-scale-x-100" />
             </>
           )}
         </button>

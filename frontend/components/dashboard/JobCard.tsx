@@ -48,7 +48,7 @@ function JobCard({ job }: JobCardProps) {
             <span className="font-semibold text-neutral-900 text-sm truncate max-w-[200px]">
               {pickup || "Adresse de départ"}
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0" />
+            <ArrowRight className="w-3.5 h-3.5 text-neutral-400 flex-shrink-0 rtl:-scale-x-100" />
             <span className="font-semibold text-neutral-900 text-sm truncate max-w-[200px]">
               {dropoff || "Destination"}
             </span>

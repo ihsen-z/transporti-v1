@@ -347,7 +347,7 @@ export default function MessagingPage() {
           onClick={() => router.push("/messages")}
           className="p-2 hover:bg-neutral-100 rounded-lg transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-neutral-600" />
+          <ArrowLeft className="w-5 h-5 text-neutral-600 rtl:-scale-x-100" />
         </button>
 
         <div className="flex-1 min-w-0">

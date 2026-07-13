@@ -618,7 +618,7 @@ export default function DisputesPage() {
                     className="flex-shrink-0 p-2 text-neutral-300 hover:text-brand-600 hover:bg-brand-600/5 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                     title={t.seeMission}
                   >
-                    <ChevronRight className="w-5 h-5" />
+                    <ChevronRight className="w-5 h-5 rtl:-scale-x-100" />
                   </Link>
                 </div>
               </div>

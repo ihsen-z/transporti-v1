@@ -175,7 +175,7 @@ function ClientDashboard({
             href="/jobs"
             className="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1"
           >
-            {t.dashboard.viewAll} <ArrowRight className="w-4 h-4" />
+            {t.dashboard.viewAll} <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
           </Link>
         </div>
         <div className="divide-y divide-neutral-50">
@@ -261,7 +261,7 @@ function TransporterDashboard({
               href="/verification"
               className="inline-flex items-center gap-1 text-sm font-semibold text-amber-800 mt-3 hover:text-amber-900"
             >
-              {t.dashboard.completeVerification} <ArrowRight className="w-4 h-4" />
+              {t.dashboard.completeVerification} <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
             </Link>
           </div>
         </div>
@@ -396,7 +396,7 @@ function TransporterDashboard({
               href="/jobs"
               className="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1"
             >
-              {t.dashboard.viewAllMissions} <ArrowRight className="w-4 h-4" />
+              {t.dashboard.viewAllMissions} <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
             </Link>
           </div>
           <div className="divide-y divide-neutral-50">

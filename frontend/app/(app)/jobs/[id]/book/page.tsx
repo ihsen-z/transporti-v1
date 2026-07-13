@@ -201,7 +201,7 @@ export default function BookingPage() {
           onClick={() => router.back()}
           className="flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 mb-4 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
           {t.bookingPage.back}
         </button>
         <h1 className="text-2xl font-bold text-neutral-900">

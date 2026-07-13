@@ -477,7 +477,7 @@ export default function MyOffersPage() {
               className="inline-flex items-center gap-2 mt-5 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
               {t.offers.emptyStateFind}
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
             </Link>
           </div>
         ) : (

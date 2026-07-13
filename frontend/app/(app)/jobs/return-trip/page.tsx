@@ -195,7 +195,7 @@ export default function ReturnTripPage() {
         href="/jobs"
         className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-neutral-700 mb-6 transition-colors"
       >
-        <ChevronLeft className="w-4 h-4" />
+        <ChevronLeft className="w-4 h-4 rtl:-scale-x-100" />
         {t.backMissions}
       </Link>
 
@@ -262,7 +262,7 @@ export default function ReturnTripPage() {
             {/* Arrow */}
             <div className="pt-5 flex-shrink-0">
               <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
-                <ArrowRight className="w-4 h-4 text-purple-600" />
+                <ArrowRight className="w-4 h-4 text-purple-600 rtl:-scale-x-100" />
               </div>
             </div>
 

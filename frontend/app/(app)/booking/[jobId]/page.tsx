@@ -264,7 +264,7 @@ export default function BookingPage() {
           href={`/jobs/${jobId}`}
           className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-600 mb-6 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
           {interpolate(t.booking.backToMission, { id: jobId ?? "" })}
         </Link>
 

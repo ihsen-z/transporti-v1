@@ -365,7 +365,7 @@ export default function JobDetailsPage() {
                     className="mt-3 w-full py-2 text-sm text-brand-600 border border-brand-600/20 rounded-lg font-medium hover:bg-brand-600/5 transition-colors flex items-center justify-center gap-1.5"
                   >
                     {t.jobDetail.viewFullProfile}
-                    <ArrowRight className="w-3.5 h-3.5" />
+                    <ArrowRight className="w-3.5 h-3.5 rtl:-scale-x-100" />
                   </Link>
                 </div>
               )}
@@ -435,7 +435,7 @@ export default function JobDetailsPage() {
                       </div>
                     )}
                   </div>
-                  <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-brand-500 transition-colors" />
+                  <ArrowRight className="w-4 h-4 text-neutral-300 group-hover:text-brand-500 transition-colors rtl:-scale-x-100" />
                 </div>
               </Link>
             )}

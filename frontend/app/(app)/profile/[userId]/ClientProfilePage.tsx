@@ -335,7 +335,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
           onClick={() => router.back()}
           className="flex items-center gap-1.5 text-neutral-500 hover:text-neutral-700 text-sm transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
           Retour
         </button>
 

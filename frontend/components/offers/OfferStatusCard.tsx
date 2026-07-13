@@ -175,7 +175,7 @@ function OfferStatusCardInner({
           >
             <MapPin className="w-4 h-4 text-brand-600 flex-shrink-0" />
             <span className="truncate font-medium">{offer.job_pickup}</span>
-            <ArrowRight className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0" />
+            <ArrowRight className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0 rtl:-scale-x-100" />
             <span className="truncate font-medium">{offer.job_dropoff}</span>
           </div>
 

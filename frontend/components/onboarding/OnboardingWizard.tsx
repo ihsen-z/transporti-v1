@@ -204,7 +204,7 @@ export default function OnboardingWizard() {
                 className="inline-flex items-center gap-2 bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-700 transition-all hover:scale-[1.02] shadow-sm"
               >
                 {step.cta}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
               </Link>
               {currentStep < steps.length - 1 && (
                 <button
@@ -212,7 +212,7 @@ export default function OnboardingWizard() {
                   className="text-sm text-neutral-500 hover:text-brand-600 font-medium flex items-center gap-1"
                 >
                   Passer
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 rtl:-scale-x-100" />
                 </button>
               )}
               {currentStep === steps.length - 1 && (

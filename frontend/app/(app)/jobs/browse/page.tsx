@@ -193,7 +193,7 @@ export default function JobBrowsePage() {
                       disabled={currentPage === 1}
                       className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      <ChevronLeft className="w-5 h-5" />
+                      <ChevronLeft className="w-5 h-5 rtl:-scale-x-100" />
                     </button>
 
                     {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
@@ -229,7 +229,7 @@ export default function JobBrowsePage() {
                       disabled={currentPage === totalPages}
                       className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
                     >
-                      <ChevronRight className="w-5 h-5" />
+                      <ChevronRight className="w-5 h-5 rtl:-scale-x-100" />
                     </button>
                   </div>
                 )}

@@ -87,7 +87,7 @@ export default function Pagination({
           className="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Page précédente"
         >
-          <ChevronLeft className="w-4 h-4" />
+          <ChevronLeft className="w-4 h-4 rtl:-scale-x-100" />
         </button>
 
         {getVisiblePages().map((page, index) =>
@@ -119,7 +119,7 @@ export default function Pagination({
           className="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
           aria-label="Page suivante"
         >
-          <ChevronRight className="w-4 h-4" />
+          <ChevronRight className="w-4 h-4 rtl:-scale-x-100" />
         </button>
       </div>
     </div>

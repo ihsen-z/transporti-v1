@@ -226,7 +226,7 @@ const ConversationCard = React.memo(function ConversationCardInner({ conv }: { c
           </span>
         )}
         <ChevronRight
-          className={`w-4 h-4 transition-all duration-200 ${
+          className={`w-4 h-4 transition-all duration-200 rtl:-scale-x-100 ${
             hasUnread
               ? "text-brand-600"
               : "text-neutral-300 group-hover:text-brand-600 group-hover:translate-x-0.5"
@@ -435,7 +435,7 @@ export default function MessagesInboxPage() {
               {role === "TRANSPORTER"
                 ? t.messages.findMission
                 : t.messages.publishAd}
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
             </Link>
           )}
         </div>

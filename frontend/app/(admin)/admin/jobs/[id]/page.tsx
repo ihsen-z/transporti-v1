@@ -155,7 +155,7 @@ export default function AdminJobDetailPage() {
           onClick={() => router.back()}
           className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-brand-600 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" /> Retour
+          <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" /> Retour
         </button>
         <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
           <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
@@ -176,7 +176,7 @@ export default function AdminJobDetailPage() {
             onClick={() => router.push("/admin/jobs")}
             className="p-2 text-neutral-500 hover:text-brand-600 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
           >
-            <ArrowLeft className="w-5 h-5" />
+            <ArrowLeft className="w-5 h-5 rtl:-scale-x-100" />
           </button>
           <div>
             <div className="flex items-center gap-3">

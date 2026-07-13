@@ -508,7 +508,7 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
           onClick={() => window.history.length > 1 ? router.back() : router.push('/dashboard')}
           className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
           {t_i18n.profile.back}
         </button>
 

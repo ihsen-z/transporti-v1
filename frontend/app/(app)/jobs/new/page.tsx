@@ -595,7 +595,7 @@ export default function NewJobPage() {
                     : "text-neutral-700 hover:bg-neutral-100"
                 }`}
             >
-              <ChevronLeft className="w-5 h-5" />
+              <ChevronLeft className="w-5 h-5 rtl:-scale-x-100" />
               {t.newJob.backBtn}
             </button>
 
@@ -611,7 +611,7 @@ export default function NewJobPage() {
               ) : (
                 <>
                   {t.newJob.nextBtn}
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-5 h-5 rtl:-scale-x-100" />
                 </>
               )}
             </button>

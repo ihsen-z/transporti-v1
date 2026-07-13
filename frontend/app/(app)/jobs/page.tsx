@@ -209,7 +209,7 @@ const MissionCard = React.memo(function MissionCardInner({ mission }: { mission:
             <span className="truncate font-medium">
               {shortAddr(mission.pickup_address)}
             </span>
-            <ArrowRight className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0" />
+            <ArrowRight className="w-3.5 h-3.5 text-neutral-300 flex-shrink-0 rtl:-scale-x-100" />
             <span className="truncate font-medium">
               {shortAddr(mission.dropoff_address)}
             </span>
@@ -587,7 +587,7 @@ function TransporterMissionsView() {
                 className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
               >
                 {t.jobsList.findMission}
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
               </Link>
               {activeTab === "RETURN_TRIP" && (
                 <Link
