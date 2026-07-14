@@ -368,7 +368,7 @@ export default function AdminPaymentsPage() {
         <StatCard
           title="Revenu Plateforme"
           value={formatCurrency(stats.platformRevenue)}
-          subtitle="Commission 10%"
+          subtitle="Commissions réelles"
           icon={DollarSign}
           color="accent"
         />

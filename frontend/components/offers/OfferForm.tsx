@@ -7,6 +7,8 @@ import { formatTND } from "@/lib/format";
 interface OfferFormProps {
   jobId: number;
   jobType?: string;
+  /** Commission rate served by the API (job.commission_rate) — single source of truth. */
+  commissionRate?: number | null;
   priceTndMin?: number;
   priceTndMax?: number;
   onOfferSubmitted: () => void;
@@ -14,9 +16,11 @@ interface OfferFormProps {
 
 type FeedbackType = "success" | "error" | "warning" | null;
 
+const MAX_PRICE_NET = 100_000;
+
 export function OfferForm({
   jobId,
-  jobType,
+  commissionRate,
   priceTndMin,
   priceTndMax,
   onOfferSubmitted,
@@ -27,8 +31,7 @@ export function OfferForm({
   const [priceNet, setPriceNet] = useState("");
   const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [commission, setCommission] = useState(0);
-  const [total, setTotal] = useState(0);
+  const [touched, setTouched] = useState(false);
 
   // Active offers tracking (L1 — max 3 offers UX)
   const MAX_ACTIVE_OFFERS = 3;
@@ -46,26 +49,45 @@ export function OfferForm({
     message: string;
   }>({ type: null, message: "" });
 
-  // Dynamic commission rate matching backend settings.COMMISSION_RATES
-  const COMMISSION_RATES: Record<string, number> = {
-    TRANSPORT: 0.12,
-    MOVING: 0.15,
-    DEFAULT: 0.12,
-  };
-  const commissionRate =
-    COMMISSION_RATES[jobType || "DEFAULT"] || COMMISSION_RATES.DEFAULT;
-  const commissionPct = Math.round(commissionRate * 100);
+  // D1 (net garanti): the rate comes from the API only — no local constants,
+  // no local formula deciding what is stored. Display-only derivation below.
+  const rate = typeof commissionRate === "number" ? commissionRate : null;
+  const commissionPct = rate !== null ? Math.round(rate * 100) : null;
 
-  // Fetch active offer count on mount (L1 pre-check)
+  const net = parseFloat(priceNet);
+  const netValid = !Number.isNaN(net) && net > 0 && net <= MAX_PRICE_NET;
+  const commission = rate !== null && netValid ? net * rate : 0;
+  const total = netValid ? net + commission : 0;
+
+  const priceError = !touched
+    ? null
+    : priceNet === ""
+      ? null
+      : Number.isNaN(net) || net <= 0
+        ? t.priceInvalid
+        : net > MAX_PRICE_NET
+          ? t.priceTooHigh
+          : null;
+
+  const budgetExceeded =
+    netValid &&
+    rate !== null &&
+    typeof priceTndMax === "number" &&
+    priceTndMax > 0 &&
+    total > priceTndMax;
+
+  // Fetch active offer count on mount (L1 pre-check).
+  // Uses the transporter-scoped endpoint with the ?status filter and reads
+  // the paginated `count` (results.length would cap at page size).
   useEffect(() => {
     const fetchActiveOffers = async () => {
       try {
-        const data = await apiClient.get<{ results?: { status: string }[] }>(
-          "/api/offers/?status=PENDING&page_size=10",
+        const data = await apiClient.get<{ count?: number }>(
+          "/api/offers/my/?status=PENDING&page_size=1",
         );
-        const results =
-          (data as { results?: { status: string }[] }).results || [];
-        setActiveOfferCount(results.length);
+        setActiveOfferCount(
+          typeof data?.count === "number" ? data.count : null,
+        );
       } catch (_err) {
         // Non-blocking: if fetch fails, allow form submission and let backend validate
         setActiveOfferCount(null);
@@ -73,13 +95,6 @@ export function OfferForm({
     };
     fetchActiveOffers();
   }, []);
-
-  useEffect(() => {
-    const net = parseFloat(priceNet) || 0;
-    const comm = net * commissionRate;
-    setCommission(comm);
-    setTotal(net + comm);
-  }, [priceNet, commissionRate]);
 
   // Auto-dismiss feedback after 6s
   useEffect(() => {
@@ -94,15 +109,17 @@ export function OfferForm({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setTouched(true);
+    if (!netValid) return;
     setLoading(true);
     setFeedback({ type: null, message: "" });
 
     try {
-      // Use apiClient (correct base URL + JWT auth)
-      // Send correct keys: job (not job_id), total_price (not price_net)
+      // D1 net garanti: submit the NET amount; the server computes
+      // commission and client total (single source of truth).
       await apiClient.post("/api/offers/", {
         job: jobId,
-        total_price: parseFloat(total.toFixed(2)),
+        price_net: parseFloat(net.toFixed(2)),
         message: message,
         valid_until: new Date(
           Date.now() + 3 * 24 * 60 * 60 * 1000,
@@ -115,6 +132,7 @@ export function OfferForm({
       });
       setPriceNet("");
       setMessage("");
+      setTouched(false);
       onOfferSubmitted();
     } catch (error: unknown) {
       console.error("Error submitting offer:", error);
@@ -129,19 +147,25 @@ export function OfferForm({
             message: t.errorVerification,
           });
         } else if (error.status === 400 && body) {
-          // Validation errors from serializer
-          const messages: string[] = [];
-          for (const [key, val] of Object.entries(body)) {
-            if (Array.isArray(val)) {
-              messages.push(...val.map((v) => String(v)));
-            } else if (typeof val === "string") {
-              messages.push(val);
+          // Duplicate offer gets a dedicated localized message
+          const bodyText = JSON.stringify(body);
+          if (bodyText.includes("already submitted")) {
+            setFeedback({ type: "error", message: t.alreadySubmitted });
+          } else {
+            // Validation errors from serializer
+            const messages: string[] = [];
+            for (const [, val] of Object.entries(body)) {
+              if (Array.isArray(val)) {
+                messages.push(...val.map((v) => String(v)));
+              } else if (typeof val === "string") {
+                messages.push(val);
+              }
             }
+            setFeedback({
+              type: "error",
+              message: messages.join(" ") || t.errorValidation,
+            });
           }
-          setFeedback({
-            type: "error",
-            message: messages.join(" ") || t.errorValidation,
-          });
         } else {
           setFeedback({
             type: "error",
@@ -228,7 +252,7 @@ export function OfferForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
             {t.netTariff}
@@ -240,14 +264,30 @@ export function OfferForm({
               step="0.1"
               required
               value={priceNet}
-              onChange={(e) => setPriceNet(e.target.value)}
-              className="w-full ps-3 pe-12 py-3 border rounded-lg focus:ring-2 focus:ring-accent-500 font-bold text-lg"
+              onChange={(e) => {
+                setPriceNet(e.target.value);
+                setTouched(true);
+              }}
+              onBlur={() => setTouched(true)}
+              aria-invalid={!!priceError}
+              className={`w-full ps-3 pe-12 py-3 border rounded-lg focus:ring-2 font-bold text-lg ${
+                priceError
+                  ? "border-red-400 focus:ring-red-400"
+                  : "focus:ring-accent-500"
+              }`}
               placeholder="0.00"
             />
             <span className="absolute end-3 top-1/2 -translate-y-1/2 text-neutral-500 font-medium">
               TND
             </span>
           </div>
+          {/* A4: inline price validation */}
+          {priceError && (
+            <p className="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+              <XCircle className="w-3.5 h-3.5 flex-shrink-0" />
+              {priceError}
+            </p>
+          )}
           {/* P1-04: Budget indicatif du client */}
           {(priceTndMin || priceTndMax) && (
             <div className="mt-2 p-2.5 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
@@ -256,12 +296,19 @@ export function OfferForm({
                 {t.indicativeBudget}{" "}
                 <span className="font-semibold">
                   {priceTndMin && priceTndMax
-                    ? `${priceTndMin} — ${formatTND(Number(priceTndMax) || 0)}`
+                    ? `${formatTND(Number(priceTndMin) || 0)} — ${formatTND(Number(priceTndMax) || 0)}`
                     : priceTndMin
                       ? `${t.from} ${formatTND(Number(priceTndMin) || 0)}`
                       : `${t.upTo} ${formatTND(Number(priceTndMax) || 0)}`}
                 </span>
               </p>
+            </div>
+          )}
+          {/* A4: non-blocking warning when the client total exceeds the budget */}
+          {budgetExceeded && (
+            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-amber-700">{t.budgetExceededWarning}</p>
             </div>
           )}
           {/* P2-10: COD threshold note */}
@@ -270,21 +317,23 @@ export function OfferForm({
           </p>
         </div>
 
-        {/* Pricing Breakdown */}
-        <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
-          <div className="flex justify-between text-neutral-600">
-            <span>{t.platformCommission} ({commissionPct}%)</span>
-            <span>{formatTND(commission)}</span>
+        {/* Pricing Breakdown — display-only, rate served by the API */}
+        {rate !== null && (
+          <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
+            <div className="flex justify-between text-neutral-600">
+              <span>{t.platformCommission} ({commissionPct}%)</span>
+              <span>{formatTND(commission)}</span>
+            </div>
+            <div className="flex justify-between items-center pt-2 border-t border-neutral-200">
+              <span className="font-semibold text-neutral-900">
+                {t.totalPrice}
+              </span>
+              <span className="font-bold text-xl text-brand-600">
+                {formatTND(total)}
+              </span>
+            </div>
           </div>
-          <div className="flex justify-between items-center pt-2 border-t border-neutral-200">
-            <span className="font-semibold text-neutral-900">
-              {t.totalPrice}
-            </span>
-            <span className="font-bold text-xl text-brand-600">
-              {formatTND(total)}
-            </span>
-          </div>
-        </div>
+        )}
 
         <div>
           <label className="block text-sm font-medium text-neutral-700 mb-1">
@@ -300,7 +349,7 @@ export function OfferForm({
 
         <button
           type="submit"
-          disabled={loading || !priceNet || isAtLimit}
+          disabled={loading || !netValid || isAtLimit}
           className="w-full py-3 bg-brand-600 text-white rounded-lg font-bold hover:bg-brand-700 disabled:opacity-50 transition-colors"
         >
           {loading ? t.sending : t.sendOffer}

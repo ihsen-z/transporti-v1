@@ -68,8 +68,24 @@ export interface JobDetail extends JobListItem {
   pickup_hint?: string;
   dropoff_hint?: string;
   specifications?: JobSpecifications;
+  /** Commission rate for this job's type, served by the API (D1 net garanti) */
+  commission_rate?: number;
+  /** Current transporter's offer on this job (any status), null otherwise */
+  my_offer?: MyOfferSummary | null;
   /** Allow additional backend fields without breaking type safety */
   [key: string]: unknown;
+}
+
+/** Mirrors TransportJobDetailSerializer.get_my_offer */
+export interface MyOfferSummary {
+  id: number;
+  status: string;
+  price_net: number;
+  commission_amount: number;
+  total_price: number;
+  message?: string | null;
+  valid_until?: string | null;
+  created_at?: string;
 }
 
 /** Backend TransportJob.Status choices */

@@ -7,6 +7,7 @@ import { apiClient, ApiError } from "@/lib/api/client";
 import type { JobDetail } from "@/lib/types/jobs";
 import { JobPreview } from "@/components/jobs/JobPreview";
 import { OfferForm } from "@/components/offers/OfferForm";
+import { MyOfferCard } from "@/components/offers/MyOfferCard";
 import { OfferList } from "@/components/offers/OfferList";
 import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { MissionStepper } from "@/components/jobs/MissionStepper";
@@ -259,8 +260,17 @@ export default function JobDetailsPage() {
   const isReturnTrip = job.is_return_trip === true;
   const isClientViewingReturnTrip =
     isClient && !isOwner && isReturnTrip && job.status === "PUBLISHED";
+  // C2': when the transporter already has an offer (any status — the backend
+  // forbids re-submission), show the "your offer" card instead of the form.
+  const myOffer = job.my_offer ?? null;
+  const showMyOfferCard =
+    isTransporter && !isOwner && job.status === "PUBLISHED" && !!myOffer;
   const showOfferForm =
-    isTransporter && !isOwner && job.status === "PUBLISHED" && isVerified;
+    isTransporter &&
+    !isOwner &&
+    job.status === "PUBLISHED" &&
+    isVerified &&
+    !myOffer;
   const showVerificationGate =
     isTransporter && !isOwner && job.status === "PUBLISHED" && !isVerified;
   const showOffersList =
@@ -397,10 +407,18 @@ export default function JobDetailsPage() {
             )}
 
             {/* Transporter Actions */}
+            {showMyOfferCard && myOffer && (
+              <MyOfferCard offer={myOffer} onChanged={fetchJob} />
+            )}
             {showOfferForm && (
               <OfferForm
                 jobId={job.id}
                 jobType={job.job_type}
+                commissionRate={
+                  typeof job.commission_rate === "number"
+                    ? job.commission_rate
+                    : null
+                }
                 priceTndMin={job.price_tnd_min != null ? Number(job.price_tnd_min) : undefined}
                 priceTndMax={job.price_tnd_max != null ? Number(job.price_tnd_max) : undefined}
                 onOfferSubmitted={() => {
@@ -530,8 +548,11 @@ export default function JobDetailsPage() {
                   <div className="text-center bg-white rounded-lg py-2 px-3 mb-3 border border-purple-100">
                     <p className="text-xs text-neutral-500">{t.jobDetail.indicativePrice}</p>
                     <p className="text-xl font-bold text-purple-700">
-                      {String(job.price_tnd_min || "0")} -{" "}
-                      {String(job.price_tnd_max || "?")} TND
+                      {job.price_tnd_min && job.price_tnd_max
+                        ? `${formatTND(Number(job.price_tnd_min) || 0)} — ${formatTND(Number(job.price_tnd_max) || 0)}`
+                        : job.price_tnd_min
+                          ? `${t.offerForm.from} ${formatTND(Number(job.price_tnd_min) || 0)}`
+                          : `${t.offerForm.upTo} ${formatTND(Number(job.price_tnd_max) || 0)}`}
                     </p>
                   </div>
                 )}

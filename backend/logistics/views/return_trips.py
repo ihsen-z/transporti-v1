@@ -43,7 +43,7 @@ class BookReturnTripView(APIView):
 
     @transaction.atomic
     def post(self, request, job_id):
-        from payments.services import calculate_commission, create_escrow_on_booking
+        from payments.services import derive_net_from_total, create_escrow_on_booking
 
         job = get_object_or_404(TransportJob, id=job_id)
 
@@ -102,7 +102,9 @@ class BookReturnTripView(APIView):
             )
 
         # --- Create auto-offer (transporter = job.owner) ---
-        commission, price_net = calculate_commission(job.job_type, proposed_price)
+        # The client proposes the total they pay; derive the net with the
+        # D1-consistent inverse (commission == net × rate).
+        commission, price_net = derive_net_from_total(job.job_type, proposed_price)
 
         offer = Offer.objects.create(
             job=job,

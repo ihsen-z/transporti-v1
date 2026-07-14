@@ -50,14 +50,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    command: >
-      sh -c "
-        echo '⏳ Running migrations...' &&
-        python manage.py migrate --noinput &&
-        echo '✅ Migrations done.' &&
-        echo '🚀 Starting Django server...' &&
-        python manage.py runserver 0.0.0.0:8000
-      "
+    # Recette iso-prod : entrypoint.sh (migrate + collectstatic + seed opt-in)
+    # puis daphne (CMD du Dockerfile), comme sur Render.
+    # Pour le hot-reload backend en dev : docker compose -f docker-compose.yml -f docker-compose.dev.yml up
 
   # ── Next.js Frontend ─────────────────────────────────────
   frontend:
@@ -101,6 +96,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    # Ne PAS re-seeder ni re-migrer ici : l'entrypoint est court-circuité
+    # volontairement — le backend s'en charge.
+    entrypoint: []
     command: >
       sh -c "
         echo '⏳ Waiting for backend migrations...' &&

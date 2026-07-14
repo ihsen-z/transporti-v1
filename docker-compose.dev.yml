@@ -1,0 +1,18 @@
+# ============================================================
+# Transporti V1 — Override DEV (hot-reload backend)
+# Usage : docker compose -f docker-compose.yml -f docker-compose.dev.yml up
+# La recette de référence utilise docker-compose.yml SEUL (daphne, iso-prod).
+# ============================================================
+
+services:
+  backend:
+    # Court-circuite l'entrypoint daphne pour retrouver le runserver
+    # avec rechargement automatique pendant le développement.
+    entrypoint: []
+    command: >
+      sh -c "
+        echo '⏳ Running migrations...' &&
+        python manage.py migrate --noinput &&
+        echo '🚀 Starting Django dev server (hot reload)...' &&
+        python manage.py runserver 0.0.0.0:8000
+      "

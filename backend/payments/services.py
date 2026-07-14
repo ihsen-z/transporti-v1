@@ -14,7 +14,7 @@ import logging
 from django.db import transaction
 from django.conf import settings
 from django.utils import timezone
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from datetime import timedelta
 
 from .models import EscrowTransaction, CommissionLedger
@@ -50,9 +50,57 @@ def calculate_commission(job_type: str, total_price: Decimal) -> tuple[Decimal, 
     rate = get_commission_rate(job_type)
     commission = total_price * rate
     net = total_price - commission
-    
+
     logger.debug(f"Commission calculated: job_type={job_type}, rate={rate}, total={total_price}, commission={commission}, net={net}")
-    
+
+    return commission, net
+
+
+TWO_PLACES = Decimal('0.01')
+
+
+def calculate_from_net(job_type: str, price_net: Decimal) -> tuple[Decimal, Decimal]:
+    """
+    Net-guaranteed model (decision D1): the transporter's input IS the net
+    they receive. Commission is added on top; the client pays net + commission.
+
+    Args:
+        job_type: Type of job (TRANSPORT, MOVING, etc.)
+        price_net: Amount the transporter receives (as entered by them)
+
+    Returns:
+        Tuple of (commission_amount, total_price)
+    """
+    rate = get_commission_rate(job_type)
+    net = Decimal(str(price_net)).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
+    commission = (net * rate).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
+    total = net + commission
+
+    logger.debug(f"Commission from net: job_type={job_type}, rate={rate}, net={net}, commission={commission}, total={total}")
+
+    return commission, total
+
+
+def derive_net_from_total(job_type: str, total_price: Decimal) -> tuple[Decimal, Decimal]:
+    """
+    Inverse of the net-guaranteed model, for flows where the CLIENT-facing
+    total is the input (counter-offer acceptance, return-trip booking).
+    Preserves the invariant commission == net × rate (within rounding).
+
+    Args:
+        job_type: Type of job (TRANSPORT, MOVING, etc.)
+        total_price: Price the client pays
+
+    Returns:
+        Tuple of (commission_amount, price_net)
+    """
+    rate = get_commission_rate(job_type)
+    total = Decimal(str(total_price)).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
+    net = (total / (Decimal('1') + rate)).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
+    commission = total - net
+
+    logger.debug(f"Net derived from total: job_type={job_type}, rate={rate}, total={total}, net={net}, commission={commission}")
+
     return commission, net
 
 

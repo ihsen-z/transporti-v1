@@ -63,11 +63,13 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
     accepted_transporter = serializers.SerializerMethodField()
     has_reviewed = serializers.SerializerMethodField()
     client_confirmed = serializers.SerializerMethodField()
+    commission_rate = serializers.SerializerMethodField()
+    my_offer = serializers.SerializerMethodField()
 
     class Meta:
         model = TransportJob
         fields = [
-            'id', 'job_type', 'status', 
+            'id', 'job_type', 'status',
             'pickup_address', 'pickup_governorate', 'pickup_lat', 'pickup_lng',
             'dropoff_address', 'dropoff_governorate', 'dropoff_lat', 'dropoff_lng',
             'scheduled_time', 'specifications', 'description', 'photos',
@@ -75,10 +77,41 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
             'pickup_hint', 'dropoff_hint',
             'is_return_trip', 'available_capacity',
             'accepted_transporter', 'has_reviewed', 'client_confirmed',
+            'commission_rate', 'my_offer',
             'view_count',
             'created_at', 'updated_at'
         ]
         read_only_fields = fields
+
+    def get_commission_rate(self, obj) -> float:
+        from payments.services import get_commission_rate
+        return float(get_commission_rate(obj.job_type))
+
+    def get_my_offer(self, obj) -> dict | None:
+        """Current transporter's offer on this job (any status), null otherwise.
+
+        Lets the frontend replace the offer form with an "your offer" card —
+        the backend rejects re-submission whatever the existing offer's status.
+        """
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        user = request.user
+        if getattr(user, 'role', None) != 'TRANSPORTER' or obj.owner_id == user.id:
+            return None
+        offer = obj.offers.filter(transporter=user).order_by('-created_at').first()
+        if not offer:
+            return None
+        return {
+            'id': offer.id,
+            'status': offer.status,
+            'price_net': float(offer.price_net),
+            'commission_amount': float(offer.commission_amount),
+            'total_price': float(offer.total_price),
+            'message': offer.message,
+            'valid_until': offer.valid_until.isoformat() if offer.valid_until else None,
+            'created_at': offer.created_at.isoformat(),
+        }
 
     def get_owner(self, obj) -> dict:
         return {
@@ -122,20 +155,39 @@ class OfferCreateSerializer(serializers.ModelSerializer):
     """
     Serializer for submitting offers.
     Transporter-only. Validates business rules.
+
+    Net-guaranteed model (decision D1): the transporter submits `price_net`
+    (what they receive). Commission and client total are computed server-side.
     """
+    MAX_PRICE_NET = 100_000
+
+    price_net = serializers.DecimalField(max_digits=10, decimal_places=2)
+
     class Meta:
         model = Offer
-        fields = ['job', 'total_price', 'message', 'valid_until']
+        fields = ['job', 'price_net', 'message', 'valid_until']
 
     def validate_job(self, value):
         if value.status != TransportJob.Status.PUBLISHED:
             raise serializers.ValidationError("Can only submit offers to PUBLISHED jobs.")
         return value
 
-    def validate_total_price(self, value):
+    def validate_price_net(self, value):
         if value <= 0:
             raise serializers.ValidationError("Price must be positive.")
+        if value > self.MAX_PRICE_NET:
+            raise serializers.ValidationError(f"Price cannot exceed {self.MAX_PRICE_NET} TND.")
         return value
+
+    def to_internal_value(self, data):
+        # Legacy contract guard: the pre-D1 client sent `total_price`.
+        # Reject it explicitly (before field validation) so a stale bundle
+        # gets an honest error instead of a silently reinterpreted amount.
+        if 'total_price' in data:
+            raise serializers.ValidationError(
+                {"total_price": "Obsolete field. Submit `price_net` (the amount you receive)."}
+            )
+        return super().to_internal_value(data)
 
     def validate(self, attrs):
         user = self.context['request'].user
@@ -147,7 +199,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
 
         # Check max active offers (3)
         active_offers = Offer.objects.filter(
-            transporter=user, 
+            transporter=user,
             status='PENDING'
         ).count()
         if active_offers >= 3:
@@ -158,30 +210,20 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         return attrs
 
     def create(self, validated_data):
-        from payments.services import calculate_commission
-        
+        from payments.services import calculate_from_net
+
         user = self.context['request'].user
         job = validated_data['job']
-        total_price = validated_data['total_price']
-        
-        # Use centralized commission calculation (single source of truth)
-        commission, price_net = calculate_commission(job.job_type, total_price)
+        price_net = validated_data['price_net']
 
-        # INTEGRITY: Strict financial validation (Phase 1 Go-Live audit)
-        from decimal import Decimal
-        expected_total = price_net + commission
-        if abs(Decimal(str(total_price)) - Decimal(str(expected_total))) > Decimal('0.01'):
-            raise serializers.ValidationError({
-                'total_price': (
-                    f'Financial integrity check failed: '
-                    f'total_price ({total_price}) != price_net ({price_net}) + commission ({commission})'
-                )
-            })
+        # Net-guaranteed: commission added on top, client pays net + commission
+        commission, total_price = calculate_from_net(job.job_type, price_net)
 
         validated_data['transporter'] = user
         validated_data['status'] = Offer.Status.PENDING
         validated_data['price_net'] = price_net
         validated_data['commission_amount'] = commission
+        validated_data['total_price'] = total_price
 
         offer = super().create(validated_data)
 

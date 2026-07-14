@@ -26,6 +26,7 @@ class AdminJobSerializer(serializers.ModelSerializer):
     pickup = serializers.CharField(source='pickup_address')
     delivery = serializers.CharField(source='dropoff_address')
     price = serializers.SerializerMethodField()
+    commission = serializers.SerializerMethodField()
     transporter = serializers.SerializerMethodField()
     offersCount = serializers.SerializerMethodField()
 
@@ -33,6 +34,7 @@ class AdminJobSerializer(serializers.ModelSerializer):
         model = TransportJob
         fields = [
             'id', 'title', 'status', 'pickup', 'delivery', 'price',
+            'commission',
             'transporter', 'created_at',
             'clientName', 'clientEmail',
             'transporterName', 'transporterEmail',
@@ -76,6 +78,13 @@ class AdminJobSerializer(serializers.ModelSerializer):
             return float(obj.price_tnd_max)
         if obj.price_tnd_min:
             return float(obj.price_tnd_min)
+        return 0
+
+    def get_commission(self, obj):
+        """Real commission of the accepted offer (D2 — no fictitious rate)."""
+        accepted = self._get_accepted_offer(obj)
+        if accepted and accepted.commission_amount:
+            return float(accepted.commission_amount)
         return 0
 
     def get_transporter(self, obj) -> str:

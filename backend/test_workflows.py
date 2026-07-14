@@ -115,7 +115,8 @@ test_offer_id = None
 if test_job_id:
     request = factory.post('/api/offers/', json.dumps({
         'job': test_job_id,
-        'total_price': 200.00,
+        # D1 net garanti : le transporteur soumet son NET, le serveur ajoute la commission
+        'price_net': 200.00,
         'message': 'Disponible le 1er mai. Vehicule utilitaire 3.5T.',
         'valid_until': (timezone.now() + timedelta(days=3)).isoformat(),
     }), content_type='application/json')

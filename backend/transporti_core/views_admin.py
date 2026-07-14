@@ -65,8 +65,14 @@ class AdminStatsView(APIView):
         blocked_escrow = float(escrow_agg['blocked'] or 0)
         released_escrow = float(escrow_agg['released'] or 0)
 
-        # Revenue (10% commission on released)
-        platform_revenue = released_escrow * 0.10
+        # Revenue: real commission amounts of accepted offers on completed jobs
+        # (decision D2 — no more hardcoded fictitious rate)
+        from logistics.models import Offer
+        platform_revenue = float(
+            Offer.objects.filter(
+                status='ACCEPTED', job__status='COMPLETED'
+            ).aggregate(total=Sum('commission_amount'))['total'] or 0
+        )
 
         # Disputes
         active_disputes = Dispute.objects.filter(

@@ -299,7 +299,7 @@ function DashboardContent() {
             </span>
             <span className="flex items-center gap-1.5">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-              {locale === "ar" ? "العمولة" : "Commission (10%)"}
+              {locale === "ar" ? "العمولة" : "Commission"}
             </span>
           </div>
           <RevenueChart days={chartDays} jobs={allJobs} />

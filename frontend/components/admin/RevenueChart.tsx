@@ -18,6 +18,8 @@ interface RevenueChartProps {
   /** Jobs data to derive revenue from */
   jobs: Array<{
     price?: number;
+    /** Real commission of the accepted offer, served by the API */
+    commission?: number;
     status: string;
     created_at?: string;
   }>;
@@ -82,7 +84,7 @@ export default function RevenueChart({ days, jobs }: RevenueChartProps) {
       if (bucket) {
         const price = job.price ?? 0;
         bucket.revenue += price;
-        bucket.commission += price * 0.1; // 10% commission
+        bucket.commission += job.commission ?? 0; // real commission from API
         bucket.count += 1;
       }
     }
@@ -137,7 +139,7 @@ export default function RevenueChart({ days, jobs }: RevenueChartProps) {
           }}
           formatter={(value: any, name: any) => [
             formatCurrency(Number(value) || 0),
-            name === "revenue" ? "Revenu brut" : "Commission (10%)",
+            name === "revenue" ? "Revenu brut" : "Commission",
           ]}
           labelStyle={{ color: "#94a3b8", marginBottom: "4px" }}
         />

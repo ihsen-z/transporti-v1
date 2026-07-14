@@ -257,12 +257,12 @@ export default function MyOffersPage() {
     setWithdrawing(true);
     try {
       await apiClient.post(`/api/offers/${withdrawTarget.id}/withdraw/`, {});
-      showToast("success", "Offre retirée avec succès.");
+      showToast("success", t.myOfferCard.withdrawSuccess);
       setWithdrawTarget(null);
       await fetchOffers();
     } catch (e: unknown) {
       // FIX #2: Parse backend error body for meaningful messages
-      let msg = "Impossible de retirer cette offre.";
+      let msg: string = t.myOfferCard.withdrawError;
       if (e instanceof ApiError) {
         if (e.body?.error) {
           msg = String(e.body.error);

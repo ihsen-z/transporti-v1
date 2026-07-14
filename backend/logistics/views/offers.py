@@ -58,9 +58,16 @@ class OfferMyListView(generics.ListAPIView):
     serializer_class = OfferListSerializer
 
     def get_queryset(self):
-        return Offer.objects.filter(
+        queryset = Offer.objects.filter(
             transporter=self.request.user
         ).select_related('job', 'job__owner', 'transporter').order_by('-created_at')
+
+        status_param = self.request.query_params.get('status')
+        if status_param:
+            valid_statuses = {choice[0] for choice in Offer.Status.choices}
+            if status_param in valid_statuses:
+                queryset = queryset.filter(status=status_param)
+        return queryset
 
 
 class OfferAcceptView(generics.GenericAPIView):
@@ -337,11 +344,13 @@ class CounterOfferRespondView(APIView):
             counter.save()
             return Response({'status': 'rejected', 'message': 'Contre-offre refusée.'})
 
-        # Accept: update offer price
-        from payments.services import calculate_commission
+        # Accept: update offer price.
+        # The counter-offer amount is the CLIENT-facing total, so derive the
+        # net with the D1-consistent inverse (commission == net × rate).
+        from payments.services import derive_net_from_total
         from decimal import Decimal
         new_total = counter.proposed_price
-        commission, net = calculate_commission(offer.job.job_type, Decimal(str(new_total)))
+        commission, net = derive_net_from_total(offer.job.job_type, Decimal(str(new_total)))
 
         offer.total_price = new_total
         offer.commission_amount = commission
