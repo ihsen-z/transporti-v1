@@ -184,5 +184,11 @@
 | T3 | Stockage média | S3-compatible (R2/Supabase) activé avant tout lot produisant des fichiers | 14/07/2026 | Défaut — modifiable sur objection |
 | T4 | Distance/durée | Haversine × 1,25 + vitesse paramétrable ; routing réel post-pilote | 14/07/2026 | Défaut — modifiable sur objection |
 | T5 | Environnement recette | Docker complet Postgres, seed enrichi, runserver local interdit | 14/07/2026 | Défaut — modifiable sur objection |
+| D11 | Réservation instantanée des trajets retour | ⬜ En attente — reco : option par trajet, désactivée par défaut (pivot §7.3) | — | À arbitrer Sprint 2 |
+| D12 | Capacité d'un trajet (unitaire vs décrémentable) | ⬜ En attente — reco : unitaire au pilote | — | À arbitrer Sprint 2 |
+| D13 | Taux de commission des trajets retour (12/15 % vs taux incitatif) | ⬜ En attente — arbitrage métier pur | — | À arbitrer Sprint 2 |
+| D14 | Alertes corridor (clients seuls vs deux rôles) | ⬜ En attente — reco : clients au pilote | — | À arbitrer Sprint 2 |
+
+**Pivot stratégique (14/07/2026) :** le positionnement « Return Trips First » est documenté dans `docs/PIVOT_STRATEGIQUE_TRAJETS_RETOUR_2026-07-14.md`, qui régénère la roadmap (Sprints 3-5 recomposés) sans invalider D1–D10 ni les lots livrés.
 
 **Note D5 :** le choix « Demande structurée » (et non le contact chat simple) implique un petit surcroît de périmètre en Phase 2 (WS-F) : modèle de demande (marchandise, prix, statut), écrans « demandes reçues » côté transporteur et « ma demande » côté client, et 2 notifications dédiées. L'estimation WS-F passe de 15 à ~19 j/h — absorbable dans la réserve de 20 % sans toucher au calendrier.
