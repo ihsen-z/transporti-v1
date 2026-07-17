@@ -43,7 +43,7 @@ class BookReturnTripView(APIView):
 
     @transaction.atomic
     def post(self, request, job_id):
-        from payments.services import derive_net_from_total, create_escrow_on_booking
+        from payments.services import derive_net_from_total
 
         job = get_object_or_404(TransportJob, id=job_id)
 
@@ -117,28 +117,41 @@ class BookReturnTripView(APIView):
             valid_until=timezone.now() + timezone.timedelta(days=7),
         )
 
-        # --- Transition job → IN_PROGRESS ---
-        job.status = TransportJob.Status.IN_PROGRESS
+        # --- D3 (escrow strict): job becomes MATCHED, never IN_PROGRESS here.
+        # DIGITAL → starts when the escrow is HELD (payments/initiate + verify).
+        # COD → starts when the transporter confirms (confirm-start).
+        job.status = TransportJob.Status.MATCHED
         job.save()
 
-        # --- Handle payment ---
-        escrow = None
-        if payment_method == 'DIGITAL':
-            try:
-                escrow = create_escrow_on_booking(job=job, offer=offer)
-            except ValueError:
-                escrow = None
+        # --- Booking contract (freezes price, rate, payment method) ---
+        from payments.models import Booking
+        from payments.services import get_commission_rate
+        Booking.objects.get_or_create(
+            job=job,
+            defaults={
+                'accepted_offer': offer,
+                'final_price': offer.total_price,
+                'commission_rate': get_commission_rate(job.job_type),
+                'payment_method': payment_method,
+                'cod_allowed': offer.total_price <= COD_MAX_TND,
+            }
+        )
 
         # --- Create conversation + system message ---
         try:
             from messaging.services import get_or_create_conversation, send_system_message
             get_or_create_conversation(job)
             client_name = f"{request.user.first_name} {request.user.last_name}".strip()
+            if payment_method == 'DIGITAL':
+                next_step = "💳 Prochaine étape : le client procède au paiement sécurisé pour démarrer la mission."
+            else:
+                next_step = "🤝 Prochaine étape : le transporteur confirme le démarrage (paiement en espèces à la livraison)."
             send_system_message(
                 job,
                 f"🚀 Réservation directe — Trajet retour réservé !\n"
                 f"Client : {client_name}\n"
                 f"Montant proposé : {proposed_price} TND ({payment_method})\n"
+                f"{next_step}\n"
                 f"Vous pouvez désormais échanger librement.",
                 actor=request.user
             )
@@ -160,15 +173,11 @@ class BookReturnTripView(APIView):
 
         # --- Response ---
         response_data = {
-            'message': f'Trajet retour réservé avec succès ({payment_method}). Mission en cours.',
+            'message': f'Trajet retour réservé ({payment_method}). Mission assignée — en attente de paiement.',
             'payment_method': payment_method,
             'proposed_price': str(proposed_price),
             'job': TransportJobDetailSerializer(job, context={'show_contact': True, 'request': request}).data,
             'accepted_offer': OfferDetailSerializer(offer).data,
         }
-
-        if escrow:
-            from payments.serializers import EscrowDetailSerializer
-            response_data['escrow'] = EscrowDetailSerializer(escrow).data
 
         return Response(response_data, status=status.HTTP_201_CREATED)

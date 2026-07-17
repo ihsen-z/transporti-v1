@@ -81,6 +81,134 @@ def calculate_from_net(job_type: str, price_net: Decimal) -> tuple[Decimal, Deci
     return commission, total
 
 
+@transaction.atomic
+def refund_escrow(job: TransportJob, reason: str = "") -> 'EscrowTransaction | None':
+    """
+    Refund the active escrow of a job (cancellation flows).
+
+    HELD/INITIATED → REFUNDED. RELEASED is immutable — never refundable here.
+    Returns the refunded escrow, or None if the job has no refundable escrow.
+    """
+    escrow = EscrowTransaction.objects.select_for_update().filter(
+        booking_reference=job,
+        status__in=[EscrowTransaction.Status.HELD, EscrowTransaction.Status.INITIATED],
+    ).first()
+    if not escrow:
+        return None
+
+    escrow.status = EscrowTransaction.Status.REFUNDED
+    escrow.save()
+
+    AuditLog.objects.create(
+        actor=None,
+        action='ESCROW_REFUNDED',
+        target_entity=f'EscrowTransaction:{escrow.id}',
+        changes={'old': 'HELD', 'new': 'REFUNDED'},
+        reason=reason or f'Escrow refunded for job {job.id}',
+    )
+    logger.info(f"ESCROW_REFUNDED: escrow_id={escrow.id}, job_id={job.id}, reason={reason}")
+
+    # Notify the client (best effort)
+    try:
+        from notifications.services import notify_escrow_refunded
+        notify_escrow_refunded(escrow)
+    except Exception:
+        pass
+
+    return escrow
+
+
+@transaction.atomic
+def activate_job_on_payment(escrow: EscrowTransaction) -> bool:
+    """
+    D3 (escrow strict): once the escrow is HELD, move the job MATCHED → IN_PROGRESS.
+
+    Returns True if the transition happened.
+    """
+    job = TransportJob.objects.select_for_update().get(id=escrow.booking_reference_id)
+    if job.status != TransportJob.Status.MATCHED:
+        return False
+
+    job.status = TransportJob.Status.IN_PROGRESS
+    job.save()
+    logger.info(f"JOB_ACTIVATED_ON_PAYMENT: job_id={job.id}, escrow_id={escrow.id}")
+
+    # System message + notifications (best effort)
+    try:
+        from messaging.services import get_or_create_conversation, send_system_message
+        get_or_create_conversation(job)
+        send_system_message(
+            job,
+            "💳 Paiement sécurisé reçu — la mission peut démarrer.\n"
+            "Le montant est séquestré et sera libéré après confirmation de la livraison.",
+            actor=None,
+        )
+    except Exception:
+        pass
+
+    try:
+        from notifications.services import notify
+        accepted = job.offers.filter(status='ACCEPTED').select_related('transporter').first()
+        if accepted:
+            notify(
+                user=accepted.transporter,
+                notification_type='ESCROW_HELD',
+                title='Paiement sécurisé — mission démarrée',
+                message=f'Le client a payé. La mission #{job.id} est maintenant en cours.',
+                metadata={'job_id': job.id},
+            )
+    except Exception:
+        pass
+
+    return True
+
+
+def get_wallet_summary(transporter) -> dict:
+    """
+    Transporter wallet figures (DICTIONNAIRE_KPI K10/K11) — single source of truth.
+
+    - released_net: Σ price_net of the transporter's ACCEPTED offers whose job
+      has a RELEASED escrow (money actually earned through the platform)
+    - pending_net: same but escrow still HELD (delivered/being delivered,
+      awaiting confirmation or auto-release)
+    - cod_debt: Σ unsettled CommissionLedger (commission owed on cash jobs)
+    - withdrawals_total: Σ non-rejected withdrawal requests
+    - available: released_net − withdrawals_total − cod_debt (compensation)
+    """
+    from django.db.models import Sum, F
+    from .models import WithdrawalRequest
+
+    accepted = Offer.objects.filter(transporter=transporter, status='ACCEPTED')
+
+    released_net = accepted.filter(
+        job__escrow_transactions__status=EscrowTransaction.Status.RELEASED
+    ).aggregate(total=Sum('price_net'))['total'] or Decimal('0')
+
+    pending_net = accepted.filter(
+        job__escrow_transactions__status=EscrowTransaction.Status.HELD
+    ).aggregate(total=Sum('price_net'))['total'] or Decimal('0')
+
+    cod_debt = CommissionLedger.objects.filter(
+        transporter=transporter, is_settled=False
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    withdrawals_total = WithdrawalRequest.objects.filter(
+        transporter=transporter
+    ).exclude(status=WithdrawalRequest.Status.REJECTED).aggregate(
+        total=Sum('amount')
+    )['total'] or Decimal('0')
+
+    available = released_net - withdrawals_total - cod_debt
+
+    return {
+        'released_net': released_net,
+        'pending_net': pending_net,
+        'cod_debt': cod_debt,
+        'withdrawals_total': withdrawals_total,
+        'available': available,
+    }
+
+
 def derive_net_from_total(job_type: str, total_price: Decimal) -> tuple[Decimal, Decimal]:
     """
     Inverse of the net-guaranteed model, for flows where the CLIENT-facing

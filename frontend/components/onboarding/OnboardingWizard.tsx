@@ -107,16 +107,21 @@ export default function OnboardingWizard() {
   const [currentStep, setCurrentStep] = useState(0);
 
   const storageKey = `transporti_onboarding_${user?.id}`;
+  const stepKey = `${storageKey}_step`;
 
-  // Check if already dismissed
+  // Check if already dismissed + restore current step across sessions (B3)
   useEffect(() => {
     if (typeof window !== "undefined") {
       const wasDismissed = localStorage.getItem(storageKey);
       if (wasDismissed === "true") {
         setDismissed(true);
       }
+      const savedStep = parseInt(localStorage.getItem(stepKey) || "0", 10);
+      if (!Number.isNaN(savedStep) && savedStep > 0) {
+        setCurrentStep(savedStep);
+      }
     }
-  }, [storageKey]);
+  }, [storageKey, stepKey]);
 
   const handleDismiss = () => {
     setDismissed(true);
@@ -125,11 +130,23 @@ export default function OnboardingWizard() {
     }
   };
 
+  const goToStep = (i: number) => {
+    setCurrentStep(i);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(stepKey, String(i));
+    }
+  };
+
   if (dismissed || !user) return null;
 
   const isTransporter = user.role?.toUpperCase() === "TRANSPORTER";
-  const steps = isTransporter ? TRANSPORTER_STEPS : CLIENT_STEPS;
-  const step = steps[currentStep];
+  // B3 (audit M2): never ask a VERIFIED account to verify its identity.
+  const allSteps = isTransporter ? TRANSPORTER_STEPS : CLIENT_STEPS;
+  const steps = allSteps.filter(
+    (s) => s.id !== "verify" || user.is_verified !== true,
+  );
+  if (steps.length === 0) return null;
+  const step = steps[Math.min(currentStep, steps.length - 1)];
   const StepIcon = step.icon;
 
   return (
@@ -143,7 +160,8 @@ export default function OnboardingWizard() {
           </div>
           <div>
             <h2 className="text-lg font-bold">
-              Bienvenue sur Transporti{user.first_name ? `, ${user.first_name}` : ""} !
+              Bienvenue sur Transporti
+              {user.first_name ? `, ${user.first_name}` : ""} !
             </h2>
             <p className="text-white/70 text-xs">
               {isTransporter
@@ -166,7 +184,7 @@ export default function OnboardingWizard() {
         {steps.map((s, i) => (
           <button
             key={s.id}
-            onClick={() => setCurrentStep(i)}
+            onClick={() => goToStep(i)}
             className={`flex-1 h-1.5 rounded-full transition-all ${
               i === currentStep
                 ? "bg-brand-600"
@@ -208,7 +226,7 @@ export default function OnboardingWizard() {
               </Link>
               {currentStep < steps.length - 1 && (
                 <button
-                  onClick={() => setCurrentStep(currentStep + 1)}
+                  onClick={() => goToStep(currentStep + 1)}
                   className="text-sm text-neutral-500 hover:text-brand-600 font-medium flex items-center gap-1"
                 >
                   Passer

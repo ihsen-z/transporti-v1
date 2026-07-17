@@ -128,7 +128,7 @@ class OfferAcceptView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # === ATOMIC STATE TRANSITIONS ===
+        # === ATOMIC STATE TRANSITIONS (D3 — escrow strict) ===
 
         # 1. Accept this offer
         offer.status = Offer.Status.ACCEPTED
@@ -139,50 +139,57 @@ class OfferAcceptView(generics.GenericAPIView):
             status=Offer.Status.REJECTED
         )
 
-        # 3. Update job status
-        job.status = TransportJob.Status.IN_PROGRESS
+        # 3. Job becomes MATCHED — IN_PROGRESS only happens once the payment
+        #    is secured (escrow HELD) or the transporter confirms a COD start.
+        job.status = TransportJob.Status.MATCHED
         job.save()
 
-        # 4. Handle payment
-        escrow = None
-        if payment_method == 'DIGITAL':
-            from payments.services import create_escrow_on_booking
-            try:
-                escrow = create_escrow_on_booking(job=job, offer=offer)
-            except ValueError as e:
-                # Log error but don't fail the booking
-                escrow = None
+        # 4. Create the Booking contract (freezes price, rate and payment method)
+        from payments.models import Booking
+        from payments.services import get_commission_rate
+        COD_MAX = 300
+        Booking.objects.get_or_create(
+            job=job,
+            defaults={
+                'accepted_offer': offer,
+                'final_price': offer.total_price,
+                'commission_rate': get_commission_rate(job.job_type),
+                'payment_method': payment_method,
+                'cod_allowed': offer.total_price <= COD_MAX,
+            }
+        )
 
         # 5. Create conversation + system message (FIX #1 + #6 + P2-02)
         try:
             from messaging.services import get_or_create_conversation, send_system_message
             get_or_create_conversation(job)
             transporter_name = f"{offer.transporter.first_name} {offer.transporter.last_name}".strip()
-            payment_label = "Paiement digital (escrow)" if payment_method == "DIGITAL" else "Paiement à la livraison (COD)"
+            if payment_method == 'DIGITAL':
+                next_step = "💳 Prochaine étape : le client procède au paiement sécurisé pour démarrer la mission."
+                payment_label = "Paiement digital (escrow)"
+            else:
+                next_step = "🤝 Prochaine étape : le transporteur confirme le démarrage (paiement en espèces à la livraison)."
+                payment_label = "Paiement à la livraison (COD)"
             send_system_message(
                 job,
-                f"✅ Offre acceptée — La mission est maintenant en cours.\n"
+                f"✅ Offre acceptée — Mission assignée.\n"
                 f"📦 Transporteur : {transporter_name}\n"
                 f"💰 Montant : {offer.total_price} TND\n"
                 f"💳 Mode de paiement : {payment_label}\n"
+                f"{next_step}\n"
                 f"📄 Réservation : /booking/{job.id}\n"
-                f"💬 Vous pouvez désormais échanger librement.\n"
-                f"⚠️ En cas de problème, ouvrez un litige depuis la page mission.",
+                f"💬 Vous pouvez désormais échanger librement.",
                 actor=request.user
             )
         except Exception:
             pass  # Conversation failure must never block booking
 
         response_data = {
-            'message': f'Offer accepted successfully ({payment_method}). Job is now IN_PROGRESS.',
+            'message': f'Offer accepted ({payment_method}). Job is now MATCHED — awaiting payment setup.',
             'payment_method': payment_method,
             'job': TransportJobDetailSerializer(job, context={'show_contact': True, 'request': request}).data,
             'accepted_offer': OfferDetailSerializer(offer).data
         }
-
-        if escrow:
-            from payments.serializers import EscrowDetailSerializer
-            response_data['escrow'] = EscrowDetailSerializer(escrow).data
 
         # Send email notification to transporter
         try:

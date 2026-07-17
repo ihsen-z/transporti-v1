@@ -1,10 +1,26 @@
 # PIVOT STRATÉGIQUE — « RETURN TRIPS FIRST »
 ## Transporti V1 · Réévaluation produit et roadmap régénérée
 
-**Date :** 14 juillet 2026
+**Date :** 14 juillet 2026 · **Révision 1.1 :** 17 juillet 2026 (alignement sur le document fondateur)
 **Nature :** revue stratégique — aucun code dans ce document
+**Document de référence supérieur :** `VISION_PRODUIT_FONDATRICE.md` (v1.0) — ce pivot en est la déclinaison opérationnelle.
 **Documents liés :** Audit (`AUDIT_PARCOURS_TRANSPORTEUR_2026-07-14.md`) · Plan de remédiation (`PLAN_EXECUTION_REMEDIATION_TRANSPORTEUR_2026-07-14.md`) · Décisions (`DOSSIER_DECISIONS_SPRINT0.md`) · KPI (`DICTIONNAIRE_KPI.md`) · Recette (`RECETTE_PARCOURS_TRANSPORTEUR.md`)
-**Base factuelle :** état réel du code vérifié (audit GUI 13–14/07, investigations Sprint 0, Sprint 1 livré, vérifications complémentaires du 14/07 sur le module trajets retour).
+**Base factuelle :** état réel du code vérifié (audit GUI 13–14/07, investigations Sprint 0, Sprints 1-2 livrés, vérifications complémentaires sur le module trajets retour).
+
+---
+
+# 0. ALIGNEMENT SUR LE DOCUMENT FONDATEUR (révision 1.1)
+
+La vision officielle v1.0 **confirme intégralement** l'orientation de ce pivot (Principe n°1 : « les retours à vide constituent le cœur du modèle économique ») et y ajoute quatre exigences que cette révision intègre :
+
+| Apport de la vision | Conséquence opérationnelle | Où |
+|---|---|---|
+| **North Star Metric : « kilomètres de retour à vide transformés en kilomètres chargés »** (remplace le « taux de remplissage » comme NSM ; celui-ci reste un KPI de liquidité) | Instrumenter la **distance** : calcul haversine × 1,25 stocké sur chaque mission à la création (champ additif `distance_km`), agrégé sur les missions issues de trajets retour menées à terme et payées | Sprint 3 (instrumentation), Sprint 5 (agrégats) ; `DICTIONNAIRE_KPI.md` v2 (K-NSM) |
+| **Catégorie KPI « Impact »** : km à vide économisés, tonnes CO₂ évitées, revenus additionnels transporteurs | Facteur d'émission paramétrable (kg CO₂/km par type de véhicule) ; bloc Impact sur le dashboard admin ; base des futurs rapports publics | Sprint 5 (calcul + admin), Sprint 8 (restitution) ; K-I1…K-I3 |
+| **Corridor prioritaire nommé : A1 (Tunis – Sousse – Sfax – Gabès)** | Le pilote cible le corridor A1 entier (4 gouvernorats, paires orientées) au lieu des deux paires initialement proposées | §8 Phase C (mis à jour) |
+| **Principes Produit = porte de gouvernance** : toute fonctionnalité doit améliorer ≥ 1 des 6 questions officielles (retours publiés, matching, remplissage, temps de mise en relation, confiance, simplicité) | Checklist obligatoire inscrite au registre de décisions ; chaque lot des Sprints 3+ est annoté du principe qu'il sert | `DOSSIER_DECISIONS_SPRINT0.md` (gouvernance) ; §7.2 |
+
+Confirmations sans changement de périmètre : personas (transporteur principal, particulier secondaire, **B2B = expansion** → classement « Future » du §6 validé par la vision) ; Principe n°4 (liquidité) déjà traité comme risque n°1 (§9) ; Principe n°3 (confiance) déjà porté par les rails financiers livrés aux Sprints 1-2 ; positionnement anti-« petites annonces » cohérent avec la demande structurée (D5) et le paiement sécurisé (D3) ; Principe n°2 (valeur avant volume) cohérent avec la séquence « offre d'abord, corridor par corridor ».
 
 ---
 
@@ -46,7 +62,7 @@ Transporti cesse d'être « une marketplace de fret généraliste avec une optio
 | **Notifications** | 🟠 Amplifié | Le chantier WS-E (déjà P0 — les notifications entrantes sont muettes) gagne deux événements pivot-critiques : « demande reçue sur votre trajet » (transporteur) et « nouveau trajet sur votre corridor » (client, sur abonnement). |
 | **Recherche** | 🟠 Moyen | La recherche client de trajets existe (page dédiée). À enrichir : fenêtre de dates, capacité minimale, tri par date de départ, et surtout **intégration au funnel** (elle est aujourd'hui une page isolée, pas une étape du parcours). |
 | **Moteur de recommandation** | 🟡 Nouveau, minimal | Pas de moteur au sens ML. V1 = requête de matching symétrique : à la création d'une demande → trajets compatibles ; à la publication d'un trajet → demandes classiques ouvertes compatibles (monétisation immédiate du retour). |
-| **Analytics / KPIs** | 🟠 Révision | Nouveaux KPI North Star : **taux de remplissage des retours** (trajets réservés / publiés), volume de trajets actifs par corridor, délai médian publication→réservation, économie client vs demande classique, GMV retours vs fret classique. Le `DICTIONNAIRE_KPI.md` sera versionné v2 (K13–K17). L'endpoint stats unique (WS-B B2, Sprint 2) reste la fondation — spécification étendue, pas remplacée. |
+| **Analytics / KPIs** | 🟠 Révision | **NSM officielle (vision v1.0) : kilomètres de retour à vide transformés en kilomètres chargés** — impose de stocker `distance_km` par mission (haversine × 1,25, Sprint 3). KPI stratégiques rattachés aux 5 catégories officielles : Marketplace (retours publiés, missions créées, taux de matching, délai avant 1er matching, conversion mission→paiement), Liquidité (retours actifs/corridor, remplissage, couverture), Business (revenu/mission, commission moyenne — CAC/LTV hors produit, pilotés côté marketing), Qualité (litiges, annulations, NPS), **Impact (km à vide économisés, CO₂ évitées, revenus additionnels)**. `DICTIONNAIRE_KPI.md` v2. L'endpoint stats unique (B2, livré Sprint 2) reste la fondation. |
 
 ---
 
@@ -174,28 +190,30 @@ Transporti cesse d'être « une marketplace de fret généraliste avec une optio
 
 ## 7.2 Nouvelle roadmap (19 semaines, S = semaine depuis le 20/07/2026)
 
+*(Chaque lot des Sprints 3+ est annoté **[P1…P6]** = question du « Principe Produit » officiel qu'il sert : P1 retours publiés · P2 matching · P3 remplissage · P4 temps de mise en relation · P5 confiance · P6 simplicité.)*
+
 | Phase | Sprints | Contenu | Jalon de sortie |
 |---|---|---|---|
-| **Phase 1 — Argent & vérité** (inchangée) | Sprint 2 (S2-S3) | WS-A A2 portefeuille · A3 verrou paiement (couvre AUSSI book-return) · WS-B B2 stats unifiées (+spéc KPI pivot) · B3 onboarding conditionnel | Porte 1 : C1–C8 fermés ; zéro écart financier |
-| **Phase 2 — Cœur du pivot** | Sprint 3 (S4-S5) | WS-F étendu : écran trajet owner dédié, édition/suppression, expiration auto · modèle `ReturnTripRequest` (D5) + écrans demandes reçues/envoyées · WS-E E1 recentré (demande reçue/acceptée/refusée, message) + E3 polling assaini · C3'/C4' erreurs traduites · D1' états uniques | Une demande structurée aboutit de bout en bout avec notifications |
-| | Sprint 4 (S6-S7) | Funnel client inversé (recherche d'abord, repli pré-rempli, alerte corridor v0 = simple enregistrement) · matching v1 (gouvernorats + fenêtre dates) à la recherche ET à la création de demande · landing + navigation repositionnées (les 2 rôles) · vocabulaire unifié Trajet/Demande | **Porte pivot** : un client trouve, demande et réserve un trajet retour sans toucher au flux classique ; un client sans trajet compatible publie une demande en 1 clic |
-| | Sprint 5 (S8-S9) | Alertes corridor actives (notification à la publication d'un trajet compatible) · matching inversé (trajets publiés ← demandes classiques ouvertes) · capacité structurée + pré-remplissage véhicule (H2) · KPI pivot livrés (dashboard transporteur/admin) · G2 distance sur les cartes trajet | Boucle de liquidité complète : l'offre trouve la demande dans les deux sens |
+| **Phase 1 — Argent & vérité** | Sprint 2 (S2-S3) — **✅ livré le 17/07** | WS-A A2 portefeuille · A3 verrou paiement (couvre AUSSI book-return) · WS-B B2 stats unifiées · B3 onboarding conditionnel | Porte 1 atteinte : 67/67 tests, recette REC-A2/A3/B1/B4 passée |
+| **Phase 2 — Cœur du pivot** | Sprint 3 (S4-S5) | WS-F étendu : écran trajet owner dédié, édition/suppression, expiration auto **[P1,P6]** · modèle `ReturnTripRequest` (D5, commission 8 % D13) + écrans demandes reçues/envoyées **[P2,P5]** · WS-E E1 recentré (demande reçue/acceptée/refusée, message) **[P4]** + E3 polling assaini · C3'/C4' erreurs traduites **[P5]** · D1' états uniques **[P5]** · **Instrumentation NSM : champ `distance_km` (haversine × 1,25) calculé et stocké à la création de chaque mission/trajet** **[NSM]** | Une demande structurée aboutit de bout en bout avec notifications ; chaque nouvelle mission porte sa distance |
+| | Sprint 4 (S6-S7) | Funnel client inversé (recherche d'abord, repli pré-rempli, alerte corridor v0 = enregistrement) **[P2,P4,P6]** · matching v1 (gouvernorats + fenêtre dates) à la recherche ET à la création de demande **[P2]** · landing + navigation repositionnées, messages alignés sur la signature officielle (« Gagnez plus avec les trajets que vous effectuez déjà » / « Trouvez un transporteur fiable au meilleur prix ») **[P1,P6]** · vocabulaire unifié Trajet/Demande **[P6]** | **Porte pivot** : un client trouve, demande et réserve un trajet retour sans toucher au flux classique ; un client sans trajet compatible publie une demande en 1 clic |
+| | Sprint 5 (S8-S9) | Alertes corridor actives (D14 : clients) **[P4]** · matching inversé (trajets publiés ← demandes classiques ouvertes) **[P2,P3]** · capacité structurée + pré-remplissage véhicule (H2) **[P2,P6]** · **KPI stratégiques livrés : NSM (km transformés), catégories Marketplace/Liquidité/Impact sur dashboard admin, remplissage par corridor A1** **[NSM]** · G2 distance sur les cartes trajet **[P4]** | Boucle de liquidité complète ; la NSM est mesurable en production |
 | **Phase 3 — Exécution pro** (ex-P1) | Sprint 6 (S10-S11) | D2' étapes mission · D3' preuve de livraison · D4' annulation encadrée · WS-H H1 documents · L4 audit des zones non couvertes (inscription, Konnect, litige) | Mission de bout en bout avec POD et paiement libéré |
 | **Phase 4 — Finitions** | Sprint 7 (S12-S13) | WS-J i18n AR complète (y compris nouveaux écrans pivot), dark mode · WS-I messagerie (lien direct, PJ — utile à la négociation, horodatages) | Parcours pivot complet en AR |
 | | Sprint 8 (S14-S15) | WS-K contenus réécrits pivot (aide, FAQ transporteur ET client) · K3 « Mon activité » orienté remplissage · J3/J4 finitions · L3 volumétrie (500 trajets) | Produit cohérent, une seule identité |
 | **Contre-audit & pilote** | S16-S17 | L5 : rejeu audit d'origine + bloc REC-P (recette pivot) ; re-scoring | ≥ 75/100, zéro P0/P1 |
 | | S18-S19 | **Pilote corridor** (§8, phase 3) | Critères §8 |
 
-**Charge** : ~200 j/h restants du plan initial − ~24 j/h absorbés/reportés (G1 partiel, G2 partiel, K3 reformulé) + ~38 j/h nouveaux (funnel 10, matching v1 6, ReturnTripRequest 8, alertes corridor 6, landing/nav 4, KPI pivot 4) ≈ **+14 j/h nets**, soit +1 semaine avec la même équipe. La réserve de 20 % du plan initial reste applicable.
+**Charge** : ~200 j/h restants du plan initial − ~24 j/h absorbés/reportés (G1 partiel, G2 partiel, K3 reformulé) + ~38 j/h nouveaux (funnel 10, matching v1 6, ReturnTripRequest 8, alertes corridor 6, landing/nav 4, KPI pivot 4) + **~6 j/h vision v1.1** (instrumentation `distance_km` 2, agrégats NSM/Impact + facteur CO₂ 4) ≈ **+20 j/h nets**, soit ~+1 semaine avec la même équipe. La réserve de 20 % du plan initial reste applicable.
 
-## 7.3 Nouvelles décisions à arbitrer (Sprint 2, avant le Sprint 3)
+## 7.3 Nouvelles décisions (arbitrées le 17/07/2026)
 
-| # | Décision | Options | Recommandation |
-|---|---|---|---|
-| D11 | Réservation instantanée des trajets | a) Supprimée b) Option par trajet, désactivée par défaut c) Généralisée | **b** — préserve le code `book-return`, donne le contrôle au transporteur, cohérent D3 |
-| D12 | Capacité d'un trajet | a) Unitaire (1 réservation ferme le trajet) b) Décrémentable (plusieurs demandes jusqu'à épuisement) | **a** au pilote (KISS), b en Future |
-| D13 | Taux de commission des trajets retour | a) Mêmes taux 12/15 % b) Taux réduit incitatif (ex. 8 %) | À trancher métier — impact direct sur l'amorçage de l'offre ; le moteur (D2) le supporte sans code nouveau |
-| D14 | Alerte corridor | a) Clients seulement b) Aussi transporteurs (corridors où la demande abonde) | **a** au pilote, b avec le matching inversé Sprint 5 |
+| # | Décision | Arbitrage |
+|---|---|---|
+| D11 | Réservation instantanée des trajets | **Option par trajet, désactivée par défaut** — l'instantané devient une demande auto-acceptée par consentement préalable du transporteur |
+| D12 | Capacité d'un trajet | **Unitaire** au pilote (une réservation acceptée ferme le trajet) ; décrémentable = Future |
+| D13 | Taux de commission des trajets retour | **8 % incitatif** (amorçage de l'offre — Principe n°4 liquidité), révisable post-pilote ; entrée `RETURN_TRIP` dans le barème D2 |
+| D14 | Alerte corridor | **Clients d'abord** ; transporteurs couverts par le matching inversé (Sprint 5) |
 
 ---
 
@@ -207,7 +225,7 @@ Transporti cesse d'être « une marketplace de fret généraliste avec une optio
 
 **Phase B — Bascule de surface (Sprint 4), derrière un interrupteur produit.** Le funnel inversé, la landing et la navigation sont livrés derrière un flag de configuration (`RETURN_TRIPS_FIRST`) activable par environnement : recette d'abord, production ensuite, retour arrière en une variable si le funnel décime la conversion. Les URL existantes restent valides (redirections douces, pas de 404).
 
-**Phase C — Amorçage de l'offre avant la demande (S16+).** Séquence du pilote corridor : (1) recruter 15-20 transporteurs sur 2 corridors denses (Tunis↔Sfax, Tunis↔Sousse) et les faire publier leurs retours réels pendant 2 semaines — objectif : ≥ 30 trajets actifs en permanence ; (2) seulement ensuite, ouvrir le funnel client sur ces corridors ; (3) élargir corridor par corridor. Critères de succès : taux de remplissage ≥ 25 %, délai médian publication→première demande < 24 h, zéro réclamation financière, NPS transporteur ≥ 4/5.
+**Phase C — Amorçage de l'offre avant la demande (S16+), sur le corridor A1 (objectif à 3 ans de la vision).** Séquence du pilote : (1) recruter 20-25 transporteurs opérant sur l'axe **A1 : Tunis – Sousse – Sfax – Gabès** (toutes paires orientées entre ces 4 gouvernorats, l'aller-retour Tunis↔Sfax étant le sous-corridor le plus dense) et les faire publier leurs retours réels pendant 2 semaines — objectif : ≥ 40 trajets actifs en permanence sur l'axe ; (2) seulement ensuite, ouvrir le funnel client sur ces gouvernorats ; (3) élargir corridor par corridor (Nabeul, Bizerte, Kairouan…). Critères de succès : taux de remplissage ≥ 25 % ; délai médian publication→première demande < 24 h ; **≥ 5 000 km à vide transformés pendant le pilote (première mesure de la NSM)** ; zéro réclamation financière ; NPS transporteur ≥ 4/5.
 
 **Garde-fous de cohérence produit** (exigence « un seul produit ») : une seule barre de navigation par rôle ; « Trouver un trajet » et « Publier une demande » sont deux étapes du même funnel, jamais deux marketplaces ; un seul modèle de conversation, de paiement, d'avis et de litige pour les deux flux ; un lexique unique documenté (Trajet/Demande) appliqué par l'UX writer sur FR et derja.
 

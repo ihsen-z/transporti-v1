@@ -205,6 +205,12 @@ export default function MyOffersPage() {
   );
   const [withdrawing, setWithdrawing] = useState(false);
 
+  // B2 — canonical transporter KPIs (single source of truth)
+  const [kpis, setKpis] = useState<{
+    active_offers: number;
+    potential_earnings: number;
+  } | null>(null);
+
   const role = user?.role?.toUpperCase();
 
   /* ── Fetch offers from API ─────────────────────────────────── */
@@ -217,6 +223,13 @@ export default function MyOffersPage() {
         );
         const list = Array.isArray(data) ? data : (data.results ?? []);
         setOffers(list.map(mapApiOffer));
+        // KPIs from the stats endpoint (non-blocking)
+        apiClient
+          .get<{ active_offers: number; potential_earnings: number }>(
+            "/api/transporter/stats/",
+          )
+          .then(setKpis)
+          .catch(() => setKpis(null));
       } catch (e: unknown) {
         console.error("Failed to fetch offers:", e);
         if (!silent) {
@@ -336,6 +349,8 @@ export default function MyOffersPage() {
   // Stats
   const pendingCount = offers.filter((o) => o.status === "PENDING").length;
   const acceptedCount = offers.filter((o) => o.status === "ACCEPTED").length;
+  // B2 — canonical KPIs (K2/K5) served by the stats endpoint; local list
+  // counts stay only for the tab badges.
   const decidedOffers = offers.filter(
     (o) => o.status !== "PENDING" && o.status !== "WITHDRAWN",
   );
@@ -379,9 +394,7 @@ export default function MyOffersPage() {
           <h1 className="text-2xl font-bold text-neutral-900 mb-2">
             {t.offers.title}
           </h1>
-          <p className="text-neutral-500 max-w-2xl">
-            {t.offers.subtitle}
-          </p>
+          <p className="text-neutral-500 max-w-2xl">{t.offers.subtitle}</p>
         </div>
         <button
           onClick={() => fetchOffers()}
@@ -400,7 +413,7 @@ export default function MyOffersPage() {
         <StatCard
           icon={TrendingUp}
           label={t.offers.statsActive}
-          value={String(offers.length)}
+          value={String(kpis?.active_offers ?? pendingCount + acceptedCount)}
           iconColor="bg-blue-50 text-blue-600"
           valueColor="text-blue-700"
         />
@@ -415,7 +428,7 @@ export default function MyOffersPage() {
         <StatCard
           icon={DollarSign}
           label={t.offers.statsEarnings}
-          value={`${formatTND(potentialEarnings)}`}
+          value={`${formatTND(kpis?.potential_earnings ?? potentialEarnings)}`}
           iconColor="bg-amber-50 text-amber-600"
           valueColor="text-amber-700"
         />

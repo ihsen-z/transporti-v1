@@ -200,3 +200,16 @@ class CrossMetricsView(APIView):
             })
 
         return Response({'error': 'Role not supported.'}, status=status.HTTP_400_BAD_REQUEST)
+
+
+class TransporterStatsView(APIView):
+    """
+    GET /api/transporter/stats/
+    Canonical transporter KPIs (Sprint 2 — WS-B B2).
+    Formulas: docs/DICTIONNAIRE_KPI.md, implemented once in logistics.stats.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    def get(self, request):
+        from logistics.stats import get_transporter_stats
+        return Response(get_transporter_stats(request.user))

@@ -3,13 +3,14 @@ from .views import (
     JobCreateView, JobMyListView, JobPublicListView, JobDetailView, JobOffersView,
     OfferCreateView, OfferMyListView, OfferAcceptView,
     JobUpdateView, JobPublishView, JobCancelView, JobCompleteView, TransporterCancelView,
+    JobConfirmStartView,
     OfferWithdrawView, TransporterProfileView, TransporterProfileEditView,
     TransporterJobListView, ReturnTripCreateView, PriceEstimateView,
     BookReturnTripView,
     ClientProfileView, ClientProfileEditView,
     UserRoleView,
     FavoriteToggleView, FavoriteListView,
-    CrossMetricsView,
+    CrossMetricsView, TransporterStatsView,
     CounterOfferCreateView, CounterOfferRespondView,
 )
 from .upload_views import PhotoUploadView
@@ -32,6 +33,7 @@ urlpatterns = [
     path('jobs/<int:job_id>/publish/', JobPublishView.as_view(), name='job_publish'),
     path('jobs/<int:job_id>/cancel/', JobCancelView.as_view(), name='job_cancel'),
     path('jobs/<int:job_id>/transporter-cancel/', TransporterCancelView.as_view(), name='transporter_cancel'),
+    path('jobs/<int:job_id>/confirm-start/', JobConfirmStartView.as_view(), name='job_confirm_start'),
     path('jobs/<int:job_id>/complete/', JobCompleteView.as_view(), name='job_complete'),
     path('jobs/<int:job_id>/book-return/', BookReturnTripView.as_view(), name='book_return_trip'),
     path('jobs/<int:job_id>/booking/', JobBookingDetailView.as_view(), name='job_booking_detail'),
@@ -60,6 +62,9 @@ urlpatterns = [
 
     # Cross Metrics (P2-01)
     path('metrics/dashboard/', CrossMetricsView.as_view(), name='cross_metrics'),
+
+    # Canonical transporter KPIs (Sprint 2 — B2)
+    path('transporter/stats/', TransporterStatsView.as_view(), name='transporter_stats'),
 
     # Counter-Offers (P2-05)
     path('offers/<int:offer_id>/counter/', CounterOfferCreateView.as_view(), name='counter_offer_create'),

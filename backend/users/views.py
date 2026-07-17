@@ -279,42 +279,16 @@ class DashboardStatsView(APIView):
             })
 
         elif user.role == 'TRANSPORTER':
-            from logistics.models import TransportJob, Offer
-            from django.db.models import Sum
+            from logistics.models import TransportJob
+            # B2 — single source of truth: every figure comes from
+            # logistics.stats (formulas in docs/DICTIONNAIRE_KPI.md).
+            from logistics.stats import get_transporter_stats
+            stats = get_transporter_stats(user)
 
-            my_offers = Offer.objects.filter(transporter=user)
-            accepted_offers = my_offers.filter(status='ACCEPTED')
             assigned_jobs = TransportJob.objects.filter(
                 offers__transporter=user,
                 offers__status='ACCEPTED'
             ).distinct()
-
-            available_count = TransportJob.objects.filter(
-                status='PUBLISHED', is_return_trip=False
-            ).count()
-            active_offers = my_offers.filter(status__in=['PENDING', 'ACCEPTED']).count()
-            completed = assigned_jobs.filter(status='COMPLETED').count()
-            total_jobs = assigned_jobs.count() or 1
-            completion_rate = round((completed / total_jobs) * 100, 1) if total_jobs else 0
-
-            total_earnings = accepted_offers.aggregate(
-                total=Sum('price_net')
-            )['total'] or 0
-
-            # Verification status
-            verification_status = 'UNVERIFIED'
-            try:
-                verification_status = user.trust_profile.verification_status
-            except Exception:
-                pass
-
-            # Average rating
-            from reviews.models import Review
-            from django.db.models import Avg
-            avg_rating = Review.objects.filter(
-                target=user
-            ).aggregate(avg=Avg('rating'))['avg'] or 0
-
             recent_missions = list(assigned_jobs.order_by('-created_at')[:5].values(
                 'id', 'job_type', 'status', 'pickup_address',
                 'dropoff_address', 'scheduled_time'
@@ -323,13 +297,18 @@ class DashboardStatsView(APIView):
             return Response({
                 'role': 'TRANSPORTER',
                 'stats': {
-                    'available_missions': available_count,
-                    'active_offers': active_offers,
-                    'completed_jobs': completed,
-                    'total_earnings': float(total_earnings),
-                    'verification_status': verification_status,
-                    'average_rating': round(float(avg_rating), 1),
-                    'completion_rate': completion_rate,
+                    'available_missions': stats['available_missions'],
+                    'active_offers': stats['active_offers'],
+                    'completed_jobs': stats['completed_missions'],
+                    # K4: money actually secured (escrow released), no longer
+                    # the sum of every accepted offer.
+                    'total_earnings': stats['earnings_confirmed'],
+                    'earnings_pending': stats['earnings_pending'],
+                    'wallet_available': stats['wallet_available'],
+                    'verification_status': stats['verification_status'],
+                    'average_rating': stats['average_rating'],
+                    'completion_rate': stats['completion_rate'],
+                    'profile_completion': stats['profile_completion'],
                 },
                 'recent_jobs': recent_missions,
             })

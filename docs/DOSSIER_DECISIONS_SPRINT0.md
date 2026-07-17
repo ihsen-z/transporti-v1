@@ -184,11 +184,27 @@
 | T3 | Stockage média | S3-compatible (R2/Supabase) activé avant tout lot produisant des fichiers | 14/07/2026 | Défaut — modifiable sur objection |
 | T4 | Distance/durée | Haversine × 1,25 + vitesse paramétrable ; routing réel post-pilote | 14/07/2026 | Défaut — modifiable sur objection |
 | T5 | Environnement recette | Docker complet Postgres, seed enrichi, runserver local interdit | 14/07/2026 | Défaut — modifiable sur objection |
-| D11 | Réservation instantanée des trajets retour | ⬜ En attente — reco : option par trajet, désactivée par défaut (pivot §7.3) | — | À arbitrer Sprint 2 |
-| D12 | Capacité d'un trajet (unitaire vs décrémentable) | ⬜ En attente — reco : unitaire au pilote | — | À arbitrer Sprint 2 |
-| D13 | Taux de commission des trajets retour (12/15 % vs taux incitatif) | ⬜ En attente — arbitrage métier pur | — | À arbitrer Sprint 2 |
-| D14 | Alertes corridor (clients seuls vs deux rôles) | ⬜ En attente — reco : clients au pilote | — | À arbitrer Sprint 2 |
+| D11 | Réservation instantanée des trajets retour | **Option par trajet, désactivée par défaut** — l'instantané devient une demande auto-acceptée par consentement préalable du transporteur | 17/07/2026 | Métier (arbitrage explicite) |
+| D12 | Capacité d'un trajet | **Unitaire** — une réservation acceptée ferme le trajet (retiré de la recherche) ; capacité décrémentable = Future | 17/07/2026 | Métier (arbitrage explicite) |
+| D13 | Taux de commission des trajets retour | **8 % incitatif** (amorçage de l'offre, révisable post-pilote) — nouvelle entrée `RETURN_TRIP` dans `COMMISSION_RATES`, affichée comme les autres taux (D2) | 17/07/2026 | Métier (arbitrage explicite) |
+| D14 | Alertes corridor | **Clients d'abord** au pilote ; transporteurs couverts par le matching inversé (Sprint 5) | 17/07/2026 | Métier (arbitrage explicite) |
+
+**Impact D13 :** le taux 8 % s'applique aux missions issues d'un trajet retour (`is_return_trip=True`). Implémentation Sprint 3 (WS-F) : entrée de barème + résolution du taux par `is_return_trip` avant `job_type` ; les écrans affichent « Commission 8 % (trajet retour) ».
 
 **Pivot stratégique (14/07/2026) :** le positionnement « Return Trips First » est documenté dans `docs/PIVOT_STRATEGIQUE_TRAJETS_RETOUR_2026-07-14.md`, qui régénère la roadmap (Sprints 3-5 recomposés) sans invalider D1–D10 ni les lots livrés.
+
+**Vision fondatrice v1.0 (archivée le 17/07/2026 — `docs/VISION_PRODUIT_FONDATRICE.md`) :** document de référence supérieur. Elle fixe la North Star Metric (« kilomètres à vide transformés en kilomètres chargés »), le corridor prioritaire A1 (Tunis–Sousse–Sfax–Gabès) et la catégorie KPI Impact — intégrés en révision 1.1 du pivot et v2 du dictionnaire KPI.
+
+## Porte de gouvernance — Principes Produit (vision §11, adoptée le 17/07/2026)
+
+Avant tout développement d'une nouvelle fonctionnalité, répondre à la checklist officielle. La fonctionnalité :
+1. augmente-t-elle le nombre de retours publiés ?
+2. améliore-t-elle le matching ?
+3. augmente-t-elle le taux de remplissage ?
+4. réduit-elle le temps nécessaire pour trouver une mission ?
+5. améliore-t-elle la confiance ?
+6. simplifie-t-elle l'expérience utilisateur ?
+
+**Si la réponse est non aux six questions, la fonctionnalité n'est pas développée.** La réponse est consignée dans le ticket (annotation [P1…P6], cf. roadmap pivot §7.2). Toute décision est également testée contre les principes de décision (vision §12) : valeur > volume, simplicité > complexité, confiance > croissance, rentabilité > métriques de vanité.
 
 **Note D5 :** le choix « Demande structurée » (et non le contact chat simple) implique un petit surcroît de périmètre en Phase 2 (WS-F) : modèle de demande (marchandise, prix, statut), écrans « demandes reçues » côté transporteur et « ma demande » côté client, et 2 notifications dédiées. L'estimation WS-F passe de 15 à ~19 j/h — absorbable dans la réserve de 20 % sans toucher au calendrier.

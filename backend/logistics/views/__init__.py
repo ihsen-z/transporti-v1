@@ -8,7 +8,7 @@ thematic modules. All view classes are re-exported here so importers
 from .jobs import (
     JobCreateView, JobMyListView, TransporterJobListView, JobPublicListView,
     JobDetailView, JobUpdateView, JobPublishView, TransporterCancelView,
-    JobCancelView, JobCompleteView,
+    JobCancelView, JobCompleteView, JobConfirmStartView,
 )
 from .offers import (
     JobOffersView, OfferCreateView, OfferMyListView, OfferAcceptView,
@@ -21,13 +21,14 @@ from .profiles import (
 )
 from .misc import (
     PriceEstimateView, FavoriteToggleView, FavoriteListView, CrossMetricsView,
+    TransporterStatsView,
 )
 
 __all__ = [
     # jobs
     'JobCreateView', 'JobMyListView', 'TransporterJobListView', 'JobPublicListView',
     'JobDetailView', 'JobUpdateView', 'JobPublishView', 'TransporterCancelView',
-    'JobCancelView', 'JobCompleteView',
+    'JobCancelView', 'JobCompleteView', 'JobConfirmStartView',
     # offers
     'JobOffersView', 'OfferCreateView', 'OfferMyListView', 'OfferAcceptView',
     'OfferWithdrawView', 'CounterOfferCreateView', 'CounterOfferRespondView',
@@ -38,4 +39,5 @@ __all__ = [
     'ClientProfileView', 'ClientProfileEditView', 'UserRoleView',
     # misc
     'PriceEstimateView', 'FavoriteToggleView', 'FavoriteListView', 'CrossMetricsView',
+    'TransporterStatsView',
 ]

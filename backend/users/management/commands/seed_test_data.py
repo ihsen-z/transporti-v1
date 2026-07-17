@@ -565,6 +565,35 @@ class Command(BaseCommand):
             }
         )
 
+        # Bookings (D3 — payment contracts)
+        from payments.models import Booking
+        from logistics.models import Offer as OfferModel
+        offer_2 = OfferModel.objects.filter(id=2).first()
+        if offer_2:
+            Booking.objects.get_or_create(
+                job=self.job_2,
+                defaults={
+                    'accepted_offer': offer_2,
+                    'final_price': Decimal('460.00'),
+                    'commission_rate': Decimal('0.1500'),
+                    'payment_method': 'DIGITAL',
+                    'cod_allowed': False,
+                }
+            )
+        offer_9 = OfferModel.objects.filter(id=9).first()
+        if offer_9:
+            # Job 7 MATCHED + COD → scénario « confirmer le démarrage » (D3)
+            Booking.objects.get_or_create(
+                job=self.job_7,
+                defaults={
+                    'accepted_offer': offer_9,
+                    'final_price': Decimal('134.40'),
+                    'commission_rate': Decimal('0.1200'),
+                    'payment_method': 'COD',
+                    'cod_allowed': True,
+                }
+            )
+
         # Commission Ledger 1: SETTLED (Job 1)
         CommissionLedger.objects.get_or_create(
             job_reference=self.job_1,

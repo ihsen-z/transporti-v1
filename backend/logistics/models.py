@@ -66,6 +66,13 @@ class TransportJob(models.Model):
         help_text="True if created by a transporter indicating return trip availability")
     available_capacity = models.CharField(max_length=255, blank=True,
         help_text="Available capacity description for return trips (e.g. '2 tonnes, camion bâché')")
+    instant_booking = models.BooleanField(default=False,
+        help_text="D11: return trips only — allow direct booking without a structured request (off by default)")
+
+    # NSM instrumentation (vision v1.0): road distance estimate, computed once
+    # server-side at creation (haversine × 1.25 — T4), never client-side.
+    distance_km = models.DecimalField(max_digits=7, decimal_places=1, null=True, blank=True,
+        help_text="Estimated road distance in km (haversine × 1.25), set at creation")
 
     # Analytics
     view_count = models.PositiveIntegerField(default=0, help_text="Number of times the job detail page was viewed by non-owners")

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from "react";
 import Link from "next/link";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatTND } from "@/lib/format";
 import {
   Package,
   Search,
@@ -165,13 +165,19 @@ function StatCard({
 /*  MissionCard — For transporter's assigned missions                          */
 /* -------------------------------------------------------------------------- */
 
-const MissionCard = React.memo(function MissionCardInner({ mission }: { mission: TransporterMission }) {
+const MissionCard = React.memo(function MissionCardInner({
+  mission,
+}: {
+  mission: TransporterMission;
+}) {
   const { t } = useAppI18n();
   const typeConfig =
     JOB_TYPE_CONFIG[mission.job_type] || JOB_TYPE_CONFIG.TRANSPORT;
   const TypeIcon = typeConfig.icon;
   const typeLabel =
-    mission.job_type === "MOVING" ? t.jobsList.typeMoving : t.jobsList.typeTransport;
+    mission.job_type === "MOVING"
+      ? t.jobsList.typeMoving
+      : t.jobsList.typeTransport;
   const statusConfig = getStatusConfig(mission.status);
   const statusLabel =
     (t.status.job as Record<string, string>)[mission.status] ??
@@ -338,6 +344,10 @@ function TransporterMissionsView() {
   const [missions, setMissions] = useState<TransporterMission[]>([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  // B2 — K4 (gains confirmés = escrow libéré) depuis la source unique
+  const [confirmedEarnings, setConfirmedEarnings] = useState<number | null>(
+    null,
+  );
   const [activeTab, setActiveTab] = useState<MissionFilter>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -352,6 +362,11 @@ function TransporterMissionsView() {
         >("/api/jobs/transporter/");
         const list = Array.isArray(data) ? data : (data.results ?? []);
         setMissions(list);
+        // K4 from the canonical stats endpoint (non-blocking)
+        apiClient
+          .get<{ earnings_confirmed: number }>("/api/transporter/stats/")
+          .then((s) => setConfirmedEarnings(s.earnings_confirmed))
+          .catch(() => setConfirmedEarnings(null));
       } catch (e) {
         console.error("Failed to fetch missions:", e);
         if (!silent) showToast("error", t.jobsList.loadError);
@@ -410,6 +425,8 @@ function TransporterMissionsView() {
     (m) => m.status === "COMPLETED",
   ).length;
   const returnTripCount = missions.filter((m) => m.is_return_trip).length;
+  // Local fallback only — the card prefers K4 (earnings_confirmed) from the
+  // canonical stats endpoint (B2).
   const totalEarnings = missions
     .filter((m) => m.status === "COMPLETED" && !m.is_return_trip)
     .reduce((sum, m) => sum + m.offer_price_net, 0);
@@ -440,9 +457,7 @@ function TransporterMissionsView() {
           <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
             {t.jobsList.title}
           </h1>
-          <p className="text-neutral-500 mt-1 text-sm">
-            {t.jobsList.subtitle}
-          </p>
+          <p className="text-neutral-500 mt-1 text-sm">{t.jobsList.subtitle}</p>
         </div>
         <div className="flex gap-2">
           <Link
@@ -470,7 +485,7 @@ function TransporterMissionsView() {
         <StatCard
           icon={FileText}
           label={t.jobsList.statTotal}
-          value={String(missions.filter((m) => !m.is_return_trip).length)}
+          value={String(missions.length)}
           iconColor="bg-brand-600/10 text-brand-600"
           valueColor="text-neutral-900"
         />
@@ -491,7 +506,7 @@ function TransporterMissionsView() {
         <StatCard
           icon={Wallet}
           label={t.jobsList.statEarnings}
-          value={`${totalEarnings.toFixed(0)} ${t.jobsList.tnd}`}
+          value={formatTND(confirmedEarnings ?? totalEarnings)}
           iconColor="bg-emerald-100 text-emerald-600"
           valueColor="text-emerald-700"
           highlight
@@ -651,9 +666,7 @@ function ClientJobsView() {
           <h1 className="text-3xl font-bold text-neutral-900 mb-2">
             {t.jobsList.clientTitle}
           </h1>
-          <p className="text-neutral-600">
-            {t.jobsList.clientSubtitle}
-          </p>
+          <p className="text-neutral-600">{t.jobsList.clientSubtitle}</p>
         </div>
         <Link
           href="/jobs/new"
@@ -668,25 +681,33 @@ function ClientJobsView() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
         <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
           <p className="text-2xl font-bold text-neutral-900">{jobs.length}</p>
-          <p className="text-sm text-neutral-600">{t.jobsList.clientStatTotal}</p>
+          <p className="text-sm text-neutral-600">
+            {t.jobsList.clientStatTotal}
+          </p>
         </div>
         <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
           <p className="text-2xl font-bold text-orange-600">
             {jobs.filter((j) => j.status === "PUBLISHED").length}
           </p>
-          <p className="text-sm text-neutral-600">{t.jobsList.clientStatPublished}</p>
+          <p className="text-sm text-neutral-600">
+            {t.jobsList.clientStatPublished}
+          </p>
         </div>
         <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
           <p className="text-2xl font-bold text-accent-600">
             {jobs.filter((j) => j.status === "IN_PROGRESS").length}
           </p>
-          <p className="text-sm text-neutral-600">{t.jobsList.clientStatInProgress}</p>
+          <p className="text-sm text-neutral-600">
+            {t.jobsList.clientStatInProgress}
+          </p>
         </div>
         <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
           <p className="text-2xl font-bold text-green-600">
             {jobs.filter((j) => j.status === "COMPLETED").length}
           </p>
-          <p className="text-sm text-neutral-600">{t.jobsList.clientStatCompleted}</p>
+          <p className="text-sm text-neutral-600">
+            {t.jobsList.clientStatCompleted}
+          </p>
         </div>
       </div>
 
@@ -699,9 +720,7 @@ function ClientJobsView() {
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">
             {t.jobsList.clientEmptyTitle}
           </h3>
-          <p className="text-neutral-600 mb-4">
-            {t.jobsList.clientEmptyDesc}
-          </p>
+          <p className="text-neutral-600 mb-4">{t.jobsList.clientEmptyDesc}</p>
           <Link
             href="/jobs/new"
             className="bg-brand-700 hover:bg-brand-800 text-white font-medium px-6 py-2 rounded-lg transition-colors inline-block"

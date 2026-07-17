@@ -24,6 +24,7 @@ import {
   BadgeCheck,
   Clock,
   CheckCircle,
+  CheckCircle2,
   ShieldAlert,
   Star,
   MapPin,
@@ -61,7 +62,11 @@ export default function JobDetailsPage() {
   // Dialogues applicatifs — remplacent window.confirm()/prompt() (non stylés,
   // non traduits, motif limité à une ligne).
   const [activeDialog, setActiveDialog] = useState<
-    "confirmDelivery" | "cancelJob" | "markDelivered" | "transporterCancel" | null
+    | "confirmDelivery"
+    | "cancelJob"
+    | "markDelivered"
+    | "transporterCancel"
+    | null
   >(null);
   const [cancelReason, setCancelReason] = useState("");
   const [transporterCancelling, setTransporterCancelling] = useState(false);
@@ -76,18 +81,79 @@ export default function JobDetailsPage() {
   );
   const [bookingLoading, setBookingLoading] = useState(false);
 
-  // Handle payment gateway return
+  // Handle payment gateway return (D3): confirm the authoritative status with
+  // the backend (/api/payments/verify/) — this is what flips the escrow to
+  // HELD and starts the mission, including in SANDBOX mode.
   useEffect(() => {
     const paymentStatus = searchParams?.get("payment");
+    const gatewayRef = searchParams?.get("ref");
     if (paymentStatus === "success") {
-      showToast("success", t.jobDetail.paymentSuccess);
-      // Clean URL
-      router.replace(`/jobs/${jobId}`, { scroll: false });
+      (async () => {
+        try {
+          if (gatewayRef) {
+            await apiClient.post("/api/payments/verify/", {
+              gateway_ref: gatewayRef,
+            });
+          }
+          showToast("success", t.jobDetail.paymentSuccess);
+        } catch (_e) {
+          showToast("error", t.jobDetail.paymentFailed);
+        } finally {
+          router.replace(`/jobs/${jobId}`, { scroll: false });
+          fetchJob();
+        }
+      })();
     } else if (paymentStatus === "failed") {
       showToast("error", t.jobDetail.paymentFailed);
       router.replace(`/jobs/${jobId}`, { scroll: false });
     }
   }, [searchParams]);
+
+  // D3 — MATCHED actions
+  const [paying, setPaying] = useState(false);
+  const [confirmingStart, setConfirmingStart] = useState(false);
+
+  const handlePayNow = async () => {
+    if (!jobId) return;
+    setPaying(true);
+    try {
+      const res = await apiClient.post<{ payment_url: string }>(
+        "/api/payments/initiate/",
+        { job_id: jobId, platform: "web" },
+      );
+      if (res?.payment_url) {
+        window.location.href = res.payment_url;
+        return;
+      }
+      showToast("error", t.jobDetail.paymentFailed);
+    } catch (error) {
+      if (error instanceof ApiError && error.body?.error) {
+        showToast("error", String(error.body.error));
+      } else {
+        showToast("error", t.jobDetail.paymentFailed);
+      }
+    } finally {
+      setPaying(false);
+    }
+  };
+
+  const handleConfirmStart = async () => {
+    if (!jobId) return;
+    setConfirmingStart(true);
+    try {
+      await apiClient.post(`/api/jobs/${jobId}/confirm-start/`, {});
+      showToast("success", t.jobDetail.startConfirmed);
+      fetchJob();
+    } catch (error) {
+      if (error instanceof ApiError && error.body?.error) {
+        showToast("error", String(error.body.error));
+      } else {
+        showToast("error", t.jobDetail.genericError);
+      }
+    } finally {
+      setConfirmingStart(false);
+    }
+  };
 
   const jobId = params?.id
     ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id)
@@ -215,7 +281,10 @@ export default function JobDetailsPage() {
       fetchJob();
     } catch (err) {
       if (err instanceof ApiError && err.body) {
-        showToast("error", String(err.body?.error || t.jobDetail.unexpectedError));
+        showToast(
+          "error",
+          String(err.body?.error || t.jobDetail.unexpectedError),
+        );
       } else {
         showToast("error", t.jobDetail.networkError);
       }
@@ -226,7 +295,9 @@ export default function JobDetailsPage() {
 
   if (loading)
     return (
-      <div className="p-8 text-center text-neutral-500">{t.jobDetail.loading}</div>
+      <div className="p-8 text-center text-neutral-500">
+        {t.jobDetail.loading}
+      </div>
     );
   if (!job) {
     if (fetchError === "network")
@@ -247,9 +318,7 @@ export default function JobDetailsPage() {
         </div>
       );
     return (
-      <div className="p-8 text-center text-red-500">
-        {t.jobDetail.notFound}
-      </div>
+      <div className="p-8 text-center text-red-500">{t.jobDetail.notFound}</div>
     );
   }
 
@@ -280,8 +349,7 @@ export default function JobDetailsPage() {
     isClient &&
     (job.status === "PUBLISHED" || job.status === "MATCHED");
   const isAssignedTransporter =
-    isTransporter &&
-    job.accepted_transporter?.id === user?.id;
+    isTransporter && job.accepted_transporter?.id === user?.id;
   const showDisputeButton =
     (job.status === "IN_PROGRESS" || job.status === "COMPLETED") &&
     (isOwner || isAssignedTransporter) &&
@@ -365,9 +433,13 @@ export default function JobDetailsPage() {
                     </div>
                     <div className="text-end">
                       <p className="text-lg font-bold text-neutral-900">
-                        {formatTND(Number(job.accepted_transporter.total_price) || 0)}
+                        {formatTND(
+                          Number(job.accepted_transporter.total_price) || 0,
+                        )}
                       </p>
-                      <p className="text-xs text-neutral-500">{t.jobDetail.acceptedPrice}</p>
+                      <p className="text-xs text-neutral-500">
+                        {t.jobDetail.acceptedPrice}
+                      </p>
                     </div>
                   </div>
                   {/* P2-06: Quick link to profile */}
@@ -419,8 +491,16 @@ export default function JobDetailsPage() {
                     ? job.commission_rate
                     : null
                 }
-                priceTndMin={job.price_tnd_min != null ? Number(job.price_tnd_min) : undefined}
-                priceTndMax={job.price_tnd_max != null ? Number(job.price_tnd_max) : undefined}
+                priceTndMin={
+                  job.price_tnd_min != null
+                    ? Number(job.price_tnd_min)
+                    : undefined
+                }
+                priceTndMax={
+                  job.price_tnd_max != null
+                    ? Number(job.price_tnd_max)
+                    : undefined
+                }
                 onOfferSubmitted={() => {
                   showToast("success", t.jobDetail.offerSent);
                   fetchJob();
@@ -546,7 +626,9 @@ export default function JobDetailsPage() {
                 {/* Price */}
                 {(job.price_tnd_min || job.price_tnd_max) && (
                   <div className="text-center bg-white rounded-lg py-2 px-3 mb-3 border border-purple-100">
-                    <p className="text-xs text-neutral-500">{t.jobDetail.indicativePrice}</p>
+                    <p className="text-xs text-neutral-500">
+                      {t.jobDetail.indicativePrice}
+                    </p>
                     <p className="text-xl font-bold text-purple-700">
                       {job.price_tnd_min && job.price_tnd_max
                         ? `${formatTND(Number(job.price_tnd_min) || 0)} — ${formatTND(Number(job.price_tnd_max) || 0)}`
@@ -600,7 +682,9 @@ export default function JobDetailsPage() {
                           {t.jobDetail.confirmBooking}
                         </h3>
                         <p className="text-sm text-purple-200">
-                          {interpolate(t.jobDetail.returnTripRef, { id: job.id })}
+                          {interpolate(t.jobDetail.returnTripRef, {
+                            id: job.id,
+                          })}
                         </p>
                       </div>
                     </div>
@@ -775,6 +859,86 @@ export default function JobDetailsPage() {
               </ul>
             </div>
 
+            {/* D3 — MATCHED: assigned, payment being secured */}
+            {job.status === "MATCHED" && (isOwner || isAssignedTransporter) && (
+              <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-amber-800">
+                <h3 className="font-bold flex items-center gap-2 mb-2">
+                  <Clock className="w-5 h-5" />
+                  {t.jobDetail.matchedTitle}
+                </h3>
+                {/* Client + DIGITAL → pay now */}
+                {isOwner && job.booking_payment_method === "DIGITAL" && (
+                  <>
+                    <p className="text-sm mb-3">
+                      {t.jobDetail.matchedClientPay}
+                    </p>
+                    <button
+                      onClick={handlePayNow}
+                      disabled={paying}
+                      className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                    >
+                      {paying ? (
+                        <Clock className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <FileText className="w-4 h-4" />
+                      )}
+                      {paying ? t.jobDetail.paying : t.jobDetail.payNow}
+                    </button>
+                  </>
+                )}
+                {/* Client + COD → waiting for transporter confirmation */}
+                {isOwner && job.booking_payment_method === "COD" && (
+                  <p className="text-sm">{t.jobDetail.matchedClientCod}</p>
+                )}
+                {/* Transporter + COD → confirm start */}
+                {isAssignedTransporter &&
+                  job.booking_payment_method === "COD" && (
+                    <>
+                      <p className="text-sm mb-3">
+                        {t.jobDetail.matchedTransporterCod}
+                      </p>
+                      <button
+                        onClick={handleConfirmStart}
+                        disabled={confirmingStart}
+                        className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+                      >
+                        {confirmingStart ? (
+                          <Clock className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <CheckCircle2 className="w-4 h-4" />
+                        )}
+                        {confirmingStart
+                          ? t.jobDetail.confirming
+                          : t.jobDetail.confirmStart}
+                      </button>
+                    </>
+                  )}
+                {/* Transporter + DIGITAL → waiting for client payment */}
+                {isAssignedTransporter &&
+                  job.booking_payment_method === "DIGITAL" && (
+                    <p className="text-sm">
+                      {t.jobDetail.matchedTransporterDigital}
+                    </p>
+                  )}
+                <div className="mt-3 space-y-2">
+                  <button
+                    onClick={() => router.push(`/messages/${job.id}`)}
+                    className="w-full py-2 bg-white border border-amber-300 text-amber-800 rounded-lg font-medium hover:bg-amber-100 flex items-center justify-center gap-2"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    {t.jobDetail.openMessaging}
+                  </button>
+                  <Link
+                    href={`/booking/${job.id}`}
+                    className="w-full py-2 border border-amber-300 text-amber-800 rounded-lg font-medium hover:bg-amber-100 flex items-center justify-center gap-2"
+                  >
+                    <FileText className="w-4 h-4" />
+                    {t.jobDetail.viewBooking}
+                  </Link>
+                </div>
+              </div>
+            )}
+
             {/* In Progress Status */}
             {job.status === "IN_PROGRESS" && (
               <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-brand-700">
@@ -919,9 +1083,7 @@ export default function JobDetailsPage() {
                     <CheckCircle className="w-5 h-5" />
                     {t.jobDetail.missionCompleted}
                   </h3>
-                  <p className="text-sm">
-                    {t.jobDetail.missionCompletedDesc}
-                  </p>
+                  <p className="text-sm">{t.jobDetail.missionCompletedDesc}</p>
                 </div>
               </div>
             )}

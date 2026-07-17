@@ -36,10 +36,11 @@ class InitiatePaymentView(APIView):
 
         job = get_object_or_404(TransportJob, id=job_id, owner=request.user)
 
-        # Ensure job is in correct state
-        if job.status != TransportJob.Status.IN_PROGRESS:
+        # D3 (escrow strict): payment happens while the job is MATCHED;
+        # the job only becomes IN_PROGRESS once the escrow is HELD.
+        if job.status != TransportJob.Status.MATCHED:
             return Response(
-                {'error': f'Job must be IN_PROGRESS. Current: {job.status}'},
+                {'error': f'Job must be MATCHED (awaiting payment). Current: {job.status}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -145,6 +146,12 @@ class PaymentWebhookView(APIView):
         if payment_status == 'completed' and escrow.status == EscrowTransaction.Status.INITIATED:
             escrow.status = EscrowTransaction.Status.HELD
             escrow.save()
+            # D3: secured payment starts the mission (MATCHED → IN_PROGRESS)
+            from .services import activate_job_on_payment
+            try:
+                activate_job_on_payment(escrow)
+            except Exception:
+                pass
             return Response({'status': 'escrow_held'})
         elif payment_status == 'failed' and escrow.status == EscrowTransaction.Status.INITIATED:
             escrow.status = EscrowTransaction.Status.FAILED
@@ -152,6 +159,54 @@ class PaymentWebhookView(APIView):
             return Response({'status': 'payment_failed'})
 
         return Response({'status': 'no_change'})
+
+
+class VerifyPaymentView(APIView):
+    """
+    POST /api/payments/verify/
+    Body: { "gateway_ref": str }
+
+    Client-side payment confirmation: called when the payer returns from the
+    gateway redirect. Queries the gateway's authoritative status and applies
+    it (INITIATED → HELD/FAILED). Idempotent — safe to call repeatedly.
+    In SANDBOX mode the gateway always reports 'completed', which closes the
+    loop locally where no webhook can reach us.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        gateway_ref = request.data.get('gateway_ref', '')
+        if not gateway_ref:
+            return Response({'error': 'gateway_ref is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        escrow = get_object_or_404(EscrowTransaction, gateway_reference=gateway_ref)
+        job = escrow.booking_reference
+        if job.owner != request.user:
+            return Response(
+                {'error': 'You do not have permission to verify this payment.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if escrow.status == EscrowTransaction.Status.INITIATED:
+            gateway = get_payment_gateway()
+            result = gateway.check_status(gateway_ref)
+            if result.status == 'completed':
+                escrow.status = EscrowTransaction.Status.HELD
+                escrow.save()
+                from .services import activate_job_on_payment
+                try:
+                    activate_job_on_payment(escrow)
+                except Exception:
+                    pass
+            elif result.status == 'failed':
+                escrow.status = EscrowTransaction.Status.FAILED
+                escrow.save()
+
+        return Response({
+            'status': escrow.status,
+            'job_id': job.id,
+            'job_status': TransportJob.objects.get(id=job.id).status,
+        })
 
 
 class PaymentStatusView(APIView):
@@ -397,3 +452,133 @@ class AdminCommissionListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, RequireRole.for_roles('ADMIN')]
     serializer_class = CommissionLedgerDetailSerializer
     queryset = CommissionLedger.objects.all().order_by('-created_at')
+
+
+# =============================================================================
+# TRANSPORTER WALLET (Sprint 2 — WS-A A2, decision D4)
+# =============================================================================
+
+class TransporterWalletView(APIView):
+    """
+    GET /api/wallet/
+    Transporter wallet: available balance, pending escrow, COD debt,
+    transaction history and withdrawal requests.
+    Formulas: DICTIONNAIRE_KPI K10/K11 via payments.services.get_wallet_summary.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    def get(self, request):
+        from .services import get_wallet_summary
+        from .models import WithdrawalRequest
+
+        summary = get_wallet_summary(request.user)
+
+        # History: escrow movements on the transporter's accepted jobs
+        accepted = Offer.objects.filter(
+            transporter=request.user, status='ACCEPTED'
+        ).select_related('job')
+        offer_by_job = {o.job_id: o for o in accepted}
+
+        history = []
+        escrows = EscrowTransaction.objects.filter(
+            booking_reference_id__in=offer_by_job.keys()
+        ).order_by('-updated_at')
+        for e in escrows:
+            offer = offer_by_job.get(e.booking_reference_id)
+            if not offer:
+                continue
+            history.append({
+                'kind': 'ESCROW',
+                'status': e.status,
+                'job_id': e.booking_reference_id,
+                'gross': float(e.amount),
+                'net': float(offer.price_net),
+                'date': e.updated_at.isoformat(),
+            })
+
+        withdrawals = WithdrawalRequest.objects.filter(transporter=request.user)
+        for w in withdrawals:
+            history.append({
+                'kind': 'WITHDRAWAL',
+                'status': w.status,
+                'id': w.id,
+                'amount': float(w.amount),
+                'bank_details': w.bank_details,
+                'date': (w.processed_at or w.requested_at).isoformat(),
+            })
+
+        history.sort(key=lambda h: h['date'], reverse=True)
+
+        cod_unsettled = CommissionLedger.objects.filter(
+            transporter=request.user, is_settled=False
+        ).select_related('job_reference')
+
+        return Response({
+            'available': float(summary['available']),
+            'pending_net': float(summary['pending_net']),
+            'released_net': float(summary['released_net']),
+            'cod_debt': float(summary['cod_debt']),
+            'withdrawals_total': float(summary['withdrawals_total']),
+            'cod_debts': [
+                {'job_id': c.job_reference_id, 'amount': float(c.amount)}
+                for c in cod_unsettled
+            ],
+            'history': history[:50],
+        })
+
+
+class WithdrawalRequestCreateView(APIView):
+    """
+    POST /api/wallet/withdrawals/
+    Body: { "amount": decimal, "bank_details": str }
+    Creates a manual payout request (processed back-office — D4).
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    MIN_WITHDRAWAL_TND = 10
+
+    def post(self, request):
+        from decimal import Decimal, InvalidOperation
+        from .services import get_wallet_summary
+        from .models import WithdrawalRequest
+
+        try:
+            amount = Decimal(str(request.data.get('amount', '')))
+        except (InvalidOperation, TypeError):
+            return Response({'amount': ['Montant invalide.']}, status=status.HTTP_400_BAD_REQUEST)
+
+        bank_details = str(request.data.get('bank_details', '')).strip()
+
+        if amount < self.MIN_WITHDRAWAL_TND:
+            return Response(
+                {'amount': [f'Le montant minimum de retrait est de {self.MIN_WITHDRAWAL_TND} TND.']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if not bank_details:
+            return Response(
+                {'bank_details': ['Veuillez indiquer votre RIB ou destination de virement.']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        available = get_wallet_summary(request.user)['available']
+        if amount > available:
+            return Response(
+                {'amount': [f'Montant supérieur à votre solde disponible ({available} TND).']},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        withdrawal = WithdrawalRequest.objects.create(
+            transporter=request.user,
+            amount=amount,
+            bank_details=bank_details,
+        )
+
+        return Response({
+            'message': 'Demande de retrait enregistrée. Elle sera traitée sous 3 à 5 jours ouvrés.',
+            'withdrawal': {
+                'id': withdrawal.id,
+                'amount': float(withdrawal.amount),
+                'status': withdrawal.status,
+                'requested_at': withdrawal.requested_at.isoformat(),
+            }
+        }, status=status.HTTP_201_CREATED)

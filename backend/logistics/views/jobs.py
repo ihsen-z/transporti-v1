@@ -241,6 +241,83 @@ class JobPublishView(APIView):
         })
 
 
+class JobConfirmStartView(APIView):
+    """
+    POST /api/jobs/{id}/confirm-start/
+    D3 (escrow strict) — COD path: the assigned transporter explicitly accepts
+    the cash-on-delivery terms, which moves the job MATCHED → IN_PROGRESS.
+    Digital jobs start automatically when the escrow is HELD (see payments).
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    @transaction.atomic
+    def post(self, request, job_id):
+        job = get_object_or_404(
+            TransportJob.objects.select_for_update(), id=job_id
+        )
+
+        offer = job.offers.filter(
+            status=Offer.Status.ACCEPTED,
+            transporter=request.user
+        ).first()
+        if not offer:
+            return Response(
+                {'error': 'Vous n\'êtes pas assigné à cette mission.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if job.status != TransportJob.Status.MATCHED:
+            return Response(
+                {'error': f'La mission n\'est pas en attente de démarrage. Statut actuel : {job.status}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        from payments.models import Booking
+        booking = Booking.objects.filter(job=job).first()
+        if not booking:
+            return Response(
+                {'error': 'Aucune réservation trouvée pour cette mission.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if booking.payment_method != Booking.PaymentMethod.COD:
+            return Response(
+                {'error': 'Cette mission est en paiement digital : elle démarrera automatiquement une fois le paiement du client sécurisé.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        job.status = TransportJob.Status.IN_PROGRESS
+        job.save()
+
+        # System message + notify client (best effort)
+        try:
+            from messaging.services import get_or_create_conversation, send_system_message
+            get_or_create_conversation(job)
+            send_system_message(
+                job,
+                "🤝 Le transporteur a confirmé le démarrage (paiement en espèces à la livraison). "
+                "La mission est maintenant en cours.",
+                actor=request.user
+            )
+        except Exception:
+            pass
+        try:
+            from notifications.services import notify
+            notify(
+                user=job.owner,
+                notification_type='JOB_STARTED',
+                title='Mission démarrée',
+                message=f'Le transporteur a confirmé le démarrage de la mission #{job.id} (paiement à la livraison).',
+                metadata={'job_id': job.id},
+            )
+        except Exception:
+            pass
+
+        return Response({
+            'message': 'Démarrage confirmé. La mission est en cours.',
+            'job': TransportJobDetailSerializer(job, context={'request': request}).data
+        })
+
+
 class TransporterCancelView(APIView):
     """
     POST /api/jobs/{id}/transporter-cancel/
@@ -264,9 +341,9 @@ class TransporterCancelView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        if job.status != TransportJob.Status.IN_PROGRESS:
+        if job.status not in (TransportJob.Status.IN_PROGRESS, TransportJob.Status.MATCHED):
             return Response(
-                {'error': 'Annulation possible uniquement pour les missions en cours.'},
+                {'error': 'Annulation possible uniquement pour les missions assignées ou en cours.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -285,18 +362,20 @@ class TransporterCancelView(APIView):
         job.status = TransportJob.Status.PUBLISHED
         job.save()
 
-        # 3. Refund escrow if DIGITAL payment
+        # 3. Refund any refundable escrow (HELD/INITIATED) — service handles lookup
         try:
-            from payments.models import EscrowTransaction
-            escrow = EscrowTransaction.objects.filter(
-                booking_reference=job,
-                status=EscrowTransaction.Status.HELD,
-            ).first()
-            if escrow:
-                from payments.services import refund_escrow
-                refund_escrow(escrow, reason=f"Transporter cancellation: {reason}")
+            from payments.services import refund_escrow
+            refund_escrow(job, reason=f"Transporter cancellation: {reason}")
         except Exception:
             pass  # Log but don't block
+
+        # 3b. The Booking contract is void — remove it so a future acceptance
+        # can create a fresh one (Booking.job is a OneToOneField).
+        try:
+            from payments.models import Booking
+            Booking.objects.filter(job=job).delete()
+        except Exception:
+            pass
 
         # 4. System message in conversation
         try:

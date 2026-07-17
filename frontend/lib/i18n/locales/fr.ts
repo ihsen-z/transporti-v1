@@ -22,6 +22,7 @@ export const fr = {
     returnTrips: "Trajets retour",
     findMission: "Trouver une mission",
     myOffers: "Mes offres",
+    wallet: "Portefeuille",
     returnTrip: "Trajet retour",
     verification: "Vérification",
     helpCenter: "Centre d'aide",
@@ -64,11 +65,13 @@ export const fr = {
     badge: "Plateforme #1 de transport en Tunisie",
     heroTitle1: "La logistique réinventée.",
     heroTitle2: "Simple, rapide, fiable.",
-    heroDesc: "Connectez-vous avec des transporteurs vérifiés en Tunisie. Envoyez vos colis en toute confiance avec paiement sécurisé.",
+    heroDesc:
+      "Connectez-vous avec des transporteurs vérifiés en Tunisie. Envoyez vos colis en toute confiance avec paiement sécurisé.",
     ctaPublish: "Publier une annonce",
     ctaRegister: "Créer un compte",
     ctaLogin: "Se connecter →",
-    trustLine: "✓ Inscription gratuite · ✓ Sans engagement · ✓ Paiement sécurisé",
+    trustLine:
+      "✓ Inscription gratuite · ✓ Sans engagement · ✓ Paiement sécurisé",
     secureShipping: "Envoi sécurisé",
     secureShippingDesc: "Paiement protégé par escrow",
     verifiedTransporters: "Transporteurs vérifiés",
@@ -86,50 +89,66 @@ export const fr = {
     howTitle: "Comment ça marche ?",
     howSubtitle: "3 étapes simples pour envoyer vos colis",
     step1Title: "Publiez votre demande",
-    step1Desc: "Décrivez votre envoi, l'adresse de départ et d'arrivée, et votre budget.",
+    step1Desc:
+      "Décrivez votre envoi, l'adresse de départ et d'arrivée, et votre budget.",
     step2Title: "Recevez des offres",
-    step2Desc: "Les transporteurs vérifiés vous envoient leurs propositions. Comparez et choisissez.",
+    step2Desc:
+      "Les transporteurs vérifiés vous envoient leurs propositions. Comparez et choisissez.",
     step3Title: "Livraison sécurisée",
-    step3Desc: "Suivez votre colis et payez uniquement à la livraison confirmée.",
+    step3Desc:
+      "Suivez votre colis et payez uniquement à la livraison confirmée.",
     // Features
     whyTitle: "Pourquoi choisir Transporti ?",
     whySubtitle: "Une plateforme moderne qui simplifie la logistique pour tous",
     feat1Title: "Paiement sécurisé",
-    feat1Desc: "Système d'escrow intégré. Votre argent est protégé jusqu'à la livraison confirmée.",
+    feat1Desc:
+      "Système d'escrow intégré. Votre argent est protégé jusqu'à la livraison confirmée.",
     feat2Title: "Suivi en direct",
-    feat2Desc: "Suivez votre colis en temps réel et communiquez directement avec le transporteur.",
+    feat2Desc:
+      "Suivez votre colis en temps réel et communiquez directement avec le transporteur.",
     feat3Title: "Livraison rapide",
-    feat3Desc: "Réseau de transporteurs professionnels pour des livraisons rapides dans tout le pays.",
+    feat3Desc:
+      "Réseau de transporteurs professionnels pour des livraisons rapides dans tout le pays.",
     // Testimonials
     testimonialsTitle: "Ce que disent nos utilisateurs",
     testimonialsSubtitle: "Des milliers de clients et transporteurs satisfaits",
-    review1Text: "J'ai envoyé mes meubles de Tunis à Sousse en un clic. Le transporteur était ponctuel et très professionnel. Le paiement sécurisé m'a vraiment rassurée.",
+    review1Text:
+      "J'ai envoyé mes meubles de Tunis à Sousse en un clic. Le transporteur était ponctuel et très professionnel. Le paiement sécurisé m'a vraiment rassurée.",
     review1Name: "Leila B.",
     review1Role: "Cliente – Tunis",
-    review2Text: "Depuis que j'utilise Transporti, j'ai doublé mes revenus. Les commissions sont transparentes et je reçois mes paiements rapidement.",
+    review2Text:
+      "Depuis que j'utilise Transporti, j'ai doublé mes revenus. Les commissions sont transparentes et je reçois mes paiements rapidement.",
     review2Name: "Mohamed K.",
     review2Role: "Transporteur – Sfax",
-    review3Text: "Déménagement parfait ! J'ai comparé 4 offres et choisi la meilleure. Tout est arrivé intact. Je recommande vivement cette plateforme.",
+    review3Text:
+      "Déménagement parfait ! J'ai comparé 4 offres et choisi la meilleure. Tout est arrivé intact. Je recommande vivement cette plateforme.",
     review3Name: "Fatma S.",
     review3Role: "Cliente – Nabeul",
     // FAQ
     faqTitle: "Questions fréquentes",
     faq1Q: "Comment fonctionne le paiement sécurisé ?",
-    faq1A: "Lorsque vous acceptez une offre, le montant est placé en escrow (séquestre). Le transporteur ne reçoit le paiement qu'après votre confirmation de livraison. En cas de litige, notre équipe intervient sous 24h.",
+    faq1A:
+      "Lorsque vous acceptez une offre, le montant est placé en escrow (séquestre). Le transporteur ne reçoit le paiement qu'après votre confirmation de livraison. En cas de litige, notre équipe intervient sous 24h.",
     faq2Q: "Comment les transporteurs sont-ils vérifiés ?",
-    faq2A: "Chaque transporteur doit soumettre ses documents (CIN, carte grise, assurance) qui sont vérifiés manuellement par notre équipe. Seuls les transporteurs validés peuvent recevoir des missions.",
+    faq2A:
+      "Chaque transporteur doit soumettre ses documents (CIN, carte grise, assurance) qui sont vérifiés manuellement par notre équipe. Seuls les transporteurs validés peuvent recevoir des missions.",
     faq3Q: "Quels sont les frais de la plateforme ?",
-    faq3A: "La commission est de 12% pour le transport et 15% pour le déménagement. Aucun frais caché — le transporteur voit le montant net avant de soumettre son offre.",
+    faq3A:
+      "La commission est de 12% pour le transport et 15% pour le déménagement. Aucun frais caché — le transporteur voit le montant net avant de soumettre son offre.",
     faq4Q: "Puis-je payer en espèces ?",
-    faq4A: "Oui ! Le paiement à la livraison (COD) est disponible pour les montants jusqu'à 300 TND. Au-delà, le paiement digital sécurisé est recommandé.",
+    faq4A:
+      "Oui ! Le paiement à la livraison (COD) est disponible pour les montants jusqu'à 300 TND. Au-delà, le paiement digital sécurisé est recommandé.",
     faq5Q: "Comment contester une livraison ?",
-    faq5A: "Vous pouvez ouvrir un litige directement depuis la page de votre transport. Notre équipe examine chaque cas et vous répond sous 24 heures ouvrées.",
+    faq5A:
+      "Vous pouvez ouvrir un litige directement depuis la page de votre transport. Notre équipe examine chaque cas et vous répond sous 24 heures ouvrées.",
     // CTA section
     ctaTitle: "Prêt à commencer ?",
-    ctaSubtitle: "Rejoignez Transporti — la plateforme de confiance pour vos envois en Tunisie",
+    ctaSubtitle:
+      "Rejoignez Transporti — la plateforme de confiance pour vos envois en Tunisie",
     ctaFreeRegister: "Créer un compte gratuitement",
     ctaBecomeTransporter: "Devenir transporteur",
-    ctaDisclaimer: "🔒 Inscription 100% gratuite · Pas de carte bancaire requise",
+    ctaDisclaimer:
+      "🔒 Inscription 100% gratuite · Pas de carte bancaire requise",
   },
 
   // Dashboard
@@ -146,7 +165,8 @@ export const fr = {
     quickActions: "Actions rapides",
     // New keys for dashboard page i18n
     clientCTA: "Besoin de transporter quelque chose ?",
-    clientCTADesc: "Publiez votre annonce et recevez des offres de transporteurs vérifiés en quelques minutes.",
+    clientCTADesc:
+      "Publiez votre annonce et recevez des offres de transporteurs vérifiés en quelques minutes.",
     publishAd: "Publier une annonce",
     activeAds: "Annonces actives",
     offersReceived: "Offres reçues",
@@ -158,10 +178,12 @@ export const fr = {
     noAdsYet: "Aucune annonce pour le moment.",
     publishAdLink: "Publier une annonce →",
     verificationRequired: "Vérification requise",
-    verificationRequiredDesc: "Complétez votre vérification pour pouvoir soumettre des offres et accéder aux missions.",
+    verificationRequiredDesc:
+      "Complétez votre vérification pour pouvoir soumettre des offres et accéder aux missions.",
     completeVerification: "Compléter la vérification",
     findMissionsTitle: "Trouvez de nouvelles missions",
-    missionsInZone: "missions disponibles dans votre zone. Soumettez vos offres dès maintenant.",
+    missionsInZone:
+      "missions disponibles dans votre zone. Soumettez vos offres dès maintenant.",
     browseMissions: "Parcourir les missions",
     proposeReturnTrip: "Proposer un trajet retour",
     availableMissions: "Missions disponibles",
@@ -203,7 +225,8 @@ export const fr = {
     sortPriceAsc: "Prix croissant",
     sortPriceDesc: "Prix décroissant",
     noTrips: "Aucun trajet retour disponible",
-    noTripsDesc: "Les transporteurs n'ont pas encore publié de trajets retour. Revenez plus tard ou publiez votre propre annonce.",
+    noTripsDesc:
+      "Les transporteurs n'ont pas encore publié de trajets retour. Revenez plus tard ou publiez votre propre annonce.",
     count: "trajet retour disponible",
     countPlural: "trajets retour disponibles",
   },
@@ -238,7 +261,7 @@ export const fr = {
     iAmA: "Je suis un...",
     roles: {
       client: "Client",
-      transporter: "Transporteur"
+      transporter: "Transporteur",
     },
     firstName: "Prénom",
     lastName: "Nom",
@@ -251,13 +274,16 @@ export const fr = {
     selectRoleTitle: "Choisissez votre profil",
     selectRoleSubtitle: "Comment allez-vous utiliser Transporti ?",
     welcomeUser: "Bienvenue {name} ! Une dernière étape.",
-    clientDescription: "Je cherche des transporteurs pour mes envois et déménagements.",
-    transporterDescription: "Je suis transporteur et je veux recevoir des missions.",
+    clientDescription:
+      "Je cherche des transporteurs pour mes envois et déménagements.",
+    transporterDescription:
+      "Je suis transporteur et je veux recevoir des missions.",
     confirmRole: "Confirmer et continuer",
     settingRole: "Configuration...",
     roleSetSuccess: "Profil configuré avec succès !",
     roleSetError: "Erreur lors de la configuration du profil.",
-    roleChangeNote: "Vous pouvez contacter le support pour changer de profil plus tard.",
+    roleChangeNote:
+      "Vous pouvez contacter le support pour changer de profil plus tard.",
   },
 
   // Settings
@@ -285,13 +311,16 @@ export const fr = {
   // Errors
   errors: {
     errorOccurred: "Une erreur est survenue",
-    somethingWrong: "Quelque chose s'est mal passé. Essayez de recharger la page.",
+    somethingWrong:
+      "Quelque chose s'est mal passé. Essayez de recharger la page.",
     retry: "Réessayer",
     backHome: "Retour à l'accueil",
     pageNotFound: "Page introuvable",
-    pageNotFoundDesc: "La page que vous cherchez n'existe pas ou a été déplacée.",
+    pageNotFoundDesc:
+      "La page que vous cherchez n'existe pas ou a été déplacée.",
     pageError: "Erreur de chargement",
-    pageErrorDesc: "Nous avons rencontré un problème lors du chargement de cette page.",
+    pageErrorDesc:
+      "Nous avons rencontré un problème lors du chargement de cette page.",
     backToDashboard: "Tableau de bord",
     helpCenter: "Centre d'aide",
   },
@@ -390,13 +419,15 @@ export const fr = {
     avatarError: "Erreur upload avatar.",
     vehiclePhotoUpdated: "Photo du véhicule mise à jour !",
     vehiclePhotoError: "Erreur upload véhicule.",
-    unsavedChanges: "Vous avez des modifications non sauvegardées. Quitter sans enregistrer ?",
+    unsavedChanges:
+      "Vous avez des modifications non sauvegardées. Quitter sans enregistrer ?",
     min2Chars: "Minimum 2 caractères.",
     invalidPhone: "Format invalide. Ex: +21612345678",
     positiveCapacity: "La capacité doit être positive.",
     noZones: "Aucune zone",
     noInfo: "Aucune description pour le moment.",
-    aboutPlaceholder: "Décrivez votre expérience, vos services, et ce qui vous différencie...",
+    aboutPlaceholder:
+      "Décrivez votre expérience, vos services, et ce qui vous différencie...",
     add: "Ajouter...",
     completenessTitle: "Complétude du profil",
     profilePhotoCheck: "Photo de profil",
@@ -457,7 +488,8 @@ export const fr = {
     searchPlaceholder: "Rechercher une offre, une ville...",
     btnRefresh: "Actualiser",
     emptyStateTitle: "Aucune offre",
-    emptyStateDesc: "Vous n'avez envoyé aucune offre correspondant à ces critères.",
+    emptyStateDesc:
+      "Vous n'avez envoyé aucune offre correspondant à ces critères.",
     emptyStateFind: "Trouver des missions",
     tabsAll: "Toutes",
     tabsPending: "En attente",
@@ -467,20 +499,23 @@ export const fr = {
     tabsWithdrawn: "Retirées",
     actionWithdraw: "Retirer l'offre",
     confirmWithdrawTitle: "Retirer l'offre",
-    confirmWithdrawDesc: "Êtes-vous sûr de vouloir retirer cette offre ? Cette action est irréversible.",
+    confirmWithdrawDesc:
+      "Êtes-vous sûr de vouloir retirer cette offre ? Cette action est irréversible.",
   },
 
   offerForm: {
     submitOffer: "Faire une offre",
     activeOffersLimit: " offres actives",
     limitReachedTitle: "Limite atteinte",
-    limitReachedDesc: "Vous avez déjà des offres actives. Retirez une offre existante avant d'en soumettre une nouvelle.",
+    limitReachedDesc:
+      "Vous avez déjà des offres actives. Retirez une offre existante avant d'en soumettre une nouvelle.",
     nearLimitDesc: "Attention : il vous reste 1 offre disponible.",
     netTariff: "Votre tarif net (ce que vous gagnez)",
     indicativeBudget: "Budget indicatif du client :",
     from: "à partir de",
     upTo: "jusqu'à",
-    codNote: "💡 Au-delà de 300 TND, seul le paiement digital sera proposé au client.",
+    codNote:
+      "💡 Au-delà de 300 TND, seul le paiement digital sera proposé au client.",
     platformCommission: "+ Commission plateforme",
     totalPrice: "Prix total (payé par le client)",
     messageLabel: "Message pour le client (Optionnel)",
@@ -488,7 +523,8 @@ export const fr = {
     sending: "Envoi en cours...",
     sendOffer: "Envoyer mon offre",
     success: "Offre envoyée avec succès ! Le client sera notifié.",
-    errorVerification: "Accès refusé. Vérifiez que votre profil transporteur est vérifié.",
+    errorVerification:
+      "Accès refusé. Vérifiez que votre profil transporteur est vérifié.",
     errorValidation: "Erreur de validation. Veuillez vérifier vos données.",
     errorServer: "Erreur serveur. Veuillez réessayer.",
     errorNetwork: "Erreur réseau. Vérifiez votre connexion.",
@@ -498,6 +534,52 @@ export const fr = {
       "Le prix total payé par le client dépasse son budget indicatif. Votre offre reste valable, mais elle a moins de chances d'être acceptée.",
     alreadySubmitted:
       "Vous avez déjà soumis une offre pour cette mission. Retrouvez-la dans « Mes offres ».",
+  },
+
+  wallet: {
+    title: "Portefeuille",
+    subtitle:
+      "Vos gains, vos retraits et votre situation financière — au millime près.",
+    refresh: "Actualiser",
+    available: "Solde disponible",
+    pending: "En attente (escrow)",
+    pendingHint: "Missions livrées, en attente de confirmation du client.",
+    codDebt: "Commission due (espèces)",
+    codDebtHint: "Commission à régler sur vos missions payées en espèces.",
+    withdrawTitle: "Demander un retrait",
+    withdrawDesc:
+      "Le virement est traité manuellement par notre équipe (décision D4 — Phase 1).",
+    amountLabel: "Montant (min. 10 TND)",
+    maxWithdrawable: "Disponible :",
+    bankDetailsLabel: "RIB ou destination du virement",
+    bankDetailsPlaceholder: "Ex : 08 004 0123456789012 34",
+    withdrawCta: "Demander le retrait",
+    submitting: "Envoi en cours...",
+    withdrawDelay: "Traitement sous 3 à 5 jours ouvrés.",
+    withdrawSuccess: "Demande de retrait enregistrée.",
+    withdrawError: "Impossible d'enregistrer la demande de retrait.",
+    amountInvalid: "Veuillez saisir un montant valide.",
+    bankDetailsRequired:
+      "Veuillez indiquer votre RIB ou destination de virement.",
+    historyTitle: "Historique",
+    historyEmpty:
+      "Aucun mouvement pour le moment. Vos gains apparaîtront ici après vos premières missions.",
+    mission: "Mission",
+    withdrawal: "Retrait",
+    statusRequested: "Demandé",
+    statusProcessing: "En traitement",
+    statusPaid: "Payé",
+    statusRejected: "Rejeté",
+    escrowHeld: "Séquestré (en attente de confirmation)",
+    escrowReleased: "Libéré",
+    escrowRefunded: "Remboursé au client",
+    escrowInitiated: "Paiement en cours",
+    escrowFailed: "Paiement échoué",
+    codDebtsTitle: "Détail des commissions dues (espèces)",
+    codDebtsHint:
+      "Ces montants sont déduits de votre solde disponible (compensation).",
+    transporterOnly: "Le portefeuille est réservé aux transporteurs.",
+    loadError: "Impossible de charger votre portefeuille.",
   },
 
   myOfferCard: {
@@ -559,7 +641,8 @@ export const fr = {
     paying: "Paiement en cours...",
     paymentSuccess: "Paiement effectué avec succès !",
     paymentError: "Erreur lors du paiement.",
-    trustFooter: "🔒 Paiement sécurisé par Transporti — L'argent est libéré uniquement après votre confirmation.",
+    trustFooter:
+      "🔒 Paiement sécurisé par Transporti — L'argent est libéré uniquement après votre confirmation.",
     confirmBtn: "Confirmer le paiement",
     confirming: "Confirmation...",
     confirmed: "Confirmé !",
@@ -594,20 +677,25 @@ export const fr = {
     timelineFundsSecured: "Fonds sécurisés",
     timelineFundsReleased: "Fonds libérés",
     paymentNotYetDone: "Paiement non encore effectué",
-    clickPayToSecure: "Cliquez sur « Payer maintenant » pour sécuriser votre transaction.",
+    clickPayToSecure:
+      "Cliquez sur « Payer maintenant » pour sécuriser votre transaction.",
     redirecting: "Redirection en cours...",
     payNowAmount: "Payer maintenant — {amount} TND",
     escrowSecuredTitle: "✅ Votre paiement est sécurisé",
-    escrowSecuredDesc: "Les fonds seront libérés au transporteur après votre confirmation de livraison.",
+    escrowSecuredDesc:
+      "Les fonds seront libérés au transporteur après votre confirmation de livraison.",
     escrowReleasedTitle: "💸 Paiement libéré au transporteur",
-    escrowReleasedDesc: "La transaction est finalisée. Merci d'avoir utilisé Transporti !",
+    escrowReleasedDesc:
+      "La transaction est finalisée. Merci d'avoir utilisé Transporti !",
     protectedTitle: "Votre transaction est protégée",
     protectedVerified: "Transporteur vérifié avec documents validés",
     protectedEscrow: "Escrow sécurisé — pas de paiement direct",
     protectedSupport: "Support 24/48h en cas de litige",
     // --- PaymentGateway ---
-    missingJobRef: "Référence de mission manquante. Rechargez la page et réessayez.",
-    gatewayNoResponse: "La plateforme de paiement n'a pas répondu. Veuillez réessayer.",
+    missingJobRef:
+      "Référence de mission manquante. Rechargez la page et réessayez.",
+    gatewayNoResponse:
+      "La plateforme de paiement n'a pas répondu. Veuillez réessayer.",
     initPaymentError: "Erreur lors de l'initialisation du paiement.",
     methodCard: "Carte bancaire",
     methodCardDesc: "Visa, Mastercard",
@@ -615,13 +703,16 @@ export const fr = {
     methodSobflousDesc: "Paiement mobile",
     methodD17Desc: "Virement bancaire",
     paymentImpossible: "Paiement impossible",
-    genericProcessingError: "Une erreur est survenue lors du traitement. Veuillez réessayer.",
+    genericProcessingError:
+      "Une erreur est survenue lors du traitement. Veuillez réessayer.",
     retry: "Réessayer",
     cancel: "Annuler",
     amountToPay: "Montant à payer",
     fixedPriceGuarantee: "Prix fixe garanti — aucun frais caché",
-    redirectSecurePlatform: "Vous allez être redirigé vers notre plateforme de paiement sécurisée.",
-    bankInfoDisclaimer: "Vos informations bancaires sont saisies uniquement sur la plateforme de paiement — jamais sur Transporti. Le montant est conservé en escrow et libéré au transporteur après confirmation de la livraison.",
+    redirectSecurePlatform:
+      "Vous allez être redirigé vers notre plateforme de paiement sécurisée.",
+    bankInfoDisclaimer:
+      "Vos informations bancaires sont saisies uniquement sur la plateforme de paiement — jamais sur Transporti. Le montant est conservé en escrow et libéré au transporteur après confirmation de la livraison.",
     acceptedMethods: "Moyens de paiement acceptés",
     escrowProtectedNote: "Paiement protégé par le système d'escrow Transporti",
     payAmount: "Payer {amount} TND",
@@ -630,12 +721,15 @@ export const fr = {
     paymentMethodTitle: "Mode de paiement",
     paymentDigitalShort: "Paiement Digital",
     recommended: "Recommandé",
-    digitalEscrowDesc: "Paiement sécurisé par escrow. Les fonds sont protégés jusqu'à la livraison.",
+    digitalEscrowDesc:
+      "Paiement sécurisé par escrow. Les fonds sont protégés jusqu'à la livraison.",
     buyerProtection: "Protection acheteur incluse",
     codDesc: "Payez en espèces directement au transporteur après la livraison.",
-    codUnavailable: "Indisponible au-delà de {threshold} TND (paiement digital obligatoire)",
+    codUnavailable:
+      "Indisponible au-delà de {threshold} TND (paiement digital obligatoire)",
     secure100: "Paiement 100% sécurisé",
-    secure100Desc: "Vos informations de paiement sont protégées par un cryptage de bout en bout. En cas de litige, notre équipe est disponible 24/7.",
+    secure100Desc:
+      "Vos informations de paiement sont protégées par un cryptage de bout en bout. En cas de litige, notre équipe est disponible 24/7.",
     // --- BookingSummary ---
     orderSummary: "Récapitulatif de la commande",
     orderNumberShort: "Commande #{id}",
@@ -643,7 +737,8 @@ export const fr = {
     // --- EscrowBadge ---
     escrowBadgeTitle: "Protection Escrow active",
     escrowBadgeAmount: "{amount} TND seront sécurisés",
-    escrowFundsLocked: "Les fonds sont bloqués jusqu'à confirmation de livraison",
+    escrowFundsLocked:
+      "Les fonds sont bloqués jusqu'à confirmation de livraison",
     escrowAutoRelease: "Libération automatique après 48h sans litige",
     escrowRefundGuarantee: "Remboursement garanti en cas de non-livraison",
   },
@@ -651,17 +746,21 @@ export const fr = {
   // Verify page (/verification)
   verify: {
     pageTitle: "Vérification du profil",
-    pageSubtitle: "Complétez votre vérification pour accéder à toutes les fonctionnalités",
+    pageSubtitle:
+      "Complétez votre vérification pour accéder à toutes les fonctionnalités",
     trusted: "Rejoignez les profils de confiance",
     trustedDesc: "Les profils vérifiés reçoivent 3x plus de missions.",
     verifyButton: "Vérifier mon profil",
     verifying: "Vérification en cours...",
     verified: "Profil Vérifié ✓",
-    verifiedDesc: "Votre identité et vos documents ont été vérifiés avec succès.",
+    verifiedDesc:
+      "Votre identité et vos documents ont été vérifiés avec succès.",
     pending: "En cours de vérification",
-    pendingDesc: "Notre équipe examine vos documents. Vous recevrez un email dès que ce sera terminé.",
+    pendingDesc:
+      "Notre équipe examine vos documents. Vous recevrez un email dès que ce sera terminé.",
     rejected: "Vérification Refusée",
-    rejectedDesc: "Certains documents ne sont pas conformes. Veuillez les soumettre à nouveau.",
+    rejectedDesc:
+      "Certains documents ne sont pas conformes. Veuillez les soumettre à nouveau.",
     idCard: "Carte d'identité",
     driverLicense: "Permis de conduire",
     carRegistration: "Carte grise",
@@ -699,13 +798,18 @@ export const fr = {
     // --- /verification page ---
     submitSuccess: "Profil soumis pour vérification !",
     submitError: "Erreur lors de la soumission.",
-    verifiedDescPage: "Félicitations ! Votre identité est confirmée. Vous pouvez répondre aux offres.",
-    pendingDescPage: "Nos équipes examinent vos documents. Délai estimé : 24-48h.",
+    verifiedDescPage:
+      "Félicitations ! Votre identité est confirmée. Vous pouvez répondre aux offres.",
+    pendingDescPage:
+      "Nos équipes examinent vos documents. Délai estimé : 24-48h.",
     partialTitle: "Vérification en cours",
-    partialDesc: "Certains documents ont été vérifiés. Consultez le détail ci-dessous.",
-    rejectedDescPage: "Un ou plusieurs documents ne sont pas valides. Consultez les motifs ci-dessous.",
+    partialDesc:
+      "Certains documents ont été vérifiés. Consultez le détail ci-dessous.",
+    rejectedDescPage:
+      "Un ou plusieurs documents ne sont pas valides. Consultez les motifs ci-dessous.",
     requiredTitle: "Vérification Requise",
-    requiredDesc: "Pour répondre aux offres, vous devez vérifier votre identité.",
+    requiredDesc:
+      "Pour répondre aux offres, vous devez vérifier votre identité.",
     docsStatusTitle: "État de vos documents",
     refreshTitle: "Rafraîchir",
     progressLabel: "Progression de la vérification",
@@ -723,13 +827,15 @@ export const fr = {
     viewDocument: "Voir le document",
     resendDocs: "Renvoyer vos documents",
     requiredDocs: "Documents requis",
-    correctHint: "💡 Corrigez les documents rejetés ci-dessus, puis renvoyez-les.",
+    correctHint:
+      "💡 Corrigez les documents rejetés ci-dessus, puis renvoyez-les.",
     uploadIdLabel: "Carte d'identité (Recto/Verso)",
     uploadLicenseLabel: "Permis de conduire (Recto/Verso)",
     uploadRegistrationLabel: "Carte grise (Recto/Verso)",
     uploadInsuranceLabel: "Assurance véhicule (Recto/Verso)",
     submitForReview: "Soumettre pour vérification",
-    minDocsHint: "Veuillez télécharger au moins le recto et verso de votre pièce d'identité et de votre permis de conduire.",
+    minDocsHint:
+      "Veuillez télécharger au moins le recto et verso de votre pièce d'identité et de votre permis de conduire.",
     docTypes: {
       CIN_FRONT: "Carte d'identité (Recto)",
       CIN_BACK: "Carte d'identité (Verso)",
@@ -769,17 +875,21 @@ export const fr = {
     loadingConversations: "Chargement des conversations...",
     emptyNoResults: "Aucun résultat",
     emptyNoMessages: "Aucun message",
-    noMatch: "Aucune conversation ne correspond à \"{query}\".",
-    emptyTransporter: "Vos conversations apparaîtront ici une fois qu'un client aura accepté votre offre.",
-    emptyClient: "Vos conversations apparaîtront ici une fois qu'un transporteur aura accepté votre demande.",
+    noMatch: 'Aucune conversation ne correspond à "{query}".',
+    emptyTransporter:
+      "Vos conversations apparaîtront ici une fois qu'un client aura accepté votre offre.",
+    emptyClient:
+      "Vos conversations apparaîtront ici une fois qu'un transporteur aura accepté votre demande.",
     findMission: "Trouver une mission",
     publishAd: "Publier une annonce",
     // --- detail /messages/[jobId] ---
     today: "Aujourd'hui",
     error403: "Vous n'avez pas accès à cette conversation.",
-    error404: "Aucune conversation trouvée pour cette mission. La conversation sera créée automatiquement après l'acceptation d'une offre.",
+    error404:
+      "Aucune conversation trouvée pour cette mission. La conversation sera créée automatiquement après l'acceptation d'une offre.",
     loadingError: "Erreur lors du chargement.",
-    bypassWarning: "Votre message contient des informations de contact. Pour votre sécurité, les échanges de coordonnées ne sont autorisés qu'après confirmation de la réservation.",
+    bypassWarning:
+      "Votre message contient des informations de contact. Pour votre sécurité, les échanges de coordonnées ne sont autorisés qu'après confirmation de la réservation.",
     sendError: "Erreur lors de l'envoi.",
     networkError: "Erreur réseau. Veuillez réessayer.",
     loadingConversation: "Chargement de la conversation...",
@@ -790,7 +900,8 @@ export const fr = {
     conversationFallback: "Conversation",
     contactOf: "📞 Coordonnées de {name}",
     yourContact: "votre contact",
-    contactProtected: "Coordonnées protégées — débloquées après confirmation de réservation",
+    contactProtected:
+      "Coordonnées protégées — débloquées après confirmation de réservation",
     linkedToMission: "Conversation liée à la mission #{id}",
     noMessageStart: "Aucun message encore. Envoyez le premier message !",
     you: "Vous",
@@ -804,7 +915,8 @@ export const fr = {
     subtitle: "Entrez votre email pour recevoir un lien de réinitialisation",
     emailSentTitle: "Email envoyé !",
     emailSentBefore: "Si un compte existe avec l'adresse",
-    emailSentAfter: ", vous recevrez un lien de réinitialisation sous quelques minutes.",
+    emailSentAfter:
+      ", vous recevrez un lien de réinitialisation sous quelques minutes.",
     checkSpam: "Pensez à vérifier vos spams.",
     backToLogin: "Retour à la connexion",
     sending: "Envoi en cours...",
@@ -813,14 +925,16 @@ export const fr = {
 
   // Réinitialisation du mot de passe (/reset-password)
   resetPassword: {
-    linkInvalidError: "Le lien est invalide ou expiré. Veuillez refaire la demande.",
+    linkInvalidError:
+      "Le lien est invalide ou expiré. Veuillez refaire la demande.",
     invalidTitle: "Lien invalide",
     invalidDesc: "Ce lien de réinitialisation est invalide ou a expiré.",
     requestNewLink: "Demander un nouveau lien",
     title: "Nouveau mot de passe",
     subtitle: "Choisissez un nouveau mot de passe sécurisé",
     successTitle: "Mot de passe réinitialisé !",
-    successDesc: "Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
+    successDesc:
+      "Vous pouvez maintenant vous connecter avec votre nouveau mot de passe.",
     newPasswordLabel: "Nouveau mot de passe",
     newPasswordPlaceholder: "Min. 8 caractères",
     confirmPasswordPlaceholder: "Confirmer",
@@ -844,7 +958,8 @@ export const fr = {
     choosePayment: "Choisir le mode de paiement",
     amount: "Montant :",
     paymentDigital: "Paiement Digital",
-    paymentDigitalDesc: "Montant sécurisé via escrow. Libéré après confirmation.",
+    paymentDigitalDesc:
+      "Montant sécurisé via escrow. Libéré après confirmation.",
     protectedBy: "Protégé par Transporti",
     paymentCOD: "Paiement à la livraison (COD)",
     paymentCODDesc: "Payez en espèces au transporteur à la réception.",
@@ -869,7 +984,8 @@ export const fr = {
   // New Job page (/jobs/new)
   newJob: {
     pageTitle: "Publier une demande de transport",
-    pageSubtitle: "Décrivez votre besoin et recevez des offres de transporteurs vérifiés",
+    pageSubtitle:
+      "Décrivez votre besoin et recevez des offres de transporteurs vérifiés",
     step1: "Type de service",
     step2: "Adresses",
     step3: "Détails",
@@ -886,7 +1002,8 @@ export const fr = {
     selectPickupGov: "Choisir un gouvernorat",
     selectDropoffGov: "Choisir un gouvernorat",
     additionalDetails: "Détails supplémentaires",
-    detailsHint: "Décrivez votre marchandise, poids, volume, précautions spéciales...",
+    detailsHint:
+      "Décrivez votre marchandise, poids, volume, précautions spéciales...",
     weightKg: "Poids (kg)",
     weightHint: "Estimation approximative",
     volumeM3: "Volume (m³)",
@@ -902,17 +1019,20 @@ export const fr = {
     timeSpecific: "Heure précise",
     budgetMin: "Budget minimum (TND)",
     budgetMax: "Budget maximum (TND)",
-    budgetHint: "Indiquez votre budget pour aider les transporteurs à proposer des offres pertinentes",
+    budgetHint:
+      "Indiquez votre budget pour aider les transporteurs à proposer des offres pertinentes",
     confirmAndPublish: "Confirmer et publier",
     publishing: "Publication...",
     publishSuccess: "Demande publiée avec succès !",
     publishError: "Erreur lors de la publication.",
-    publishDesc: "Votre demande est maintenant visible par les transporteurs vérifiés.",
+    publishDesc:
+      "Votre demande est maintenant visible par les transporteurs vérifiés.",
     viewMyAds: "Voir mes annonces",
     backToJobs: "Retour aux missions",
     required: "Ce champ est requis.",
     minAddressChars: "Minimum 5 caractères.",
-    sameAddresses: "Les adresses de départ et d'arrivée doivent être différentes.",
+    sameAddresses:
+      "Les adresses de départ et d'arrivée doivent être différentes.",
     invalidWeight: "Poids invalide.",
     invalidVolume: "Volume invalide.",
     // Validation par étape & messages (page /jobs/new)
@@ -938,12 +1058,15 @@ export const fr = {
     budgetOptional: "Optionnel",
     capacityLabel: "Capacité disponible",
     capacityPlaceholder: "Ex: 2 tonnes, camion bâché 12m³",
-    capacityHint: "Décrivez la capacité disponible pour attirer les bons clients.",
+    capacityHint:
+      "Décrivez la capacité disponible pour attirer les bons clients.",
     returnTripTitle: "Trajet retour",
     returnBannerPre: "🔄 Vous créez un ",
     returnBannerBold: "trajet retour",
-    returnBannerPost: " — les clients qui cherchent un transport sur votre itinéraire pourront voir votre disponibilité.",
-    draftRestored: "Votre brouillon a été restauré — reprenez là où vous en étiez.",
+    returnBannerPost:
+      " — les clients qui cherchent un transport sur votre itinéraire pourront voir votre disponibilité.",
+    draftRestored:
+      "Votre brouillon a été restauré — reprenez là où vous en étiez.",
     draftRestart: "Recommencer à zéro",
     publishRequest: "Publier ma demande",
     backBtn: "Retour",
@@ -1023,8 +1146,10 @@ export const fr = {
     },
     typeSelector: {
       transportTitle: "Transport de Marchandises",
-      transportDesc: "Pour vos colis, meubles, ou équipements. Idéal pour les livraisons rapides.",
-      movingDesc: "Service complet pour changer de domicile. Inclus estimation du volume.",
+      transportDesc:
+        "Pour vos colis, meubles, ou équipements. Idéal pour les livraisons rapides.",
+      movingDesc:
+        "Service complet pour changer de domicile. Inclus estimation du volume.",
     },
     filters: {
       title: "Filtres",
@@ -1067,13 +1192,15 @@ export const fr = {
       estimatedBudget: "Budget estimé",
       tnd: "TND",
       noteLabel: "Note :",
-      noteText: "Une fois publiée, votre demande sera visible par les transporteurs vérifiés. Vous recevrez des offres sous forme d'enchères inversées.",
+      noteText:
+        "Une fois publiée, votre demande sera visible par les transporteurs vérifiés. Vous recevrez des offres sous forme d'enchères inversées.",
     },
     location: {
       bannerTitle: "Astuce de localisation",
       bannerBefore: "Cliquez",
-      bannerBtn: "\"Ma position\"",
-      bannerAfter: "pour remplir automatiquement via GPS. Ajoutez étage, code porte ou repère pour guider le livreur.",
+      bannerBtn: '"Ma position"',
+      bannerAfter:
+        "pour remplir automatiquement via GPS. Ajoutez étage, code porte ou repère pour guider le livreur.",
       hintFloor: "Étage",
       hintDoorCode: "Code porte",
       hintElevator: "Ascenseur",
@@ -1102,14 +1229,16 @@ export const fr = {
       pickupPostalPlaceholder: "Ex: 1001",
       dropoffPostalPlaceholder: "Ex: 3000",
       hintLabel: "Astuce de localisation",
-      hintPlaceholder: "Ex: 3ème étage, code porte 4589, en face de la boulangerie",
+      hintPlaceholder:
+        "Ex: 3ème étage, code porte 4589, en face de la boulangerie",
       pickupTitle: "Point de Départ",
       dropoffTitle: "Destination",
     },
     photos: {
       limitError: "Maximum {max} photos. Il reste {n} emplacement(s).",
       uploadError: "Erreur lors de l'upload.",
-      cameraDenied: "Accès à la caméra refusé. Vérifiez les permissions de votre navigateur.",
+      cameraDenied:
+        "Accès à la caméra refusé. Vérifiez les permissions de votre navigateur.",
       cameraNotFound: "Aucune caméra détectée sur cet appareil.",
       cameraError: "Impossible d'accéder à la caméra. Utilisez la galerie.",
       captureError: "Erreur lors de la capture.",
@@ -1155,9 +1284,11 @@ export const fr = {
       helpersLabel: "Manutentionnaires souhaités",
       helpersHint: "Nombre d'aides pour le chargement / déchargement",
       fragileSection: "Détails articles fragiles",
-      fragilePlaceholder: "Ex: Miroir ancien 1.5m × 1m, vaisselle fine (3 cartons), écran TV 55 pouces...",
+      fragilePlaceholder:
+        "Ex: Miroir ancien 1.5m × 1m, vaisselle fine (3 cartons), écran TV 55 pouces...",
       descriptionSection: "Description & instructions spéciales",
-      descriptionPlaceholder: "Décrivez votre déménagement : mobilier principal, contraintes d'accès, horaires préférés...",
+      descriptionPlaceholder:
+        "Décrivez votre déménagement : mobilier principal, contraintes d'accès, horaires préférés...",
     },
   },
 
@@ -1190,8 +1321,10 @@ export const fr = {
     searchPlaceholder: "Rechercher par adresse ou client...",
     emptyReturnTitle: "Aucun trajet retour publié.",
     emptyMissionsTitle: "Aucune mission pour le moment.",
-    emptyReturnDesc: "Proposez un trajet retour pour éviter les retours à vide.",
-    emptyMissionsDesc: "Parcourez les missions disponibles pour soumettre vos offres.",
+    emptyReturnDesc:
+      "Proposez un trajet retour pour éviter les retours à vide.",
+    emptyMissionsDesc:
+      "Parcourez les missions disponibles pour soumettre vos offres.",
     findMission: "Trouver une mission",
     proposeTrip: "Proposer un trajet",
     clientTitle: "Mes Transports",
@@ -1210,16 +1343,33 @@ export const fr = {
   jobDetail: {
     loading: "Chargement...",
     paymentSuccess: "Paiement effectué avec succès ! Votre escrow est actif.",
-    paymentFailed: "Le paiement a échoué. Veuillez réessayer depuis votre réservation.",
-    deliveryConfirmed: "Livraison confirmée ! Le paiement a été libéré au transporteur.",
+    paymentFailed:
+      "Le paiement a échoué. Veuillez réessayer depuis votre réservation.",
+    matchedTitle: "Mission assignée — paiement à sécuriser",
+    matchedClientPay:
+      "Votre transporteur est confirmé. Procédez au paiement sécurisé : le montant est séquestré et libéré uniquement après la livraison confirmée.",
+    matchedClientCod:
+      "Paiement en espèces à la livraison. Le transporteur doit confirmer le démarrage de la mission.",
+    matchedTransporterCod:
+      "Le client a choisi le paiement en espèces à la livraison. Confirmez que vous acceptez ces conditions pour démarrer la mission.",
+    matchedTransporterDigital:
+      "En attente du paiement sécurisé du client. La mission démarrera automatiquement dès que le paiement est confirmé.",
+    payNow: "Payer maintenant",
+    paying: "Redirection vers le paiement...",
+    confirmStart: "Confirmer le démarrage",
+    startConfirmed: "Démarrage confirmé — la mission est en cours.",
+    deliveryConfirmed:
+      "Livraison confirmée ! Le paiement a été libéré au transporteur.",
     confirmError: "Erreur lors de la confirmation.",
     genericError: "Une erreur est survenue.",
     invalidPrice: "Veuillez saisir un prix valide.",
-    returnBooked: "🚀 Trajet retour réservé avec succès ! La mission est en cours.",
+    returnBooked:
+      "🚀 Trajet retour réservé avec succès ! La mission est en cours.",
     bookingError: "Erreur lors de la réservation.",
     cancelSuccess: "Mission annulée avec succès.",
     cancelError: "Erreur lors de l'annulation.",
-    markedDelivered: "Mission marquée comme terminée ! Le client va confirmer la réception.",
+    markedDelivered:
+      "Mission marquée comme terminée ! Le client va confirmer la réception.",
     networkRetry: "Erreur réseau. Veuillez réessayer.",
     transporterCancelSuccess: "Mission annulée. Le client a été notifié.",
     unexpectedError: "Erreur inattendue.",
@@ -1238,7 +1388,8 @@ export const fr = {
     routeEstimation: "Estimation trajet",
     offersReceived: "Offres reçues",
     verifRequired: "Vérification requise",
-    verifRequiredDesc: "Vous devez compléter votre vérification avant de soumettre des offres.",
+    verifRequiredDesc:
+      "Vous devez compléter votre vérification avant de soumettre des offres.",
     completeVerif: "Compléter ma vérification",
     returnAvailable: "Trajet retour disponible",
     returnReducedRate: "Tarif réduit — camion sur le retour",
@@ -1265,19 +1416,23 @@ export const fr = {
     trustDisputes: "Résolution de litiges sous 24-48h",
     trustReviews: "Avis authentiques de clients vérifiés",
     missionInProgress: "Mission en cours",
-    assignedToYou: "Vous êtes assigné à cette mission. Marquez-la comme livrée une fois terminée.",
-    transporterAssignedInfo: "Le transporteur a été assigné. Coordonnez-vous via la messagerie.",
+    assignedToYou:
+      "Vous êtes assigné à cette mission. Marquez-la comme livrée une fois terminée.",
+    transporterAssignedInfo:
+      "Le transporteur a été assigné. Coordonnez-vous via la messagerie.",
     confirming: "Confirmation...",
     markDelivered: "📦 Marquer comme livré",
     openMessaging: "Ouvrir la messagerie",
     viewBooking: "Voir la réservation",
     cancelMission: "Annuler la mission",
     confirmDeliveryTitle: "Confirmer la livraison",
-    confirmDeliveryDesc: "Le transporteur a marqué cette mission comme terminée. Confirmez la bonne réception pour libérer le paiement.",
+    confirmDeliveryDesc:
+      "Le transporteur a marqué cette mission comme terminée. Confirmez la bonne réception pour libérer le paiement.",
     confirmReceiveRelease: "Confirmer la réception & Libérer le paiement",
     deliveryReleasedBadge: "Livraison confirmée — Paiement libéré ✓",
     awaitingConfirmation: "En attente de confirmation",
-    awaitingConfirmationDesc: "Le client doit confirmer la bonne réception avant que votre paiement soit libéré.",
+    awaitingConfirmationDesc:
+      "Le client doit confirmer la bonne réception avant que votre paiement soit libéré.",
     alreadyReviewed: "Vous avez déjà laissé un avis pour cette mission.",
     missionCompleted: "Mission terminée",
     missionCompletedDesc: "Le transport a été effectué avec succès.",
@@ -1285,18 +1440,23 @@ export const fr = {
     cancelThisMission: "Annuler cette mission",
     reportProblem: "Signaler un problème",
     confirmReceptionTitle: "Confirmer la réception",
-    confirmReceptionMsg: "Confirmez-vous la bonne réception de votre livraison ? Cette action libérera le paiement au transporteur.",
+    confirmReceptionMsg:
+      "Confirmez-vous la bonne réception de votre livraison ? Cette action libérera le paiement au transporteur.",
     confirmReceptionLabel: "Confirmer la réception",
     cancelJobTitle: "Annuler la mission",
-    cancelJobMsg: "Êtes-vous sûr de vouloir annuler cette mission ? Cette action est irréversible.",
+    cancelJobMsg:
+      "Êtes-vous sûr de vouloir annuler cette mission ? Cette action est irréversible.",
     cancelJobLabel: "Annuler la mission",
     backLabel: "Retour",
     markDeliveredTitle: "Marquer comme livré",
-    markDeliveredMsg: "Confirmez-vous avoir livré la marchandise ? Le client sera notifié pour confirmer la réception.",
+    markDeliveredMsg:
+      "Confirmez-vous avoir livré la marchandise ? Le client sera notifié pour confirmer la réception.",
     markDeliveredLabel: "Oui, c'est livré",
-    transporterCancelBody: "La mission sera remise en ligne et le client sera notifié. Expliquez la raison de votre annulation.",
+    transporterCancelBody:
+      "La mission sera remise en ligne et le client sera notifié. Expliquez la raison de votre annulation.",
     cancelReasonLabel: "Raison de l'annulation",
-    cancelReasonPlaceholder: "Ex : panne de véhicule, empêchement de dernière minute…",
+    cancelReasonPlaceholder:
+      "Ex : panne de véhicule, empêchement de dernière minute…",
     defaultTransporter: "Transporteur",
   },
 
@@ -1305,7 +1465,8 @@ export const fr = {
     notFound: "Données de réservation introuvables.",
     back: "Retour",
     successTitle: "Réservation confirmée !",
-    successDesc: "Votre transporteur a été notifié. Vous pouvez suivre l'avancement de votre mission depuis votre tableau de bord.",
+    successDesc:
+      "Votre transporteur a été notifié. Vous pouvez suivre l'avancement de votre mission depuis votre tableau de bord.",
     orderNumber: "Numéro de commande",
     paymentMethod: "Mode de paiement",
     paymentDigital: "Paiement digital (Escrow)",
@@ -1315,7 +1476,8 @@ export const fr = {
     trackMission: "Suivre la mission",
     backToDashboard: "Retour au tableau de bord",
     finalizeTitle: "Finaliser la réservation",
-    finalizeSubtitle: "Vérifiez les détails et choisissez votre mode de paiement.",
+    finalizeSubtitle:
+      "Vérifiez les détails et choisissez votre mode de paiement.",
     stepReview: "Récapitulatif",
     stepPayment: "Paiement",
     stepConfirm: "Confirmation",
@@ -1350,7 +1512,8 @@ export const fr = {
     resolved: "Résolus",
     rejected: "Rejetés",
     noDisputes: "Aucun litige",
-    noDisputesDesc: "Vous n'avez pas encore de litiges. Espérons que ça reste ainsi !",
+    noDisputesDesc:
+      "Vous n'avez pas encore de litiges. Espérons que ça reste ainsi !",
     noDisputesInCategory: "Aucun litige dans cette catégorie",
     tryChangeFilter: "Essayez de changer le filtre.",
     openDisputeLink: "Ouvrir un litige →",
@@ -1365,12 +1528,14 @@ export const fr = {
     mission: "Mission concernée",
     loadingMissions: "Chargement de vos missions...",
     noEligibleMissions: "Aucune mission éligible",
-    noEligibleMissionsDesc: "Seules les missions en cours ou terminées peuvent faire l'objet d'un litige.",
+    noEligibleMissionsDesc:
+      "Seules les missions en cours ou terminées peuvent faire l'objet d'un litige.",
     selectMission: "— Sélectionner une mission —",
     reason: "Motif du litige",
     selectReason: "— Sélectionner un motif —",
     detailedDesc: "Description détaillée",
-    descPlaceholder: "Décrivez le problème rencontré en détail (minimum 20 caractères)...",
+    descPlaceholder:
+      "Décrivez le problème rencontré en détail (minimum 20 caractères)...",
     remainingChars: "caractères restants",
     minChars: "Minimum 20 caractères",
     cancel: "Annuler",
@@ -1378,7 +1543,8 @@ export const fr = {
     createDispute: "Créer le litige",
     disputeCreated: "Litige créé avec succès !",
     alreadyHasDispute: "Ce job a déjà un litige actif en cours.",
-    notParticipant: "Vous ne pouvez signaler que les missions auxquelles vous participez.",
+    notParticipant:
+      "Vous ne pouvez signaler que les missions auxquelles vous participez.",
     createError: "Erreur lors de la création.",
     networkError: "Erreur réseau. Veuillez réessayer.",
     missionLabel: "Mission",
@@ -1417,7 +1583,8 @@ export const fr = {
     noUnread: "Aucune notification non lue",
     noNotifications: "Aucune notification",
     noNotificationsInCategory: "Aucune notification",
-    noNotificationsDesc: "Vos notifications apparaîtront ici lorsque vous recevrez des offres, des messages, ou des mises à jour.",
+    noNotificationsDesc:
+      "Vos notifications apparaîtront ici lorsque vous recevrez des offres, des messages, ou des mises à jour.",
     successDesc: "Vous avez lu toutes vos notifications. Bon travail ! 🎉",
     loading: "Chargement des notifications...",
     retry: "Réessayer",
@@ -1447,7 +1614,8 @@ export const fr = {
   returnTrip: {
     badgeReturn: "Trajet retour",
     pageTitle: "Proposer un trajet retour",
-    pageSubtitle: "Évitez le retour à vide — indiquez votre itinéraire et les clients vous trouveront.",
+    pageSubtitle:
+      "Évitez le retour à vide — indiquez votre itinéraire et les clients vous trouveront.",
     howItWorksTitle: "Comment ça marche ?",
     howItWorks1: "Indiquez votre itinéraire retour et votre véhicule",
     howItWorks2: "Les clients voient votre trajet dans la liste des annonces",
@@ -1473,12 +1641,14 @@ export const fr = {
     priceLabel: "Prix indicatif (TND)",
     pricePlaceholder: "Optionnel — Ex: 150",
     sectionNote: "Note (optionnel)",
-    notePlaceholder: "Ex: Disponible pour chargement à partir de 14h, passage par Kairouan possible...",
+    notePlaceholder:
+      "Ex: Disponible pour chargement à partir de 14h, passage par Kairouan possible...",
     btnPublish: "Publier le trajet retour",
     btnPublishing: "Publication...",
     btnCancel: "Annuler",
     successTitle: "Trajet publié !",
-    successDesc: "Votre disponibilité est maintenant visible par les clients qui cherchent un transport sur votre itinéraire.",
+    successDesc:
+      "Votre disponibilité est maintenant visible par les clients qui cherchent un transport sur votre itinéraire.",
     successMsg: "Trajet retour publié ! Les clients pourront vous contacter.",
     errorPub: "Erreur lors de la publication.",
     viewMissions: "Voir mes missions",
@@ -1581,7 +1751,8 @@ export const fr = {
       actions: "Actions",
       unassigned: "Non assigné",
       cancelJob: "Annuler le Job",
-      cancelWarning: "Cette action est irréversible. Le client et le transporteur seront notifiés.",
+      cancelWarning:
+        "Cette action est irréversible. Le client et le transporteur seront notifiés.",
       cancelReason: "Raison de l'annulation",
       cancelReasonPlaceholder: "Ex: Fraude détectée, demande du client...",
       confirmCancel: "Confirmer l'annulation",
@@ -1590,7 +1761,8 @@ export const fr = {
       newStatus: "Nouveau statut",
       selectStatus: "Sélectionner un statut",
       justification: "Justification",
-      justificationPlaceholder: "Ex: Correction d'un statut erroné, investigation en cours...",
+      justificationPlaceholder:
+        "Ex: Correction d'un statut erroné, investigation en cours...",
       applyChange: "Appliquer le changement",
     },
 

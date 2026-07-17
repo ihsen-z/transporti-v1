@@ -70,6 +70,8 @@ export interface JobDetail extends JobListItem {
   specifications?: JobSpecifications;
   /** Commission rate for this job's type, served by the API (D1 net garanti) */
   commission_rate?: number;
+  /** DIGITAL/COD once a Booking exists (D3), null before acceptance */
+  booking_payment_method?: "DIGITAL" | "COD" | null;
   /** Current transporter's offer on this job (any status), null otherwise */
   my_offer?: MyOfferSummary | null;
   /** Allow additional backend fields without breaking type safety */

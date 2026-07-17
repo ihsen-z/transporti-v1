@@ -44,10 +44,16 @@ interface TransporterStats {
   available_missions: number;
   active_offers: number;
   completed_jobs: number;
+  /** K4 — gains confirmés (escrow libéré), source unique B2 */
   total_earnings: number;
+  /** K11 — net des missions livrées en attente de confirmation */
+  earnings_pending?: number;
+  /** K10 — solde disponible du portefeuille */
+  wallet_available?: number;
   verification_status: string;
-  average_rating: number;
-  completion_rate: number;
+  average_rating: number | null;
+  completion_rate: number | null;
+  profile_completion?: number;
 }
 
 interface RecentJob {
@@ -121,9 +127,7 @@ function ClientDashboard({
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-2">
-            {t.dashboard.clientCTA}
-          </h2>
+          <h2 className="text-2xl font-bold mb-2">{t.dashboard.clientCTA}</h2>
           <p className="text-blue-200 mb-6 max-w-lg">
             {t.dashboard.clientCTADesc}
           </p>
@@ -176,7 +180,8 @@ function ClientDashboard({
             href="/jobs"
             className="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1"
           >
-            {t.dashboard.viewAll} <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
+            {t.dashboard.viewAll}{" "}
+            <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
           </Link>
         </div>
         <div className="divide-y divide-neutral-50">
@@ -262,7 +267,8 @@ function TransporterDashboard({
               href="/verification"
               className="inline-flex items-center gap-1 text-sm font-semibold text-amber-800 mt-3 hover:text-amber-900"
             >
-              {t.dashboard.completeVerification} <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
+              {t.dashboard.completeVerification}{" "}
+              <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
             </Link>
           </div>
         </div>
@@ -339,38 +345,47 @@ function TransporterDashboard({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
-                  <Star className="w-4 h-4 text-amber-500" /> {t.dashboard.avgRating}
+                  <Star className="w-4 h-4 text-amber-500" />{" "}
+                  {t.dashboard.avgRating}
                 </div>
                 <span className="text-lg font-bold text-neutral-900">
-                  {stats.average_rating}/5
+                  {stats.average_rating != null
+                    ? `${stats.average_rating}/5`
+                    : "—"}
                 </span>
               </div>
               <div className="w-full bg-neutral-100 rounded-full h-2">
                 <div
                   className="bg-amber-500 h-2 rounded-full transition-all"
-                  style={{ width: `${(stats.average_rating / 5) * 100}%` }}
+                  style={{
+                    width: `${((stats.average_rating ?? 0) / 5) * 100}%`,
+                  }}
                 />
               </div>
             </div>
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" /> {t.dashboard.completionRateLabel}
+                  <TrendingUp className="w-4 h-4 text-emerald-500" />{" "}
+                  {t.dashboard.completionRateLabel}
                 </div>
                 <span className="text-lg font-bold text-neutral-900">
-                  {stats.completion_rate}%
+                  {stats.completion_rate != null
+                    ? `${stats.completion_rate}%`
+                    : "—"}
                 </span>
               </div>
               <div className="w-full bg-neutral-100 rounded-full h-2">
                 <div
                   className="bg-accent-500 h-2 rounded-full transition-all"
-                  style={{ width: `${stats.completion_rate}%` }}
+                  style={{ width: `${stats.completion_rate ?? 0}%` }}
                 />
               </div>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
               <div className="flex items-center gap-2 text-sm text-neutral-600">
-                <ShieldCheck className="w-4 h-4 text-brand-600" /> {t.dashboard.verificationStatus}
+                <ShieldCheck className="w-4 h-4 text-brand-600" />{" "}
+                {t.dashboard.verificationStatus}
               </div>
               <span
                 className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
@@ -397,7 +412,8 @@ function TransporterDashboard({
               href="/jobs"
               className="text-sm text-brand-600 hover:text-brand-700 font-medium flex items-center gap-1"
             >
-              {t.dashboard.viewAllMissions} <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
+              {t.dashboard.viewAllMissions}{" "}
+              <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
             </Link>
           </div>
           <div className="divide-y divide-neutral-50">
@@ -534,7 +550,10 @@ export default function DashboardPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-neutral-900">
           {t.dashboard.hello}{" "}
-          {user?.first_name || user?.name?.split(" ")[0] || t.dashboard.defaultUser} 👋
+          {user?.first_name ||
+            user?.name?.split(" ")[0] ||
+            t.dashboard.defaultUser}{" "}
+          👋
         </h1>
         <p className="text-neutral-500 mt-1">
           {isClient
@@ -545,7 +564,11 @@ export default function DashboardPage() {
 
       {/* Role-specific content */}
       {isClient && (
-        <ClientDashboard stats={clientStats} recentJobs={recentJobs} dateLocale={dateLocale} />
+        <ClientDashboard
+          stats={clientStats}
+          recentJobs={recentJobs}
+          dateLocale={dateLocale}
+        />
       )}
       {isTransporter && (
         <TransporterDashboard
@@ -562,9 +585,7 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-neutral-900">
             {t.dashboard.welcomeGeneric}
           </h2>
-          <p className="text-neutral-500 mt-1">
-            {t.dashboard.selectRole}
-          </p>
+          <p className="text-neutral-500 mt-1">{t.dashboard.selectRole}</p>
         </div>
       )}
       {/* Help Center Quick Access (N5) */}

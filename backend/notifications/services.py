@@ -216,9 +216,9 @@ def notify_escrow_released(escrow):
 def notify_escrow_refunded(escrow):
     """Notify client that escrow was refunded."""
     job = escrow.booking_reference
-    
+
     return _safe_notify(
-        user=job.client,
+        user=job.owner,
         notification_type=NotificationType.ESCROW_REFUNDED,
         title="💰 Remboursement effectué",
         message=f"Votre paiement de {escrow.amount} TND a été remboursé.",
@@ -410,4 +410,23 @@ def notify_job_cancelled(job):
     except Exception:
         pass
     return None
+
+
+def notify_transporter_cancelled(job, transporter, reason: str = ""):
+    """Notify the client that the assigned transporter cancelled the mission.
+
+    (Was imported by TransporterCancelView but never implemented — audit
+    Sprint 0, bug latent n°3.)
+    """
+    name = f"{transporter.first_name} {transporter.last_name}".strip() or transporter.email
+    message = f"Le transporteur {name} a annulé la mission. Elle est de nouveau ouverte aux offres."
+    if reason:
+        message += f" Raison : {reason}"
+    return _safe_notify(
+        user=job.owner,
+        notification_type=NotificationType.JOB_CANCELLED,
+        title="⚠️ Le transporteur a annulé",
+        message=message,
+        metadata={'job_id': job.id}
+    )
 

@@ -15,6 +15,7 @@ import {
   RotateCcw,
   AlertTriangle,
   UserCircle,
+  Wallet,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import NavItem from "./NavItem";
@@ -55,6 +56,7 @@ export default function AppSidebar() {
   const transporterItems: NavItemDef[] = [
     { href: "/jobs/browse", icon: Search, label: t.nav.findMission },
     { href: "/offers", icon: FileText, label: t.nav.myOffers },
+    { href: "/wallet", icon: Wallet, label: t.nav.wallet },
     { href: "/jobs/return-trip", icon: RotateCcw, label: t.nav.returnTrip },
     { href: "/verification", icon: ShieldCheck, label: t.nav.verification },
   ];
@@ -72,7 +74,9 @@ export default function AppSidebar() {
   }
 
   return (
-    <aside className={`hidden lg:flex flex-col w-64 bg-white dark:bg-neutral-900 ${isRTL ? 'border-s border-neutral-200 dark:border-neutral-800' : 'border-e border-neutral-200 dark:border-neutral-800'} h-screen fixed ${isRTL ? 'right-0' : 'left-0'} top-0 pt-0 z-sidebar`}>
+    <aside
+      className={`hidden lg:flex flex-col w-64 bg-white dark:bg-neutral-900 ${isRTL ? "border-s border-neutral-200 dark:border-neutral-800" : "border-e border-neutral-200 dark:border-neutral-800"} h-screen fixed ${isRTL ? "right-0" : "left-0"} top-0 pt-0 z-sidebar`}
+    >
       {/* Logo Area */}
       <div className="px-6 py-4 border-b border-neutral-100 h-16 flex items-center overflow-hidden">
         <Link href="/dashboard">

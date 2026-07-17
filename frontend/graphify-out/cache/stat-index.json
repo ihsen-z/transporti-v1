@@ -1,0 +1,878 @@
+{
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\.eslintrc.json": {
+    "size": 409,
+    "mtime_ns": 1777387779540292100,
+    "word_count": 26,
+    "hash": "5ba15a04be4538ce5adf91d1568543d4532516b10ead8cfd30f3c72ea0cc7dc6"
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\.husky\\commit-msg": {
+    "size": 193,
+    "mtime_ns": 1775686828761460400,
+    "word_count": 20,
+    "hash": "023233a8df657296bbcfde3e7f5fe5513f7909191e1330869f02c46662f2cc99"
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\.husky\\pre-commit": {
+    "size": 264,
+    "mtime_ns": 1775686826745014300,
+    "word_count": 24,
+    "hash": "d18f0e15d16d0db6b3823cb49a252a6e99ec6ee2df01eb7c638decc43dfbe871"
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\.husky\\pre-push": {
+    "size": 159,
+    "mtime_ns": 1775686830776343000,
+    "word_count": 18,
+    "hash": "430a65bc6f252fad75e7cda3bea2cd36dfcb07426945cbfd98b14401bc5883e0"
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\README.md": {
+    "size": 3309,
+    "mtime_ns": 1771287228898333800,
+    "word_count": 430
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\audit-log\\page.tsx": {
+    "size": 15116,
+    "mtime_ns": 1783948181359687600,
+    "word_count": 1158
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\dashboard\\page.tsx": {
+    "size": 13713,
+    "mtime_ns": 1784031915584969500,
+    "word_count": 1041
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\disputes\\page.tsx": {
+    "size": 26310,
+    "mtime_ns": 1783899282886130600,
+    "word_count": 1889
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\jobs\\[id]\\page.tsx": {
+    "size": 17942,
+    "mtime_ns": 1783947621172710100,
+    "word_count": 1192
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\jobs\\page.tsx": {
+    "size": 26377,
+    "mtime_ns": 1783899289402532300,
+    "word_count": 2139
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\page.tsx": {
+    "size": 124,
+    "mtime_ns": 1770517198398103600,
+    "word_count": 13
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\payments\\page.tsx": {
+    "size": 25039,
+    "mtime_ns": 1784031917382015300,
+    "word_count": 1938
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\reviews\\page.tsx": {
+    "size": 22302,
+    "mtime_ns": 1783899280891918600,
+    "word_count": 1584
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\users\\page.tsx": {
+    "size": 47384,
+    "mtime_ns": 1783948173938488100,
+    "word_count": 3502
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\admin\\verifications\\page.tsx": {
+    "size": 28570,
+    "mtime_ns": 1783898888961295000,
+    "word_count": 2133
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\error.tsx": {
+    "size": 1910,
+    "mtime_ns": 1775944158441620900,
+    "word_count": 156
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\layout.tsx": {
+    "size": 1093,
+    "mtime_ns": 1783898889011915800,
+    "word_count": 104
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(admin)\\loading.tsx": {
+    "size": 583,
+    "mtime_ns": 1775944158489211300,
+    "word_count": 47
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\booking\\[jobId]\\page.tsx": {
+    "size": 25026,
+    "mtime_ns": 1783948188919264500,
+    "word_count": 1758
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\dashboard\\page.tsx": {
+    "size": 21271,
+    "mtime_ns": 1784250570271940200,
+    "word_count": 1539
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\disputes\\page.tsx": {
+    "size": 23647,
+    "mtime_ns": 1783948195403531700,
+    "word_count": 1756
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\error.tsx": {
+    "size": 2004,
+    "mtime_ns": 1783368315492121600,
+    "word_count": 167
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\help\\page.tsx": {
+    "size": 6711,
+    "mtime_ns": 1783947657741096500,
+    "word_count": 644
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\jobs\\[id]\\book\\page.tsx": {
+    "size": 17351,
+    "mtime_ns": 1783948203564545300,
+    "word_count": 1139
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\jobs\\[id]\\page.tsx": {
+    "size": 50684,
+    "mtime_ns": 1784250796575102700,
+    "word_count": 3413
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\jobs\\browse\\page.tsx": {
+    "size": 9921,
+    "mtime_ns": 1783947647857079900,
+    "word_count": 755
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\jobs\\new\\page.tsx": {
+    "size": 22569,
+    "mtime_ns": 1783899697272280000,
+    "word_count": 1826
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\jobs\\page.tsx": {
+    "size": 27472,
+    "mtime_ns": 1783948208236004900,
+    "word_count": 2120
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\jobs\\return-trip\\page.tsx": {
+    "size": 17828,
+    "mtime_ns": 1783899690828794800,
+    "word_count": 1304
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\jobs\\return-trips\\page.tsx": {
+    "size": 12780,
+    "mtime_ns": 1783899675365495600,
+    "word_count": 867
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\layout.tsx": {
+    "size": 1316,
+    "mtime_ns": 1783898889443006600,
+    "word_count": 111
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\loading.tsx": {
+    "size": 556,
+    "mtime_ns": 1775944159034896200,
+    "word_count": 44
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\messages\\[jobId]\\page.tsx": {
+    "size": 18635,
+    "mtime_ns": 1783948219036469000,
+    "word_count": 1538
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\messages\\page.tsx": {
+    "size": 16931,
+    "mtime_ns": 1783948215686948400,
+    "word_count": 1423
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\notifications\\page.tsx": {
+    "size": 21342,
+    "mtime_ns": 1783948228769287600,
+    "word_count": 1807
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\offers\\page.tsx": {
+    "size": 17367,
+    "mtime_ns": 1784033172536813900,
+    "word_count": 1556
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\privacy\\page.tsx": {
+    "size": 4060,
+    "mtime_ns": 1783947621365060600,
+    "word_count": 347
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\profile\\[userId]\\ClientProfilePage.tsx": {
+    "size": 35691,
+    "mtime_ns": 1783948238280046000,
+    "word_count": 2678
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\profile\\[userId]\\TransporterProfilePage.tsx": {
+    "size": 48861,
+    "mtime_ns": 1783947621499553500,
+    "word_count": 3418
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\profile\\[userId]\\page.tsx": {
+    "size": 4026,
+    "mtime_ns": 1783830423450131700,
+    "word_count": 395
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\settings\\page.tsx": {
+    "size": 26082,
+    "mtime_ns": 1783899294815907600,
+    "word_count": 1939
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\terms\\page.tsx": {
+    "size": 3739,
+    "mtime_ns": 1783947621553756400,
+    "word_count": 316
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\transporter\\[id]\\page.tsx": {
+    "size": 5506,
+    "mtime_ns": 1783898889819835300,
+    "word_count": 416
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\verification\\page.tsx": {
+    "size": 16755,
+    "mtime_ns": 1783948245969540700,
+    "word_count": 1127
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(auth)\\forgot-password\\page.tsx": {
+    "size": 4701,
+    "mtime_ns": 1783947621604839600,
+    "word_count": 329
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(auth)\\layout.tsx": {
+    "size": 3860,
+    "mtime_ns": 1776301939905940900,
+    "word_count": 312
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(auth)\\login\\page.tsx": {
+    "size": 11553,
+    "mtime_ns": 1783947621665262900,
+    "word_count": 862
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(auth)\\register\\page.tsx": {
+    "size": 11603,
+    "mtime_ns": 1783947621714555900,
+    "word_count": 807
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(auth)\\reset-password\\page.tsx": {
+    "size": 7700,
+    "mtime_ns": 1783899671102300700,
+    "word_count": 539
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(auth)\\select-role\\page.tsx": {
+    "size": 6589,
+    "mtime_ns": 1783899664079666100,
+    "word_count": 510
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(marketing)\\layout.tsx": {
+    "size": 441,
+    "mtime_ns": 1770074514035743700,
+    "word_count": 37
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(marketing)\\page.tsx": {
+    "size": 10101,
+    "mtime_ns": 1775944157966455400,
+    "word_count": 647
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\access-denied\\page.tsx": {
+    "size": 1827,
+    "mtime_ns": 1775944157997652500,
+    "word_count": 158
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\layout.tsx": {
+    "size": 2339,
+    "mtime_ns": 1783876483320281300,
+    "word_count": 225
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\not-found.tsx": {
+    "size": 2902,
+    "mtime_ns": 1783368481779837400,
+    "word_count": 233
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\page.tsx": {
+    "size": 24198,
+    "mtime_ns": 1783974833838859000,
+    "word_count": 1406
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\commitlint.config.js": {
+    "size": 411,
+    "mtime_ns": 1770860868985304400,
+    "word_count": 31
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ImageCropper.tsx": {
+    "size": 6636,
+    "mtime_ns": 1776811831184947300,
+    "word_count": 569
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\AdminHeader.tsx": {
+    "size": 3581,
+    "mtime_ns": 1783899278420333700,
+    "word_count": 300
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\AdminSidebar.tsx": {
+    "size": 4401,
+    "mtime_ns": 1783898890207056600,
+    "word_count": 414
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\DashboardConfig.tsx": {
+    "size": 18234,
+    "mtime_ns": 1783792537796590700,
+    "word_count": 1333
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\DataTable.tsx": {
+    "size": 3238,
+    "mtime_ns": 1783898890253704200,
+    "word_count": 251
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\DocumentReviewDrawer.tsx": {
+    "size": 21902,
+    "mtime_ns": 1783948253313993800,
+    "word_count": 1643
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\Pagination.tsx": {
+    "size": 1085,
+    "mtime_ns": 1783859213693953800,
+    "word_count": 124
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\RevenueChart.tsx": {
+    "size": 5370,
+    "mtime_ns": 1784031852836904400,
+    "word_count": 590
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\StatCard.tsx": {
+    "size": 3035,
+    "mtime_ns": 1783859268564228700,
+    "word_count": 259
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\StatusBadge.tsx": {
+    "size": 3464,
+    "mtime_ns": 1783858217936260800,
+    "word_count": 367
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\admin\\ThemeProvider.tsx": {
+    "size": 1239,
+    "mtime_ns": 1776812078653457700,
+    "word_count": 130
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\auth\\AuthGuard.tsx": {
+    "size": 1809,
+    "mtime_ns": 1775944158696841200,
+    "word_count": 179
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\booking\\BookingSummary.tsx": {
+    "size": 6043,
+    "mtime_ns": 1783947907897494300,
+    "word_count": 444
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\booking\\EscrowBadge.tsx": {
+    "size": 2022,
+    "mtime_ns": 1783897481223346100,
+    "word_count": 143
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\booking\\PaymentGateway.tsx": {
+    "size": 7252,
+    "mtime_ns": 1783947908219618000,
+    "word_count": 597
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\booking\\PaymentMethodSelector.tsx": {
+    "size": 5857,
+    "mtime_ns": 1783898890378546800,
+    "word_count": 422
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\brand\\TransportiLogo.tsx": {
+    "size": 9243,
+    "mtime_ns": 1783898890426222300,
+    "word_count": 844
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\dashboard\\JobCard.tsx": {
+    "size": 2706,
+    "mtime_ns": 1783899658826645500,
+    "word_count": 274
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\dashboard\\MapPreviewCard.tsx": {
+    "size": 2414,
+    "mtime_ns": 1783828891149820100,
+    "word_count": 222
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\dashboard\\StatCard.tsx": {
+    "size": 1813,
+    "mtime_ns": 1775944158985110200,
+    "word_count": 170
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\dev\\DevNavMenu.tsx": {
+    "size": 11150,
+    "mtime_ns": 1783898890474303800,
+    "word_count": 967
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\dev\\DevNavWrapper.tsx": {
+    "size": 351,
+    "mtime_ns": 1776549528632606600,
+    "word_count": 49
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\JobActions.tsx": {
+    "size": 9943,
+    "mtime_ns": 1783877193584208600,
+    "word_count": 828
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\JobFeedCard.tsx": {
+    "size": 8231,
+    "mtime_ns": 1783899324956497300,
+    "word_count": 753
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\JobFilters.tsx": {
+    "size": 3825,
+    "mtime_ns": 1783898890562189200,
+    "word_count": 266
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\JobPreview.tsx": {
+    "size": 11566,
+    "mtime_ns": 1783898890610633400,
+    "word_count": 739
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\JobTimeline.tsx": {
+    "size": 7899,
+    "mtime_ns": 1783898890658903100,
+    "word_count": 555
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\JobTypeSelector.tsx": {
+    "size": 2272,
+    "mtime_ns": 1783877300895669300,
+    "word_count": 180
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\LocationPicker.tsx": {
+    "size": 13741,
+    "mtime_ns": 1783899315292270800,
+    "word_count": 1069
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\MissionStepper.tsx": {
+    "size": 5578,
+    "mtime_ns": 1783948269304163900,
+    "word_count": 484
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\MovingDetailsForm.tsx": {
+    "size": 14631,
+    "mtime_ns": 1783898890855633300,
+    "word_count": 917
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\PhotoUploader.tsx": {
+    "size": 11185,
+    "mtime_ns": 1783899308792947800,
+    "word_count": 1003
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\jobs\\TransportDetailsForm.tsx": {
+    "size": 2790,
+    "mtime_ns": 1783898890964138000,
+    "word_count": 221
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\layout\\Footer.tsx": {
+    "size": 3596,
+    "mtime_ns": 1775944157757915700,
+    "word_count": 200
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\layout\\Header.tsx": {
+    "size": 4007,
+    "mtime_ns": 1783898929784236600,
+    "word_count": 321
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\layout\\TrustFooter.tsx": {
+    "size": 5297,
+    "mtime_ns": 1775944157849635000,
+    "word_count": 356
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\map\\MapMarkers.tsx": {
+    "size": 16527,
+    "mtime_ns": 1770252138572383600,
+    "word_count": 1421
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\map\\RouteMap.tsx": {
+    "size": 12212,
+    "mtime_ns": 1770252222164103200,
+    "word_count": 850
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\messaging\\ContactReveal.tsx": {
+    "size": 2601,
+    "mtime_ns": 1771287228944049000,
+    "word_count": 189
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\messaging\\MessageBubble.tsx": {
+    "size": 2104,
+    "mtime_ns": 1783948273295871500,
+    "word_count": 188
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\navigation\\AppHeader.tsx": {
+    "size": 8529,
+    "mtime_ns": 1783366316619450800,
+    "word_count": 627
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\navigation\\AppSidebar.tsx": {
+    "size": 4256,
+    "mtime_ns": 1784250627722493500,
+    "word_count": 428
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\navigation\\BottomNav.tsx": {
+    "size": 3600,
+    "mtime_ns": 1783899322795075400,
+    "word_count": 319
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\navigation\\NavItem.tsx": {
+    "size": 1025,
+    "mtime_ns": 1775944158014121200,
+    "word_count": 104
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\notifications\\NotificationBell.tsx": {
+    "size": 785,
+    "mtime_ns": 1783899313330312600,
+    "word_count": 78
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\notifications\\NotificationDropdown.tsx": {
+    "size": 6454,
+    "mtime_ns": 1783899305868429400,
+    "word_count": 446
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\offers\\MyOfferCard.tsx": {
+    "size": 5935,
+    "mtime_ns": 1784033173978833500,
+    "word_count": 516
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\offers\\OfferCard.tsx": {
+    "size": 10054,
+    "mtime_ns": 1783947943781034800,
+    "word_count": 778
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\offers\\OfferForm.tsx": {
+    "size": 12563,
+    "mtime_ns": 1783999630710987100,
+    "word_count": 1172
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\offers\\OfferList.tsx": {
+    "size": 9234,
+    "mtime_ns": 1783947908346898800,
+    "word_count": 695
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\offers\\OfferStatusCard.tsx": {
+    "size": 12601,
+    "mtime_ns": 1783999873667000700,
+    "word_count": 1079
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\onboarding\\OnboardingWizard.tsx": {
+    "size": 8421,
+    "mtime_ns": 1784250493603741300,
+    "word_count": 772
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\profile\\ReviewsList.tsx": {
+    "size": 4485,
+    "mtime_ns": 1783898891303121100,
+    "word_count": 345
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\profile\\StatsGrid.tsx": {
+    "size": 2692,
+    "mtime_ns": 1783368106393728100,
+    "word_count": 217
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\profile\\TransporterProfileCard.tsx": {
+    "size": 6185,
+    "mtime_ns": 1783899266298580000,
+    "word_count": 481
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\profile\\TrustBadges.tsx": {
+    "size": 3884,
+    "mtime_ns": 1783898891350344600,
+    "word_count": 354
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\profile\\VehicleGallery.tsx": {
+    "size": 4492,
+    "mtime_ns": 1783829370199446600,
+    "word_count": 344
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\reviews\\ReviewCard.tsx": {
+    "size": 3564,
+    "mtime_ns": 1783948277317358700,
+    "word_count": 326
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\reviews\\ReviewDisplay.tsx": {
+    "size": 3952,
+    "mtime_ns": 1783948281382447200,
+    "word_count": 358
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\reviews\\ReviewForm.tsx": {
+    "size": 5224,
+    "mtime_ns": 1783828595666538800,
+    "word_count": 460
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\trust\\VerificationUpload.tsx": {
+    "size": 7510,
+    "mtime_ns": 1783898891447864900,
+    "word_count": 615
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\Button.tsx": {
+    "size": 2868,
+    "mtime_ns": 1783856601038959000,
+    "word_count": 256
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\Card.tsx": {
+    "size": 874,
+    "mtime_ns": 1783856621782415900,
+    "word_count": 100
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\ConfirmModal.tsx": {
+    "size": 4574,
+    "mtime_ns": 1783899267872301400,
+    "word_count": 381
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\Input.tsx": {
+    "size": 4990,
+    "mtime_ns": 1783856618015261600,
+    "word_count": 448
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\LanguageSwitcher.tsx": {
+    "size": 829,
+    "mtime_ns": 1777332683193037200,
+    "word_count": 87
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\LoadingState.tsx": {
+    "size": 2432,
+    "mtime_ns": 1783859254679219500,
+    "word_count": 269
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\Modal.tsx": {
+    "size": 4624,
+    "mtime_ns": 1783856663308279000,
+    "word_count": 426
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\Pagination.tsx": {
+    "size": 4329,
+    "mtime_ns": 1783947647907204900,
+    "word_count": 404
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\Skeleton.tsx": {
+    "size": 3275,
+    "mtime_ns": 1774129042118033700,
+    "word_count": 301
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\StatusBadge.tsx": {
+    "size": 3410,
+    "mtime_ns": 1783858182940591100,
+    "word_count": 379
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\ThemeToggle.tsx": {
+    "size": 2126,
+    "mtime_ns": 1779030874317564800,
+    "word_count": 211
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\components\\ui\\Toast.tsx": {
+    "size": 3003,
+    "mtime_ns": 1783899263020206600,
+    "word_count": 304
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\contexts\\AuthContext.tsx": {
+    "size": 13111,
+    "mtime_ns": 1783803247553593200,
+    "word_count": 1337
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\contexts\\NotificationContext.tsx": {
+    "size": 3789,
+    "mtime_ns": 1783795564059832600,
+    "word_count": 401
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\hooks\\useActionGuard.ts": {
+    "size": 1372,
+    "mtime_ns": 1771287228953567200,
+    "word_count": 152
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\hooks\\useAdminData.ts": {
+    "size": 2524,
+    "mtime_ns": 1783795516193396000,
+    "word_count": 249
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\hooks\\useAuth.ts": {
+    "size": 123,
+    "mtime_ns": 1770747610008682500,
+    "word_count": 15
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\hooks\\useDashboard.ts": {
+    "size": 864,
+    "mtime_ns": 1783795565708574300,
+    "word_count": 98
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\hooks\\useDataService.ts": {
+    "size": 1311,
+    "mtime_ns": 1776059799554027400,
+    "word_count": 167
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\hooks\\useJobs.ts": {
+    "size": 538,
+    "mtime_ns": 1783795562470675500,
+    "word_count": 69
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\hooks\\useScrollAnimation.ts": {
+    "size": 1075,
+    "mtime_ns": 1777247142956149500,
+    "word_count": 129
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\hooks\\useSocialAuth.ts": {
+    "size": 9132,
+    "mtime_ns": 1783888061705505700,
+    "word_count": 783
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\antiBypass.ts": {
+    "size": 2017,
+    "mtime_ns": 1777330581641596500,
+    "word_count": 209
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\api\\client.ts": {
+    "size": 6278,
+    "mtime_ns": 1783827558058239100,
+    "word_count": 613
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\api\\error-handler.ts": {
+    "size": 4189,
+    "mtime_ns": 1771285020693999000,
+    "word_count": 395
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\api\\tokenManager.ts": {
+    "size": 3343,
+    "mtime_ns": 1776376725495690700,
+    "word_count": 372
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\auth.ts": {
+    "size": 3346,
+    "mtime_ns": 1776377197209313900,
+    "word_count": 326
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\config.ts": {
+    "size": 386,
+    "mtime_ns": 1782758020959823900,
+    "word_count": 40
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\format.ts": {
+    "size": 8886,
+    "mtime_ns": 1783876680721585000,
+    "word_count": 832
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\i18n\\currentLocale.ts": {
+    "size": 824,
+    "mtime_ns": 1783876491400290900,
+    "word_count": 122
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\i18n\\interpolate.ts": {
+    "size": 505,
+    "mtime_ns": 1783876565253478100,
+    "word_count": 74
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\i18n\\locales\\ar.ts": {
+    "size": 83496,
+    "mtime_ns": 1784033705716420700,
+    "word_count": 6396
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\i18n\\locales\\fr.ts": {
+    "size": 74091,
+    "mtime_ns": 1784033703231078000,
+    "word_count": 7435
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\i18n\\parity.ts": {
+    "size": 1024,
+    "mtime_ns": 1783876572431506400,
+    "word_count": 168
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\i18n\\useAppI18n.tsx": {
+    "size": 4134,
+    "mtime_ns": 1783876514165953000,
+    "word_count": 497
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\imageUtils.ts": {
+    "size": 3366,
+    "mtime_ns": 1783466041994248300,
+    "word_count": 372
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\map.ts": {
+    "size": 1713,
+    "mtime_ns": 1775947119276650200,
+    "word_count": 228
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\services\\admin.ts": {
+    "size": 13401,
+    "mtime_ns": 1783828840628586800,
+    "word_count": 1135
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\services\\dashboard.ts": {
+    "size": 569,
+    "mtime_ns": 1783795524751980900,
+    "word_count": 61
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\services\\jobs.ts": {
+    "size": 1785,
+    "mtime_ns": 1783795569106870700,
+    "word_count": 180
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\services\\notifications.ts": {
+    "size": 736,
+    "mtime_ns": 1783795567215353100,
+    "word_count": 69
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\services\\types.ts": {
+    "size": 4812,
+    "mtime_ns": 1783828821095057400,
+    "word_count": 473
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\types\\dashboard.ts": {
+    "size": 1249,
+    "mtime_ns": 1776378499342090100,
+    "word_count": 114
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\lib\\types\\jobs.ts": {
+    "size": 4979,
+    "mtime_ns": 1783999762944079700,
+    "word_count": 499
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\next.config.mjs": {
+    "size": 789,
+    "mtime_ns": 1783829121185727100,
+    "word_count": 56
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\package.json": {
+    "size": 989,
+    "mtime_ns": 1778014242732475200,
+    "word_count": 85,
+    "hash": "7731abfbf2b53943acbf5c236c017c0105e9b49c9cc9009622b867267d75bccf"
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\postcss.config.mjs": {
+    "size": 135,
+    "mtime_ns": 1769732687461401900,
+    "word_count": 17
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\public\\favicon.svg": {
+    "size": 417,
+    "mtime_ns": 1775856189687563200,
+    "word_count": 67
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\public\\images\\logo-white.svg": {
+    "size": 432,
+    "mtime_ns": 1775856187673241900,
+    "word_count": 68
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\public\\images\\logo.png": {
+    "size": 108624,
+    "mtime_ns": 1775855005554945000,
+    "word_count": 4151
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\public\\images\\logo.svg": {
+    "size": 476,
+    "mtime_ns": 1775856184160211100,
+    "word_count": 77
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\scripts\\git\\validate-branch-name.js": {
+    "size": 1410,
+    "mtime_ns": 1770860868992629800,
+    "word_count": 136
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\tailwind.config.ts": {
+    "size": 7729,
+    "mtime_ns": 1783834393318194200,
+    "word_count": 829
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\tsconfig.json": {
+    "size": 574,
+    "mtime_ns": 1769732709235720100,
+    "word_count": 50,
+    "hash": "2bd4c88f79988acb0dbacf5cb8ec8656e25bddd658d1c3809aea9db06fd979bb"
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\types\\react-easy-crop.d.ts": {
+    "size": 1028,
+    "mtime_ns": 1776812078804192700,
+    "word_count": 105
+  },
+  "C:\\Users\\DELL\\.gemini\\antigravity\\playground\\tensor-ride\\transporti_v1\\frontend\\app\\(app)\\wallet\\page.tsx": {
+    "size": 12985,
+    "mtime_ns": 1784250680376689200,
+    "word_count": 986
+  }
+}

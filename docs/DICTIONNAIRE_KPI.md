@@ -1,8 +1,8 @@
-# DICTIONNAIRE DES KPI — PARCOURS TRANSPORTEUR
-## Transporti V1 · Sprint 1 (WS-B B1)
+# DICTIONNAIRE DES KPI — TRANSPORTI
+## Transporti V1 · Sprint 1 (WS-B B1) + KPI stratégiques (vision v1.0)
 
-**Version :** 1.0 — 14 juillet 2026
-**Décision source :** D9 (`docs/DOSSIER_DECISIONS_SPRINT0.md`)
+**Version :** 2.0 — 17 juillet 2026 (v1.0 : 14 juillet 2026)
+**Décisions sources :** D9 (`docs/DOSSIER_DECISIONS_SPRINT0.md`) · `docs/VISION_PRODUIT_FONDATRICE.md` §9-10 (NSM et catégories officielles)
 **Règle d'or :** chaque chiffre affiché provient d'UNE définition et d'UNE source serveur. Interdiction de recalculer côté frontend ce que le backend sait déjà. Tout écran qui affiche un de ces KPI doit consommer l'endpoint indiqué (cible Sprint 2 : endpoint unique `GET /api/transporter/stats/`).
 
 ## Convention monétaire
@@ -35,4 +35,65 @@
 
 ## Traçabilité
 - REC-B1, REC-B2, REC-B3, REC-B5 (`docs/RECETTE_PARCOURS_TRANSPORTEUR.md`) valident K1, K2/K3, K4/K6/K7, périmètres TOTAL/Toutes.
-- L'endpoint stats unique est livré au Sprint 2 (WS-B B2) ; ce document en est la spécification.
+- L'endpoint stats unique (`GET /api/transporter/stats/`) a été **livré au Sprint 2** (WS-B B2) ; les K1–K11 y sont implémentés (`backend/logistics/stats.py`, `payments/services.get_wallet_summary`).
+
+---
+
+# KPI STRATÉGIQUES (v2 — vision fondatrice v1.0)
+
+**Prérequis de données (Sprint 3) :** champ additif `TransportJob.distance_km` = haversine(pickup, dropoff) × 1,25 (coefficient routier, T4), calculé et stocké à la création de toute mission ou trajet retour. Facteur d'émission paramétrable `CO2_KG_PER_KM` par type de véhicule (défaut recommandé : 0,25 kg CO₂/km camionnette, 0,6 kg CO₂/km camion — à valider métier). Une mission est « issue d'un retour » si son offre acceptée provient d'une demande sur un trajet `is_return_trip=True`.
+
+## ⭐ North Star Metric
+
+| # | KPI | Définition (formule) | Source | Livraison |
+|---|---|---|---|---|
+| **K-NSM** | **Kilomètres à vide transformés** | Σ `distance_km` des missions **issues d'un trajet retour**, `COMPLETED` et payées (escrow libéré ou COD confirmé livré), sur la période | agrégat serveur (admin/analytics) | Sprint 5 |
+
+## Marketplace
+
+| # | KPI | Définition | Livraison |
+|---|---|---|---|
+| K-M1 | Retours publiés | Nombre de `TransportJob(is_return_trip=True)` créés sur la période | Sprint 5 |
+| K-M2 | Missions créées | Demandes classiques + demandes structurées acceptées, sur la période | Sprint 5 |
+| K-M3 | Taux de matching | Demandes structurées acceptées / demandes envoyées ; et demandes clients servies par un retour / total demandes | Sprint 5 |
+| K-M4 | Délai avant 1er matching | Médiane (création du trajet → première demande reçue) | Sprint 5 |
+| K-M5 | Conversion mission → paiement | Missions `MATCHED` → escrow HELD ou COD confirmé / missions MATCHED | Sprint 5 |
+
+## Liquidité
+
+| # | KPI | Définition | Livraison |
+|---|---|---|---|
+| K-L1 | Retours actifs par corridor | Trajets `PUBLISHED` non expirés, groupés par paire orientée (gouvernorat départ → arrivée), corridor A1 en tête | Sprint 5 |
+| K-L2 | Clients actifs par corridor | Clients ayant cherché/demandé sur la paire dans les 30 j | Sprint 5 |
+| K-L3 | Taux de remplissage des retours | Trajets réservés (demande acceptée) / trajets publiés non expirés | Sprint 5 |
+| K-L4 | Couverture géographique | Paires de gouvernorats avec ≥ 1 trajet actif / paires demandées | Sprint 8 |
+
+## Business
+
+| # | KPI | Définition | Livraison |
+|---|---|---|---|
+| K-B1 | Revenu moyen par mission | Σ `commission_amount` des missions payées / nombre de missions payées | Sprint 5 |
+| K-B2 | Commission moyenne (taux effectif) | Σ commission / Σ total_price, ventilé retours (8 % — D13) vs classique (12/15 %) | Sprint 5 |
+| K-B3 | CAC / LTV / ratio | **Hors produit** — pilotés côté acquisition/finance ; le produit fournit les exports (missions et revenus par utilisateur) | Post-pilote |
+
+## Qualité
+
+| # | KPI | Définition | Livraison |
+|---|---|---|---|
+| K-Q1 | Taux de litiges | Disputes ouvertes / missions payées | Sprint 5 (donnée déjà en base) |
+| K-Q2 | Taux d'annulation | Annulations (client + transporteur, tracées à partir de D4'/Sprint 6) / missions MATCHED | Sprint 6 |
+| K-Q3 | NPS / satisfaction | Enquêtes pilote (hors produit au lancement) ; proxy produit : note moyenne des avis | Pilote |
+| K-Q4 | Temps de résolution litiges | Médiane (ouverture → décision) | Sprint 6 |
+
+## Impact
+
+| # | KPI | Définition | Livraison |
+|---|---|---|---|
+| K-I1 | Km à vide économisés | = K-NSM (même mesure, communication grand public) | Sprint 5 |
+| K-I2 | CO₂ évité (tonnes) | Σ (`distance_km` × facteur CO₂ du véhicule) / 1000, sur les missions K-NSM | Sprint 5 |
+| K-I3 | Revenus additionnels transporteurs | Σ `price_net` des missions issues de retours, payées | Sprint 5 |
+
+## Règles v2
+1. La NSM et les KPI stratégiques sont des **agrégats plateforme** (dashboard admin/analytics) ; les K1–K11 restent les KPI **utilisateur** (dashboard transporteur). Aucun KPI utilisateur ne change en v2.
+2. Toute nouvelle fonctionnalité doit déclarer, avant développement, lequel de ces indicateurs elle améliore (Principe Produit n°5 — porte de gouvernance du registre de décisions).
+3. `distance_km` est calculé une seule fois côté serveur à la création ; jamais recalculé côté client (même règle que la commission).

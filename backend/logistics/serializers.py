@@ -65,6 +65,7 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
     client_confirmed = serializers.SerializerMethodField()
     commission_rate = serializers.SerializerMethodField()
     my_offer = serializers.SerializerMethodField()
+    booking_payment_method = serializers.SerializerMethodField()
 
     class Meta:
         model = TransportJob
@@ -77,11 +78,18 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
             'pickup_hint', 'dropoff_hint',
             'is_return_trip', 'available_capacity',
             'accepted_transporter', 'has_reviewed', 'client_confirmed',
-            'commission_rate', 'my_offer',
+            'commission_rate', 'my_offer', 'booking_payment_method',
             'view_count',
             'created_at', 'updated_at'
         ]
         read_only_fields = fields
+
+    def get_booking_payment_method(self, obj) -> str | None:
+        """DIGITAL/COD once a Booking exists (D3), null before acceptance."""
+        try:
+            return obj.booking.payment_method
+        except Exception:
+            return None
 
     def get_commission_rate(self, obj) -> float:
         from payments.services import get_commission_rate
@@ -482,8 +490,10 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     vehicle_photos = serializers.JSONField(read_only=True)
     service_areas = serializers.JSONField(read_only=True)
     specializations = serializers.JSONField(read_only=True)
-    completion_rate = serializers.DecimalField(max_digits=5, decimal_places=2, read_only=True)
-    total_jobs_completed = serializers.IntegerField(read_only=True)
+    # B2 — computed from the canonical stats source (docs/DICTIONNAIRE_KPI.md),
+    # no longer read from stale stored TrustProfile fields.
+    completion_rate = serializers.SerializerMethodField()
+    total_jobs_completed = serializers.SerializerMethodField()
     avg_response_time_min = serializers.IntegerField(source='response_time_avg_minutes', read_only=True)
     insurance_valid_until = serializers.DateField(read_only=True)
     
@@ -513,6 +523,28 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     def _is_owner(self) -> bool:
         """Check if the requesting user is the profile owner."""
         return self.context.get('is_owner', False)
+
+    def _job_stats(self, obj) -> dict:
+        """K6/K7 from the canonical formulas — cached per serialization."""
+        if not hasattr(self, '_cached_job_stats'):
+            from .models import TransportJob, Offer
+            completed = Offer.objects.filter(
+                transporter=obj.user, status='ACCEPTED',
+                job__status=TransportJob.Status.COMPLETED
+            ).count()
+            # K7: COMPLETED / (COMPLETED + annulées transporteur) ; annulations
+            # non tracées avant Sprint 6 (D4') → None quand aucune mission finie.
+            self._cached_job_stats = {
+                'completed': completed,
+                'completion_rate': round(completed / completed * 100, 2) if completed else None,
+            }
+        return self._cached_job_stats
+
+    def get_total_jobs_completed(self, obj) -> int:
+        return self._job_stats(obj)['completed']
+
+    def get_completion_rate(self, obj):
+        return self._job_stats(obj)['completion_rate']
 
     def get_email(self, obj) -> str:
         """Full email for owner, masked for others (SEC-T2)."""

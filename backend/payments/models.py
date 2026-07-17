@@ -142,3 +142,55 @@ class Booking(models.Model):
 
     def __str__(self):
         return f"Booking #{self.id} - Job #{self.job_id} ({self.payment_method})"
+
+
+class WithdrawalRequest(models.Model):
+    """
+    D4 (Sprint 0): transporter payout request, processed manually back-office
+    (bank transfer) during Phase 1. Statuses: REQUESTED → PROCESSING → PAID,
+    or REJECTED.
+    """
+    class Status(models.TextChoices):
+        REQUESTED = 'REQUESTED', 'Requested'
+        PROCESSING = 'PROCESSING', 'Processing'
+        PAID = 'PAID', 'Paid'
+        REJECTED = 'REJECTED', 'Rejected'
+
+    transporter = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='withdrawal_requests'
+    )
+    amount = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    bank_details = models.CharField(
+        max_length=255,
+        help_text="RIB / payout destination as provided by the transporter"
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.REQUESTED,
+        db_index=True
+    )
+    admin_note = models.CharField(max_length=255, blank=True, default='')
+
+    requested_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-requested_at']
+        indexes = [
+            models.Index(fields=['transporter', 'status']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(amount__gt=0),
+                name='withdrawal_amount_positive'
+            ),
+        ]
+
+    def __str__(self):
+        return f"Withdrawal #{self.id} - {self.transporter} - {self.amount} TND ({self.status})"
