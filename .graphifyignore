@@ -1,0 +1,9 @@
+# Skills bundle — not part of the Transporti product source. Pollutes the graph.
+.agents/
+
+# Build output / deps (belt-and-suspenders; usually already gitignored)
+node_modules/
+**/node_modules/
+.next/
+dist/
+build/

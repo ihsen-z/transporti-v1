@@ -273,3 +273,130 @@ class CounterOffer(models.Model):
 
     def __str__(self):
         return f"CounterOffer #{self.id} on Offer #{self.offer_id}: {self.proposed_price} TND ({self.status})"
+
+
+class ReturnTripRequest(models.Model):
+    """
+    D5 (pivot) — structured request from a client on a published return trip.
+    The client proposes goods + a client-facing total price; the transporter
+    accepts, rejects or counters. Acceptance closes the trip (D12 unitaire)
+    and enters the D3 payment flow at the RETURN_TRIP commission rate (D13).
+    """
+    class Status(models.TextChoices):
+        PENDING = 'PENDING', 'Pending'
+        ACCEPTED = 'ACCEPTED', 'Accepted'
+        REJECTED = 'REJECTED', 'Rejected'
+        COUNTERED = 'COUNTERED', 'Countered'
+        CANCELLED = 'CANCELLED', 'Cancelled'
+        EXPIRED = 'EXPIRED', 'Expired'
+
+    class PaymentMethod(models.TextChoices):
+        DIGITAL = 'DIGITAL', 'Digital Payment (Escrow)'
+        COD = 'COD', 'Cash on Delivery'
+
+    job = models.ForeignKey(
+        TransportJob, on_delete=models.CASCADE, related_name='trip_requests',
+        limit_choices_to={'is_return_trip': True},
+    )
+    client = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='trip_requests',
+    )
+
+    description = models.TextField(
+        max_length=1000,
+        help_text="What the client wants to ship (goods, weight estimate...)")
+    photos = models.JSONField(default=list, blank=True,
+        help_text="List of photo URLs (PhotoUploadView)")
+    proposed_price = models.DecimalField(
+        max_digits=10, decimal_places=2,
+        help_text="Client-facing total price proposed by the client (TND)")
+    payment_method = models.CharField(
+        max_length=20, choices=PaymentMethod.choices,
+        default=PaymentMethod.DIGITAL)
+
+    status = models.CharField(
+        max_length=20, choices=Status.choices,
+        default=Status.PENDING, db_index=True)
+    counter_price = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True,
+        help_text="Transporter's counter-proposal (client-facing total, TND)")
+    response_message = models.CharField(max_length=500, blank=True, default='')
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['job', 'status']),
+            models.Index(fields=['client', 'status']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(proposed_price__gt=0),
+                name='trip_request_price_positive'
+            ),
+        ]
+
+    def __str__(self):
+        return f"TripRequest #{self.id} - Job #{self.job_id} - {self.status}"
+
+
+class CorridorAlert(models.Model):
+    """
+    Sprint 4 (pivot, D14 — clients) : abonnement d'un client à un corridor.
+    À la publication d'un trajet retour compatible, le client est notifié
+    (« nouveau trajet sur votre corridor »).
+    """
+    client = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='corridor_alerts',
+    )
+    pickup_governorate = models.CharField(max_length=50, db_index=True)
+    dropoff_governorate = models.CharField(max_length=50, db_index=True)
+    is_active = models.BooleanField(default=True, db_index=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        constraints = [
+            models.UniqueConstraint(
+                fields=['client', 'pickup_governorate', 'dropoff_governorate'],
+                name='unique_corridor_alert_per_client',
+            ),
+        ]
+
+    def __str__(self):
+        return f"Alert #{self.id} {self.client_id}: {self.pickup_governorate} → {self.dropoff_governorate}"
+
+
+class JobEvent(models.Model):
+    """
+    Sprint 6 (D2'/D6) — mission timeline: horodated milestones between
+    assignment and delivery, visible to both parties. The DELIVERED event
+    carries the proof of delivery (D3'/D7: photo + PIN check) in metadata.
+    """
+    class EventType(models.TextChoices):
+        ARRIVED_PICKUP = 'ARRIVED_PICKUP', 'Arrived at pickup'
+        LOADED = 'LOADED', 'Loaded / en route'
+        DELIVERED = 'DELIVERED', 'Delivered (with proof)'
+        CANCELLED_BY_TRANSPORTER = 'CANCELLED_BY_TRANSPORTER', 'Cancelled by transporter'
+        CANCELLED_BY_CLIENT = 'CANCELLED_BY_CLIENT', 'Cancelled by client'
+
+    job = models.ForeignKey(
+        TransportJob, on_delete=models.CASCADE, related_name='events')
+    event = models.CharField(max_length=30, choices=EventType.choices, db_index=True)
+    actor = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, related_name='job_events')
+    metadata = models.JSONField(default=dict, blank=True,
+        help_text="Context (pod_photo_url, reason, ...)")
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        ordering = ['created_at']
+        indexes = [models.Index(fields=['job', 'event'])]
+
+    def __str__(self):
+        return f"JobEvent #{self.id} job={self.job_id} {self.event}"

@@ -149,7 +149,10 @@ export function OfferForm({
         } else if (error.status === 400 && body) {
           // Duplicate offer gets a dedicated localized message
           const bodyText = JSON.stringify(body);
-          if (bodyText.includes("already submitted")) {
+          if (
+            bodyText.includes("already submitted") ||
+            bodyText.includes("déjà soumis")
+          ) {
             setFeedback({ type: "error", message: t.alreadySubmitted });
           } else {
             // Validation errors from serializer
@@ -200,7 +203,11 @@ export function OfferForm({
                   : "bg-green-100 text-green-700"
             }`}
           >
-            {activeOfferCount}/{MAX_ACTIVE_OFFERS} {t.activeOffersLimit.replace('{{count}}', '').replace('{{max}}', '').trim()}
+            {activeOfferCount}/{MAX_ACTIVE_OFFERS}{" "}
+            {t.activeOffersLimit
+              .replace("{{count}}", "")
+              .replace("{{max}}", "")
+              .trim()}
           </span>
         )}
       </div>
@@ -213,18 +220,14 @@ export function OfferForm({
             <p className="font-semibold">
               {t.limitReachedTitle} ({MAX_ACTIVE_OFFERS}/{MAX_ACTIVE_OFFERS})
             </p>
-            <p>
-              {t.limitReachedDesc}
-            </p>
+            <p>{t.limitReachedDesc}</p>
           </div>
         </div>
       )}
       {isNearLimit && (
         <div className="mb-4 p-3 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-start gap-2 text-sm">
           <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
-          <span>
-            {t.nearLimitDesc}
-          </span>
+          <span>{t.nearLimitDesc}</span>
         </div>
       )}
 
@@ -308,20 +311,22 @@ export function OfferForm({
           {budgetExceeded && (
             <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
               <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-amber-700">{t.budgetExceededWarning}</p>
+              <p className="text-xs text-amber-700">
+                {t.budgetExceededWarning}
+              </p>
             </div>
           )}
           {/* P2-10: COD threshold note */}
-          <p className="text-xs text-neutral-400 mt-1.5">
-            {t.codNote}
-          </p>
+          <p className="text-xs text-neutral-400 mt-1.5">{t.codNote}</p>
         </div>
 
         {/* Pricing Breakdown — display-only, rate served by the API */}
         {rate !== null && (
           <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
             <div className="flex justify-between text-neutral-600">
-              <span>{t.platformCommission} ({commissionPct}%)</span>
+              <span>
+                {t.platformCommission} ({commissionPct}%)
+              </span>
               <span>{formatTND(commission)}</span>
             </div>
             <div className="flex justify-between items-center pt-2 border-t border-neutral-200">

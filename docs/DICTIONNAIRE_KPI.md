@@ -97,3 +97,5 @@
 1. La NSM et les KPI stratégiques sont des **agrégats plateforme** (dashboard admin/analytics) ; les K1–K11 restent les KPI **utilisateur** (dashboard transporteur). Aucun KPI utilisateur ne change en v2.
 2. Toute nouvelle fonctionnalité doit déclarer, avant développement, lequel de ces indicateurs elle améliore (Principe Produit n°5 — porte de gouvernance du registre de décisions).
 3. `distance_km` est calculé une seule fois côté serveur à la création ; jamais recalculé côté client (même règle que la commission).
+
+**Implémentation (18/07/2026, Sprint 5)** : les KPI stratégiques sont servis par `GET /api/admin/stats/` (clé `pivot` : `nsmKmTransformed`, `co2SavedKg`, `extraTransporterRevenue`, `tripsActive/Booked`, `fillRatePct`, `corridorA1[]`) et affichés sur le dashboard admin (section « Pivot — Retours à vide »). Distance : coordonnées précises → haversine × 1,25 ; repli **centroïdes de gouvernorats** (`logistics/pricing.py:GOVERNORATE_CENTROIDS`) pour les trajets saisis par corridor. Facteur CO₂ : `CO2_KG_PER_KM` (env, défaut 0,35). Taux de matching / délai 1er matching / conversion → instrumentation Sprint 8 (horodatage des transitions requis).

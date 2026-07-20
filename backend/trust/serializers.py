@@ -28,6 +28,9 @@ class VerificationDocumentUploadSerializer(serializers.Serializer):
         choices=VerificationDocument._meta.get_field('document_type').choices
     )
     document_file = serializers.FileField()
+    # WS-H — date d'expiration ; obligatoire pour les documents qui expirent
+    # (permis, assurance, carte grise), ignorée pour la CIN et le selfie.
+    expires_at = serializers.DateField(required=False, allow_null=True)
 
     def validate_document_file(self, value):
         """Validate file type, MIME, and size."""
@@ -66,6 +69,20 @@ class VerificationDocumentUploadSerializer(serializers.Serializer):
                 f"Maximum {MAX_DOCUMENTS_PER_PROFILE} documents autorisés. "
                 f"Supprimez un document avant d'en ajouter un nouveau."
             )
+
+        # WS-H — un document qui expire doit fournir sa date d'expiration,
+        # et celle-ci doit être dans le futur (un document déjà périmé est refusé).
+        doc_type = attrs.get('document_type')
+        expires_at = attrs.get('expires_at')
+        if doc_type in VerificationDocument.EXPIRING_TYPES:
+            if not expires_at:
+                raise serializers.ValidationError(
+                    {'expires_at': "Ce type de document requiert une date d'expiration."}
+                )
+            if expires_at <= timezone.localdate():
+                raise serializers.ValidationError(
+                    {'expires_at': "La date d'expiration doit être dans le futur."}
+                )
 
         attrs['_trust_profile'] = trust_profile
         return attrs
@@ -114,6 +131,7 @@ class VerificationDocumentUploadSerializer(serializers.Serializer):
             encryption_iv=encryption_iv,
             file_hash=file_hash,
             is_valid=False,  # Admin must validate
+            expires_at=validated_data.get('expires_at'),  # WS-H
         )
 
         return doc
@@ -125,10 +143,18 @@ class VerificationDocumentReadSerializer(serializers.ModelSerializer):
     Exposes safe metadata only (no encryption details).
     """
     file_url = serializers.SerializerMethodField()
+    # WS-H — statut d'expiration calculé côté serveur (règle d'or n°2 : une
+    # seule source de vérité, jamais recalculé côté front).
+    is_expired = serializers.BooleanField(read_only=True)
+    expires_soon = serializers.BooleanField(read_only=True)
 
     class Meta:
         model = VerificationDocument
-        fields = ['id', 'document_type', 'file_url', 'is_valid', 'uploaded_at', 'rejection_reason', 'reviewed_at']
+        fields = [
+            'id', 'document_type', 'file_url', 'is_valid', 'uploaded_at',
+            'rejection_reason', 'reviewed_at',
+            'expires_at', 'is_expired', 'expires_soon',  # WS-H
+        ]
         read_only_fields = fields
 
     def get_file_url(self, obj) -> str:

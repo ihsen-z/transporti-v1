@@ -25,12 +25,17 @@ from support.models import AuditLog
 logger = logging.getLogger('payments')
 
 
-def get_commission_rate(job_type: str) -> Decimal:
+def get_commission_rate(job_type: str, is_return_trip: bool = False) -> Decimal:
     """
     Get commission rate from settings (single source of truth).
+
+    D13 (pivot): missions born from a return trip use the incentive
+    RETURN_TRIP rate, whatever their job_type.
     Falls back to DEFAULT rate if job type not found.
     """
     rates = getattr(settings, 'COMMISSION_RATES', {'DEFAULT': 0.12})
+    if is_return_trip and 'RETURN_TRIP' in rates:
+        return Decimal(str(rates['RETURN_TRIP']))
     rate = rates.get(job_type, rates.get('DEFAULT', 0.12))
     return Decimal(str(rate))
 
@@ -59,7 +64,7 @@ def calculate_commission(job_type: str, total_price: Decimal) -> tuple[Decimal, 
 TWO_PLACES = Decimal('0.01')
 
 
-def calculate_from_net(job_type: str, price_net: Decimal) -> tuple[Decimal, Decimal]:
+def calculate_from_net(job_type: str, price_net: Decimal, is_return_trip: bool = False) -> tuple[Decimal, Decimal]:
     """
     Net-guaranteed model (decision D1): the transporter's input IS the net
     they receive. Commission is added on top; the client pays net + commission.
@@ -67,11 +72,12 @@ def calculate_from_net(job_type: str, price_net: Decimal) -> tuple[Decimal, Deci
     Args:
         job_type: Type of job (TRANSPORT, MOVING, etc.)
         price_net: Amount the transporter receives (as entered by them)
+        is_return_trip: D13 — applies the incentive RETURN_TRIP rate
 
     Returns:
         Tuple of (commission_amount, total_price)
     """
-    rate = get_commission_rate(job_type)
+    rate = get_commission_rate(job_type, is_return_trip)
     net = Decimal(str(price_net)).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
     commission = (net * rate).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
     total = net + commission
@@ -209,7 +215,7 @@ def get_wallet_summary(transporter) -> dict:
     }
 
 
-def derive_net_from_total(job_type: str, total_price: Decimal) -> tuple[Decimal, Decimal]:
+def derive_net_from_total(job_type: str, total_price: Decimal, is_return_trip: bool = False) -> tuple[Decimal, Decimal]:
     """
     Inverse of the net-guaranteed model, for flows where the CLIENT-facing
     total is the input (counter-offer acceptance, return-trip booking).
@@ -218,11 +224,12 @@ def derive_net_from_total(job_type: str, total_price: Decimal) -> tuple[Decimal,
     Args:
         job_type: Type of job (TRANSPORT, MOVING, etc.)
         total_price: Price the client pays
+        is_return_trip: D13 — applies the incentive RETURN_TRIP rate
 
     Returns:
         Tuple of (commission_amount, price_net)
     """
-    rate = get_commission_rate(job_type)
+    rate = get_commission_rate(job_type, is_return_trip)
     total = Decimal(str(total_price)).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
     net = (total / (Decimal('1') + rate)).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
     commission = total - net

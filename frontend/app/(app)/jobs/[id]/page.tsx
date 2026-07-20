@@ -8,13 +8,14 @@ import type { JobDetail } from "@/lib/types/jobs";
 import { JobPreview } from "@/components/jobs/JobPreview";
 import { OfferForm } from "@/components/offers/OfferForm";
 import { MyOfferCard } from "@/components/offers/MyOfferCard";
+import { TripRequestsPanel } from "@/components/return-trips/TripRequestsPanel";
 import { OfferList } from "@/components/offers/OfferList";
-import { ReviewForm } from "@/components/reviews/ReviewForm";
 import { MissionStepper } from "@/components/jobs/MissionStepper";
+import { PostDeliveryPanel } from "@/components/jobs/PostDeliveryPanel";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
-import { formatTND } from "@/lib/format";
+import { formatTND, formatDateTime } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
 import ConfirmModal from "@/components/ui/ConfirmModal";
 import Modal from "@/components/ui/Modal";
@@ -80,6 +81,8 @@ export default function JobDetailsPage() {
     "DIGITAL",
   );
   const [bookingLoading, setBookingLoading] = useState(false);
+  // D5 — structured request (default path when instant_booking is off)
+  const [bookingDescription, setBookingDescription] = useState("");
 
   // Handle payment gateway return (D3): confirm the authoritative status with
   // the backend (/api/payments/verify/) — this is what flips the escrow to
@@ -232,6 +235,80 @@ export default function JobDetailsPage() {
     }
   };
 
+  // D5 — send a structured request on a return trip (default path)
+  const handleSendTripRequest = async () => {
+    if (!bookingPrice || parseFloat(bookingPrice) <= 0) {
+      showToast("error", t.jobDetail.invalidPrice);
+      return;
+    }
+    if (!bookingDescription.trim()) {
+      showToast("error", t.jobDetail.requestDescriptionRequired);
+      return;
+    }
+    setBookingLoading(true);
+    try {
+      await apiClient.post(`/api/jobs/${job!.id}/requests/`, {
+        description: bookingDescription.trim(),
+        proposed_price: bookingPrice,
+        payment_method: bookingPayment,
+      });
+      showToast("success", t.jobDetail.requestSent);
+      setShowBookingModal(false);
+      setBookingDescription("");
+      fetchJob();
+    } catch (error) {
+      if (error instanceof ApiError && error.body) {
+        showToast(
+          "error",
+          String(error.body?.error || t.jobDetail.genericError),
+        );
+      } else {
+        showToast("error", t.jobDetail.genericError);
+      }
+    } finally {
+      setBookingLoading(false);
+    }
+  };
+
+  // D5 — client accepts the transporter's counter-proposal
+  const [counterActionLoading, setCounterActionLoading] = useState(false);
+  const handleAcceptCounter = async () => {
+    const reqId = job?.my_trip_request?.id;
+    if (!reqId) return;
+    setCounterActionLoading(true);
+    try {
+      await apiClient.post(`/api/trip-requests/${reqId}/accept-counter/`, {});
+      showToast("success", t.jobDetail.counterAccepted);
+      fetchJob();
+    } catch (error) {
+      if (error instanceof ApiError && error.body) {
+        showToast(
+          "error",
+          String(error.body?.error || t.jobDetail.genericError),
+        );
+      } else {
+        showToast("error", t.jobDetail.genericError);
+      }
+    } finally {
+      setCounterActionLoading(false);
+    }
+  };
+
+  const handleCancelTripRequest = async () => {
+    const reqId = job?.my_trip_request?.id;
+    if (!reqId) return;
+    setCounterActionLoading(true);
+    try {
+      await apiClient.post(`/api/trip-requests/${reqId}/cancel/`, {});
+      showToast("success", t.jobDetail.requestCancelled);
+      fetchJob();
+    } catch (error) {
+      showToast("error", t.jobDetail.genericError);
+    } finally {
+      setCounterActionLoading(false);
+    }
+  };
+
   const handleCancelJob = async () => {
     setActiveDialog(null);
     setCancelling(true);
@@ -250,12 +327,52 @@ export default function JobDetailsPage() {
     }
   };
 
+  // D7 — POD: delivery requires the client's 4-digit code (+ optional photo)
+  const [deliveryPin, setDeliveryPin] = useState("");
+  const [podFile, setPodFile] = useState<File | null>(null);
+  const [milestoneLoading, setMilestoneLoading] = useState(false);
+
   const handleMarkDelivered = async () => {
+    const hasBooking = !!job?.booking_payment_method;
+    if (hasBooking && deliveryPin.trim().length !== 4) {
+      showToast("error", t.jobDetail.pinRequired);
+      return;
+    }
     setActiveDialog(null);
     setCompleting(true);
     try {
-      await apiClient.post(`/api/jobs/${job!.id}/complete/`);
+      // Optional POD photo — multipart via fetch natif (apiClient est JSON-only)
+      let podPhotoUrl = "";
+      if (podFile) {
+        try {
+          const fd = new FormData();
+          fd.append("photo", podFile);
+          const apiBase =
+            process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+          const token = localStorage.getItem("transporti_access_token");
+          const upResp = await fetch(`${apiBase}/api/upload/photo/`, {
+            method: "POST",
+            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+            body: fd,
+          });
+          if (upResp.ok) {
+            const up = (await upResp.json()) as {
+              url?: string;
+              photo_url?: string;
+            };
+            podPhotoUrl = up?.url || up?.photo_url || "";
+          }
+        } catch (_e) {
+          /* photo optionnelle — ne bloque pas la livraison */
+        }
+      }
+      await apiClient.post(`/api/jobs/${job!.id}/complete/`, {
+        pin: deliveryPin.trim(),
+        pod_photo_url: podPhotoUrl,
+      });
       showToast("success", t.jobDetail.markedDelivered);
+      setDeliveryPin("");
+      setPodFile(null);
       fetchJob();
     } catch (err) {
       if (err instanceof ApiError && err.body) {
@@ -265,6 +382,24 @@ export default function JobDetailsPage() {
       }
     } finally {
       setCompleting(false);
+    }
+  };
+
+  // D2' — mission milestones (arrived at pickup / loaded-en route)
+  const handleLogMilestone = async (event: "ARRIVED_PICKUP" | "LOADED") => {
+    setMilestoneLoading(true);
+    try {
+      await apiClient.post(`/api/jobs/${job!.id}/events/`, { event });
+      showToast("success", t.jobDetail.milestoneSaved);
+      fetchJob();
+    } catch (err) {
+      if (err instanceof ApiError && err.body?.error) {
+        showToast("error", String(err.body.error));
+      } else {
+        showToast("error", t.jobDetail.genericError);
+      }
+    } finally {
+      setMilestoneLoading(false);
     }
   };
 
@@ -357,13 +492,11 @@ export default function JobDetailsPage() {
       Date.now() - new Date(job.completed_at as string).getTime() <
         15 * 86400000);
 
-  // Post-livraison logic
+  // Post-livraison logic — le détail des sous-états (confirmation, avis) est
+  // désormais géré par <PostDeliveryPanel/> (D1' : un panneau cohérent).
   const isCompleted = job.status === "COMPLETED";
   const clientConfirmed = job.client_confirmed === true;
   const hasReviewed = job.has_reviewed === true;
-  const showConfirmButton = isCompleted && isOwner && !clientConfirmed;
-  const showReviewForm =
-    isCompleted && !hasReviewed && (isOwner ? clientConfirmed : true);
   const showMarkDelivered =
     job.status === "IN_PROGRESS" && isAssignedTransporter;
 
@@ -476,6 +609,11 @@ export default function JobDetailsPage() {
                   {t.jobDetail.completeVerif}
                 </Link>
               </div>
+            )}
+
+            {/* WS-F F1 — owner's return trip management panel */}
+            {isOwner && isReturnTrip && (
+              <TripRequestsPanel job={job} onChanged={fetchJob} />
             )}
 
             {/* Transporter Actions */}
@@ -639,18 +777,81 @@ export default function JobDetailsPage() {
                   </div>
                 )}
 
-                {/* Primary CTA — Réserver */}
-                <button
-                  onClick={() => {
-                    setBookingPrice(String(job.price_tnd_min || ""));
-                    setBookingPayment("DIGITAL");
-                    setShowBookingModal(true);
-                  }}
-                  className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20 mb-2"
-                >
-                  <Truck className="w-5 h-5" />
-                  {t.jobDetail.bookThisTrip}
-                </button>
+                {/* D5 — client's existing structured request status */}
+                {job.my_trip_request &&
+                job.my_trip_request.status !== "CANCELLED" &&
+                job.my_trip_request.status !== "REJECTED" ? (
+                  <div className="bg-white rounded-xl p-4 mb-2 border border-purple-200">
+                    <p className="text-sm font-semibold text-neutral-900 mb-1">
+                      {t.jobDetail.myRequestTitle}
+                    </p>
+                    <p className="text-sm text-neutral-600">
+                      {formatTND(job.my_trip_request.proposed_price)} ·{" "}
+                      {job.my_trip_request.status === "PENDING"
+                        ? t.jobDetail.myRequestPending
+                        : job.my_trip_request.status === "ACCEPTED"
+                          ? t.jobDetail.myRequestAccepted
+                          : t.jobDetail.myRequestCountered}
+                    </p>
+                    {job.my_trip_request.status === "COUNTERED" &&
+                      job.my_trip_request.counter_price != null && (
+                        <div className="mt-3 p-3 bg-purple-50 rounded-lg">
+                          <p className="text-sm text-purple-800 mb-2">
+                            {interpolate(t.jobDetail.counterProposal, {
+                              price: formatTND(
+                                job.my_trip_request.counter_price,
+                              ),
+                            })}
+                            {job.my_trip_request.response_message && (
+                              <span className="block text-xs italic mt-1">
+                                « {job.my_trip_request.response_message} »
+                              </span>
+                            )}
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={handleAcceptCounter}
+                              disabled={counterActionLoading}
+                              className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50"
+                            >
+                              {t.jobDetail.acceptCounter}
+                            </button>
+                            <button
+                              onClick={handleCancelTripRequest}
+                              disabled={counterActionLoading}
+                              className="flex-1 py-2 border border-neutral-300 text-neutral-600 rounded-lg text-sm font-medium hover:bg-neutral-50 disabled:opacity-50"
+                            >
+                              {t.jobDetail.declineCounter}
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    {job.my_trip_request.status === "PENDING" && (
+                      <button
+                        onClick={handleCancelTripRequest}
+                        disabled={counterActionLoading}
+                        className="mt-2 text-xs text-neutral-500 hover:text-red-500 underline"
+                      >
+                        {t.jobDetail.cancelMyRequest}
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  /* Primary CTA — request (default) or instant booking (D11) */
+                  <button
+                    onClick={() => {
+                      setBookingPrice(String(job.price_tnd_min || ""));
+                      setBookingPayment("DIGITAL");
+                      setShowBookingModal(true);
+                    }}
+                    className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20 mb-2"
+                  >
+                    <Truck className="w-5 h-5" />
+                    {job.instant_booking
+                      ? t.jobDetail.bookThisTrip
+                      : t.jobDetail.sendRequest}
+                  </button>
+                )}
 
                 {/* Secondary CTA — Contacter */}
                 <Link
@@ -679,7 +880,9 @@ export default function JobDetailsPage() {
                       </div>
                       <div>
                         <h3 className="text-lg font-bold text-white">
-                          {t.jobDetail.confirmBooking}
+                          {job.instant_booking
+                            ? t.jobDetail.confirmBooking
+                            : t.jobDetail.sendRequestTitle}
                         </h3>
                         <p className="text-sm text-purple-200">
                           {interpolate(t.jobDetail.returnTripRef, {
@@ -710,6 +913,26 @@ export default function JobDetailsPage() {
                         </div>
                       </div>
                     </div>
+
+                    {/* D5 — goods description (structured request mode) */}
+                    {!job.instant_booking && (
+                      <div>
+                        <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
+                          {t.jobDetail.requestDescriptionLabel}
+                        </label>
+                        <textarea
+                          value={bookingDescription}
+                          onChange={(e) =>
+                            setBookingDescription(e.target.value)
+                          }
+                          maxLength={1000}
+                          className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all h-20"
+                          placeholder={
+                            t.jobDetail.requestDescriptionPlaceholder
+                          }
+                        />
+                      </div>
+                    )}
 
                     {/* Price input (negotiable) */}
                     <div>
@@ -788,11 +1011,16 @@ export default function JobDetailsPage() {
                       {t.common.cancel}
                     </button>
                     <button
-                      onClick={handleBookReturnTrip}
+                      onClick={
+                        job.instant_booking
+                          ? handleBookReturnTrip
+                          : handleSendTripRequest
+                      }
                       disabled={
                         bookingLoading ||
                         !bookingPrice ||
                         parseFloat(bookingPrice) <= 0 ||
+                        (!job.instant_booking && !bookingDescription.trim()) ||
                         (bookingPayment === "COD" &&
                           parseFloat(bookingPrice) > 300)
                       }
@@ -824,7 +1052,9 @@ export default function JobDetailsPage() {
                       ) : (
                         <>
                           <CheckCircle className="w-4 h-4" />
-                          {t.jobDetail.confirm}
+                          {job.instant_booking
+                            ? t.jobDetail.confirm
+                            : t.jobDetail.sendRequestCta}
                         </>
                       )}
                     </button>
@@ -951,7 +1181,77 @@ export default function JobDetailsPage() {
                     ? t.jobDetail.assignedToYou
                     : t.jobDetail.transporterAssignedInfo}
                 </p>
+
+                {/* D2' — mission timeline (visible to both parties) */}
+                {(job.events?.length ?? 0) > 0 && (
+                  <ul className="mt-3 space-y-1 text-xs">
+                    {(job.events ?? []).map((e, i) => (
+                      <li
+                        key={i}
+                        className="flex items-center gap-2 text-brand-700"
+                      >
+                        <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+                        <span>
+                          {(
+                            {
+                              ARRIVED_PICKUP: t.jobDetail.eventArrivedPickup,
+                              LOADED: t.jobDetail.eventLoaded,
+                              DELIVERED: t.jobDetail.eventDelivered,
+                            } as Record<string, string>
+                          )[e.event] || e.event}
+                        </span>
+                        <span className="text-brand-400 ms-auto">
+                          {formatDateTime(e.created_at)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* D7 — the paying client holds the delivery code */}
+                {job.delivery_pin && !isAssignedTransporter && (
+                  <div className="mt-3 p-3 bg-white border-2 border-dashed border-brand-300 rounded-lg text-center">
+                    <p className="text-xs text-neutral-500 mb-1">
+                      {t.jobDetail.deliveryPinLabel}
+                    </p>
+                    <p className="text-2xl font-bold tracking-[0.4em] text-brand-700">
+                      {job.delivery_pin}
+                    </p>
+                    <p className="text-[11px] text-neutral-400 mt-1">
+                      {t.jobDetail.deliveryPinHint}
+                    </p>
+                  </div>
+                )}
+
                 <div className="mt-3 space-y-2">
+                  {/* D2' — next milestone for the assigned transporter */}
+                  {isAssignedTransporter &&
+                    !(job.events ?? []).some(
+                      (e) => e.event === "ARRIVED_PICKUP",
+                    ) && (
+                      <button
+                        onClick={() => handleLogMilestone("ARRIVED_PICKUP")}
+                        disabled={milestoneLoading}
+                        className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        <MapPin className="w-4 h-4" />
+                        {t.jobDetail.milestoneArrived}
+                      </button>
+                    )}
+                  {isAssignedTransporter &&
+                    (job.events ?? []).some(
+                      (e) => e.event === "ARRIVED_PICKUP",
+                    ) &&
+                    !(job.events ?? []).some((e) => e.event === "LOADED") && (
+                      <button
+                        onClick={() => handleLogMilestone("LOADED")}
+                        disabled={milestoneLoading}
+                        className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2 disabled:opacity-50"
+                      >
+                        <Truck className="w-4 h-4" />
+                        {t.jobDetail.milestoneLoaded}
+                      </button>
+                    )}
                   {/* P0-01: CTA "Marquer comme livré" — Transporteur uniquement */}
                   {showMarkDelivered && (
                     <button
@@ -998,94 +1298,21 @@ export default function JobDetailsPage() {
             )}
 
             {/* ============================================ */}
-            {/* POST-LIVRAISON FLOW (BL-03, UX-01)          */}
+            {/* POST-LIVRAISON FLOW (BL-03, UX-01, D1')     */}
+            {/* Panneau unique cohérent — cf PostDeliveryPanel */}
             {/* ============================================ */}
 
             {isCompleted && (
-              <div className="space-y-4">
-                {/* Step 1: CLIENT CONFIRMATION */}
-                {showConfirmButton && (
-                  <div className="bg-amber-50 border border-amber-300 rounded-xl p-5 animate-fade-in-up">
-                    <h3 className="font-bold flex items-center gap-2 mb-2 text-amber-900">
-                      <AlertCircle className="w-5 h-5" />
-                      {t.jobDetail.confirmDeliveryTitle}
-                    </h3>
-                    <p className="text-sm text-amber-800 mb-4">
-                      {t.jobDetail.confirmDeliveryDesc}
-                    </p>
-                    <button
-                      onClick={() => setActiveDialog("confirmDelivery")}
-                      disabled={confirming}
-                      className="w-full py-3 bg-green-600 text-white rounded-xl font-bold hover:bg-green-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
-                    >
-                      {confirming ? (
-                        t.jobDetail.confirming
-                      ) : (
-                        <>
-                          <CheckCircle className="w-5 h-5" />
-                          {t.jobDetail.confirmReceiveRelease}
-                        </>
-                      )}
-                    </button>
-                  </div>
-                )}
-
-                {/* Confirmed badge (after confirmation) */}
-                {clientConfirmed && (
-                  <div className="bg-green-50 border border-green-200 rounded-xl p-4">
-                    <div className="flex items-center gap-2 text-green-800">
-                      <ShieldCheck className="w-5 h-5" />
-                      <span className="font-semibold">
-                        {t.jobDetail.deliveryReleasedBadge}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Transporter waiting for confirmation */}
-                {!clientConfirmed && isTransporter && (
-                  <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-brand-700">
-                    <h3 className="font-bold flex items-center gap-2 mb-2">
-                      <Clock className="w-5 h-5" />
-                      {t.jobDetail.awaitingConfirmation}
-                    </h3>
-                    <p className="text-sm">
-                      {t.jobDetail.awaitingConfirmationDesc}
-                    </p>
-                  </div>
-                )}
-
-                {/* Step 2: REVIEW (after confirmation for client, immediate for transporter) */}
-                {showReviewForm && (
-                  <div className="animate-fade-in-up">
-                    <ReviewForm
-                      jobId={job.id}
-                      onReviewSubmitted={() => {
-                        fetchJob();
-                      }}
-                    />
-                  </div>
-                )}
-
-                {/* Already reviewed */}
-                {hasReviewed && (
-                  <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 flex items-center gap-2 text-neutral-600">
-                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
-                    <span className="text-sm">
-                      {t.jobDetail.alreadyReviewed}
-                    </span>
-                  </div>
-                )}
-
-                {/* Mission completed summary */}
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-green-800">
-                  <h3 className="font-bold flex items-center gap-2 mb-1">
-                    <CheckCircle className="w-5 h-5" />
-                    {t.jobDetail.missionCompleted}
-                  </h3>
-                  <p className="text-sm">{t.jobDetail.missionCompletedDesc}</p>
-                </div>
-              </div>
+              <PostDeliveryPanel
+                jobId={job.id}
+                isOwner={isOwner}
+                isTransporter={isTransporter}
+                clientConfirmed={clientConfirmed}
+                hasReviewed={hasReviewed}
+                confirming={confirming}
+                onConfirmClick={() => setActiveDialog("confirmDelivery")}
+                onReviewSubmitted={fetchJob}
+              />
             )}
 
             {/* Cancel Button — visible on PUBLISHED/MATCHED for client owner */}
@@ -1156,6 +1383,40 @@ export default function JobDetailsPage() {
         loading={completing}
         onConfirm={handleMarkDelivered}
         onCancel={() => setActiveDialog(null)}
+        detail={
+          <div className="space-y-3 text-start">
+            {job?.booking_payment_method && (
+              <div>
+                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  {t.jobDetail.podPinInputLabel}
+                </label>
+                <input
+                  inputMode="numeric"
+                  maxLength={4}
+                  value={deliveryPin}
+                  onChange={(e) =>
+                    setDeliveryPin(
+                      e.target.value.replace(/\D/g, "").slice(0, 4),
+                    )
+                  }
+                  className="w-full px-3 py-2 border rounded-lg text-center text-lg tracking-[0.3em] font-bold focus:ring-2 focus:ring-brand-500"
+                  placeholder="••••"
+                />
+              </div>
+            )}
+            <div>
+              <label className="block text-sm font-medium text-neutral-700 mb-1">
+                {t.jobDetail.podPhotoLabel}
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => setPodFile(e.target.files?.[0] ?? null)}
+                className="w-full text-sm text-neutral-500"
+              />
+            </div>
+          </div>
+        }
       />
 
       <Modal

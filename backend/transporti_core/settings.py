@@ -381,10 +381,15 @@ SIMPLE_JWT = {
 
 # Commission rates by job type - ONLY modify here
 COMMISSION_RATES = {
-    'TRANSPORT': 0.12,  # 12%
-    'MOVING': 0.15,     # 15%
-    'DEFAULT': 0.12,    # Fallback rate
+    'TRANSPORT': 0.12,     # 12%
+    'MOVING': 0.15,        # 15%
+    'RETURN_TRIP': 0.08,   # 8% — D13: incentive rate for return-trip missions (pivot)
+    'DEFAULT': 0.12,       # Fallback rate
 }
+
+# Impact metrics (vision v1.0 §10) — average CO2 emission per km for a light
+# truck, used to estimate "tonnes de CO₂ évitées". Adjustable per fleet data.
+CO2_KG_PER_KM = float(os.environ.get('CO2_KG_PER_KM', '0.35'))
 
 
 # =============================================================================

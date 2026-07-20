@@ -179,12 +179,34 @@ def send_message(user, job: TransportJob, content: str, is_system: bool = False)
     
     # Update conversation timestamp
     conversation.save(update_fields=['updated_at'])
-    
+
     logger.info(
         f"MESSAGE_SENT: message_id={message.id}, job_id={job.id}, "
         f"sender_id={user.id}, is_system={is_system}"
     )
-    
+
+    # E1 (Sprint 3, audit C7): notify the other participants — the missing
+    # inbound notification that left transporters deaf to client messages.
+    # Respects NotificationPreference.notify_new_message.
+    if not is_system:
+        try:
+            from notifications.services import notify
+            from users.models import NotificationPreference
+            sender_name = f"{user.first_name} {user.last_name[:1]}.".strip() or user.email
+            for participant in conversation.participants.exclude(id=user.id):
+                prefs = NotificationPreference.objects.filter(user=participant).first()
+                if prefs and not prefs.notify_new_message:
+                    continue
+                notify(
+                    user=participant,
+                    notification_type='MESSAGE_RECEIVED',
+                    title=f'💬 Nouveau message de {sender_name}',
+                    message=content[:120],
+                    metadata={'job_id': job.id, 'message_id': message.id},
+                )
+        except Exception:
+            pass  # Notification failure must never block messaging
+
     return message
 
 

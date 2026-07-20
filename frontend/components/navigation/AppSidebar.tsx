@@ -18,6 +18,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { RETURN_TRIPS_FIRST } from "@/lib/flags";
 import NavItem from "./NavItem";
 import { SidebarLogo } from "@/components/brand/TransportiLogo";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
@@ -48,10 +49,21 @@ export default function AppSidebar() {
     { href: "/disputes", icon: AlertTriangle, label: t.nav.disputes },
   ];
 
-  const clientItems: NavItemDef[] = [
-    { href: "/jobs/new", icon: PlusCircle, label: t.nav.publishAd },
-    { href: "/jobs/return-trips", icon: RotateCcw, label: t.nav.returnTrips },
-  ];
+  // RETURN_TRIPS_FIRST (pivot): searching an existing trip is the primary
+  // client action; publishing a classic request is the fallback.
+  const clientItems: NavItemDef[] = RETURN_TRIPS_FIRST
+    ? [
+        { href: "/jobs/return-trips", icon: Search, label: t.nav.findTrip },
+        { href: "/jobs/new", icon: PlusCircle, label: t.nav.publishAd },
+      ]
+    : [
+        { href: "/jobs/new", icon: PlusCircle, label: t.nav.publishAd },
+        {
+          href: "/jobs/return-trips",
+          icon: RotateCcw,
+          label: t.nav.returnTrips,
+        },
+      ];
 
   const transporterItems: NavItemDef[] = [
     { href: "/jobs/browse", icon: Search, label: t.nav.findMission },

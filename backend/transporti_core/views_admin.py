@@ -84,6 +84,54 @@ class AdminStatsView(APIView):
             avg=Avg('trust_score')
         )['avg'] or 0
 
+        # ========== KPI stratégiques pivot (vision v1.0 §9-10) ==========
+        from django.conf import settings as dj_settings
+        from django.utils import timezone as tz
+
+        return_trips = TransportJob.objects.filter(is_return_trip=True)
+        trips_published_total = return_trips.count()
+        trips_active = return_trips.filter(
+            status='PUBLISHED', scheduled_time__gte=tz.now()
+        ).count()
+        trips_booked = return_trips.filter(
+            status__in=['MATCHED', 'IN_PROGRESS', 'COMPLETED']
+        ).count()
+        # Taux de remplissage (K de liquidité) : réservés / (réservés + expirés/publiés passés)
+        trips_closed_or_past = return_trips.exclude(status='PUBLISHED').count() + \
+            return_trips.filter(status='PUBLISHED', scheduled_time__lt=tz.now()).count()
+        fill_rate = round(trips_booked / trips_closed_or_past * 100, 1) if trips_closed_or_past else None
+
+        # NSM : kilomètres de retour à vide transformés en kilomètres chargés
+        # = Σ distance_km des missions issues de trajets retour menées à terme.
+        nsm_km = float(
+            return_trips.filter(status='COMPLETED').aggregate(
+                total=Sum('distance_km')
+            )['total'] or 0
+        )
+        co2_factor = getattr(dj_settings, 'CO2_KG_PER_KM', 0.35)
+        co2_saved_kg = round(nsm_km * co2_factor, 1)
+        # Revenus additionnels transporteurs (Impact) : net des missions retours payées
+        from logistics.models import Offer as OfferModel
+        extra_revenue = float(
+            OfferModel.objects.filter(
+                status='ACCEPTED', job__is_return_trip=True, job__status='COMPLETED'
+            ).aggregate(total=Sum('price_net'))['total'] or 0
+        )
+        # Liquidité corridor A1 (objectif 3 ans) : trajets actifs par paire orientée
+        A1 = ['Tunis', 'Sousse', 'Sfax', 'Gabès']
+        corridor_a1 = []
+        for origin in A1:
+            for dest in A1:
+                if origin == dest:
+                    continue
+                n = return_trips.filter(
+                    status='PUBLISHED', scheduled_time__gte=tz.now(),
+                    pickup_governorate__iexact=origin,
+                    dropoff_governorate__iexact=dest,
+                ).count()
+                if n:
+                    corridor_a1.append({'corridor': f'{origin} → {dest}', 'active_trips': n})
+
         return Response({
             'totalUsers': total_users,
             'activeUsers': active_users,
@@ -100,6 +148,17 @@ class AdminStatsView(APIView):
             'platformRevenue': round(platform_revenue, 2),
             'activeDisputes': active_disputes,
             'avgTrustScore': round(float(avg_trust)),
+            # Pivot (vision v1.0)
+            'pivot': {
+                'nsmKmTransformed': round(nsm_km, 1),
+                'co2SavedKg': co2_saved_kg,
+                'extraTransporterRevenue': round(extra_revenue, 2),
+                'tripsPublishedTotal': trips_published_total,
+                'tripsActive': trips_active,
+                'tripsBooked': trips_booked,
+                'fillRatePct': fill_rate,
+                'corridorA1': corridor_a1,
+            },
         })
 
 

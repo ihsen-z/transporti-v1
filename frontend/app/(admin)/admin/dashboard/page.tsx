@@ -86,7 +86,14 @@ function DashboardContent() {
     return () => {
       if (refreshTimerRef.current) clearInterval(refreshTimerRef.current);
     };
-  }, [prefs.autoRefresh, prefs.refreshInterval, refetchStats, refetchJobs, refetchActivity, refetchAlerts]);
+  }, [
+    prefs.autoRefresh,
+    prefs.refreshInterval,
+    refetchStats,
+    refetchJobs,
+    refetchActivity,
+    refetchAlerts,
+  ]);
 
   if (loading) {
     return <LoadingState variant="page" />;
@@ -212,6 +219,67 @@ function DashboardContent() {
     },
   ];
 
+  // KPI stratégiques pivot (vision v1.0 §9-10) — NSM + Impact + Liquidité
+  const pivot = (
+    stats as {
+      pivot?: {
+        nsmKmTransformed: number;
+        co2SavedKg: number;
+        extraTransporterRevenue: number;
+        tripsActive: number;
+        tripsBooked: number;
+        fillRatePct: number | null;
+        corridorA1: { corridor: string; active_trips: number }[];
+      };
+    }
+  ).pivot;
+  const pivotKPIs = pivot
+    ? [
+        {
+          id: "kpi-nsm",
+          props: {
+            title: t.dashboard.kpiNsm,
+            value: `${Math.round(pivot.nsmKmTransformed).toLocaleString()} km`,
+            subtitle: t.dashboard.kpiNsmSub,
+            icon: TrendingUp,
+            color: "accent" as const,
+          },
+        },
+        {
+          id: "kpi-co2",
+          props: {
+            title: t.dashboard.kpiCo2,
+            value: `${(pivot.co2SavedKg / 1000).toFixed(2)} t`,
+            icon: CheckCircle,
+            color: "primary" as const,
+          },
+        },
+        {
+          id: "kpi-trips-active",
+          props: {
+            title: t.dashboard.kpiTripsActive,
+            value: pivot.tripsActive.toLocaleString(),
+            subtitle: `${pivot.tripsBooked} ${t.dashboard.kpiTripsBooked}`,
+            icon: Truck,
+            color: "warning" as const,
+          },
+        },
+        {
+          id: "kpi-fill",
+          props: {
+            title: t.dashboard.kpiFillRate,
+            value: pivot.fillRatePct != null ? `${pivot.fillRatePct}%` : "—",
+            subtitle: t.dashboard.kpiExtraRevenue.replace(
+              "{amount}",
+              formatCurrency(pivot.extraTransporterRevenue),
+            ),
+            icon: DollarSign,
+            color: "neutral" as const,
+          },
+        },
+      ]
+    : [];
+
   const visiblePrimary = primaryKPIs.filter((k) => isWidgetVisible(k.id));
   const visibleSecondary = secondaryKPIs.filter((k) => isWidgetVisible(k.id));
 
@@ -264,6 +332,41 @@ function DashboardContent() {
         </div>
       )}
 
+      {/* KPI stratégiques pivot — NSM, Impact, Liquidité (vision v1.0) */}
+      {pivotKPIs.length > 0 && (
+        <div>
+          <h2 className="text-sm font-semibold uppercase tracking-wider text-neutral-400 dark:text-neutral-500 mb-3">
+            {t.dashboard.pivotSectionTitle}
+          </h2>
+          <div className={`grid grid-cols-1 ${compactClass} gap-4`}>
+            {pivotKPIs.map((kpi) => (
+              <StatCard
+                key={kpi.id}
+                {...kpi.props}
+                compact={prefs.compactMode}
+              />
+            ))}
+          </div>
+          {pivot && pivot.corridorA1.length > 0 && (
+            <div className="mt-4 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">
+                {t.dashboard.corridorA1Title}
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {pivot.corridorA1.map((c) => (
+                  <span
+                    key={c.corridor}
+                    className="text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-medium"
+                  >
+                    {c.corridor} · {c.active_trips}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Revenue Chart — D4 + D2 Date Range */}
       {isWidgetVisible("section-jobs") && (
         <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 transition-colors duration-300">
@@ -305,7 +408,6 @@ function DashboardContent() {
           <RevenueChart days={chartDays} jobs={allJobs} />
         </div>
       )}
-
 
       {/* Main Content Grid */}
       <div className="grid lg:grid-cols-3 gap-6">

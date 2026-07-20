@@ -5,6 +5,7 @@ import Footer from "@/components/layout/Footer";
 import Link from "next/link";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { RETURN_TRIPS_FIRST } from "@/lib/flags";
 
 /* ============================================================================
    Scroll-Animated Section Wrapper
@@ -63,48 +64,86 @@ export default function Home() {
                   {l.badge}
                 </div>
                 <h1 className="text-5xl font-bold mb-6 leading-tight">
-                  {l.heroTitle1}
+                  {RETURN_TRIPS_FIRST ? l.pivotHeroTitle1 : l.heroTitle1}
                   <br />
-                  <span className="text-accent-400">{l.heroTitle2}</span>
+                  <span className="text-accent-400">
+                    {RETURN_TRIPS_FIRST ? l.pivotHeroTitle2 : l.heroTitle2}
+                  </span>
                 </h1>
-                <p className="text-xl text-primary-100 mb-8">{l.heroDesc}</p>
+                <p className="text-xl text-primary-100 mb-8">
+                  {RETURN_TRIPS_FIRST ? l.pivotHeroDesc : l.heroDesc}
+                </p>
 
-                {/* CTA Buttons */}
-                <div className="flex flex-wrap gap-3">
-                  <Link
-                    href="/login?redirect=/jobs/new"
-                    className="group bg-cta-500 hover:bg-cta-600 text-white font-semibold px-8 py-3.5 rounded-lg shadow-lg transition-all hover:scale-105 hover:shadow-xl flex items-center gap-2 animate-pulse-glow"
-                    id="hero-cta-publish"
-                  >
-                    <svg
-                      className="w-5 h-5 transition-transform group-hover:rotate-12"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M12 4v16m8-8H4"
-                      />
-                    </svg>
-                    {l.ctaPublish}
-                  </Link>
-                  <Link
-                    href="/register"
-                    className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-3.5 rounded-lg border border-white/30 transition-all hover:scale-105"
-                  >
-                    {l.ctaRegister}
-                  </Link>
-                  <Link
-                    href="/login"
-                    className="bg-transparent hover:bg-white/10 text-white/80 hover:text-white font-medium px-6 py-3.5 rounded-lg transition-all"
-                  >
-                    {l.ctaLogin}
-                  </Link>
-                </div>
-                <p className="text-sm text-primary-200 mt-4">{l.trustLine}</p>
+                {/* CTA Buttons — pivot: dual promise (transporter + client) */}
+                {RETURN_TRIPS_FIRST ? (
+                  <>
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        href="/login?redirect=/jobs/return-trip"
+                        className="group bg-cta-500 hover:bg-cta-600 text-white font-semibold px-8 py-3.5 rounded-lg shadow-lg transition-all hover:scale-105 hover:shadow-xl flex items-center gap-2 animate-pulse-glow"
+                        id="hero-cta-publish-trip"
+                      >
+                        🚚 {l.pivotCtaTransporter}
+                      </Link>
+                      <Link
+                        href="/login?redirect=/jobs/return-trips"
+                        className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-3.5 rounded-lg border border-white/30 transition-all hover:scale-105"
+                        id="hero-cta-find-trip"
+                      >
+                        🔍 {l.pivotCtaClient}
+                      </Link>
+                      <Link
+                        href="/login"
+                        className="bg-transparent hover:bg-white/10 text-white/80 hover:text-white font-medium px-6 py-3.5 rounded-lg transition-all"
+                      >
+                        {l.ctaLogin}
+                      </Link>
+                    </div>
+                    <p className="text-sm text-primary-200 mt-4">
+                      {l.pivotTrustLine}
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="flex flex-wrap gap-3">
+                      <Link
+                        href="/login?redirect=/jobs/new"
+                        className="group bg-cta-500 hover:bg-cta-600 text-white font-semibold px-8 py-3.5 rounded-lg shadow-lg transition-all hover:scale-105 hover:shadow-xl flex items-center gap-2 animate-pulse-glow"
+                        id="hero-cta-publish"
+                      >
+                        <svg
+                          className="w-5 h-5 transition-transform group-hover:rotate-12"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        {l.ctaPublish}
+                      </Link>
+                      <Link
+                        href="/register"
+                        className="bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white font-semibold px-8 py-3.5 rounded-lg border border-white/30 transition-all hover:scale-105"
+                      >
+                        {l.ctaRegister}
+                      </Link>
+                      <Link
+                        href="/login"
+                        className="bg-transparent hover:bg-white/10 text-white/80 hover:text-white font-medium px-6 py-3.5 rounded-lg transition-all"
+                      >
+                        {l.ctaLogin}
+                      </Link>
+                    </div>
+                    <p className="text-sm text-primary-200 mt-4">
+                      {l.trustLine}
+                    </p>
+                  </>
+                )}
               </div>
 
               <div className="hidden md:block animate-fade-in-up delay-200">

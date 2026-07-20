@@ -169,7 +169,10 @@ def _is_push_enabled(user) -> bool:
     Defaults to True if no preference exists (opt-out model).
     """
     try:
-        from .models import NotificationPreference
+        # E1 fix (audit Sprint 0, bug latent n°4): NotificationPreference lives
+        # in users.models — the old `.models` import raised ImportError and the
+        # fail-open swallowed it, so the preference was NEVER honored.
+        from users.models import NotificationPreference
         pref = NotificationPreference.objects.filter(user=user).first()
         if pref is None:
             return True  # Default: opt-in

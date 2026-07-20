@@ -20,12 +20,19 @@ class TransportJobCreateSerializer(serializers.ModelSerializer):
 
     def validate_scheduled_time(self, value):
         if value < timezone.now():
-            raise serializers.ValidationError("Scheduled time must be in the future.")
+            raise serializers.ValidationError("La date doit être dans le futur.")
         return value
 
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
         validated_data['status'] = TransportJob.Status.PUBLISHED
+        # NSM: road distance computed once server-side at creation
+        from .pricing import estimate_distance_for_job
+        validated_data['distance_km'] = estimate_distance_for_job(
+            validated_data.get('pickup_lat'), validated_data.get('pickup_lng'),
+            validated_data.get('dropoff_lat'), validated_data.get('dropoff_lng'),
+            validated_data.get('pickup_governorate'), validated_data.get('dropoff_governorate'),
+        )
         return super().create(validated_data)
 
 
@@ -43,7 +50,8 @@ class TransportJobListSerializer(serializers.ModelSerializer):
             'pickup_governorate', 'dropoff_governorate',
             'scheduled_time', 'specifications', 'owner_name', 'offer_count',
             'price_tnd_min', 'price_tnd_max',
-            'is_return_trip', 'available_capacity',
+            'is_return_trip', 'available_capacity', 'instant_booking',
+            'distance_km',
             'created_at'
         ]
         read_only_fields = fields
@@ -66,6 +74,11 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
     commission_rate = serializers.SerializerMethodField()
     my_offer = serializers.SerializerMethodField()
     booking_payment_method = serializers.SerializerMethodField()
+    is_expired = serializers.SerializerMethodField()
+    my_trip_request = serializers.SerializerMethodField()
+    pending_requests_count = serializers.SerializerMethodField()
+    events = serializers.SerializerMethodField()
+    delivery_pin = serializers.SerializerMethodField()
 
     class Meta:
         model = TransportJob
@@ -76,13 +89,85 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
             'scheduled_time', 'specifications', 'description', 'photos',
             'price_tnd_min', 'price_tnd_max', 'owner',
             'pickup_hint', 'dropoff_hint',
-            'is_return_trip', 'available_capacity',
+            'is_return_trip', 'available_capacity', 'instant_booking',
+            'distance_km', 'is_expired',
             'accepted_transporter', 'has_reviewed', 'client_confirmed',
             'commission_rate', 'my_offer', 'booking_payment_method',
+            'my_trip_request', 'pending_requests_count',
+            'events', 'delivery_pin',
             'view_count',
             'created_at', 'updated_at'
         ]
         read_only_fields = fields
+
+    def get_events(self, obj) -> list:
+        """Sprint 6 (D2') — mission timeline, visible to both parties."""
+        return [
+            {
+                'event': e.event,
+                'created_at': e.created_at.isoformat(),
+                'pod_photo_url': (e.metadata or {}).get('pod_photo_url', ''),
+            }
+            for e in obj.events.all()
+        ]
+
+    def get_delivery_pin(self, obj) -> str | None:
+        """D7 — the POD code is revealed to the PAYING CLIENT only.
+
+        Classic mission: the payer is the job owner. Return trip: the owner is
+        the transporter — the payer is the client of the ACCEPTED request.
+        """
+        request = self.context.get('request')
+        if not request or not request.user.is_authenticated:
+            return None
+        user = request.user
+        if obj.is_return_trip:
+            is_payer = obj.trip_requests.filter(
+                client=user, status='ACCEPTED'
+            ).exists()
+        else:
+            is_payer = user.id == obj.owner_id
+        if not is_payer:
+            return None
+        try:
+            return obj.booking.delivery_pin
+        except Exception:
+            return None
+
+    def get_is_expired(self, obj) -> bool:
+        """PUBLISHED job whose pickup date is past (return-trip lifecycle)."""
+        from django.utils import timezone
+        return bool(
+            obj.status == TransportJob.Status.PUBLISHED
+            and obj.scheduled_time and obj.scheduled_time < timezone.now()
+        )
+
+    def get_my_trip_request(self, obj) -> dict | None:
+        """D5 — the current client's latest request on this return trip."""
+        request = self.context.get('request')
+        if not obj.is_return_trip or not request or not request.user.is_authenticated:
+            return None
+        if request.user.id == obj.owner_id:
+            return None
+        req = obj.trip_requests.filter(client=request.user).order_by('-created_at').first()
+        if not req:
+            return None
+        return {
+            'id': req.id,
+            'status': req.status,
+            'proposed_price': float(req.proposed_price),
+            'counter_price': float(req.counter_price) if req.counter_price is not None else None,
+            'payment_method': req.payment_method,
+            'response_message': req.response_message,
+            'created_at': req.created_at.isoformat(),
+        }
+
+    def get_pending_requests_count(self, obj) -> int:
+        """D5 — for the owner's return-trip screen."""
+        request = self.context.get('request')
+        if not obj.is_return_trip or not request or request.user.id != obj.owner_id:
+            return 0
+        return obj.trip_requests.filter(status__in=['PENDING']).count()
 
     def get_booking_payment_method(self, obj) -> str | None:
         """DIGITAL/COD once a Booking exists (D3), null before acceptance."""
@@ -93,7 +178,7 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
 
     def get_commission_rate(self, obj) -> float:
         from payments.services import get_commission_rate
-        return float(get_commission_rate(obj.job_type))
+        return float(get_commission_rate(obj.job_type, obj.is_return_trip))
 
     def get_my_offer(self, obj) -> dict | None:
         """Current transporter's offer on this job (any status), null otherwise.
@@ -177,14 +262,14 @@ class OfferCreateSerializer(serializers.ModelSerializer):
 
     def validate_job(self, value):
         if value.status != TransportJob.Status.PUBLISHED:
-            raise serializers.ValidationError("Can only submit offers to PUBLISHED jobs.")
+            raise serializers.ValidationError("Les offres ne sont possibles que sur les missions publiées.")
         return value
 
     def validate_price_net(self, value):
         if value <= 0:
-            raise serializers.ValidationError("Price must be positive.")
+            raise serializers.ValidationError("Le tarif doit être supérieur à 0.")
         if value > self.MAX_PRICE_NET:
-            raise serializers.ValidationError(f"Price cannot exceed {self.MAX_PRICE_NET} TND.")
+            raise serializers.ValidationError(f"Le tarif ne peut pas dépasser {self.MAX_PRICE_NET} TND.")
         return value
 
     def to_internal_value(self, data):
@@ -193,7 +278,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         # gets an honest error instead of a silently reinterpreted amount.
         if 'total_price' in data:
             raise serializers.ValidationError(
-                {"total_price": "Obsolete field. Submit `price_net` (the amount you receive)."}
+                {"total_price": "Champ obsolète. Envoyez `price_net` (le montant que vous recevez)."}
             )
         return super().to_internal_value(data)
 
@@ -203,7 +288,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
 
         # Check existing offer from this transporter
         if Offer.objects.filter(job=job, transporter=user).exists():
-            raise serializers.ValidationError({"job": "You already submitted an offer for this job."})
+            raise serializers.ValidationError({"job": "Vous avez déjà soumis une offre pour cette mission."})
 
         # Check max active offers (3)
         active_offers = Offer.objects.filter(
@@ -212,7 +297,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         ).count()
         if active_offers >= 3:
             raise serializers.ValidationError(
-                {"non_field_errors": "Maximum 3 active offers allowed. Wait for responses or withdraw existing offers."}
+                {"non_field_errors": "Maximum 3 offres en attente. Attendez une réponse ou retirez une offre existante."}
             )
 
         return attrs
@@ -225,7 +310,7 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         price_net = validated_data['price_net']
 
         # Net-guaranteed: commission added on top, client pays net + commission
-        commission, total_price = calculate_from_net(job.job_type, price_net)
+        commission, total_price = calculate_from_net(job.job_type, price_net, job.is_return_trip)
 
         validated_data['transporter'] = user
         validated_data['status'] = Offer.Status.PENDING
@@ -451,7 +536,7 @@ class TransportJobUpdateSerializer(serializers.ModelSerializer):
 
     def validate_scheduled_time(self, value):
         if value < timezone.now():
-            raise serializers.ValidationError("Scheduled time must be in the future.")
+            raise serializers.ValidationError("La date doit être dans le futur.")
         return value
 
 
@@ -527,16 +612,20 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     def _job_stats(self, obj) -> dict:
         """K6/K7 from the canonical formulas — cached per serialization."""
         if not hasattr(self, '_cached_job_stats'):
-            from .models import TransportJob, Offer
+            from .models import TransportJob, Offer, JobEvent
             completed = Offer.objects.filter(
                 transporter=obj.user, status='ACCEPTED',
                 job__status=TransportJob.Status.COMPLETED
             ).count()
-            # K7: COMPLETED / (COMPLETED + annulées transporteur) ; annulations
-            # non tracées avant Sprint 6 (D4') → None quand aucune mission finie.
+            # K7: COMPLETED / (COMPLETED + annulées transporteur) — annulations
+            # tracées via JobEvent depuis le Sprint 6 (D4').
+            cancelled = JobEvent.objects.filter(
+                event='CANCELLED_BY_TRANSPORTER', actor=obj.user
+            ).count()
+            denom = completed + cancelled
             self._cached_job_stats = {
                 'completed': completed,
-                'completion_rate': round(completed / completed * 100, 2) if completed else None,
+                'completion_rate': round(completed / denom * 100, 2) if denom else None,
             }
         return self._cached_job_stats
 
@@ -765,19 +854,92 @@ class ReturnTripCreateSerializer(serializers.ModelSerializer):
             'dropoff_address', 'dropoff_governorate', 'dropoff_lat', 'dropoff_lng',
             'scheduled_time', 'specifications', 'description',
             'price_tnd_min', 'price_tnd_max',
-            'available_capacity',
+            'available_capacity', 'instant_booking',
         ]
 
     def validate_scheduled_time(self, value):
         if value < timezone.now():
-            raise serializers.ValidationError("Scheduled time must be in the future.")
+            raise serializers.ValidationError("La date doit être dans le futur.")
         return value
 
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
         validated_data['status'] = TransportJob.Status.PUBLISHED
         validated_data['is_return_trip'] = True
+        from .pricing import estimate_distance_for_job
+        validated_data['distance_km'] = estimate_distance_for_job(
+            validated_data.get('pickup_lat'), validated_data.get('pickup_lng'),
+            validated_data.get('dropoff_lat'), validated_data.get('dropoff_lng'),
+            validated_data.get('pickup_governorate'), validated_data.get('dropoff_governorate'),
+        )
         return super().create(validated_data)
+
+
+class ReturnTripUpdateSerializer(serializers.ModelSerializer):
+    """
+    C9 (audit) / WS-F F2 — owner edits their PUBLISHED return trip.
+    """
+    class Meta:
+        model = TransportJob
+        fields = [
+            'pickup_address', 'pickup_governorate',
+            'dropoff_address', 'dropoff_governorate',
+            'scheduled_time', 'description',
+            'price_tnd_min', 'price_tnd_max',
+            'available_capacity', 'instant_booking',
+        ]
+        extra_kwargs = {f: {'required': False} for f in fields}
+
+    def validate_scheduled_time(self, value):
+        if value < timezone.now():
+            raise serializers.ValidationError("La date doit être dans le futur.")
+        return value
+
+
+class ReturnTripRequestSerializer(serializers.ModelSerializer):
+    """D5 — structured request on a return trip (read)."""
+    client_name = serializers.SerializerMethodField()
+    job_pickup = serializers.CharField(source='job.pickup_address', read_only=True)
+    job_dropoff = serializers.CharField(source='job.dropoff_address', read_only=True)
+    job_date = serializers.DateTimeField(source='job.scheduled_time', read_only=True)
+
+    class Meta:
+        from .models import ReturnTripRequest
+        model = ReturnTripRequest
+        fields = [
+            'id', 'job', 'status', 'description', 'photos',
+            'proposed_price', 'payment_method', 'counter_price',
+            'response_message', 'client_name',
+            'job_pickup', 'job_dropoff', 'job_date',
+            'created_at', 'updated_at',
+        ]
+        read_only_fields = fields
+
+    def get_client_name(self, obj) -> str:
+        return f"{obj.client.first_name} {obj.client.last_name[:1]}.".strip()
+
+
+class ReturnTripRequestCreateSerializer(serializers.ModelSerializer):
+    """D5 — client sends a structured request on a published return trip."""
+    class Meta:
+        from .models import ReturnTripRequest
+        model = ReturnTripRequest
+        fields = ['description', 'photos', 'proposed_price', 'payment_method']
+
+    def validate_proposed_price(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Le prix proposé doit être supérieur à 0.")
+        if value > 100_000:
+            raise serializers.ValidationError("Le prix proposé ne peut pas dépasser 100 000 TND.")
+        return value
+
+    def validate(self, attrs):
+        COD_MAX = 300
+        if attrs.get('payment_method') == 'COD' and attrs['proposed_price'] > COD_MAX:
+            raise serializers.ValidationError(
+                {'payment_method': f'Paiement à la livraison limité à {COD_MAX} TND. Choisissez le paiement digital.'}
+            )
+        return attrs
 
 
 class ClientProfileUpdateSerializer(serializers.Serializer):

@@ -33,6 +33,10 @@ interface VerificationDoc {
   uploaded_at: string;
   rejection_reason: string | null;
   reviewed_at: string | null;
+  // WS-H — expiration (calculée côté serveur ; jamais recalculée ici).
+  expires_at: string | null;
+  is_expired: boolean;
+  expires_soon: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -225,7 +229,9 @@ export default function VerificationPage() {
                   <span>{t.verify.progressLabel}</span>
                   <span className="font-semibold text-neutral-700">
                     {approvedCount}/{documents.length}{" "}
-                    {approvedCount > 1 ? t.verify.approvedPlural : t.verify.approved}
+                    {approvedCount > 1
+                      ? t.verify.approvedPlural
+                      : t.verify.approved}
                   </span>
                 </div>
                 <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
@@ -247,7 +253,9 @@ export default function VerificationPage() {
                     <span className="w-2 h-2 rounded-full bg-green-500" />
                     <span className="text-neutral-500">
                       {approvedCount}{" "}
-                      {approvedCount > 1 ? t.verify.approvedPlural : t.verify.approved}
+                      {approvedCount > 1
+                        ? t.verify.approvedPlural
+                        : t.verify.approved}
                     </span>
                   </span>
                   {rejectedCount > 0 && (
@@ -332,10 +340,35 @@ export default function VerificationPage() {
                           {doc.reviewed_at && (
                             <>
                               {" · "}
-                              {t.verify.verifiedOn} {formatDate(doc.reviewed_at)}
+                              {t.verify.verifiedOn}{" "}
+                              {formatDate(doc.reviewed_at)}
                             </>
                           )}
                         </p>
+
+                        {/* WS-H — statut d'expiration (calculé côté serveur) */}
+                        {doc.expires_at && (
+                          <div
+                            className={`mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
+                              doc.is_expired
+                                ? "bg-red-100 text-red-700"
+                                : doc.expires_soon
+                                  ? "bg-amber-100 text-amber-700"
+                                  : "bg-neutral-100 text-neutral-500"
+                            }`}
+                          >
+                            {doc.is_expired ? (
+                              <AlertTriangle className="w-3 h-3" />
+                            ) : (
+                              <Clock className="w-3 h-3" />
+                            )}
+                            {doc.is_expired
+                              ? t.verify.docExpired
+                              : doc.expires_soon
+                                ? `${t.verify.docExpiresSoon} ${formatDate(doc.expires_at)}`
+                                : `${t.verify.docExpiresOn} ${formatDate(doc.expires_at)}`}
+                          </div>
+                        )}
 
                         {/* Rejection Reason */}
                         {doc.rejection_reason && (

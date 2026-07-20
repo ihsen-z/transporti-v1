@@ -9,6 +9,7 @@ RULES:
 - Admin-only approval/rejection of requests
 """
 import logging
+from datetime import timedelta
 from django.db import models
 from django.conf import settings
 from django.utils import timezone
@@ -345,6 +346,10 @@ class VerificationDocument(models.Model):
     uploaded_at = models.DateTimeField(auto_now_add=True)
     is_valid = models.BooleanField(default=False)  # Marked by Admin
 
+    # WS-H — date d'expiration du document (permis, assurance, carte grise…).
+    # Nullable : la CIN et le selfie n'expirent pas.
+    expires_at = models.DateField(null=True, blank=True)
+
     # Per-document review tracking (added for admin per-doc review feature)
     rejection_reason = models.TextField(blank=True, default='')
     reviewed_at = models.DateTimeField(null=True, blank=True)
@@ -356,13 +361,38 @@ class VerificationDocument(models.Model):
         related_name='reviewed_documents',
     )
 
+    # WS-H — types de documents soumis à expiration (permis, assurance,
+    # carte grise). La CIN et le selfie n'expirent pas et restent hors liste.
+    EXPIRING_TYPES = {
+        'LICENSE', 'LICENSE_FRONT', 'LICENSE_BACK',
+        'INSURANCE', 'INSURANCE_FRONT', 'INSURANCE_BACK',
+        'CARTE_GRISE', 'CARTE_GRISE_FRONT', 'CARTE_GRISE_BACK',
+    }
+    # Seuil d'alerte : un document expire « bientôt » sous 30 jours.
+    EXPIRY_WARNING_DAYS = 30
+
     class Meta:
         indexes = [
             models.Index(fields=['profile', 'document_type']),
         ]
-    
+
     def __str__(self):
         return f"{self.profile.user.email} - {self.document_type}"
+
+    @property
+    def is_expired(self) -> bool:
+        """True si la date d'expiration du document est passée."""
+        if not self.expires_at:
+            return False
+        return self.expires_at < timezone.localdate()
+
+    @property
+    def expires_soon(self) -> bool:
+        """True si le document expire dans les 30 prochains jours (pas encore expiré)."""
+        if not self.expires_at:
+            return False
+        today = timezone.localdate()
+        return today <= self.expires_at <= today + timedelta(days=self.EXPIRY_WARNING_DAYS)
 
 
 class RequestStatus(models.TextChoices):

@@ -176,9 +176,11 @@ class WalletTests(PaymentLockTestBase):
         self._auth(self.client_user)
         ref = self.client.post('/api/payments/initiate/', {'job_id': job.id}, format='json').data['gateway_ref']
         self.client.post('/api/payments/verify/', {'gateway_ref': ref}, format='json')
-        # Livraison + libération
+        # Livraison + libération (D7: PIN requis depuis Sprint 6)
+        from payments.models import Booking
+        pin = Booking.objects.get(job=job).delivery_pin
         self._auth(self.transporter)
-        self.client.post(f'/api/jobs/{job.id}/complete/', {}, format='json')
+        self.client.post(f'/api/jobs/{job.id}/complete/', {'pin': pin}, format='json')
         self._auth(self.client_user)
         resp = self.client.post('/api/payments/confirm-completion/', {'job_id': job.id}, format='json')
         assert resp.status_code == 200, resp.data

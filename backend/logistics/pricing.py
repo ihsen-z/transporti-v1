@@ -54,6 +54,59 @@ def haversine_distance(lat1: float, lng1: float, lat2: float, lng2: float) -> fl
     return R * 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
 
+ROAD_FACTOR = 1.25  # T4: haversine → estimation routière (coefficient routier)
+
+# Chefs-lieux des 24 gouvernorats — repli du calcul de distance quand un job
+# n'a pas de coordonnées précises (ex. trajets retour saisis par gouvernorat).
+GOVERNORATE_CENTROIDS = {
+    'tunis': (36.8065, 10.1815), 'ariana': (36.8625, 10.1956),
+    'ben arous': (36.7545, 10.2487), 'manouba': (36.8101, 10.0956),
+    'nabeul': (36.4561, 10.7376), 'zaghouan': (36.4029, 10.1429),
+    'bizerte': (37.2744, 9.8739), 'béja': (36.7256, 9.1817),
+    'jendouba': (36.5011, 8.7802), 'kef': (36.1826, 8.7148),
+    'siliana': (36.0849, 9.3708), 'sousse': (35.8256, 10.6084),
+    'monastir': (35.7643, 10.8113), 'mahdia': (35.5047, 11.0622),
+    'sfax': (34.7406, 10.7603), 'kairouan': (35.6781, 10.0963),
+    'kasserine': (35.1676, 8.8365), 'sidi bouzid': (35.0382, 9.4849),
+    'gabès': (33.8815, 10.0982), 'medenine': (33.3549, 10.5055),
+    'médenine': (33.3549, 10.5055), 'tataouine': (32.9297, 10.4518),
+    'gafsa': (34.4250, 8.7842), 'tozeur': (33.9197, 8.1335),
+    'kebili': (33.7044, 8.9690), 'kébili': (33.7044, 8.9690),
+}
+
+
+def estimate_distance_for_job(pickup_lat, pickup_lng, dropoff_lat, dropoff_lng,
+                              pickup_governorate=None, dropoff_governorate=None):
+    """
+    NSM: best-effort distance — precise coordinates first, governorate
+    centroids as fallback (return trips are corridor-based). Returns None
+    only when neither is available.
+    """
+    km = estimate_road_distance_km(pickup_lat, pickup_lng, dropoff_lat, dropoff_lng)
+    if km is not None:
+        return km
+    p = GOVERNORATE_CENTROIDS.get((pickup_governorate or '').strip().lower())
+    d = GOVERNORATE_CENTROIDS.get((dropoff_governorate or '').strip().lower())
+    if p and d:
+        return estimate_road_distance_km(p[0], p[1], d[0], d[1])
+    return None
+
+
+def estimate_road_distance_km(lat1, lng1, lat2, lng2):
+    """
+    NSM instrumentation (vision v1.0): road distance estimate in km,
+    haversine × ROAD_FACTOR, rounded to 1 decimal. Returns None when any
+    coordinate is missing — never raises (creation must not fail on this).
+    """
+    try:
+        if None in (lat1, lng1, lat2, lng2):
+            return None
+        km = haversine_distance(float(lat1), float(lng1), float(lat2), float(lng2))
+        return round(km * ROAD_FACTOR, 1)
+    except (TypeError, ValueError):
+        return None
+
+
 def get_pricing_grid(job_type: str) -> dict:
     """
     Get pricing parameters from DB, fallback to defaults.

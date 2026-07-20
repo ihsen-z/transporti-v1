@@ -1,6 +1,13 @@
+import secrets
+
 from django.db import models
 from django.conf import settings
 from django.core.validators import MinValueValidator
+
+
+def generate_delivery_pin() -> str:
+    """D7 (Sprint 6) — 4-digit proof-of-delivery code held by the client."""
+    return f"{secrets.randbelow(10000):04d}"
 
 
 class CommissionLedger(models.Model):
@@ -125,6 +132,13 @@ class Booking(models.Model):
     cod_allowed = models.BooleanField(
         default=True,
         help_text="Whether COD was allowed for this booking amount"
+    )
+
+    # D7 (Sprint 6) — proof of delivery: the CLIENT holds this code and gives
+    # it to the transporter at reception; completion requires it.
+    delivery_pin = models.CharField(
+        max_length=4, default=generate_delivery_pin,
+        help_text="4-digit code the client gives at delivery (POD)"
     )
     
     created_at = models.DateTimeField(auto_now_add=True)

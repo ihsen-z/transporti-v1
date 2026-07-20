@@ -1,10 +1,13 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api/client";
+import { apiClient, ApiError } from "@/lib/api/client";
 import { JobFeedCard } from "@/components/jobs/JobFeedCard";
+import { useToast } from "@/components/ui/Toast";
 import {
   RotateCcw,
   Search,
@@ -14,6 +17,8 @@ import {
   MapPin,
   Truck,
   TrendingDown,
+  PlusCircle,
+  Bell,
 } from "lucide-react";
 
 const PAGE_SIZE = 10;
@@ -55,10 +60,65 @@ export default function ReturnTripsPage() {
   const [sortBy, setSortBy] = useState<"newest" | "price_asc" | "price_desc">(
     "newest",
   );
+  const searchParams = useSearchParams();
   const [filters, setFilters] = useState({
-    pickup_governorate: "",
-    dropoff_governorate: "",
+    pickup_governorate: searchParams?.get("pickup_governorate") || "",
+    dropoff_governorate: searchParams?.get("dropoff_governorate") || "",
   });
+  const { showToast } = useToast();
+  const [alertLoading, setAlertLoading] = useState(false);
+  // Sprint 5 — client's active corridor alerts (list + delete)
+  const [myAlerts, setMyAlerts] = useState<
+    { id: number; pickup_governorate: string; dropoff_governorate: string }[]
+  >([]);
+
+  const fetchMyAlerts = async () => {
+    if (user?.role?.toUpperCase() !== "CLIENT") return;
+    try {
+      const d = await apiClient.get<{ results: typeof myAlerts }>(
+        "/api/corridor-alerts/",
+      );
+      setMyAlerts(d.results ?? []);
+    } catch (_e) {
+      /* silencieux — bloc optionnel */
+    }
+  };
+
+  useEffect(() => {
+    if (!authLoading) fetchMyAlerts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user?.id]);
+
+  const handleDeleteAlert = async (id: number) => {
+    try {
+      await apiClient.delete(`/api/corridor-alerts/${id}/`);
+      setMyAlerts((prev) => prev.filter((a) => a.id !== id));
+      showToast("success", t.returnTrips.alertDeleted);
+    } catch (_e) {
+      showToast("error", t.returnTrips.alertError);
+    }
+  };
+
+  // REC-P5 — corridor alert subscription (funnel fallback)
+  const handleCreateAlert = async () => {
+    setAlertLoading(true);
+    try {
+      await apiClient.post("/api/corridor-alerts/", {
+        pickup_governorate: filters.pickup_governorate,
+        dropoff_governorate: filters.dropoff_governorate,
+      });
+      showToast("success", t.returnTrips.alertCreated);
+      fetchMyAlerts();
+    } catch (error) {
+      if (error instanceof ApiError && error.body?.error) {
+        showToast("error", String(error.body.error));
+      } else {
+        showToast("error", t.returnTrips.alertError);
+      }
+    } finally {
+      setAlertLoading(false);
+    }
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -220,6 +280,35 @@ export default function ReturnTripsPage() {
                   </button>
                 )}
               </div>
+
+              {/* Sprint 5 — client's active corridor alerts */}
+              {myAlerts.length > 0 && (
+                <div className="mt-5 pt-4 border-t border-neutral-100">
+                  <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2 flex items-center gap-1">
+                    <Bell className="w-3.5 h-3.5" />
+                    {t.returnTrips.myAlerts}
+                  </p>
+                  <ul className="space-y-1.5">
+                    {myAlerts.map((a) => (
+                      <li
+                        key={a.id}
+                        className="flex items-center justify-between text-xs bg-purple-50 border border-purple-100 rounded-lg px-2.5 py-1.5"
+                      >
+                        <span className="text-purple-700 font-medium truncate">
+                          {a.pickup_governorate} → {a.dropoff_governorate}
+                        </span>
+                        <button
+                          onClick={() => handleDeleteAlert(a.id)}
+                          className="text-neutral-400 hover:text-red-500 ms-2 flex-shrink-0"
+                          title={t.returnTrips.deleteAlert}
+                        >
+                          ✕
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           </div>
 
@@ -236,7 +325,11 @@ export default function ReturnTripsPage() {
                 <SortAsc className="w-4 h-4 text-neutral-400" />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as "newest" | "price_asc" | "price_desc")}
+                  onChange={(e) =>
+                    setSortBy(
+                      e.target.value as "newest" | "price_asc" | "price_desc",
+                    )
+                  }
                   className="text-sm border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700 focus:ring-2 focus:ring-purple-500 outline-none"
                 >
                   <option value="newest">{t.returnTrips.sortNewest}</option>
@@ -324,9 +417,32 @@ export default function ReturnTripsPage() {
                 <h3 className="text-lg font-semibold text-neutral-900 mb-2">
                   {t.returnTrips.noTrips}
                 </h3>
-                <p className="text-neutral-500 max-w-md mx-auto">
+                <p className="text-neutral-500 max-w-md mx-auto mb-6">
                   {t.returnTrips.noTripsDesc}
                 </p>
+                {/* Funnel fallback (pivot §5.2, cas B) : jamais de cul-de-sac */}
+                <div className="flex flex-wrap justify-center gap-3">
+                  <Link
+                    href={`/jobs/new?pickup_governorate=${encodeURIComponent(filters.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(filters.dropoff_governorate)}`}
+                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors"
+                  >
+                    <PlusCircle className="w-4 h-4" />
+                    {t.returnTrips.publishFallback}
+                  </Link>
+                  {filters.pickup_governorate &&
+                    filters.dropoff_governorate && (
+                      <button
+                        onClick={handleCreateAlert}
+                        disabled={alertLoading}
+                        className="inline-flex items-center gap-2 px-5 py-2.5 border-2 border-purple-300 text-purple-700 rounded-xl text-sm font-semibold hover:bg-purple-50 transition-colors disabled:opacity-50"
+                      >
+                        <Bell className="w-4 h-4" />
+                        {alertLoading
+                          ? t.common.loading
+                          : t.returnTrips.createAlert}
+                      </button>
+                    )}
+                </div>
               </div>
             )}
           </div>

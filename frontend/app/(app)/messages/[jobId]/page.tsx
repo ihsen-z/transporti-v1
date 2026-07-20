@@ -190,20 +190,30 @@ export default function MessagingPage() {
     [jobId, t],
   );
 
-  // Initial fetch
+  // E3 — assainissement du polling : on garde une référence vivante vers la
+  // dernière version de fetchMessages. Ainsi l'intervalle est créé UNE seule
+  // fois et ne se ré-abonne jamais quand l'identité du callback change (ex.
+  // `t` de l'i18n). Sans ça, chaque changement de dépendance recréait le timer.
+  const fetchMessagesRef = useRef(fetchMessages);
   useEffect(() => {
-    fetchMessages(true);
+    fetchMessagesRef.current = fetchMessages;
   }, [fetchMessages]);
 
-  // Polling for new messages every 10 seconds
+  // Fetch initial — se relance uniquement quand la conversation change.
+  useEffect(() => {
+    fetchMessagesRef.current(true);
+  }, [jobId]);
+
+  // Polling toutes les 10 s — timer créé une fois, immunisé au churn de
+  // callback et au double-montage de React StrictMode (cleanup symétrique).
   useEffect(() => {
     pollingRef.current = setInterval(() => {
-      fetchMessages(false);
+      fetchMessagesRef.current(false);
     }, 10000);
     return () => {
       if (pollingRef.current) clearInterval(pollingRef.current);
     };
-  }, [fetchMessages]);
+  }, []);
 
   // Auto-scroll to bottom
   useEffect(() => {
@@ -470,7 +480,9 @@ export default function MessagingPage() {
                   timestamp={msg.created_at}
                   isSender={msg.sender === currentUserId}
                   senderName={
-                    msg.sender === currentUserId ? t.messages.you : msg.sender_name
+                    msg.sender === currentUserId
+                      ? t.messages.you
+                      : msg.sender_name
                   }
                   isRead={msg.is_read}
                 />

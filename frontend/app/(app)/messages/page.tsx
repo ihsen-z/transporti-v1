@@ -66,17 +66,17 @@ function relativeTime(dateStr: string, t: AppTranslationKeys): string {
     if (diffH < 24) return interpolate(t.messages.hoursAgo, { n: diffH });
     if (diffD === 1) return t.messages.yesterday;
     if (diffD < 7) return interpolate(t.messages.daysAgo, { n: diffD });
-    return formatDate(d.toISOString(), undefined, { day: "numeric", month: "short" });
+    return formatDate(d.toISOString(), undefined, {
+      day: "numeric",
+      month: "short",
+    });
   } catch {
     return "";
   }
 }
 
 /** Status badge dot colors (labels come from the i18n dictionary) */
-const STATUS_STYLES: Record<
-  string,
-  { dotColor: string; className: string }
-> = {
+const STATUS_STYLES: Record<string, { dotColor: string; className: string }> = {
   IN_PROGRESS: {
     dotColor: "bg-brand-600",
     className: "bg-brand-600/5 text-brand-600",
@@ -127,7 +127,11 @@ function StatusBadge({ status }: { status: string }) {
 /*  ConversationCard — Premium list item                                       */
 /* -------------------------------------------------------------------------- */
 
-const ConversationCard = React.memo(function ConversationCardInner({ conv }: { conv: ConversationItem }) {
+const ConversationCard = React.memo(function ConversationCardInner({
+  conv,
+}: {
+  conv: ConversationItem;
+}) {
   const { t } = useAppI18n();
   const hasUnread = conv.unread_count > 0;
   const isLocked = conv.is_locked;
@@ -255,53 +259,64 @@ export default function MessagesInboxPage() {
 
   const role = user?.role?.toUpperCase();
 
-  const fetchConversations = useCallback(async (silent = false) => {
-    if (!silent) setLoading(true);
-    setError(null);
-    try {
-      const data = await apiClient.get<
-        ConversationItem[] | { results: ConversationItem[] }
-      >("/api/conversations/");
-      const items = Array.isArray(data)
-        ? data
-        : (data as { results: ConversationItem[] }).results;
-      setConversations(items);
-    } catch (err: unknown) {
-      const message =
-        err instanceof Error ? err.message : t.messages.loadErrorDesc;
-      if (!silent) setError(message);
-    } finally {
-      setLoading(false);
-    }
-  }, [t]);
+  const fetchConversations = useCallback(
+    async (silent = false) => {
+      if (!silent) setLoading(true);
+      setError(null);
+      try {
+        const data = await apiClient.get<
+          ConversationItem[] | { results: ConversationItem[] }
+        >("/api/conversations/");
+        const items = Array.isArray(data)
+          ? data
+          : (data as { results: ConversationItem[] }).results;
+        setConversations(items);
+      } catch (err: unknown) {
+        const message =
+          err instanceof Error ? err.message : t.messages.loadErrorDesc;
+        if (!silent) setError(message);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [t],
+  );
+
+  // E3 — référence vivante vers fetchConversations, pour que le polling et les
+  // écouteurs (visibilité/focus) soient posés UNE fois par session authentifiée
+  // et ne se ré-abonnent pas quand l'identité du callback change (dep `t`).
+  const fetchConversationsRef = useRef(fetchConversations);
+  useEffect(() => {
+    fetchConversationsRef.current = fetchConversations;
+  }, [fetchConversations]);
 
   useEffect(() => {
-    if (isAuthenticated) {
-      fetchConversations();
-      // FIX #19: Auto-polling every 30s for the inbox
-      pollRef.current = setInterval(
-        () => fetchConversations(true),
-        POLL_INTERVAL_MS,
-      );
+    if (!isAuthenticated) return;
 
-      // FIX #20: Refresh immediately when page becomes visible
-      const handleVisibility = () => {
-        if (document.visibilityState === "visible") {
-          fetchConversations(true);
-        }
-      };
-      // FIX A3: Use named ref for focus listener to enable proper cleanup
-      const handleFocus = () => fetchConversations(true);
-      document.addEventListener("visibilitychange", handleVisibility);
-      window.addEventListener("focus", handleFocus);
+    fetchConversationsRef.current();
+    // FIX #19: Auto-polling every 30s for the inbox
+    pollRef.current = setInterval(
+      () => fetchConversationsRef.current(true),
+      POLL_INTERVAL_MS,
+    );
 
-      return () => {
-        if (pollRef.current) clearInterval(pollRef.current);
-        document.removeEventListener("visibilitychange", handleVisibility);
-        window.removeEventListener("focus", handleFocus);
-      };
-    }
-  }, [isAuthenticated, fetchConversations]);
+    // FIX #20: Refresh immediately when page becomes visible
+    const handleVisibility = () => {
+      if (document.visibilityState === "visible") {
+        fetchConversationsRef.current(true);
+      }
+    };
+    // FIX A3: Use named ref for focus listener to enable proper cleanup
+    const handleFocus = () => fetchConversationsRef.current(true);
+    document.addEventListener("visibilitychange", handleVisibility);
+    window.addEventListener("focus", handleFocus);
+
+    return () => {
+      if (pollRef.current) clearInterval(pollRef.current);
+      document.removeEventListener("visibilitychange", handleVisibility);
+      window.removeEventListener("focus", handleFocus);
+    };
+  }, [isAuthenticated]);
 
   // Filter conversations by search query
   const filteredConversations = conversations.filter((conv) => {
@@ -421,7 +436,9 @@ export default function MessagesInboxPage() {
             </div>
           </div>
           <h3 className="text-lg font-bold text-neutral-900 mb-2">
-            {searchQuery ? t.messages.emptyNoResults : t.messages.emptyNoMessages}
+            {searchQuery
+              ? t.messages.emptyNoResults
+              : t.messages.emptyNoMessages}
           </h3>
           <p className="text-neutral-500 text-sm max-w-sm mx-auto leading-relaxed">
             {searchQuery

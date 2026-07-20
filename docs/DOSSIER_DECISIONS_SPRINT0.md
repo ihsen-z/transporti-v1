@@ -125,6 +125,8 @@
 **État réel :** Django Channels **absent** (pas installé, ASGI standard) ; `realtime_api` est un endpoint staff de polling, pas du temps réel ; le frontend polle à 30 s (10 s dans un fil de discussion) via `setInterval`, sans React Query. Doublons causés par : StrictMode dev, deux pollers superposés sur `/api/notifications/my/`, dépendance i18n `t` qui recrée les intervalles.
 **Recommandation :** Phase 1 = **polling assaini** (un seul poller par ressource, intervalle unifié, correction des dépendances d'effets) — suffisant pour le pilote avec réception < 10 s. Channels/WebSocket = chantier post-pilote. Le serveur prod est déjà daphne/ASGI, la porte reste ouverte.
 
+**État d'implémentation (Sprint 7, 20/07/2026) — ✅ livré (E3).** Les deux pollers superposés sur `/api/notifications/my/` (AppHeader + BottomNav) ont été consolidés en un poller unique dans `NotificationContext` (Sprint 6). Les pollers messagerie (inbox + fil) ont été réécrits sur une **référence stable** : l'intervalle est créé une seule fois et ne se ré-abonne plus lorsqu'un callback change d'identité (dépendance i18n `t`), avec un cleanup symétrique qui neutralise le double-montage React StrictMode (dev). WebSocket reste post-pilote.
+
 ## T2 — Canaux de notification
 **État réel :** email réel mais backend console par défaut (SendGrid câblé, clé vide) ; push : tokens enregistrés mais livraison SANDBOX (log), mode PRODUCTION `NotImplementedError` ; SMS : Twilio dans le venv, **zéro code**. Préférences : stockées et modifiables, **jamais respectées** (import cassé fail-open dans `push_service.py:172`, email ne consulte jamais `email_enabled`).
 **Recommandation :** pilote = **in-app (cloche) + email** (configurer SendGrid sur Render) ; respecter réellement les préférences ; retirer l'option SMS de l'UI tant qu'aucun envoi n'existe ; push mobile post-pilote (Firebase non configuré).
@@ -132,6 +134,8 @@
 ## T3 — Stockage média
 **État réel :** bascule S3-compatible prête dans les settings mais **non activée** (aucune variable dans render.yaml) → fichiers sur disque **éphémère** Render : les photos (POD, pièces jointes, véhicules) seraient perdues à chaque déploiement.
 **Recommandation :** activer un stockage S3-compatible (Cloudflare R2 ou Supabase Storage — coût quasi nul) **avant** tout lot qui produit des fichiers (D7 POD, WS-I pièces jointes, WS-H photos véhicule). Tâche d'infrastructure Sprint 1.
+
+**État d'implémentation (Sprint 7, 20/07/2026).** Décision d'exécution : les documents WS-H (permis/assurance/carte grise + expirations) **réutilisent le stockage local existant** (`VerificationDocument.s3_key` = chemin relatif sous `MEDIA_ROOT`, prêt pour bascule S3) plutôt que d'attendre T3. Cela débloque WS-H sans changer le contrat d'API — la migration vers R2/Supabase reste une simple bascule de backend de stockage. **Rappel : sur Render, le disque est éphémère** → activer S3 reste requis avant la mise en production réelle (fichiers perdus au redéploiement), notamment pour WS-I (PJ) encore à venir.
 
 ## T4 — Distance / durée
 **État réel :** haversine déjà implémenté (`backend/logistics/pricing.py:34-54`) et utilisé par l'estimation de prix ; lat/lng présents sur les jobs.

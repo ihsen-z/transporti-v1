@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { apiClient, ApiError } from "@/lib/api/client";
@@ -63,7 +63,7 @@ const GOVERNORATES = [
 export default function ReturnTripPage() {
   const { t: allT } = useAppI18n();
   const t = allT.returnTrip;
-  
+
   const VEHICLE_TYPES = [
     { value: "camion", label: "🚛 Camion", desc: t.vehicleHeavy },
     { value: "camionnette", label: "🚐 Camionnette", desc: t.vehicleMedium },
@@ -88,6 +88,56 @@ export default function ReturnTripPage() {
     price_tnd_min: "",
     description: "",
   });
+  // D11 — instant booking opt-in (off by default)
+  const [instantBooking, setInstantBooking] = useState(false);
+
+  // Sprint 5 (H2) — prefill vehicle from the transporter's structured profile
+  useEffect(() => {
+    let cancelled = false;
+    apiClient
+      .get<{ vehicle_type?: string; vehicle_capacity_kg?: string | number }>(
+        "/api/transporter/profile/me/",
+      )
+      .then((p) => {
+        if (cancelled || !p) return;
+        setForm((prev) => {
+          const next = { ...prev };
+          if (!prev.vehicle_type && p.vehicle_type) {
+            const match = [
+              "camion",
+              "camionnette",
+              "fourgon",
+              "pickup",
+              "remorque",
+            ].find((v) => p.vehicle_type!.toLowerCase().includes(v));
+            if (match) next.vehicle_type = match;
+          }
+          if (!prev.available_capacity && p.vehicle_capacity_kg) {
+            next.available_capacity = `${p.vehicle_capacity_kg} kg`;
+          }
+          return next;
+        });
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Sprint 5 — reverse matching: open classic requests on the corridor,
+  // returned by the creation endpoint and shown on the success screen.
+  const [matchingRequests, setMatchingRequests] = useState<
+    {
+      id: number;
+      pickup_address: string;
+      dropoff_address: string;
+      scheduled_time?: string;
+      price_tnd_min?: string | number | null;
+      price_tnd_max?: string | number | null;
+    }[]
+  >([]);
+  const [matchingCount, setMatchingCount] = useState(0);
 
   const update = (field: string, value: string) => {
     setForm((p) => ({ ...p, [field]: value }));
@@ -122,20 +172,27 @@ export default function ReturnTripPage() {
         available_capacity: `${VEHICLE_TYPES.find((v) => v.value === form.vehicle_type)?.label || form.vehicle_type} — ${form.available_capacity || "Capacité non précisée"}`,
         specifications: { vehicle_type: form.vehicle_type },
         description: form.description || "",
+        instant_booking: instantBooking,
       };
 
       if (form.price_tnd_min)
         payload.price_tnd_min = parseFloat(form.price_tnd_min);
 
-      await apiClient.post("/api/jobs/return-trip/", payload);
+      const created = await apiClient.post<{
+        matching_requests_count?: number;
+        matching_requests?: typeof matchingRequests;
+      }>("/api/jobs/return-trip/", payload);
       setSuccess(true);
-      showToast(
-        "success",
-        t.successMsg,
-      );
+      showToast("success", t.successMsg);
 
-      // Auto-redirect after 2s
-      setTimeout(() => router.push("/jobs"), 2000);
+      // Sprint 5 — reverse matching: show open requests on this corridor
+      const reqs = created?.matching_requests ?? [];
+      setMatchingRequests(reqs);
+      setMatchingCount(created?.matching_requests_count ?? reqs.length);
+      // Auto-redirect only when there is nothing to monetize right away
+      if (!reqs.length) {
+        setTimeout(() => router.push("/jobs"), 2000);
+      }
     } catch (e) {
       if (e instanceof ApiError && e.body) {
         const msg =
@@ -169,9 +226,39 @@ export default function ReturnTripPage() {
           <h2 className="text-2xl font-bold text-neutral-900 mb-2">
             {t.successTitle}
           </h2>
-          <p className="text-neutral-500 mb-6">
-            {t.successDesc}
-          </p>
+          <p className="text-neutral-500 mb-6">{t.successDesc}</p>
+
+          {/* Sprint 5 — reverse matching: monetize the trip right away */}
+          {matchingRequests.length > 0 && (
+            <div className="mb-6 text-start bg-purple-50 border border-purple-200 rounded-2xl p-4">
+              <p className="text-sm font-bold text-purple-800 mb-3">
+                🎯 {matchingCount} {t.reverseMatchTitle}
+              </p>
+              <ul className="space-y-2">
+                {matchingRequests.map((r) => (
+                  <li key={r.id}>
+                    <Link
+                      href={`/jobs/${r.id}`}
+                      className="block bg-white rounded-xl p-3 border border-purple-100 hover:border-purple-300 transition-colors"
+                    >
+                      <p className="text-sm font-medium text-neutral-900 truncate">
+                        {r.pickup_address} → {r.dropoff_address}
+                      </p>
+                      <p className="text-xs text-neutral-500">
+                        {r.price_tnd_min || r.price_tnd_max
+                          ? `${r.price_tnd_min ?? "?"} — ${r.price_tnd_max ?? "?"} TND`
+                          : t.reverseMatchNoBudget}
+                      </p>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+              <p className="text-xs text-purple-600 mt-2">
+                {t.reverseMatchHint}
+              </p>
+            </div>
+          )}
+
           <div className="flex gap-3 justify-center">
             <Link
               href="/jobs"
@@ -208,9 +295,7 @@ export default function ReturnTripPage() {
         <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-1">
           {t.pageTitle}
         </h1>
-        <p className="text-neutral-500 text-sm">
-          {t.pageSubtitle}
-        </p>
+        <p className="text-neutral-500 text-sm">{t.pageSubtitle}</p>
       </div>
 
       {/* Info banner */}
@@ -331,9 +416,7 @@ export default function ReturnTripPage() {
             onChange={(e) => update("scheduled_time", e.target.value)}
             className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all"
           />
-          <p className="text-xs text-neutral-400 mt-1.5">
-            {t.whenHint}
-          </p>
+          <p className="text-xs text-neutral-400 mt-1.5">{t.whenHint}</p>
         </div>
 
         {/* ---------- Section 3: Véhicule ---------- */}
@@ -402,6 +485,24 @@ export default function ReturnTripPage() {
               />
             </div>
           </div>
+
+          {/* D11 — instant booking opt-in */}
+          <label className="mt-4 flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl cursor-pointer">
+            <input
+              type="checkbox"
+              checked={instantBooking}
+              onChange={(e) => setInstantBooking(e.target.checked)}
+              className="mt-0.5 rounded"
+            />
+            <span className="text-sm text-neutral-700">
+              <span className="font-semibold block">
+                {t.instantBookingLabel}
+              </span>
+              <span className="text-xs text-neutral-500">
+                {t.instantBookingHint}
+              </span>
+            </span>
+          </label>
         </div>
 
         {/* ---------- Section 5: Note (optional) ---------- */}

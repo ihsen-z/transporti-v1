@@ -62,10 +62,13 @@ def get_transporter_stats(user) -> dict:
     wallet = get_wallet_summary(user)
 
     # K7 — taux de complétion = COMPLETED / (COMPLETED + annulées par le
-    # transporteur). Les annulations transporteur ne sont pas encore tracées
-    # durablement (Sprint 6, D4') → dénominateur = COMPLETED en attendant ;
-    # None quand aucune mission finie (affiché « — », jamais un faux 100 %).
-    cancelled_by_transporter = 0
+    # transporteur). Annulations tracées durablement depuis le Sprint 6 (D4')
+    # via JobEvent(CANCELLED_BY_TRANSPORTER). None quand aucune donnée
+    # (affiché « — », jamais un faux 100 %).
+    from .models import JobEvent
+    cancelled_by_transporter = JobEvent.objects.filter(
+        event='CANCELLED_BY_TRANSPORTER', actor=user
+    ).count()
     denom = completed + cancelled_by_transporter
     completion_rate = round(completed / denom * 100, 1) if denom else None
 

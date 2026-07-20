@@ -72,10 +72,41 @@ export interface JobDetail extends JobListItem {
   commission_rate?: number;
   /** DIGITAL/COD once a Booking exists (D3), null before acceptance */
   booking_payment_method?: "DIGITAL" | "COD" | null;
+  /** D11 — return trips: direct booking allowed (off by default) */
+  instant_booking?: boolean;
+  /** NSM — road distance estimate (haversine × 1.25), km */
+  distance_km?: number | string | null;
+  /** PUBLISHED job whose pickup date is past */
+  is_expired?: boolean;
+  /** D5 — current client's latest structured request on this return trip */
+  my_trip_request?: MyTripRequest | null;
+  /** D5 — owner view: pending structured requests count */
+  pending_requests_count?: number;
+  /** D2' — mission timeline (Sprint 6) */
+  events?: { event: string; created_at: string; pod_photo_url?: string }[];
+  /** D7 — POD code, revealed to the paying client only */
+  delivery_pin?: string | null;
   /** Current transporter's offer on this job (any status), null otherwise */
   my_offer?: MyOfferSummary | null;
   /** Allow additional backend fields without breaking type safety */
   [key: string]: unknown;
+}
+
+/** Mirrors TransportJobDetailSerializer.get_my_trip_request (D5) */
+export interface MyTripRequest {
+  id: number;
+  status:
+    | "PENDING"
+    | "ACCEPTED"
+    | "REJECTED"
+    | "COUNTERED"
+    | "CANCELLED"
+    | "EXPIRED";
+  proposed_price: number;
+  counter_price: number | null;
+  payment_method: "DIGITAL" | "COD";
+  response_message: string;
+  created_at: string;
 }
 
 /** Mirrors TransportJobDetailSerializer.get_my_offer */

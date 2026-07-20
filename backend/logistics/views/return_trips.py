@@ -26,9 +26,28 @@ class ReturnTripCreateView(generics.CreateAPIView):
         serializer = self.get_serializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             job = serializer.save()
+            # Sprint 4 — corridor alerts: tell subscribed clients right away
+            from .corridors import notify_corridor_alerts
+            notify_corridor_alerts(job)
+
+            # Sprint 5 — reverse matching (P2/P3): open classic requests on
+            # this corridor the transporter can bid on right now.
+            from ..serializers import TransportJobListSerializer
+            matching_requests = TransportJob.objects.filter(
+                status=TransportJob.Status.PUBLISHED,
+                is_return_trip=False,
+                scheduled_time__gte=timezone.now(),
+                pickup_governorate__iexact=job.pickup_governorate or '',
+                dropoff_governorate__iexact=job.dropoff_governorate or '',
+            ).exclude(owner=request.user).order_by('scheduled_time')
+
             return Response({
                 'message': 'Return trip created successfully.',
-                'job': TransportJobDetailSerializer(job, context={'request': request}).data
+                'job': TransportJobDetailSerializer(job, context={'request': request}).data,
+                'matching_requests_count': matching_requests.count(),
+                'matching_requests': TransportJobListSerializer(
+                    matching_requests[:5], many=True
+                ).data,
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -51,6 +70,15 @@ class BookReturnTripView(APIView):
         if not job.is_return_trip:
             return Response(
                 {'error': 'Ce job n\'est pas un trajet retour.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # D11: instant booking is an opt-in per trip (off by default) — the
+        # normal path is the structured request (POST /api/jobs/<id>/requests/).
+        if not job.instant_booking:
+            return Response(
+                {'error': 'Ce trajet n\'accepte pas la réservation immédiate. Envoyez une demande au transporteur.',
+                 'code': 'REQUEST_REQUIRED'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
@@ -104,7 +132,7 @@ class BookReturnTripView(APIView):
         # --- Create auto-offer (transporter = job.owner) ---
         # The client proposes the total they pay; derive the net with the
         # D1-consistent inverse (commission == net × rate).
-        commission, price_net = derive_net_from_total(job.job_type, proposed_price)
+        commission, price_net = derive_net_from_total(job.job_type, proposed_price, is_return_trip=True)
 
         offer = Offer.objects.create(
             job=job,
@@ -131,7 +159,7 @@ class BookReturnTripView(APIView):
             defaults={
                 'accepted_offer': offer,
                 'final_price': offer.total_price,
-                'commission_rate': get_commission_rate(job.job_type),
+                'commission_rate': get_commission_rate(job.job_type, is_return_trip=True),
                 'payment_method': payment_method,
                 'cod_allowed': offer.total_price <= COD_MAX_TND,
             }
@@ -140,7 +168,9 @@ class BookReturnTripView(APIView):
         # --- Create conversation + system message ---
         try:
             from messaging.services import get_or_create_conversation, send_system_message
-            get_or_create_conversation(job)
+            conversation = get_or_create_conversation(job)
+            # Return trips: owner == transporter — add the CLIENT explicitly
+            conversation.participants.add(request.user)
             client_name = f"{request.user.first_name} {request.user.last_name}".strip()
             if payment_method == 'DIGITAL':
                 next_step = "💳 Prochaine étape : le client procède au paiement sécurisé pour démarrer la mission."
@@ -181,3 +211,69 @@ class BookReturnTripView(APIView):
         }
 
         return Response(response_data, status=status.HTTP_201_CREATED)
+
+
+class ReturnTripManageView(APIView):
+    """
+    PATCH  /api/jobs/{job_id}/return-trip/  — owner edits a PUBLISHED return trip
+    DELETE /api/jobs/{job_id}/return-trip/  — owner removes it (soft: CANCELLED)
+    C9 (audit): the missing owner lifecycle.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    def _get_own_trip(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id, is_return_trip=True)
+        if job.owner_id != request.user.id:
+            return None, Response(
+                {'error': "Vous n'êtes pas le propriétaire de ce trajet."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+        if job.status != TransportJob.Status.PUBLISHED:
+            return None, Response(
+                {'error': f"Seul un trajet publié peut être modifié ou supprimé (statut : {job.status})."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return job, None
+
+    def patch(self, request, job_id):
+        from ..serializers import ReturnTripUpdateSerializer
+        job, error = self._get_own_trip(request, job_id)
+        if error:
+            return error
+        serializer = ReturnTripUpdateSerializer(job, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response({
+            'message': 'Trajet retour mis à jour.',
+            'job': TransportJobDetailSerializer(job, context={'request': request}).data,
+        })
+
+    @transaction.atomic
+    def delete(self, request, job_id):
+        job, error = self._get_own_trip(request, job_id)
+        if error:
+            return error
+
+        # Reject and notify pending structured requests
+        from ..models import ReturnTripRequest
+        pending = list(job.trip_requests.filter(status__in=['PENDING', 'COUNTERED']))
+        job.trip_requests.filter(id__in=[p.id for p in pending]).update(
+            status=ReturnTripRequest.Status.REJECTED,
+            response_message='Le transporteur a retiré ce trajet.',
+        )
+        try:
+            from notifications.services import notify
+            for p in pending:
+                notify(
+                    user=p.client,
+                    notification_type='TRIP_REQUEST_REJECTED',
+                    title='Trajet retiré',
+                    message='Le transporteur a retiré le trajet retour sur lequel vous aviez une demande.',
+                    metadata={'job_id': job.id, 'request_id': p.id},
+                )
+        except Exception:
+            pass
+
+        job.status = TransportJob.Status.CANCELLED
+        job.save()
+        return Response({'message': 'Trajet retour supprimé.', 'status': 'CANCELLED'})

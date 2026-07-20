@@ -41,6 +41,14 @@ const CATEGORY_TO_BACKEND: Record<
   INSURANCE: { front: "INSURANCE_FRONT", back: "INSURANCE_BACK" },
 };
 
+// WS-H — catégories dont le document expire : le backend exige alors une date
+// d'expiration future. La CIN ne fait pas partie de cette liste.
+const EXPIRING_CATEGORIES = new Set<DocumentCategory>([
+  "DRIVING_LICENSE",
+  "VEHICLE_REGISTRATION",
+  "INSURANCE",
+]);
+
 /* -------------------------------------------------------------------------- */
 /*  Single Side Upload Sub-component                                           */
 /* -------------------------------------------------------------------------- */
@@ -49,9 +57,18 @@ interface SideUploadProps {
   sideLabel: string;
   backendType: string;
   onUploadSuccess: () => void;
+  // WS-H — date d'expiration (format yyyy-mm-dd) ; requise si `requiresExpiry`.
+  expiresAt?: string;
+  requiresExpiry?: boolean;
 }
 
-function SideUpload({ sideLabel, backendType, onUploadSuccess }: SideUploadProps) {
+function SideUpload({
+  sideLabel,
+  backendType,
+  onUploadSuccess,
+  expiresAt,
+  requiresExpiry = false,
+}: SideUploadProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
@@ -74,6 +91,12 @@ function SideUpload({ sideLabel, backendType, onUploadSuccess }: SideUploadProps
 
   const handleUpload = async () => {
     if (!file || uploading) return;
+    // WS-H — bloque l'envoi tant que la date d'expiration requise est absente,
+    // pour éviter un aller-retour serveur voué à échouer (400).
+    if (requiresExpiry && !expiresAt) {
+      setError("Renseignez d'abord la date d'expiration ci-dessus.");
+      return;
+    }
     setUploading(true);
     setError("");
 
@@ -81,6 +104,7 @@ function SideUpload({ sideLabel, backendType, onUploadSuccess }: SideUploadProps
       const formData = new FormData();
       formData.append("document_type", backendType);
       formData.append("document_file", file);
+      if (expiresAt) formData.append("expires_at", expiresAt);
 
       await apiClient.upload("/api/trust/documents/", formData);
 
@@ -94,7 +118,9 @@ function SideUpload({ sideLabel, backendType, onUploadSuccess }: SideUploadProps
         const body = err.body as Record<string, unknown> | undefined;
 
         if (err.status === 403) {
-          setError("Accès refusé. Vérifiez que vous êtes connecté en tant que transporteur.");
+          setError(
+            "Accès refusé. Vérifiez que vous êtes connecté en tant que transporteur.",
+          );
         } else if (err.status === 400 && body) {
           const messages: string[] = [];
           for (const [, val] of Object.entries(body)) {
@@ -143,12 +169,16 @@ function SideUpload({ sideLabel, backendType, onUploadSuccess }: SideUploadProps
       ) : (
         <div className="space-y-2">
           <label className="block cursor-pointer">
-            <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-              file
-                ? "border-brand-600/40 bg-brand-600/5"
-                : "border-neutral-200 hover:border-brand-600/30 hover:bg-neutral-50"
-            }`}>
-              <Upload className={`w-5 h-5 mx-auto mb-1.5 ${file ? "text-brand-600" : "text-neutral-300"}`} />
+            <div
+              className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
+                file
+                  ? "border-brand-600/40 bg-brand-600/5"
+                  : "border-neutral-200 hover:border-brand-600/30 hover:bg-neutral-50"
+              }`}
+            >
+              <Upload
+                className={`w-5 h-5 mx-auto mb-1.5 ${file ? "text-brand-600" : "text-neutral-300"}`}
+              />
               <p className="text-xs text-neutral-500">
                 {file ? file.name : "Cliquer pour sélectionner"}
               </p>
@@ -209,6 +239,11 @@ export function VerificationUpload({
   onUploadSuccess,
 }: VerificationUploadProps) {
   const mapping = CATEGORY_TO_BACKEND[category];
+  const requiresExpiry = EXPIRING_CATEGORIES.has(category);
+  // Date d'expiration partagée par le recto et le verso (même document).
+  const [expiresAt, setExpiresAt] = useState("");
+  // Bornes du sélecteur : uniquement une date future.
+  const minDate = new Date(Date.now() + 86400000).toISOString().slice(0, 10);
 
   return (
     <div className="border rounded-xl p-4 bg-neutral-50">
@@ -217,17 +252,38 @@ export function VerificationUpload({
         <span className="font-medium text-neutral-700">{label}</span>
       </div>
 
+      {/* WS-H — date d'expiration commune aux deux faces (permis, assurance,
+          carte grise). Requise avant l'envoi. */}
+      {requiresExpiry && (
+        <div className="mb-4">
+          <label className="block text-xs font-semibold text-neutral-500 uppercase tracking-wider mb-1.5">
+            Date d&apos;expiration
+          </label>
+          <input
+            type="date"
+            min={minDate}
+            value={expiresAt}
+            onChange={(e) => setExpiresAt(e.target.value)}
+            className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-500 outline-none"
+          />
+        </div>
+      )}
+
       <div className="flex gap-3">
         <SideUpload
           sideLabel="📄 Recto (Face avant)"
           backendType={mapping.front}
           onUploadSuccess={onUploadSuccess}
+          expiresAt={requiresExpiry ? expiresAt : undefined}
+          requiresExpiry={requiresExpiry}
         />
         <div className="w-px bg-neutral-200 flex-shrink-0" />
         <SideUpload
           sideLabel="📄 Verso (Face arrière)"
           backendType={mapping.back}
           onUploadSuccess={onUploadSuccess}
+          expiresAt={requiresExpiry ? expiresAt : undefined}
+          requiresExpiry={requiresExpiry}
         />
       </div>
     </div>

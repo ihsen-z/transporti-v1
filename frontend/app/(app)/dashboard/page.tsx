@@ -28,6 +28,7 @@ import {
 } from "lucide-react";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import { RETURN_TRIPS_FIRST } from "@/lib/flags";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -127,17 +128,42 @@ function ClientDashboard({
         <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
         <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-2">{t.dashboard.clientCTA}</h2>
+          <h2 className="text-2xl font-bold mb-2">
+            {RETURN_TRIPS_FIRST
+              ? t.dashboard.clientCTAFirst
+              : t.dashboard.clientCTA}
+          </h2>
           <p className="text-blue-200 mb-6 max-w-lg">
-            {t.dashboard.clientCTADesc}
+            {RETURN_TRIPS_FIRST
+              ? t.dashboard.clientCTAFirstDesc
+              : t.dashboard.clientCTADesc}
           </p>
-          <Link
-            href="/jobs/new"
-            className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
-          >
-            <PlusCircle className="w-5 h-5" />
-            {t.dashboard.publishAd}
-          </Link>
+          {RETURN_TRIPS_FIRST ? (
+            <div className="flex flex-wrap gap-3">
+              <Link
+                href="/jobs/return-trips"
+                className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
+              >
+                <Search className="w-5 h-5" />
+                {t.dashboard.findTripCTA}
+              </Link>
+              <Link
+                href="/jobs/new"
+                className="inline-flex items-center gap-2 border-2 border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/10 transition-all"
+              >
+                <PlusCircle className="w-5 h-5" />
+                {t.dashboard.publishAd}
+              </Link>
+            </div>
+          ) : (
+            <Link
+              href="/jobs/new"
+              className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
+            >
+              <PlusCircle className="w-5 h-5" />
+              {t.dashboard.publishAd}
+            </Link>
+          )}
         </div>
       </div>
 

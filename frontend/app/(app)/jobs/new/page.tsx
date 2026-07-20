@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import Link from "next/link";
 import {
   ChevronLeft,
   ChevronRight,
@@ -10,6 +11,7 @@ import {
   AlertCircle,
   Lightbulb,
   MapPin,
+  Truck,
 } from "lucide-react";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
@@ -86,6 +88,56 @@ export default function NewJobPage() {
 
   const [validationError, setValidationError] = useState<string | null>(null);
 
+  // Funnel fallback (pivot §5.2-B): governorates prefilled from the return-trip
+  // search when no compatible trip was found ("publier une demande en 1 clic").
+  useEffect(() => {
+    const pg = searchParams.get("pickup_governorate");
+    const dg = searchParams.get("dropoff_governorate");
+    if (pg || dg) {
+      setFormData((prev) => ({
+        ...prev,
+        ...(pg ? { pickup_governorate: pg } : {}),
+        ...(dg ? { dropoff_governorate: dg } : {}),
+      }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // Matching v1 (pivot §5.2-A): while the client fills a classic request,
+  // suggest compatible return trips before they publish.
+  const [matchCount, setMatchCount] = useState<number | null>(null);
+  useEffect(() => {
+    if (isReturnTrip) return;
+    const pg = formData.pickup_governorate;
+    const dg = formData.dropoff_governorate;
+    if (!pg || !dg || pg === dg) {
+      setMatchCount(null);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      apiClient
+        .get<{ count: number }>(
+          `/api/return-trips/match/?pickup_governorate=${encodeURIComponent(pg)}&dropoff_governorate=${encodeURIComponent(dg)}${formData.scheduled_time ? `&date=${encodeURIComponent(formData.scheduled_time)}` : ""}`,
+        )
+        .then((d) => {
+          if (!cancelled) setMatchCount(d.count ?? 0);
+        })
+        .catch(() => {
+          if (!cancelled) setMatchCount(null);
+        });
+    }, 400);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [
+    isReturnTrip,
+    formData.pickup_governorate,
+    formData.dropoff_governorate,
+    formData.scheduled_time,
+  ]);
+
   /* -------------- Brouillon (localStorage) -------------- */
   const DRAFT_KEY = isReturnTrip
     ? "transporti-job-draft-return"
@@ -122,7 +174,10 @@ export default function NewJobPage() {
   useEffect(() => {
     if (!draftLoaded) return;
     try {
-      localStorage.setItem(DRAFT_KEY, JSON.stringify({ formData, currentStep }));
+      localStorage.setItem(
+        DRAFT_KEY,
+        JSON.stringify({ formData, currentStep }),
+      );
     } catch {
       // stockage plein/indisponible — non bloquant
     }
@@ -216,7 +271,9 @@ export default function NewJobPage() {
         if (!formData.dropoff_governorate)
           missing.push(t.newJob.fieldDropoffGovLower);
         if (missing.length > 0)
-          return interpolate(t.newJob.fillFields, { fields: missing.join(", ") });
+          return interpolate(t.newJob.fillFields, {
+            fields: missing.join(", "),
+          });
         return null;
       }
       case 3: {
@@ -557,9 +614,7 @@ export default function NewJobPage() {
           {/* Brouillon restauré */}
           {draftRestored && (
             <div className="mb-6 flex items-center justify-between gap-3 bg-brand-600/5 border border-brand-600/20 rounded-xl p-3 text-sm">
-              <p className="text-brand-700">
-                {t.newJob.draftRestored}
-              </p>
+              <p className="text-brand-700">{t.newJob.draftRestored}</p>
               <button
                 type="button"
                 onClick={discardDraft}
@@ -567,6 +622,29 @@ export default function NewJobPage() {
               >
                 {t.newJob.draftRestart}
               </button>
+            </div>
+          )}
+
+          {/* Matching v1 (pivot) : des trajets retour existent sur ce corridor */}
+          {!isReturnTrip && (matchCount ?? 0) > 0 && (
+            <div className="mb-6 flex items-start gap-3 bg-purple-50 border border-purple-200 rounded-xl p-4">
+              <Truck className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-purple-800">
+                  {interpolate(t.newJob.matchBannerTitle, {
+                    count: matchCount as number,
+                  })}
+                </p>
+                <p className="text-xs text-purple-600 mt-0.5">
+                  {t.newJob.matchBannerDesc}
+                </p>
+              </div>
+              <Link
+                href={`/jobs/return-trips?pickup_governorate=${encodeURIComponent(formData.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(formData.dropoff_governorate)}`}
+                className="flex-shrink-0 px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 transition-colors"
+              >
+                {t.newJob.matchBannerCta}
+              </Link>
             </div>
           )}
 

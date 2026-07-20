@@ -49,6 +49,18 @@ class NotificationType(models.TextChoices):
     OFFER_ACCEPTED = 'OFFER_ACCEPTED', 'Offer accepted'
     OFFER_REJECTED = 'OFFER_REJECTED', 'Offer rejected'
     OFFER_EXPIRED = 'OFFER_EXPIRED', 'Offer expired'
+
+    # Return-trip structured requests (Sprint 3 — D5) → JOB category
+    TRIP_REQUEST_RECEIVED = 'TRIP_REQUEST_RECEIVED', 'Trip request received'
+    TRIP_REQUEST_ACCEPTED = 'TRIP_REQUEST_ACCEPTED', 'Trip request accepted'
+    TRIP_REQUEST_REJECTED = 'TRIP_REQUEST_REJECTED', 'Trip request rejected'
+    TRIP_REQUEST_COUNTERED = 'TRIP_REQUEST_COUNTERED', 'Trip request countered'
+
+    # Messaging (Sprint 3 — E1, audit C7) → JOB category
+    MESSAGE_RECEIVED = 'MESSAGE_RECEIVED', 'New message received'
+
+    # Corridor alerts (Sprint 4 — D14) → JOB category
+    CORRIDOR_TRIP_PUBLISHED = 'CORRIDOR_TRIP_PUBLISHED', 'New trip on subscribed corridor'
     
     # Job events → JOB category
     JOB_STARTED = 'JOB_STARTED', 'Job started'
@@ -93,6 +105,12 @@ TYPE_TO_CATEGORY_MAP = {
     NotificationType.JOB_STARTED: NotificationCategory.JOB,
     NotificationType.JOB_COMPLETED: NotificationCategory.JOB,
     NotificationType.JOB_CANCELLED: NotificationCategory.JOB,
+    NotificationType.TRIP_REQUEST_RECEIVED: NotificationCategory.JOB,
+    NotificationType.TRIP_REQUEST_ACCEPTED: NotificationCategory.JOB,
+    NotificationType.TRIP_REQUEST_REJECTED: NotificationCategory.JOB,
+    NotificationType.TRIP_REQUEST_COUNTERED: NotificationCategory.JOB,
+    NotificationType.MESSAGE_RECEIVED: NotificationCategory.JOB,
+    NotificationType.CORRIDOR_TRIP_PUBLISHED: NotificationCategory.JOB,
     
     # PAYMENT category
     NotificationType.ESCROW_HELD: NotificationCategory.PAYMENT,

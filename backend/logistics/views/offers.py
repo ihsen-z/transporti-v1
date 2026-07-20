@@ -17,13 +17,16 @@ from users.permissions import RequireRole, RequireVerification
 class JobOffersView(generics.ListAPIView):
     """
     GET /api/jobs/{job_id}/offers/
-    Client views offers on their own job.
+    The OWNER views offers on their own job — whatever their role.
+    (C9 audit fix: a transporter owning a return trip was rejected by the
+    CLIENT role gate and saw a misleading 403.)
     """
-    permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
+    permission_classes = [IsAuthenticated]
     serializer_class = OfferListSerializer
 
     def get_queryset(self):
         job_id = self.kwargs['job_id']
+        # Ownership IS the permission — 404 if not the owner's job.
         job = get_object_or_404(TransportJob, id=job_id, owner=self.request.user)
         return Offer.objects.filter(job=job).select_related(
             'transporter', 'transporter__trust_profile'
@@ -134,10 +137,21 @@ class OfferAcceptView(generics.GenericAPIView):
         offer.status = Offer.Status.ACCEPTED
         offer.save()
 
-        # 2. Reject all other offers on this job
+        # 2. Reject all other offers on this job — and tell their authors
+        # (E1: notify_offer_rejected existed but had no caller — audit bug n°6)
+        losing_offers = list(
+            Offer.objects.filter(job=job, status=Offer.Status.PENDING)
+            .exclude(id=offer.id).select_related('transporter')
+        )
         Offer.objects.filter(job=job).exclude(id=offer.id).update(
             status=Offer.Status.REJECTED
         )
+        for losing in losing_offers:
+            try:
+                from notifications.services import notify_offer_rejected
+                notify_offer_rejected(losing)
+            except Exception:
+                pass
 
         # 3. Job becomes MATCHED — IN_PROGRESS only happens once the payment
         #    is secured (escrow HELD) or the transporter confirms a COD start.
@@ -153,7 +167,7 @@ class OfferAcceptView(generics.GenericAPIView):
             defaults={
                 'accepted_offer': offer,
                 'final_price': offer.total_price,
-                'commission_rate': get_commission_rate(job.job_type),
+                'commission_rate': get_commission_rate(job.job_type, job.is_return_trip),
                 'payment_method': payment_method,
                 'cod_allowed': offer.total_price <= COD_MAX,
             }
@@ -357,7 +371,7 @@ class CounterOfferRespondView(APIView):
         from payments.services import derive_net_from_total
         from decimal import Decimal
         new_total = counter.proposed_price
-        commission, net = derive_net_from_total(offer.job.job_type, Decimal(str(new_total)))
+        commission, net = derive_net_from_total(offer.job.job_type, Decimal(str(new_total)), offer.job.is_return_trip)
 
         offer.total_price = new_total
         offer.commission_amount = commission

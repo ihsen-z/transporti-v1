@@ -230,7 +230,7 @@ class JobPublishView(APIView):
         job = get_object_or_404(TransportJob, id=job_id, owner=request.user)
 
         if job.status != TransportJob.Status.DRAFT:
-            return Response({'error': 'Only DRAFT jobs can be published.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'Seules les demandes en brouillon peuvent être publiées.'}, status=status.HTTP_400_BAD_REQUEST)
 
         job.status = TransportJob.Status.PUBLISHED
         job.save()
@@ -362,6 +362,16 @@ class TransporterCancelView(APIView):
         job.status = TransportJob.Status.PUBLISHED
         job.save()
 
+        # 2b. Durable trace (D4' — feeds the real K7 completion rate)
+        try:
+            from ..models import JobEvent
+            JobEvent.objects.create(
+                job=job, event='CANCELLED_BY_TRANSPORTER',
+                actor=request.user, metadata={'reason': reason},
+            )
+        except Exception:
+            pass
+
         # 3. Refund any refundable escrow (HELD/INITIATED) — service handles lookup
         try:
             from payments.services import refund_escrow
@@ -416,12 +426,20 @@ class JobCancelView(APIView):
 
         if job.status not in [TransportJob.Status.DRAFT, TransportJob.Status.PUBLISHED]:
             return Response(
-                {'error': 'Cannot cancel job in current status.'},
+                {'error': 'Cette mission ne peut plus être annulée dans son statut actuel.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
         job.status = TransportJob.Status.CANCELLED
         job.save()
+
+        # Durable trace (D4')
+        try:
+            from ..models import JobEvent
+            JobEvent.objects.create(
+                job=job, event='CANCELLED_BY_CLIENT', actor=request.user)
+        except Exception:
+            pass
 
         # Withdraw all offers
         job.offers.update(status=Offer.Status.EXPIRED)
@@ -445,10 +463,74 @@ class JobCancelView(APIView):
         return Response({'message': 'Job cancelled successfully.'})
 
 
+class JobEventsView(APIView):
+    """
+    POST /api/jobs/{id}/events/
+    Body: { "event": "ARRIVED_PICKUP" | "LOADED" }
+    Sprint 6 (D2'/D6) — assigned transporter logs mission milestones.
+    DELIVERED goes through /complete/ (POD required), never here.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    ALLOWED = ['ARRIVED_PICKUP', 'LOADED']
+    SEQUENCE = {'ARRIVED_PICKUP': None, 'LOADED': 'ARRIVED_PICKUP'}
+
+    def post(self, request, job_id):
+        from ..models import JobEvent
+        job = get_object_or_404(TransportJob, id=job_id)
+
+        offer = job.offers.filter(status=Offer.Status.ACCEPTED, transporter=request.user).first()
+        if not offer:
+            return Response({'error': 'Vous n\'êtes pas assigné à cette mission.'}, status=status.HTTP_403_FORBIDDEN)
+        if job.status != TransportJob.Status.IN_PROGRESS:
+            return Response({'error': 'La mission n\'est pas en cours.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        event = str(request.data.get('event', '')).upper()
+        if event not in self.ALLOWED:
+            return Response(
+                {'error': f'Événement invalide. Valeurs possibles : {", ".join(self.ALLOWED)}.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if job.events.filter(event=event).exists():
+            return Response({'error': 'Cette étape a déjà été enregistrée.'}, status=status.HTTP_400_BAD_REQUEST)
+        required = self.SEQUENCE.get(event)
+        if required and not job.events.filter(event=required).exists():
+            return Response(
+                {'error': 'Enregistrez d\'abord l\'étape précédente (arrivée au chargement).'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        job_event = JobEvent.objects.create(job=job, event=event, actor=request.user)
+
+        # Tell the client where their goods are (best effort)
+        try:
+            from notifications.services import notify
+            labels = {
+                'ARRIVED_PICKUP': 'Le transporteur est arrivé au point de chargement.',
+                'LOADED': 'Vos biens sont chargés — le transporteur est en route.',
+            }
+            notify(
+                user=job.owner, notification_type='JOB_STARTED',
+                title='📍 Suivi de votre mission',
+                message=labels[event],
+                metadata={'job_id': job.id, 'event': event},
+            )
+        except Exception:
+            pass
+
+        return Response({
+            'message': 'Étape enregistrée.',
+            'event': {'event': job_event.event, 'created_at': job_event.created_at.isoformat()},
+        }, status=status.HTTP_201_CREATED)
+
+
 class JobCompleteView(APIView):
     """
     POST /api/jobs/{id}/complete/
-    Transporter marks job as completed (Delivered).
+    Body: { "pin": "1234", "pod_photo_url"?: str }
+    Transporter marks job as delivered. Sprint 6 (D3'/D7): when a Booking
+    exists, the CLIENT's 4-digit delivery PIN is required — no more
+    proof-less one-click completion.
     """
     permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
 
@@ -458,13 +540,41 @@ class JobCompleteView(APIView):
         # Verify transporter is the assignee
         offer = job.offers.filter(status=Offer.Status.ACCEPTED, transporter=request.user).first()
         if not offer:
-            return Response({'error': 'You are not assigned to this job.'}, status=status.HTTP_403_FORBIDDEN)
+            return Response({'error': 'Vous n\'êtes pas assigné à cette mission.'}, status=status.HTTP_403_FORBIDDEN)
 
         if job.status != TransportJob.Status.IN_PROGRESS:
-            return Response({'error': 'Job is not in progress.'}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({'error': 'La mission n\'est pas en cours.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # D7 — POD: PIN check when a payment contract exists (post-D3 missions)
+        from payments.models import Booking
+        booking = Booking.objects.filter(job=job).first()
+        pod_photo_url = str(request.data.get('pod_photo_url', '')).strip()
+        if booking:
+            pin = str(request.data.get('pin', '')).strip()
+            if not pin:
+                return Response(
+                    {'error': 'Code de livraison requis. Demandez les 4 chiffres au client à la réception.',
+                     'code': 'PIN_REQUIRED'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            if pin != booking.delivery_pin:
+                return Response(
+                    {'error': 'Code de livraison incorrect.', 'code': 'PIN_INVALID'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
 
         job.status = TransportJob.Status.COMPLETED
         job.save()
+
+        # Timeline: DELIVERED event carries the proof
+        try:
+            from ..models import JobEvent
+            JobEvent.objects.create(
+                job=job, event='DELIVERED', actor=request.user,
+                metadata={'pod_photo_url': pod_photo_url, 'pin_verified': bool(booking)},
+            )
+        except Exception:
+            pass
 
         # Auto-lock conversation (#7) + system message
         try:

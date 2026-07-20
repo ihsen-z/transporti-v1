@@ -100,9 +100,14 @@
 
 ## BLOC D — EXÉCUTION DE MISSION (WS-D)
 
-### REC-D1 — État unique après livraison (ferme M7)
+### REC-D1 — État unique après livraison (ferme M7) — ✅ D1' livré (Sprint 7, 20/07)
 1. Sur une mission en cours, « Marquer comme livré » (avec preuve selon D7).
-- **Attendu :** UN seul panneau d'état : « Livrée — en attente de confirmation client » ; header, stepper et panneau alignés ; après confirmation client : « Confirmée — paiement en cours de libération » puis « Clôturée ».
+- **Attendu :** UN seul panneau d'état (composant `PostDeliveryPanel`) selon l'état réel :
+  - client, non encore confirmé → **une seule** carte ambre « Confirmer la livraison / Confirmez la réception pour libérer le paiement » (jamais accompagnée d'un « Mission terminée » vert) ;
+  - transporteur, non encore confirmé → carte info « en attente de confirmation client » ;
+  - après confirmation client → **une seule** carte verte « Mission terminée · paiement libéré ».
+  Header, stepper et panneau alignés. La section avis reste distincte.
+- **Vérifié navigateur (20/07) :** job confirmé = 1 carte verte + note « avis déjà laissé » ; job non confirmé = 1 carte ambre seule, sans vert contradictoire.
 
 ### REC-D2 — Étapes intermédiaires (Manque 7, selon D6)
 1. Mission assignée : vérifier que l'écran propose UNE action suivante claire (ex. « Je suis arrivé au chargement » → « Chargement effectué » → « Marquer comme livré »).
@@ -139,9 +144,11 @@
 1. Ouvrir Paramètres > Notifications avec le compte transporteur.
 - **Attendu :** aucun libellé orienté client ; les toggles persistent après rechargement et sont réellement respectés (tester un toggle OFF).
 
-### REC-E5 — Réseau propre (ferme perf/polling)
+### REC-E5 — Réseau propre (ferme perf/polling) — ✅ E3 assaini (Sprint 7, 20/07)
 1. Rester 2 minutes sur la messagerie, console réseau ouverte.
-- **Attendu :** aucune requête dupliquée à l'identique au même instant ; cadence de rafraîchissement conforme au choix technique acté (WebSocket ou intervalle documenté).
+- **Attendu :** aucune requête dupliquée à l'identique au même instant ; cadence stable conforme à l'intervalle documenté (inbox 30 s, fil 10 s).
+- **Correctif E3 :** pollers messages (inbox + fil) réécrits sur référence stable → l'intervalle est créé **une seule fois** et ne se ré-abonne plus quand l'identité d'un callback change (dépendance i18n `t`). Cleanup symétrique → pas de fuite au double-montage React StrictMode. « Double pollers » AppHeader/BottomNav déjà consolidés en `NotificationContext` (S6).
+- **Note :** en développement, StrictMode double transitoirement les requêtes (artefact dev, absent en production) ; le critère est l'**absence de dérive** de la cadence (pas d'accumulation d'intervalles), vérifiée le 20/07.
 
 ---
 
@@ -193,9 +200,13 @@
 
 ## BLOC H — PROFIL & DOCUMENTS (WS-H)
 
-### REC-H1 — Page vérification complète
+### REC-H1 — Page vérification complète — ✅ WS-H expirations livré (Sprint 7, 20/07)
 1. Compte vérifié : liste des documents avec statuts et dates d'expiration ; re-dépôt possible.
-2. Compte avec document expiré (seed) : alerte visible + notification.
+2. Compte avec document expiré (seed) : badge visible.
+- **Attendu (expirations WS-H) :**
+  - badge d'expiration calculé **côté serveur** (`is_expired` / `expires_soon`, seuil 30 j) : **rouge « Expiré »**, **ambre « Expire bientôt, le … »**, **gris « Expire le … »** ; aucun badge sur les documents qui n'expirent pas (CIN, selfie) ;
+  - à l'upload, un **sélecteur de date d'expiration** apparaît uniquement pour Permis / Carte grise / Assurance (pas la CIN) ; l'envoi est bloqué si la date manque ; le backend refuse une date passée.
+- **Vérifié navigateur (20/07) :** les trois badges colorés + le sélecteur pour les seuls types expirants ; 8 tests backend WS-H verts.
 
 ### REC-H2 — Véhicule structuré
 1. Renseigner le véhicule dans le profil (type, capacité, photo).
@@ -258,6 +269,38 @@
 ### REC-L3 — Zones ex-non-auditées : inscription transporteur complète ; flux Konnect client ; litige de bout en bout (création → décision → impact paiement).
 
 ---
+
+## BLOC P — PARCOURS PIVOT « RETURN TRIPS FIRST » (Sprints 3-5)
+
+### REC-P1 — Demande structurée bout-en-bout (✅ passé le 18/07/2026)
+1. Transporteur publie un trajet retour (réservation immédiate décochée).
+2. Client tente `book-return` → refus `REQUEST_REQUIRED` ; envoie une demande (description, prix, mode de paiement).
+3. Transporteur notifié → contre-propose ; client notifié → accepte la contre-proposition.
+- **Attendu :** job MATCHED + Booking, offre à **8 %** (commission = total×0,08/1,08), demandes concurrentes rejetées et notifiées, conversation incluant le client, circuit D3 enchaîné.
+
+### REC-P2 — Cycle de vie owner (✅ passé le 18/07/2026)
+1. Sur son trajet : panneau « Mon trajet retour » (statut, demandes reçues, Accepter/Contre-proposer/Refuser, Modifier, Supprimer).
+2. Modifier capacité/prix/réservation immédiate → persisté. Supprimer → CANCELLED + demandes refusées/notifiées. Plus aucun 403.
+
+### REC-P3 — NSM (✅ passé le 18/07/2026)
+- Toute création (mission ou trajet) avec coordonnées stocke `distance_km` = haversine × 1,25 (Sfax→Tunis ≈ 294,5 km).
+
+### REC-P4 — Funnel client inversé (Sprint 4)
+1. Client : « Trouver un trajet » est l'entrée principale ; recherche corridor + dates.
+2. Trajets trouvés → demande depuis le détail. Aucun trajet → « Publier une demande » **pré-remplie** (1 clic) + « Créer une alerte corridor ».
+3. Dans /jobs/new, si des trajets compatibles existent → bannière de suggestion avant publication.
+- **Attendu :** aucun cul-de-sac ; le flux classique reste accessible à chaque étape ; bascule intégrale derrière `RETURN_TRIPS_FIRST`.
+
+### REC-P5 — Alerte corridor (Sprint 4 v0 / Sprint 5 active)
+1. Client crée une alerte Sfax→Tunis. 2. Un transporteur publie un trajet compatible.
+- **Attendu :** notification « nouveau trajet sur votre corridor » au client abonné (et pas aux autres).
+
+### REC-P6 — Exécution : timeline + POD (✅ passé le 18/07/2026)
+1. Mission IN_PROGRESS. Transporteur : « Je suis arrivé au chargement » → « Chargé — je suis en route » (séquence forcée, LOADED bloqué avant ARRIVED).
+2. Timeline visible 2 parties, horodatée.
+3. Client-payeur voit son code 4 chiffres ; transporteur ne le voit pas.
+4. « Marquer comme livré » : PIN faux → rejeté ; PIN bon (+ photo optionnelle) → mission Terminée.
+- **Attendu :** `/complete/` sans Booking = sans PIN OK ; avec Booking = PIN obligatoire. Annulation transporteur tracée (JobEvent) → K7 baisse.
 
 ## Registre d'exécution
 

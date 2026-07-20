@@ -70,6 +70,12 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
                 {t.jobsComponents.feed.returnTrip}
               </span>
             )}
+            {/* G2 (NSM) — road distance estimate */}
+            {job.distance_km != null && Number(job.distance_km) > 0 && (
+              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-sky-50 text-sky-700 border border-sky-200">
+                ≈ {Math.round(Number(job.distance_km))} km
+              </span>
+            )}
             {offerCount > 0 && (
               <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
                 <Users className="w-3 h-3" />
