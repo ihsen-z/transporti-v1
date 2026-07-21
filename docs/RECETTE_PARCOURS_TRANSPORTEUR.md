@@ -255,16 +255,25 @@
 
 ## BLOC K — CONTENUS & NAVIGATION (WS-K)
 
-### REC-K1 — Aide transporteur : les 6 articles prévus (offre, commission, paiement, trajets retour, coordonnées, litiges) sont présents et exacts (chiffres = D1/D2).
+### REC-K1 — Aide transporteur : les 6 articles prévus (offre, commission, paiement, trajets retour, coordonnées, litiges) sont présents et exacts (chiffres = D1/D2). — ✅ WS-K livré (Sprint 8, 20/07)
+- Centre d'aide `/help` réécrit **orienté pivot**, **bilingue FR+AR** (namespace i18n `help`) et **par rôle** : onglets « Je suis client » / « Je suis transporteur » (défaut = rôle connecté).
+- **Transporteur** : publier ses retours (NSM/revenus), commission **8 %** trajets retour (D13) avec net garanti (D1), vérification + **expiration des documents** (WS-H), gains + **retrait manuel** (D4). **Client** : trajets retour (repli alerte + demande pré-remplie), demande structurée (D5) + **règle coordonnées** (D8), escrow (D3) + litige.
+- **Vérifié live (20/07, stack Docker)** : `/help` rendu en FR **et AR** (`dir=rtl`, derja) ; onglets « Je suis client / Je suis transporteur » basculent les sections ; accordéon affiche le contenu exact (commission 8 % D13 + net garanti D1) ; console propre. Typecheck clean.
 ### REC-K2 — Landing : section transporteur visible, CTA « Devenir transporteur » dans le header.
-### REC-K3 — Mon activité : revenus par mois, taux d'acceptation, missions par gouvernorat cohérents avec le portefeuille.
+### REC-K3 — Mon activité : revenus par mois, taux d'acceptation, missions par gouvernorat cohérents avec le portefeuille. — ✅ orienté remplissage (Sprint 8, 20/07)
+- La carte **Performance** du dashboard transporteur affiche désormais, en plus de la note et du taux de complétion, une **barre « Taux de remplissage »** (violette) + le détail « X/Y trajets retour remplis · Z km à vide transformés ». Métriques calculées **côté serveur** (`get_transporter_stats`, K12 : `fill_rate`, `km_transformed` = distance des trajets retour livrés = NSM perso) — jamais recalculées au front.
+- **Vérifié live (20/07)** en FR **et AR** (`dir=rtl`, « نسبة التعمير ») ; état vide honnête « — / 0/0 · 0 km » ; suite logistics 92 tests OK.
+- **Note recette** : le matching trajets retour (`/api/return-trips/match/`) 500ait sur PostgreSQL (`abs(interval)`) — corrigé le 21/07 ; rejouer REC-P (recherche trajet retour avec date) **sur Postgres**, pas seulement SQLite.
 ### REC-K4 — Menu : Trouver une mission / Mes offres / Mes Missions / Portefeuille dans le premier tiers ; « Vérification » absent pour un compte vérifié.
 
 ---
 
 ## BLOC L — TRANSVERSE
 
-### REC-L1 — Volumétrie : 200+ missions au seed → pagination/scroll, tri et filtres restent < 2 s perçu.
+### REC-L1 — Volumétrie : 200+ missions au seed → pagination/scroll, tri et filtres restent < 2 s perçu. — ✅ L3 livré (Sprint 8, 20/07)
+- **Seed orienté pilote** : `python manage.py seed_test_data --clear --jobs 500` (sous Windows : préfixer `PYTHONUTF8=1`). Génère ~40 % de trajets retour sur le corridor A1 (Tunis–Sousse–Sfax–Gabès) + ~60 % de demandes classiques, chacun avec `distance_km` estimé (centroïdes) pour la NSM.
+- **Vérifié (20/07)** : 509 jobs / 202 trajets retour / 500 avec `distance_km` (42 230 km NSM potentiels, répartition A1 équilibrée) ; `/api/jobs/public/` paginé 20/page (count 502) en ~0,23 s ; `/api/admin/stats/` 200 en ~0,32 s. Pagination et perf conformes.
+- **Note** : la NSM *réalisée* (`nsmKmTransformed`) reste 0 tant que la volumétrie ne crée que de l'offre publiée (pas de bookings) — attendu ; un lot de trajets retour COMPLETED serait requis pour une NSM transformée non nulle.
 ### REC-L2 — Non-régression client : le parcours client minimal (publier une annonce, recevoir l'offre, accepter, payer, confirmer) passe après chaque porte de phase.
 ### REC-L3 — Zones ex-non-auditées : inscription transporteur complète ; flux Konnect client ; litige de bout en bout (création → décision → impact paiement).
 

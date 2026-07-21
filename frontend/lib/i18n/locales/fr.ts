@@ -207,6 +207,9 @@ export const fr = {
     performance: "Performance",
     avgRating: "Note moyenne",
     completionRateLabel: "Taux de complétion",
+    fillRateLabel: "Taux de remplissage",
+    fillRateDetail: "{filled}/{published} trajets retour remplis",
+    kmTransformed: "{km} km à vide transformés",
     verificationStatus: "Statut vérification",
     verified: "Vérifié ✓",
     pending: "En attente",
@@ -2019,5 +2022,64 @@ export const fr = {
       confirm: "Confirmer",
       cancel: "Annuler",
     },
+  },
+
+  // WS-K — Centre d'aide réécrit pour le pivot « Return Trips First »,
+  // avec des sections distinctes client / transporteur (clés plates pour
+  // rester typées sous l'union fr|ar).
+  help: {
+    title: "Centre d'aide",
+    subtitle: "Trouvez des réponses à vos questions les plus fréquentes.",
+    back: "Retour au tableau de bord",
+    tabClient: "Je suis client",
+    tabTransporter: "Je suis transporteur",
+    contactTitle: "Vous ne trouvez pas la réponse ?",
+    contactDesc: "Notre équipe est là pour vous aider.",
+
+    // --- Client ---
+    cReturnsTitle: "Trajets retour",
+    cReturnsQ1: "Qu'est-ce qu'un trajet retour ?",
+    cReturnsA1:
+      "Un transporteur qui rentre à vide après une livraison publie son trajet retour. Vous profitez d'un tarif réduit (souvent jusqu'à -40 %) en remplissant un camion qui roule déjà.",
+    cReturnsQ2: "Et si aucun trajet retour ne correspond ?",
+    cReturnsA2:
+      "Publiez votre demande en un clic (elle est pré-remplie depuis votre recherche) et créez une alerte corridor : vous êtes prévenu dès qu'un transporteur publie un retour sur votre trajet.",
+    cRequestTitle: "Demande & réservation",
+    cRequestQ1: "Comment réserver un trajet retour ?",
+    cRequestA1:
+      "Envoyez une demande chiffrée au transporteur (description de la marchandise, prix proposé). Il accepte, refuse ou fait une contre-proposition ; son acceptation crée la mission.",
+    cRequestQ2: "Quand vois-je les coordonnées du transporteur ?",
+    cRequestA2:
+      "Par sécurité, le téléphone et l'email ne sont visibles qu'une fois la mission assignée et le paiement sécurisé. Avant, échangez via la messagerie.",
+    cPayTitle: "Paiement & litige",
+    cPayQ1: "Comment fonctionne le paiement sécurisé ?",
+    cPayA1:
+      "Votre paiement est retenu en séquestre (escrow) et n'est libéré au transporteur qu'après votre confirmation de la livraison — ou automatiquement 48 h après, sans réclamation.",
+    cPayQ2: "Un problème avec ma livraison ?",
+    cPayA2:
+      "Ouvrez un signalement depuis la mission. La libération du paiement est bloquée tant que le litige est en cours ; notre équipe tranche.",
+
+    // --- Transporteur ---
+    tPublishTitle: "Publier un trajet retour",
+    tPublishQ1: "Pourquoi publier mes retours à vide ?",
+    tPublishA1:
+      "Chaque kilomètre à vide est une perte. En publiant votre retour, vous le transformez en revenu et rentabilisez un trajet que vous faisiez déjà.",
+    tPublishQ2: "Quelle commission sur un trajet retour ?",
+    tPublishA2:
+      "Les trajets retour bénéficient d'une commission réduite à 8 % (contre 12 % en transport classique), pour encourager le remplissage. Le prix que vous saisissez est votre net garanti.",
+    tVerifTitle: "Vérification & documents",
+    tVerifQ1: "Comment devenir transporteur vérifié ?",
+    tVerifA1:
+      "Déposez vos documents (CIN, permis, carte grise, assurance) dans la section Vérification. Un modérateur les valide, puis vous pouvez proposer des offres.",
+    tVerifQ2: "Que se passe-t-il quand un document expire ?",
+    tVerifA2:
+      "Les documents à échéance (permis, assurance, carte grise) affichent un badge « expire bientôt » puis « expiré ». Redéposez une version à jour avant l'échéance pour rester actif.",
+    tEarnTitle: "Gains & retraits",
+    tEarnQ1: "Quand suis-je payé ?",
+    tEarnA1:
+      "Le montant est séquestré dès le paiement du client et libéré sur votre portefeuille après confirmation de la livraison (code PIN + photo) ou automatiquement sous 48 h.",
+    tEarnQ2: "Comment retirer mes gains ?",
+    tEarnA2:
+      "Depuis votre portefeuille, demandez un retrait par virement. La demande est traitée par notre back-office (statuts : demandé → en traitement → payé).",
   },
 } as const;

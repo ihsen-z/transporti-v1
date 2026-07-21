@@ -68,13 +68,21 @@ class Command(BaseCommand):
         """Remove all test data (entities linked to test accounts)."""
         self.stdout.write('🧹 Clearing existing test data...')
 
-        # Clear in reverse dependency order
+        # Clear in reverse dependency order.
+        # Plusieurs modèles pointent Job/Offer via des FK PROTECT (Booking,
+        # Review, WithdrawalRequest) : il faut les supprimer AVANT Offer/Job,
+        # sinon la purge échoue (bug corrigé Sprint 8 / L3).
+        from payments.models import Booking, WithdrawalRequest
+        from reviews.models import Review
         Notification.objects.all().delete()
         Message.objects.all().delete()
         Conversation.objects.all().delete()
         AuditLog.objects.filter(actor__email__endswith='@test.transporti.tn').delete()
         AuditLog.objects.filter(actor__email__endswith='@admin.transporti.tn').delete()
         Dispute.objects.all().delete()
+        Review.objects.all().delete()
+        WithdrawalRequest.objects.all().delete()
+        Booking.objects.all().delete()
         CommissionLedger.objects.all().delete()
         EscrowTransaction.objects.all().delete()
         Offer.objects.all().delete()
@@ -708,21 +716,60 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('   ✓ 3 notifications created'))
 
     def seed_volumetry(self, count):
-        """Create N extra PUBLISHED jobs for volumetry testing (REC-L1). Idempotent."""
+        """
+        Create N extra PUBLISHED jobs for volumetry testing (REC-L1 / L3). Idempotent.
+
+        Jeu de données orienté pilote (vision) :
+        - ~40 % de trajets retour sur le corridor prioritaire A1
+          (Tunis–Sousse–Sfax–Gabès), publiés par le transporteur vérifié ;
+        - ~60 % de demandes classiques réparties sur tout le pays.
+        Chaque job reçoit un `distance_km` estimé (centroïdes de gouvernorats),
+        pour que la NSM (km à vide transformés) soit mesurable à l'échelle 500 —
+        le seed contourne le serializer, on calcule donc la distance ici.
+        """
+        from logistics.pricing import estimate_distance_for_job
+
         self.stdout.write(f'📈 Seeding volumetry ({count} extra published jobs)...')
 
         MARKER = 'SEED_VOLUMETRIE'
-        governorates = ['Tunis', 'Sfax', 'Sousse', 'Nabeul', 'Bizerte', 'Gabès', 'Kairouan', 'Monastir']
+        # Corridor A1 prioritaire (pilote) — paires de trajets retour.
+        A1 = ['Tunis', 'Sousse', 'Sfax', 'Gabès']
+        # Demandes classiques réparties largement.
+        ALL_GOV = ['Tunis', 'Sfax', 'Sousse', 'Nabeul', 'Bizerte', 'Gabès',
+                   'Kairouan', 'Monastir', 'Ariana', 'Gafsa']
         existing = TransportJob.objects.filter(description=MARKER).count()
 
+        returns_created = 0
         for i in range(existing, count):
-            gov_from = governorates[i % len(governorates)]
-            gov_to = governorates[(i + 3) % len(governorates)]
+            # ~40 % de trajets retour (2 sur 5).
+            is_return = (i % 5) < 2
+
+            if is_return:
+                gov_from = A1[i % len(A1)]
+                gov_to = A1[(i + 1) % len(A1)]
+                if gov_to == gov_from:  # garde-fou : jamais A→A
+                    gov_to = A1[(i + 2) % len(A1)]
+            else:
+                gov_from = ALL_GOV[i % len(ALL_GOV)]
+                gov_to = ALL_GOV[(i + 3) % len(ALL_GOV)]
+                if gov_to == gov_from:
+                    gov_to = ALL_GOV[(i + 4) % len(ALL_GOV)]
+
+            # NSM : distance estimée via centroïdes (pas de coords précises ici).
+            distance = estimate_distance_for_job(
+                None, None, None, None, gov_from, gov_to,
+            )
+            distance_km = Decimal(str(round(distance, 1))) if distance is not None else None
+
             TransportJob.objects.create(
-                owner=self.client_1 if i % 2 == 0 else self.client_2,
-                job_type='TRANSPORT' if i % 3 else 'MOVING',
+                owner=(
+                    self.transporter_1 if is_return
+                    else (self.client_1 if i % 2 == 0 else self.client_2)
+                ),
+                job_type='TRANSPORT' if (is_return or i % 3) else 'MOVING',
                 status='PUBLISHED',
-                is_return_trip=False,
+                is_return_trip=is_return,
+                available_capacity='1,5 tonne · 6 m³ libres' if is_return else '',
                 pickup_address=f'Adresse départ {i + 1}, {gov_from}',
                 pickup_governorate=gov_from,
                 dropoff_address=f'Adresse arrivée {i + 1}, {gov_to}',
@@ -730,9 +777,15 @@ class Command(BaseCommand):
                 scheduled_time=timezone.now() + timedelta(days=1 + (i % 14)),
                 price_tnd_min=Decimal(50 + (i % 10) * 10),
                 price_tnd_max=Decimal(150 + (i % 10) * 20),
+                distance_km=distance_km,
                 description=MARKER,
                 specifications={'items': ['Colis'], 'weight_kg': 20 + (i % 5) * 10},
             )
+            if is_return:
+                returns_created += 1
 
         created = max(0, count - existing)
-        self.stdout.write(self.style.SUCCESS(f'   ✓ {created} volumetry jobs created ({existing} already present)'))
+        self.stdout.write(self.style.SUCCESS(
+            f'   ✓ {created} volumetry jobs created ({existing} already present) '
+            f'— dont {returns_created} trajets retour corridor A1'
+        ))

@@ -309,6 +309,11 @@ class DashboardStatsView(APIView):
                     'average_rating': stats['average_rating'],
                     'completion_rate': stats['completion_rate'],
                     'profile_completion': stats['profile_completion'],
+                    # K12 (pivot) — remplissage des trajets retour
+                    'return_trips_published': stats['return_trips_published'],
+                    'return_trips_filled': stats['return_trips_filled'],
+                    'fill_rate': stats['fill_rate'],
+                    'km_transformed': stats['km_transformed'],
                 },
                 'recent_jobs': recent_missions,
             })

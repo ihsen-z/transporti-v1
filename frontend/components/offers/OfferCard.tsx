@@ -17,11 +17,9 @@ import {
   Shield,
   Handshake,
 } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
 import { getMediaUrl } from "@/lib/imageUtils";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
-import { formatTND } from "@/lib/format";
+import { formatTND, formatDateTime } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
 import type { JobOffer } from "@/lib/types/jobs";
 
@@ -56,7 +54,10 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
                 {offer.transporter_avatar ? (
                   <Image
                     src={getMediaUrl(offer.transporter_avatar)}
-                    alt={offer.transporter_name || t.offersComponents.transporterAlt}
+                    alt={
+                      offer.transporter_name ||
+                      t.offersComponents.transporterAlt
+                    }
                     width={48}
                     height={48}
                     className="w-full h-full object-cover"
@@ -87,7 +88,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
                 offer.transporter_name
               )}
             </h4>
-            
+
             {/* Stats Row */}
             <div className="flex items-center gap-1.5 text-xs text-neutral-500 mt-0.5 flex-wrap">
               <span className="inline-flex items-center gap-0.5 text-amber-600 font-medium">
@@ -125,14 +126,16 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
             {formatTND(Number(offer.total_price) || 0)}
           </p>
           <p className="text-xs text-neutral-400 whitespace-nowrap mt-0.5">
-            {format(new Date(offer.created_at), "d MMM HH:mm", { locale: fr })}
+            {formatDateTime(offer.created_at)}
           </p>
         </div>
       </div>
 
       {/* Message Box */}
       <div className="bg-neutral-50 p-3 rounded-lg text-sm text-neutral-700 break-words">
-        <p className="line-clamp-3">{offer.message || t.offersComponents.noMessage}</p>
+        <p className="line-clamp-3">
+          {offer.message || t.offersComponents.noMessage}
+        </p>
       </div>
 
       {/* Trust Badges */}
@@ -207,7 +210,9 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
                 className="flex-1 flex items-center justify-center gap-2 py-2 border border-neutral-300 text-neutral-700 rounded-xl font-medium hover:bg-neutral-50 transition-colors text-sm min-w-0"
               >
                 <MessageCircle className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">{t.offersComponents.askQuestion}</span>
+                <span className="truncate">
+                  {t.offersComponents.askQuestion}
+                </span>
               </Link>
             )}
 
@@ -217,7 +222,9 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
                 className="flex-1 flex items-center justify-center gap-2 py-2 border border-neutral-300 text-neutral-700 rounded-xl font-medium hover:bg-neutral-50 transition-colors text-sm min-w-0"
               >
                 <ExternalLink className="w-4 h-4 flex-shrink-0" />
-                <span className="truncate">{t.offersComponents.viewProfile}</span>
+                <span className="truncate">
+                  {t.offersComponents.viewProfile}
+                </span>
               </Link>
             )}
           </div>

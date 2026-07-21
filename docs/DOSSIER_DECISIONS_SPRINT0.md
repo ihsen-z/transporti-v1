@@ -95,6 +95,7 @@
 **Recommandation (défaut) :** formaliser : « coordonnées mutuellement visibles dès que la mission est assignée et payée/sécurisée ; masquées avant ». Publier la règle dans l'aide (WS-K K1) et l'appliquer uniformément.
 
 **DÉCISION D8 :** ⬜ *(défaut recommandé sauf objection)*
+**État (Sprint 8, 20/07/2026) — WS-K.** La règle est désormais **publiée dans le centre d'aide** (`/help`, article client « Quand vois-je les coordonnées du transporteur ? », FR+AR).
 
 ## D9 — DICTIONNAIRE DES KPI (extrait à valider)
 
@@ -144,6 +145,8 @@
 ## T5 — Environnement de recette de référence
 **État réel :** cf. `GUIDE_ENVIRONNEMENT_RECETTE.md` — deux backends ont coexisté pendant l'audit (Docker Postgres mort + runserver sqlite local).
 **Recommandation :** **Docker complet** (Postgres, `RUN_SEED=true`), aligner la commande compose sur l'entrypoint daphne, interdire le runserver local concurrent, enrichir le seed (trajets retour, conversations, notifications, statuts manquants, volumétrie).
+
+**État d'implémentation (Sprint 8, 20/07/2026) — L3.** Le seed de volumétrie (`--jobs N`) est désormais **orienté pilote** : ~40 % de trajets retour sur le corridor A1 + `distance_km` estimé par centroïdes (NSM mesurable). Deux défauts du seed corrigés au passage : (a) `clear_test_data` ne purgeait pas `Booking`/`Review`/`WithdrawalRequest` (FK PROTECT vers Offer/Job) → `--clear` échouait ; (b) la sortie console (emojis) plante sous Windows en cp1252 → lancer avec `PYTHONUTF8=1`. Recette : `PYTHONUTF8=1 python manage.py seed_test_data --clear --jobs 500`.
 
 ---
 

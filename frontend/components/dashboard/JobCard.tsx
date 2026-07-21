@@ -3,8 +3,7 @@
 import { memo } from "react";
 import { Truck, Package, ArrowRight, Clock } from "lucide-react";
 import Link from "next/link";
-import { formatDistanceToNow } from "date-fns";
-import { fr } from "date-fns/locale";
+import { formatTimeAgo } from "@/lib/format";
 import StatusBadge from "@/components/ui/StatusBadge";
 import type { Job } from "@/lib/services/types";
 
@@ -13,19 +12,13 @@ interface JobCardProps {
 }
 
 function JobCard({ job }: JobCardProps) {
-
   // Use real API fields, fallback to legacy fields
   const pickup = job.pickup_address || job.pickup || "";
   const dropoff = job.dropoff_address || job.delivery || "";
   const offerCount = job.offer_count ?? 0;
   const isMoving = job.job_type === "MOVING";
 
-  const timeAgo = job.created_at
-    ? formatDistanceToNow(new Date(job.created_at), {
-        addSuffix: true,
-        locale: fr,
-      })
-    : "";
+  const timeAgo = job.created_at ? formatTimeAgo(job.created_at) : "";
 
   return (
     <Link href={`/jobs/${job.id}`}>

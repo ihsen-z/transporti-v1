@@ -13,8 +13,7 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { formatDate } from "@/lib/format";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 
@@ -56,7 +55,10 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
             <span className="text-xs text-neutral-500 flex items-center gap-1">
               <Clock className="w-3 h-3" />
               {interpolate(t.jobsComponents.feed.publishedOn, {
-                date: format(new Date(job.created_at), "d MMM", { locale: fr }),
+                date: formatDate(job.created_at, undefined, {
+                  day: "numeric",
+                  month: "short",
+                }),
               })}
             </span>
             {isUrgent && (
@@ -119,8 +121,12 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
                 </p>
                 <div className="flex items-center gap-2 text-xs text-brand-600 mt-0.5">
                   <Calendar className="w-3 h-3" />
-                  {format(new Date(job.scheduled_time), "EEEE d MMMM à HH:mm", {
-                    locale: fr,
+                  {formatDate(job.scheduled_time, undefined, {
+                    weekday: "long",
+                    day: "numeric",
+                    month: "long",
+                    hour: "2-digit",
+                    minute: "2-digit",
                   })}
                 </div>
               </div>

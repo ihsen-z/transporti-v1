@@ -9,7 +9,7 @@ Sprint 4 (pivot) — matching v1 & corridor alerts.
 """
 from datetime import timedelta
 
-from django.db.models.functions import Abs
+from django.db.models.functions import Greatest
 from django.db.models import F, ExpressionWrapper, DurationField
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -72,9 +72,18 @@ class ReturnTripMatchView(APIView):
                 scheduled_time__gte=target - timedelta(hours=window),
                 scheduled_time__lte=target + timedelta(hours=window),
             ).annotate(
-                date_gap=Abs(ExpressionWrapper(
-                    F('scheduled_time') - target, output_field=DurationField()
-                ))
+                # Écart absolu à la date cible. On évite Abs() sur un interval
+                # (inexistant sous PostgreSQL : `abs(interval)`), en prenant le
+                # plus grand de l'écart et de son opposé — |Δ| — ce qui marche
+                # aussi bien sur PostgreSQL que sur SQLite.
+                date_gap=Greatest(
+                    ExpressionWrapper(
+                        F('scheduled_time') - target, output_field=DurationField()
+                    ),
+                    ExpressionWrapper(
+                        target - F('scheduled_time'), output_field=DurationField()
+                    ),
+                )
             ).order_by('date_gap')
         else:
             queryset = queryset.order_by('scheduled_time')

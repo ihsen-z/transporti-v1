@@ -106,6 +106,27 @@ def get_transporter_stats(user) -> dict:
     except Exception:
         pass
 
+    # K12 (pivot) — remplissage : dans quelle mesure le transporteur transforme
+    # ses trajets retour à vide en missions chargées (sa contribution à la NSM).
+    my_return_trips = TransportJob.objects.filter(owner=user, is_return_trip=True)
+    return_trips_published = my_return_trips.count()
+    # « rempli » = réservé (au moins MATCHED : offre/demande acceptée).
+    return_trips_filled = my_return_trips.filter(
+        status__in=[
+            TransportJob.Status.MATCHED,
+            TransportJob.Status.IN_PROGRESS,
+            TransportJob.Status.COMPLETED,
+        ]
+    ).count()
+    fill_rate = (
+        round(return_trips_filled / return_trips_published * 100, 1)
+        if return_trips_published else None
+    )
+    # km à vide transformés = distance des trajets retour effectivement livrés.
+    km_transformed = my_return_trips.filter(
+        status=TransportJob.Status.COMPLETED
+    ).aggregate(total=Sum('distance_km'))['total'] or Decimal('0')
+
     return {
         'available_missions': available_missions,          # K1
         'active_offers': active_offers,                    # K2
@@ -120,4 +141,9 @@ def get_transporter_stats(user) -> dict:
         'profile_completion': profile_completion,           # K9
         'wallet_available': float(wallet['available']),     # K10
         'verification_status': verification_status,
+        # K12 (pivot) — remplissage des trajets retour
+        'return_trips_published': return_trips_published,
+        'return_trips_filled': return_trips_filled,
+        'fill_rate': fill_rate,                             # None → « — »
+        'km_transformed': float(km_transformed),
     }

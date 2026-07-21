@@ -11,8 +11,7 @@ import {
   Navigation,
   Crosshair,
 } from "lucide-react";
-import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { formatDate } from "@/lib/format";
 import { getMediaUrl } from "@/lib/imageUtils";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -85,11 +84,14 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
               <p className="text-sm text-blue-200">
                 {data.scheduled_time &&
                 !isNaN(new Date(data.scheduled_time).getTime())
-                  ? format(
-                      new Date(data.scheduled_time),
-                      "EEEE d MMMM yyyy à HH:mm",
-                      { locale: fr },
-                    )
+                  ? formatDate(data.scheduled_time, undefined, {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })
                   : t.jobsComponents.preview.dateUnspecified}
               </p>
               {data.pickup_lat && data.pickup_lng && (

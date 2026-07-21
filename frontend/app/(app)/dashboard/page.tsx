@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiClient } from "@/lib/api/client";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 import { formatTND } from "@/lib/format";
 import {
   Truck,
@@ -55,6 +56,11 @@ interface TransporterStats {
   average_rating: number | null;
   completion_rate: number | null;
   profile_completion?: number;
+  /** K12 (pivot) — remplissage des trajets retour */
+  return_trips_published?: number;
+  return_trips_filled?: number;
+  fill_rate?: number | null;
+  km_transformed?: number;
 }
 
 interface RecentJob {
@@ -407,6 +413,34 @@ function TransporterDashboard({
                   style={{ width: `${stats.completion_rate ?? 0}%` }}
                 />
               </div>
+            </div>
+            {/* K12 (pivot) — remplissage des trajets retour */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2 text-sm text-neutral-600">
+                  <RotateCcw className="w-4 h-4 text-purple-500" />{" "}
+                  {t.dashboard.fillRateLabel}
+                </div>
+                <span className="text-lg font-bold text-neutral-900">
+                  {stats.fill_rate != null ? `${stats.fill_rate}%` : "—"}
+                </span>
+              </div>
+              <div className="w-full bg-neutral-100 rounded-full h-2">
+                <div
+                  className="bg-purple-500 h-2 rounded-full transition-all"
+                  style={{ width: `${stats.fill_rate ?? 0}%` }}
+                />
+              </div>
+              <p className="text-xs text-neutral-400 mt-1.5">
+                {interpolate(t.dashboard.fillRateDetail, {
+                  filled: stats.return_trips_filled ?? 0,
+                  published: stats.return_trips_published ?? 0,
+                })}
+                {" · "}
+                {interpolate(t.dashboard.kmTransformed, {
+                  km: Math.round(stats.km_transformed ?? 0),
+                })}
+              </p>
             </div>
             <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
               <div className="flex items-center gap-2 text-sm text-neutral-600">
