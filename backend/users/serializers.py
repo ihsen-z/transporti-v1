@@ -58,10 +58,19 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data.pop('password_confirm')
         password = validated_data.pop('password')
-        
-        # Generate username from email
-        validated_data['username'] = validated_data['email'].split('@')[0]
-        
+
+        # I1 (contre-audit L5) — génère un username UNIQUE.
+        # `username` hérité d'AbstractUser est unique : deux emails de même
+        # partie locale (ahmed@a.tn / ahmed@b.tn) donnaient le même username →
+        # IntegrityError = 500 à l'inscription du second. On suffixe si besoin.
+        base = validated_data['email'].split('@')[0]
+        username = base
+        suffix = 1
+        while User.objects.filter(username=username).exists():
+            suffix += 1
+            username = f"{base}{suffix}"
+        validated_data['username'] = username
+
         user = User(**validated_data)
         user.set_password(password)
         user.save()

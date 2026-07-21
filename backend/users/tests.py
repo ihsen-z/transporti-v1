@@ -121,6 +121,14 @@ class RegisterAPITests(APITestCase):
 
     REGISTER_URL = '/api/auth/register/'
 
+    def setUp(self):
+        # L'endpoint d'inscription est protégé par AuthRateThrottle, dont
+        # l'historique vit dans le cache. Sans reset, les appels cumulés des
+        # tests précédents déclenchent des 429 en cascade (échecs parasites,
+        # pas un vrai bug). On repart d'un budget propre à chaque test.
+        from django.core.cache import cache
+        cache.clear()
+
     def _valid_payload(self, **overrides):
         """Helper to build a valid registration payload."""
         payload = {
@@ -143,6 +151,28 @@ class RegisterAPITests(APITestCase):
         self.assertIn('access', resp.data['tokens'])
         self.assertIn('refresh', resp.data['tokens'])
         self.assertEqual(resp.data['user']['role'], 'CLIENT')
+
+    def test_register_username_collision_resolved(self):
+        """I1 (L5) — deux emails de même partie locale s'inscrivent tous deux
+        (usernames distincts), sans 500."""
+        r1 = self.client.post(
+            self.REGISTER_URL,
+            self._valid_payload(email='ahmed@gmail.com', phone='+21611111111'),
+            format='json',
+        )
+        r2 = self.client.post(
+            self.REGISTER_URL,
+            self._valid_payload(email='ahmed@yahoo.fr', phone='+21622222222'),
+            format='json',
+        )
+        self.assertEqual(r1.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(r2.status_code, status.HTTP_201_CREATED)
+        from django.contrib.auth import get_user_model
+        U = get_user_model()
+        self.assertNotEqual(
+            U.objects.get(email='ahmed@gmail.com').username,
+            U.objects.get(email='ahmed@yahoo.fr').username,
+        )
 
     def test_register_transporter_success(self):
         """Valid TRANSPORTER registration returns 201 and creates TrustProfile."""

@@ -53,9 +53,18 @@ Timeline mission D2'/D6 ✅ (`JobEvent` : ARRIVED_PICKUP → LOADED → DELIVERE
 
 dark mode app principale (~40+ écrans, ThemeProvider dans `(app)` + variantes `dark:` ; masquer le `ThemeToggle` trompeur en attendant) · messagerie WS-I (lien direct mission→conversation, pièces jointes — nécessite T3 stockage S3, horodatages 24h).
 
-## 🎯 Contre-audit (S16-S17) puis pilote corridor A1 (S18-S19)
+## 🔄 Contre-audit L5 (1re passe, 21/07) — VERDICT CONDITIONNEL
 
-Rejeu audit complet + bloc REC-P · cible ≥ 75/100, zéro P0/P1 · amorçage offre : 20-25 transporteurs corridor A1, ≥ 40 trajets actifs, puis ouverture clients ; critères : remplissage ≥ 25 %, délai < 24 h, **≥ 5 000 km NSM**, zéro réclamation financière.
+Rapport : `CONTRE_AUDIT_L5_2026-07-21.md`. Rejeu **sur PostgreSQL** (iso-prod) : **147 tests · 0 échec**, typecheck frontend clean, flux pivot opérationnels.
+- **Corrigé pendant le contre-audit** : P1 matching trajets retour cassé sur Postgres (`abs(interval)` → 500, invisible en SQLite) ; P2 test-infra (429 throttle-cache bleed sur les tests d'inscription).
+- **I1 corrigé pendant le contre-audit** : collision `username` à l'inscription (username unique suffixé + test) → users 21/21.
+- **Porte « zéro P0/P1 » NON franchie** : 0 P0, **4 P1 ouverts** = chantier financier remboursement/litige (K1/K2/L1/L2, masqué par SANDBOX). Chip créé.
+- **Reste avant pilote** : fermer les 4 P1 (chantier financier) ; recette navigateur REC-P complète (bloquée cette session par l'instabilité d'auth du navigateur d'automatisation) ; re-rejeu suite Postgres.
+- **Verdict : vert fonctionnel (≫ 75/100), conditionnel — 4 P1 (chantier financier) à clôturer avant Konnect réel.**
+
+## 🎯 Pilote corridor A1 (S18-S19)
+
+Amorçage offre : 20-25 transporteurs corridor A1, ≥ 40 trajets actifs, puis ouverture clients ; critères : remplissage ≥ 25 %, délai < 24 h, **≥ 5 000 km NSM**, zéro réclamation financière.
 
 ## 🧊 Future (post-pilote, décisions requises)
 
