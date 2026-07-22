@@ -10,8 +10,14 @@ from django.db import IntegrityError
 from datetime import timedelta
 from decimal import Decimal
 
-from payments.models import CommissionLedger, EscrowTransaction, Booking
+from payments.models import (
+    CommissionLedger, EscrowTransaction, Booking, RefundRequest,
+)
+from payments.services import (
+    refund_escrow, split_escrow, get_escrow_eligible_for_auto_release,
+)
 from logistics.models import TransportJob, Offer
+from support.models import Dispute
 
 User = get_user_model()
 
@@ -220,3 +226,172 @@ class BookingTests(PaymentsTestBase):
                 final_price=Decimal('100.00'),
                 commission_rate=Decimal('0.1500'),
             )
+
+
+class RefundEscrowTests(PaymentsTestBase):
+    """
+    K1/K2 — refund_escrow must move the money (gateway) AND record it in the
+    back-office queue (RefundRequest), never leave a refund only in the DB.
+    """
+
+    def _held_escrow(self, amount='100.00'):
+        return EscrowTransaction.objects.create(
+            booking_reference=self.job,
+            status=EscrowTransaction.Status.HELD,
+            amount=Decimal(amount),
+            gateway_reference='SANDBOX-REF-123',
+        )
+
+    def test_refund_escrow_marks_refunded(self):
+        """HELD escrow becomes REFUNDED."""
+        escrow = self._held_escrow()
+        result = refund_escrow(self.job, reason='Client cancelled')
+        self.assertIsNotNone(result)
+        escrow.refresh_from_db()
+        self.assertEqual(escrow.status, EscrowTransaction.Status.REFUNDED)
+
+    def test_refund_escrow_creates_refund_request(self):
+        """K2 — a RefundRequest is created for the client, matching the amount."""
+        self._held_escrow(amount='100.00')
+        refund_escrow(self.job, reason='Client cancelled')
+
+        rr = RefundRequest.objects.get(job=self.job)
+        self.assertEqual(rr.beneficiary, self.client_user)
+        self.assertEqual(rr.beneficiary_type, RefundRequest.Beneficiary.CLIENT)
+        self.assertEqual(rr.amount, Decimal('100.00'))
+        self.assertEqual(rr.gateway_reference, 'SANDBOX-REF-123')
+
+    def test_refund_escrow_sandbox_auto_paid(self):
+        """K1 — SANDBOX gateway refunds automatically → row PAID + auto_executed."""
+        self._held_escrow()
+        refund_escrow(self.job)
+        rr = RefundRequest.objects.get(job=self.job)
+        self.assertTrue(rr.auto_executed)
+        self.assertEqual(rr.status, RefundRequest.Status.PAID)
+        self.assertIsNotNone(rr.processed_at)
+
+    def test_refund_escrow_no_escrow_returns_none(self):
+        """No refundable escrow → None, no RefundRequest."""
+        result = refund_escrow(self.job)
+        self.assertIsNone(result)
+        self.assertEqual(RefundRequest.objects.count(), 0)
+
+    def test_refund_escrow_ignores_released(self):
+        """RELEASED escrow is immutable — not refundable."""
+        EscrowTransaction.objects.create(
+            booking_reference=self.job,
+            status=EscrowTransaction.Status.RELEASED,
+            amount=Decimal('100.00'),
+        )
+        result = refund_escrow(self.job)
+        self.assertIsNone(result)
+
+
+class SplitEscrowTests(PaymentsTestBase):
+    """SPLIT outcome — escrow REFUNDED, both shares queued as disbursements."""
+
+    def _held_escrow(self, amount='100.00'):
+        return EscrowTransaction.objects.create(
+            booking_reference=self.job,
+            status=EscrowTransaction.Status.HELD,
+            amount=Decimal(amount),
+            gateway_reference='SANDBOX-SPLIT',
+        )
+
+    def test_split_refunds_and_pays(self):
+        """Client gets refund_amount, transporter gets the remainder."""
+        escrow = self._held_escrow('100.00')
+        split_escrow(self.job, refund_amount=Decimal('60.00'), reason='Damaged partial')
+
+        escrow.refresh_from_db()
+        self.assertEqual(escrow.status, EscrowTransaction.Status.REFUNDED)
+
+        client_rr = RefundRequest.objects.get(
+            job=self.job, beneficiary_type=RefundRequest.Beneficiary.CLIENT)
+        transporter_rr = RefundRequest.objects.get(
+            job=self.job, beneficiary_type=RefundRequest.Beneficiary.TRANSPORTER)
+
+        self.assertEqual(client_rr.amount, Decimal('60.00'))
+        self.assertEqual(transporter_rr.amount, Decimal('40.00'))
+        # Transporter share is always a manual bank payout.
+        self.assertFalse(transporter_rr.auto_executed)
+        self.assertEqual(transporter_rr.beneficiary, self.transporter_user)
+
+    def test_split_rejects_out_of_range(self):
+        """refund_amount must be strictly between 0 and the escrow amount."""
+        self._held_escrow('100.00')
+        with self.assertRaises(ValueError):
+            split_escrow(self.job, refund_amount=Decimal('100.00'))
+        with self.assertRaises(ValueError):
+            split_escrow(self.job, refund_amount=Decimal('0'))
+
+    def test_split_no_escrow_raises(self):
+        """No refundable escrow → ValueError."""
+        with self.assertRaises(ValueError):
+            split_escrow(self.job, refund_amount=Decimal('10.00'))
+
+
+class AutoReleaseDisputeGuardTests(PaymentsTestBase):
+    """
+    L2 — the 48h auto-release must not pay the transporter after a dispute that
+    was NOT resolved with an explicit RELEASE_TRANSPORTER outcome.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.job.status = TransportJob.Status.COMPLETED
+        self.job.save()
+        self.escrow = EscrowTransaction.objects.create(
+            booking_reference=self.job,
+            status=EscrowTransaction.Status.HELD,
+            amount=Decimal('100.00'),
+        )
+        # Force the escrow older than the 48h window (bypass auto_now_add).
+        EscrowTransaction.objects.filter(pk=self.escrow.pk).update(
+            created_at=timezone.now() - timedelta(hours=72)
+        )
+
+    def _dispute(self, status_val, outcome=Dispute.ResolutionOutcome.NONE):
+        return Dispute.objects.create(
+            job=self.job,
+            opened_by=self.client_user,
+            reason='DAMAGED_ITEMS',
+            description='Damaged during transport.',
+            status=status_val,
+            resolution_outcome=outcome,
+        )
+
+    def test_eligible_without_dispute(self):
+        """No dispute → eligible for auto-release."""
+        eligible = get_escrow_eligible_for_auto_release()
+        self.assertIn(self.escrow, eligible)
+
+    def test_active_dispute_blocks(self):
+        """OPEN/INVESTIGATING dispute blocks (pre-existing rule)."""
+        self._dispute('INVESTIGATING')
+        self.assertNotIn(self.escrow, get_escrow_eligible_for_auto_release())
+
+    def test_resolved_refund_client_blocks(self):
+        """L2 — resolved pro-client (REFUND_CLIENT) blocks auto-release."""
+        self._dispute('RESOLVED', Dispute.ResolutionOutcome.REFUND_CLIENT)
+        self.assertNotIn(self.escrow, get_escrow_eligible_for_auto_release())
+
+    def test_resolved_split_blocks(self):
+        """L2 — resolved SPLIT blocks auto-release."""
+        self._dispute('RESOLVED', Dispute.ResolutionOutcome.SPLIT)
+        self.assertNotIn(self.escrow, get_escrow_eligible_for_auto_release())
+
+    def test_resolved_note_only_blocks(self):
+        """L2 — resolved with NONE (no explicit release) also blocks."""
+        self._dispute('RESOLVED', Dispute.ResolutionOutcome.NONE)
+        self.assertNotIn(self.escrow, get_escrow_eligible_for_auto_release())
+
+    def test_resolved_release_transporter_allows(self):
+        """L2 — explicit RELEASE_TRANSPORTER keeps the job auto-releasable."""
+        self._dispute('RESOLVED', Dispute.ResolutionOutcome.RELEASE_TRANSPORTER)
+        self.assertIn(self.escrow, get_escrow_eligible_for_auto_release())
+
+    def test_rejected_dispute_allows(self):
+        """A REJECTED dispute (claim dismissed) does not block the transporter."""
+        self._dispute('REJECTED')
+        self.assertIn(self.escrow, get_escrow_eligible_for_auto_release())

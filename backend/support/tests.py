@@ -11,7 +11,9 @@ from datetime import timedelta
 from decimal import Decimal
 
 from support.models import Dispute, AuditLog
-from logistics.models import TransportJob
+from support.services import resolve_dispute
+from logistics.models import TransportJob, Offer
+from payments.models import EscrowTransaction, RefundRequest
 
 User = get_user_model()
 
@@ -222,3 +224,117 @@ class AuditLogTests(SupportTestBase):
         )
         s = str(log)
         self.assertIn('USER_BANNED', s)
+
+
+class ResolveDisputeOutcomeTests(SupportTestBase):
+    """
+    L1 — resolving a dispute with a structured financial outcome triggers the
+    matching escrow movement in the same transaction.
+    """
+
+    def setUp(self):
+        super().setUp()
+        self.transporter = User.objects.create_user(
+            username='dispute_transporter',
+            email='disputetransporter@test.tn',
+            password='SecurePass123!',
+            role='TRANSPORTER',
+        )
+        self.offer = Offer.objects.create(
+            job=self.job,
+            transporter=self.transporter,
+            status='ACCEPTED',
+            price_net=Decimal('80.00'),
+            commission_amount=Decimal('20.00'),
+            total_price=Decimal('100.00'),
+            valid_until=timezone.now() + timedelta(days=3),
+        )
+        self.escrow = EscrowTransaction.objects.create(
+            booking_reference=self.job,
+            status=EscrowTransaction.Status.HELD,
+            amount=Decimal('100.00'),
+            gateway_reference='SANDBOX-DISPUTE',
+        )
+
+    def _investigating_dispute(self):
+        return Dispute.objects.create(
+            job=self.job,
+            opened_by=self.client_user,
+            reason='DAMAGED_ITEMS',
+            description='Items were damaged during transport.',
+            status='INVESTIGATING',
+        )
+
+    def test_resolve_refund_client(self):
+        """REFUND_CLIENT → escrow REFUNDED + client RefundRequest + outcome stored."""
+        dispute = self._investigating_dispute()
+        resolve_dispute(
+            dispute, self.admin_user,
+            resolution_notes='Marchandise endommagée, remboursement.',
+            resolution_outcome=Dispute.ResolutionOutcome.REFUND_CLIENT,
+        )
+        self.escrow.refresh_from_db()
+        dispute.refresh_from_db()
+        self.assertEqual(self.escrow.status, EscrowTransaction.Status.REFUNDED)
+        self.assertEqual(dispute.resolution_outcome, Dispute.ResolutionOutcome.REFUND_CLIENT)
+        self.assertTrue(RefundRequest.objects.filter(job=self.job).exists())
+
+    def test_resolve_release_transporter(self):
+        """RELEASE_TRANSPORTER → escrow RELEASED, no refund."""
+        dispute = self._investigating_dispute()
+        resolve_dispute(
+            dispute, self.admin_user,
+            resolution_notes='Litige non fondé, versement transporteur.',
+            resolution_outcome=Dispute.ResolutionOutcome.RELEASE_TRANSPORTER,
+        )
+        self.escrow.refresh_from_db()
+        self.assertEqual(self.escrow.status, EscrowTransaction.Status.RELEASED)
+        self.assertFalse(RefundRequest.objects.filter(job=self.job).exists())
+
+    def test_resolve_split(self):
+        """SPLIT → escrow REFUNDED + two RefundRequests (client + transporter)."""
+        dispute = self._investigating_dispute()
+        resolve_dispute(
+            dispute, self.admin_user,
+            resolution_notes='Responsabilité partagée, partage 50/50.',
+            resolution_outcome=Dispute.ResolutionOutcome.SPLIT,
+            refund_amount=Decimal('50.00'),
+        )
+        self.escrow.refresh_from_db()
+        self.assertEqual(self.escrow.status, EscrowTransaction.Status.REFUNDED)
+        self.assertEqual(RefundRequest.objects.filter(job=self.job).count(), 2)
+
+    def test_resolve_split_requires_amount(self):
+        """SPLIT without refund_amount → ValidationError, escrow untouched."""
+        dispute = self._investigating_dispute()
+        with self.assertRaises(ValidationError):
+            resolve_dispute(
+                dispute, self.admin_user,
+                resolution_notes='Partage sans montant.',
+                resolution_outcome=Dispute.ResolutionOutcome.SPLIT,
+            )
+        self.escrow.refresh_from_db()
+        self.assertEqual(self.escrow.status, EscrowTransaction.Status.HELD)
+
+    def test_resolve_note_only_leaves_escrow(self):
+        """NONE (default) → note only, escrow untouched (historical behaviour)."""
+        dispute = self._investigating_dispute()
+        resolve_dispute(
+            dispute, self.admin_user,
+            resolution_notes='Résolu à l\'amiable, aucun mouvement.',
+        )
+        self.escrow.refresh_from_db()
+        dispute.refresh_from_db()
+        self.assertEqual(self.escrow.status, EscrowTransaction.Status.HELD)
+        self.assertEqual(dispute.resolution_outcome, Dispute.ResolutionOutcome.NONE)
+        self.assertFalse(RefundRequest.objects.filter(job=self.job).exists())
+
+    def test_resolve_invalid_outcome(self):
+        """An unknown outcome is rejected."""
+        dispute = self._investigating_dispute()
+        with self.assertRaises(ValidationError):
+            resolve_dispute(
+                dispute, self.admin_user,
+                resolution_notes='Issue inconnue.',
+                resolution_outcome='BOGUS',
+            )

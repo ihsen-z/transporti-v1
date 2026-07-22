@@ -62,7 +62,7 @@ class DisputeDetailSerializer(serializers.ModelSerializer):
             'id', 'job', 'reason', 'status', 'description',
             'opened_by', 'opened_by_name',
             'resolved_by', 'resolved_by_name',
-            'resolution_notes', 'job_summary',
+            'resolution_notes', 'resolution_outcome', 'job_summary',
             'created_at', 'updated_at', 'resolved_at'
         ]
         read_only_fields = fields
@@ -90,8 +90,21 @@ class DisputeActionSerializer(serializers.Serializer):
     Moderator: Action on dispute (investigate/resolve/reject).
     """
     resolution_notes = serializers.CharField(
-        min_length=10, 
-        max_length=2000, 
+        min_length=10,
+        max_length=2000,
         required=False,
         help_text="Required for resolve/reject actions"
+    )
+    # L1 — structured financial outcome for the resolve action (optional; when
+    # omitted the resolution is note-only, i.e. NONE — historical behaviour).
+    resolution_outcome = serializers.ChoiceField(
+        choices=Dispute.ResolutionOutcome.choices,
+        required=False,
+        help_text="Escrow outcome for resolve: NONE/REFUND_CLIENT/RELEASE_TRANSPORTER/SPLIT",
+    )
+    # Required only for the SPLIT outcome — the client's refunded share.
+    refund_amount = serializers.DecimalField(
+        max_digits=12, decimal_places=2, min_value=0,
+        required=False,
+        help_text="Client share (SPLIT only): 0 < amount < escrow total",
     )

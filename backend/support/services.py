@@ -159,27 +159,59 @@ def start_investigation(dispute: Dispute, moderator) -> Dispute:
 
 
 @transaction.atomic
-def resolve_dispute(dispute: Dispute, moderator, resolution_notes: str) -> Dispute:
+def resolve_dispute(
+    dispute: Dispute,
+    moderator,
+    resolution_notes: str,
+    resolution_outcome: str = None,
+    refund_amount=None,
+) -> Dispute:
     """
     Resolve a dispute (INVESTIGATING → RESOLVED).
-    
+
+    L1 (chantier financier): the resolution can now carry a STRUCTURED financial
+    outcome that triggers the matching escrow movement in THIS same transaction,
+    instead of a free-text note alone:
+      - NONE (default)      : note only, no escrow movement (historical behaviour)
+      - REFUND_CLIENT       : full refund to the client   → refund_escrow()
+      - RELEASE_TRANSPORTER : pay the transporter          → release_escrow_on_completion()
+      - SPLIT               : partial refund + payout      → split_escrow(refund_amount)
+
     Args:
         dispute: The dispute to resolve
         moderator: Moderator/Admin user
         resolution_notes: Explanation of resolution
-    
+        resolution_outcome: One of Dispute.ResolutionOutcome (defaults to NONE)
+        refund_amount: Client share, REQUIRED for SPLIT (0 < x < escrow amount)
+
     Returns:
         Updated Dispute instance
-    
+
     Raises:
         PermissionDenied: If user is not moderator/admin
-        ValidationError: If transition is invalid or notes missing
+        ValidationError: If transition is invalid, notes missing, or outcome invalid
     """
+    # Local imports: the escrow movements live in the payments app. Importing
+    # them at module load would create a support ↔ payments import cycle.
+    from payments.services import (
+        refund_escrow, release_escrow_on_completion, split_escrow,
+    )
+
     _require_moderator(moderator)
-    
+
     if not resolution_notes or len(resolution_notes.strip()) < 10:
         raise ValidationError("Resolution notes required (minimum 10 characters).")
-    
+
+    # Normalise + validate the structured outcome.
+    outcome = resolution_outcome or Dispute.ResolutionOutcome.NONE
+    valid_outcomes = [c[0] for c in Dispute.ResolutionOutcome.choices]
+    if outcome not in valid_outcomes:
+        raise ValidationError(
+            f"Invalid resolution_outcome: {outcome}. Must be one of {valid_outcomes}"
+        )
+    if outcome == Dispute.ResolutionOutcome.SPLIT and refund_amount is None:
+        raise ValidationError("refund_amount is required for a SPLIT resolution.")
+
     try:
         dispute.resolve(resolved_by=moderator, resolution_notes=resolution_notes)
     except ValidationError as e:
@@ -188,7 +220,42 @@ def resolve_dispute(dispute: Dispute, moderator, resolution_notes: str) -> Dispu
             f"moderator_id={moderator.id}, error={str(e)}"
         )
         raise
-    
+
+    # Persist the outcome so L2 (auto-release) and audits can read it later.
+    dispute.resolution_outcome = outcome
+    dispute.save(update_fields=['resolution_outcome'])
+
+    # === L1 — trigger the escrow movement in the same transaction ===
+    escrow_action = 'none'
+    try:
+        if outcome == Dispute.ResolutionOutcome.REFUND_CLIENT:
+            refund_escrow(dispute.job, reason=f'Dispute #{dispute.id} resolved: refund client')
+            escrow_action = 'refund_client'
+        elif outcome == Dispute.ResolutionOutcome.RELEASE_TRANSPORTER:
+            release_escrow_on_completion(
+                dispute.job,
+                admin_user=moderator,
+                reason=f'Dispute #{dispute.id} resolved: release to transporter',
+            )
+            escrow_action = 'release_transporter'
+        elif outcome == Dispute.ResolutionOutcome.SPLIT:
+            split_escrow(
+                dispute.job,
+                refund_amount=refund_amount,
+                reason=f'Dispute #{dispute.id} resolved: split',
+                admin_user=moderator,
+            )
+            escrow_action = 'split'
+    except ValueError as e:
+        # An escrow guard (already released, no escrow, bad split amount…) must
+        # abort the whole resolution — never leave a dispute RESOLVED without the
+        # money movement it promised.
+        logger.error(
+            f"DISPUTE_ESCROW_ACTION_FAILED: dispute_id={dispute.id}, "
+            f"outcome={outcome}, error={str(e)}"
+        )
+        raise ValidationError(f"Escrow action failed: {str(e)}")
+
     # Create audit log
     AuditLog.objects.create(
         actor=moderator,
@@ -197,16 +264,18 @@ def resolve_dispute(dispute: Dispute, moderator, resolution_notes: str) -> Dispu
         changes={
             'old_status': 'INVESTIGATING',
             'new_status': 'RESOLVED',
+            'resolution_outcome': outcome,
+            'escrow_action': escrow_action,
             'resolution_notes': resolution_notes[:500]
         },
         reason=resolution_notes
     )
-    
+
     logger.info(
         f"DISPUTE_RESOLVED: dispute_id={dispute.id}, job_id={dispute.job_id}, "
-        f"moderator_id={moderator.id}"
+        f"moderator_id={moderator.id}, outcome={outcome}, escrow_action={escrow_action}"
     )
-    
+
     return dispute
 
 

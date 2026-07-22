@@ -70,6 +70,26 @@ class Dispute(models.Model):
         RESOLVED = 'RESOLVED', 'Resolved'
         REJECTED = 'REJECTED', 'Rejected'
 
+    class ResolutionOutcome(models.TextChoices):
+        """
+        L1 (chantier financier) — issue financière structurée d'une résolution.
+
+        Contrairement à une note libre, l'issue déclenche le mouvement d'escrow
+        correspondant DANS la même transaction que la résolution :
+        - NONE                : note seule, aucun mouvement (compat historique)
+        - REFUND_CLIENT       : remboursement intégral du client (escrow REFUNDED)
+        - RELEASE_TRANSPORTER : versement au transporteur (escrow RELEASED)
+        - SPLIT               : partage (part client remboursée, reste au transporteur)
+        """
+        NONE = 'NONE', 'Notes only (no escrow movement)'
+        REFUND_CLIENT = 'REFUND_CLIENT', 'Refund client (full)'
+        RELEASE_TRANSPORTER = 'RELEASE_TRANSPORTER', 'Release to transporter'
+        SPLIT = 'SPLIT', 'Split (partial refund)'
+
+    # Outcomes that rule in favour of the client — used by L2 to keep the 48h
+    # auto-release from paying the transporter after such a resolution.
+    PRO_CLIENT_OUTCOMES = ['REFUND_CLIENT', 'SPLIT']
+
     # Valid state transitions (from -> [allowed to states])
     ALLOWED_TRANSITIONS = {
         'OPEN': ['INVESTIGATING'],
@@ -110,7 +130,15 @@ class Dispute(models.Model):
         db_index=True
     )
     resolution_notes = models.TextField(blank=True)
-    
+    # L1 — structured financial outcome tied to the escrow movement (see above)
+    resolution_outcome = models.CharField(
+        max_length=20,
+        choices=ResolutionOutcome.choices,
+        default=ResolutionOutcome.NONE,
+        db_index=True,
+        help_text="Financial outcome that drove the escrow movement at resolution",
+    )
+
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)

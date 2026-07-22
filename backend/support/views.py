@@ -188,20 +188,24 @@ class AdminDisputeResolveView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         
         resolution_notes = serializer.validated_data.get('resolution_notes', '')
-        
+        resolution_outcome = serializer.validated_data.get('resolution_outcome')
+        refund_amount = serializer.validated_data.get('refund_amount')
+
         if not resolution_notes:
             return Response(
                 {'error': 'resolution_notes is required for resolve action.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        
+
         dispute = get_object_or_404(Dispute, id=dispute_id)
-        
+
         try:
             dispute = resolve_dispute(
-                dispute=dispute, 
-                moderator=request.user, 
-                resolution_notes=resolution_notes
+                dispute=dispute,
+                moderator=request.user,
+                resolution_notes=resolution_notes,
+                resolution_outcome=resolution_outcome,
+                refund_amount=refund_amount,
             )
             
             # Auto-unlock conversation after resolution (#7)

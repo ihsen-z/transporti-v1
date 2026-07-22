@@ -208,3 +208,94 @@ class WithdrawalRequest(models.Model):
 
     def __str__(self):
         return f"Withdrawal #{self.id} - {self.transporter} - {self.amount} TND ({self.status})"
+
+
+class RefundRequest(models.Model):
+    """
+    K2 (chantier financier): back-office tracking of a client refund owed after
+    a cancellation or a pro-client dispute resolution.
+
+    Mirrors WithdrawalRequest (REQUESTED → PROCESSING → PAID, or REJECTED).
+    Konnect refunds are manual by design (KonnectGateway.refund() returns False),
+    so this queue is the single source of truth for "money still to be sent back".
+
+    When the active gateway executes the refund automatically (SANDBOX), the row
+    is created already PAID with auto_executed=True. In production (KONNECT) it is
+    created REQUESTED and processed by hand in the Django admin, matched against
+    Konnect via gateway_reference.
+
+    A single row can also represent the TRANSPORTER's share of a SPLIT outcome
+    (beneficiary_type=TRANSPORTER) — a manual bank payout, like a withdrawal.
+    """
+    class Status(models.TextChoices):
+        REQUESTED = 'REQUESTED', 'Requested'
+        PROCESSING = 'PROCESSING', 'Processing'
+        PAID = 'PAID', 'Paid'
+        REJECTED = 'REJECTED', 'Rejected'
+
+    class Beneficiary(models.TextChoices):
+        CLIENT = 'CLIENT', 'Client (refund)'
+        TRANSPORTER = 'TRANSPORTER', 'Transporter (split share)'
+
+    beneficiary = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        related_name='refund_requests',
+        help_text="User who must receive the money",
+    )
+    beneficiary_type = models.CharField(
+        max_length=20,
+        choices=Beneficiary.choices,
+        default=Beneficiary.CLIENT,
+        db_index=True,
+    )
+    job = models.ForeignKey(
+        'logistics.TransportJob',
+        on_delete=models.PROTECT,
+        related_name='refund_requests',
+    )
+    escrow = models.ForeignKey(
+        EscrowTransaction,
+        on_delete=models.PROTECT,
+        related_name='refund_requests',
+    )
+    amount = models.DecimalField(
+        max_digits=12, decimal_places=2,
+        validators=[MinValueValidator(0)]
+    )
+    # Copied from the escrow so back-office can match the payout in Konnect
+    # even after the escrow row changes.
+    gateway_reference = models.CharField(max_length=100, blank=True)
+    # True when the active gateway refunded automatically (SANDBOX) — no manual
+    # back-office action needed. False means a human must execute it (KONNECT).
+    auto_executed = models.BooleanField(default=False)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.REQUESTED,
+        db_index=True,
+    )
+    reason = models.CharField(max_length=255, blank=True, default='')
+    admin_note = models.CharField(max_length=255, blank=True, default='')
+
+    requested_at = models.DateTimeField(auto_now_add=True)
+    processed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-requested_at']
+        indexes = [
+            models.Index(fields=['beneficiary', 'status']),
+            models.Index(fields=['status', 'requested_at']),
+        ]
+        constraints = [
+            models.CheckConstraint(
+                check=models.Q(amount__gt=0),
+                name='refund_amount_positive'
+            ),
+        ]
+
+    def __str__(self):
+        return (
+            f"Refund #{self.id} - {self.beneficiary} - {self.amount} TND "
+            f"({self.beneficiary_type}/{self.status})"
+        )

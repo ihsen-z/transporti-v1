@@ -17,7 +17,8 @@ from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import timedelta
 
-from .models import EscrowTransaction, CommissionLedger
+from .models import EscrowTransaction, CommissionLedger, RefundRequest
+from .gateway import get_payment_gateway
 from logistics.models import TransportJob, Offer
 from support.models import AuditLog
 
@@ -87,12 +88,69 @@ def calculate_from_net(job_type: str, price_net: Decimal, is_return_trip: bool =
     return commission, total
 
 
+def _create_refund_request(
+    escrow: EscrowTransaction,
+    beneficiary,
+    beneficiary_type: str,
+    amount: Decimal,
+    reason: str,
+) -> RefundRequest:
+    """
+    K1/K2 — attempt the actual gateway refund and record it in the back-office
+    queue, so a due refund can never be silently lost.
+
+    The gateway is asked to move the money:
+    - SANDBOX returns True  → nothing left to do → row created PAID/auto_executed.
+    - KONNECT returns False → manual dashboard processing → row created REQUESTED.
+
+    Returns the created RefundRequest. Does NOT change the escrow status — the
+    caller owns that transition (a single escrow can back several refund rows,
+    e.g. the two sides of a SPLIT).
+    """
+    amount = Decimal(str(amount)).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
+
+    # Ask the configured gateway to actually restitute the funds.
+    executed = False
+    try:
+        gateway = get_payment_gateway()
+        executed = bool(gateway.refund(escrow.gateway_reference, amount))
+    except Exception as e:
+        # A gateway hiccup must not lose the refund: fall back to manual queue.
+        logger.error(
+            f"REFUND_GATEWAY_ERROR: escrow_id={escrow.id}, amount={amount}, error={e}"
+        )
+        executed = False
+
+    refund = RefundRequest.objects.create(
+        beneficiary=beneficiary,
+        beneficiary_type=beneficiary_type,
+        job_id=escrow.booking_reference_id,
+        escrow=escrow,
+        amount=amount,
+        gateway_reference=escrow.gateway_reference,
+        auto_executed=executed,
+        status=(RefundRequest.Status.PAID if executed else RefundRequest.Status.REQUESTED),
+        processed_at=(timezone.now() if executed else None),
+        reason=reason[:255],
+    )
+
+    logger.info(
+        f"REFUND_REQUEST_CREATED: refund_id={refund.id}, escrow_id={escrow.id}, "
+        f"beneficiary={beneficiary.id}/{beneficiary_type}, amount={amount}, "
+        f"auto_executed={executed}, status={refund.status}"
+    )
+    return refund
+
+
 @transaction.atomic
 def refund_escrow(job: TransportJob, reason: str = "") -> 'EscrowTransaction | None':
     """
-    Refund the active escrow of a job (cancellation flows).
+    Refund the active escrow of a job in full (cancellation / pro-client dispute).
 
     HELD/INITIATED → REFUNDED. RELEASED is immutable — never refundable here.
+    K1: also calls the payment gateway and records a RefundRequest so the money
+    is really sent back (or queued for manual back-office in Konnect).
+
     Returns the refunded escrow, or None if the job has no refundable escrow.
     """
     escrow = EscrowTransaction.objects.select_for_update().filter(
@@ -102,14 +160,30 @@ def refund_escrow(job: TransportJob, reason: str = "") -> 'EscrowTransaction | N
     if not escrow:
         return None
 
+    old_status = escrow.status
     escrow.status = EscrowTransaction.Status.REFUNDED
     escrow.save()
+
+    # K1/K2 — actually move the money (or queue it) and track it.
+    refund = _create_refund_request(
+        escrow=escrow,
+        beneficiary=job.owner,
+        beneficiary_type=RefundRequest.Beneficiary.CLIENT,
+        amount=escrow.amount,
+        reason=reason or f'Full refund for job {job.id}',
+    )
 
     AuditLog.objects.create(
         actor=None,
         action='ESCROW_REFUNDED',
         target_entity=f'EscrowTransaction:{escrow.id}',
-        changes={'old': 'HELD', 'new': 'REFUNDED'},
+        changes={
+            'old': old_status,
+            'new': 'REFUNDED',
+            'refund_request_id': refund.id,
+            'refund_status': refund.status,
+            'auto_executed': refund.auto_executed,
+        },
         reason=reason or f'Escrow refunded for job {job.id}',
     )
     logger.info(f"ESCROW_REFUNDED: escrow_id={escrow.id}, job_id={job.id}, reason={reason}")
@@ -120,6 +194,110 @@ def refund_escrow(job: TransportJob, reason: str = "") -> 'EscrowTransaction | N
         notify_escrow_refunded(escrow)
     except Exception:
         pass
+
+    return escrow
+
+
+@transaction.atomic
+def split_escrow(
+    job: TransportJob,
+    refund_amount: Decimal,
+    reason: str = "",
+    admin_user=None,
+) -> EscrowTransaction:
+    """
+    SPLIT dispute outcome — the disputed escrow is shared between both parties.
+
+    Phase-1 design (documented): the escrow is pulled to REFUNDED so the 48h
+    auto-release can never later pay the transporter the full amount. Both shares
+    are then queued as manual disbursements:
+      - client      → refund_amount  (Konnect refund, manual in prod)
+      - transporter → escrow.amount − refund_amount  (bank payout, manual)
+
+    Args:
+        job: The disputed job.
+        refund_amount: Portion returned to the client (0 < x < escrow.amount).
+        reason: Audit / back-office reason.
+        admin_user: Moderator/admin who ruled the split (for the audit trail).
+
+    Raises:
+        ValueError: If no refundable escrow, or refund_amount out of range.
+    """
+    escrow = EscrowTransaction.objects.select_for_update().filter(
+        booking_reference=job,
+        status__in=[EscrowTransaction.Status.HELD, EscrowTransaction.Status.INITIATED],
+    ).first()
+    if not escrow:
+        raise ValueError(f"No refundable escrow for job {job.id}")
+
+    refund_amount = Decimal(str(refund_amount)).quantize(TWO_PLACES, rounding=ROUND_HALF_UP)
+    if refund_amount <= 0 or refund_amount >= escrow.amount:
+        raise ValueError(
+            f"SPLIT refund_amount must be strictly between 0 and {escrow.amount} "
+            f"(got {refund_amount})"
+        )
+
+    transporter_amount = (escrow.amount - refund_amount).quantize(
+        TWO_PLACES, rounding=ROUND_HALF_UP
+    )
+
+    old_status = escrow.status
+    escrow.status = EscrowTransaction.Status.REFUNDED
+    escrow.save()
+
+    # Client share — refunded via gateway/queue.
+    client_refund = _create_refund_request(
+        escrow=escrow,
+        beneficiary=job.owner,
+        beneficiary_type=RefundRequest.Beneficiary.CLIENT,
+        amount=refund_amount,
+        reason=reason or f'Split refund (client share) for job {job.id}',
+    )
+
+    # Transporter share — manual payout (never auto-executed via refund gateway).
+    transporter_refund = None
+    accepted = job.offers.filter(status='ACCEPTED').select_related('transporter').first()
+    if accepted:
+        transporter_refund = RefundRequest.objects.create(
+            beneficiary=accepted.transporter,
+            beneficiary_type=RefundRequest.Beneficiary.TRANSPORTER,
+            job_id=job.id,
+            escrow=escrow,
+            amount=transporter_amount,
+            gateway_reference=escrow.gateway_reference,
+            auto_executed=False,  # bank payout, always manual back-office
+            status=RefundRequest.Status.REQUESTED,
+            reason=(reason or f'Split payout (transporter share) for job {job.id}')[:255],
+        )
+        logger.info(
+            f"REFUND_REQUEST_CREATED: refund_id={transporter_refund.id}, "
+            f"escrow_id={escrow.id}, beneficiary={accepted.transporter.id}/TRANSPORTER, "
+            f"amount={transporter_amount}, status=REQUESTED"
+        )
+    else:
+        logger.warning(
+            f"SPLIT_NO_TRANSPORTER: job_id={job.id} has no ACCEPTED offer — "
+            f"transporter share {transporter_amount} not queued"
+        )
+
+    AuditLog.objects.create(
+        actor=admin_user,
+        action='ESCROW_SPLIT',
+        target_entity=f'EscrowTransaction:{escrow.id}',
+        changes={
+            'old': old_status,
+            'new': 'REFUNDED',
+            'client_refund_id': client_refund.id,
+            'client_amount': str(refund_amount),
+            'transporter_refund_id': transporter_refund.id if transporter_refund else None,
+            'transporter_amount': str(transporter_amount),
+        },
+        reason=reason or f'Escrow split for job {job.id}',
+    )
+    logger.info(
+        f"ESCROW_SPLIT: escrow_id={escrow.id}, job_id={job.id}, "
+        f"client={refund_amount}, transporter={transporter_amount}"
+    )
 
     return escrow
 
@@ -560,21 +738,41 @@ def get_escrow_eligible_for_auto_release() -> list[EscrowTransaction]:
     - Status = HELD
     - Job status = COMPLETED
     - Created > 48h ago
-    - No active disputes
-    
+    - No active dispute (OPEN/INVESTIGATING)
+    - L2: no dispute resolved in a way that does NOT explicitly release funds.
+
+    L2 (chantier financier): a dispute ruled in favour of the client
+    (REFUND_CLIENT / SPLIT) — or resolved with a note only (NONE) — must NOT let
+    the 48h timer pay the transporter. Only an explicit RELEASE_TRANSPORTER
+    outcome (or a REJECTED dispute, i.e. the client's claim was dismissed) keeps
+    the job auto-releasable.
+
     Returns:
         List of EscrowTransaction objects
     """
+    from support.models import Dispute
+
     cutoff_time = timezone.now() - timedelta(hours=48)
-    
+
+    # Resolved dispute outcomes that still block auto-release: anything that is
+    # not an explicit release to the transporter.
+    blocking_resolved_outcomes = [
+        Dispute.ResolutionOutcome.REFUND_CLIENT,
+        Dispute.ResolutionOutcome.SPLIT,
+        Dispute.ResolutionOutcome.NONE,
+    ]
+
     eligible = EscrowTransaction.objects.filter(
         status=EscrowTransaction.Status.HELD,
         created_at__lt=cutoff_time,
         booking_reference__status=TransportJob.Status.COMPLETED
     ).exclude(
         booking_reference__disputes__status__in=['OPEN', 'INVESTIGATING']
-    )
-    
+    ).exclude(
+        booking_reference__disputes__status=Dispute.Status.RESOLVED,
+        booking_reference__disputes__resolution_outcome__in=blocking_resolved_outcomes,
+    ).distinct()
+
     logger.debug(f"Found {eligible.count()} escrow entries eligible for auto-release")
-    
+
     return list(eligible)

@@ -21,7 +21,7 @@ class BookingAdmin(admin.ModelAdmin):
 
 
 from django.utils import timezone
-from .models import WithdrawalRequest
+from .models import WithdrawalRequest, RefundRequest
 
 
 @admin.register(WithdrawalRequest)
@@ -46,3 +46,37 @@ class WithdrawalRequestAdmin(admin.ModelAdmin):
     def mark_rejected(self, request, queryset):
         queryset.exclude(status=WithdrawalRequest.Status.PAID).update(
             status=WithdrawalRequest.Status.REJECTED, processed_at=timezone.now())
+
+
+@admin.register(RefundRequest)
+class RefundRequestAdmin(admin.ModelAdmin):
+    """
+    K2 — back-office processing of client refunds (and split payouts).
+
+    In Konnect production the refund is manual: rows arrive REQUESTED (with the
+    gateway_reference to match the payment in the Konnect dashboard) and are moved
+    to PROCESSING → PAID by hand. Rows auto-executed by the SANDBOX gateway arrive
+    already PAID.
+    """
+    list_display = (
+        'id', 'beneficiary', 'beneficiary_type', 'amount', 'status',
+        'auto_executed', 'gateway_reference', 'job', 'requested_at', 'processed_at',
+    )
+    list_filter = ('status', 'beneficiary_type', 'auto_executed', 'requested_at')
+    search_fields = ('beneficiary__email', 'gateway_reference', 'job__id')
+    actions = ['mark_processing', 'mark_paid', 'mark_rejected']
+
+    @admin.action(description="Marquer en cours de traitement")
+    def mark_processing(self, request, queryset):
+        queryset.filter(status=RefundRequest.Status.REQUESTED).update(
+            status=RefundRequest.Status.PROCESSING)
+
+    @admin.action(description="Marquer payé (remboursement effectué)")
+    def mark_paid(self, request, queryset):
+        queryset.exclude(status=RefundRequest.Status.REJECTED).update(
+            status=RefundRequest.Status.PAID, processed_at=timezone.now())
+
+    @admin.action(description="Rejeter")
+    def mark_rejected(self, request, queryset):
+        queryset.exclude(status=RefundRequest.Status.PAID).update(
+            status=RefundRequest.Status.REJECTED, processed_at=timezone.now())
