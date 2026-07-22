@@ -327,7 +327,12 @@
 - **Attendu :** l'issue déclenche le mouvement escrow **dans la même transaction** ; un échec de garde escrow annule toute la résolution (rollback). Avertissement « mouvement d'argent réel » affiché dès qu'une issue ≠ NONE.
 4. **Back-office (K2)** : la file `RefundRequest` est traitable dans le **Django admin** (`/admin/`, actions marquer en cours / payé / rejeté), avec `gateway_reference` pour rapprocher le remboursement Konnect manuel.
 5. **Auto-release (L2)** : un job dont le litige a été tranché pro-client (REFUND_CLIENT/SPLIT) ou résolu en note seule (NONE) **n'est plus** éligible à l'auto-release 48h ; seul RELEASE_TRANSPORTER (ou un litige REJECTED) le laisse payer le transporteur.
-- **Vérifié navigateur (22/07)** : sélecteur 4 issues + champ montant SPLIT présents (session admin, API Live). **Reste à rejouer** : exécution live d'un REFUND_CLIENT/SPLIT réel remplissant la file ; parcours client complet (login client requis).
+- **Vérifié navigateur (22/07)** : modal admin — sélecteur 4 issues + champ montant SPLIT présents (session admin, API Live).
+- **Exécuté en live sur PostgreSQL (22/07) :**
+  - **REFUND_CLIENT** (litige#6 / job#3, escrow HELD 100) → escrow **REFUNDED**, `RefundRequest` client **100 TND PAID** (`auto_executed=True`, `gateway_reference` renseigné), notification client « 💰 Remboursement effectué ». **Vue client confirmée** : le litige apparaît RESOLVED (outcome REFUND_CLIENT) dans « Mes litiges » + remboursement PAID.
+  - **SPLIT** (litige#7 / job#11, escrow HELD 200, partage 120/80) → escrow **REFUNDED** + **2** `RefundRequest` : client **120 PAID** (passerelle) et transporteur **80 REQUESTED** (virement manuel `auto_executed=False`).
+  - RELEASE_TRANSPORTER + cas limites (NONE = note seule, montant SPLIT hors bornes rejeté) couverts par les 22 tests backend.
+- **Reste** : parcours client navigateur général (browse trajets retour / demande D5 — login client requis) ; **Konnect réel (F1)** reporté (session dédiée). *NB : les litiges #6/#7 et les escrows jobs #3/#11 ont été mutés sur le seed dev pour cette recette — réversible via `seed_test_data --clear`.*
 
 ## Registre d'exécution
 

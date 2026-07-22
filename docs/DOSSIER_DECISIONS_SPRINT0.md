@@ -63,7 +63,7 @@
 - **L1** — `resolve_dispute` (`backend/support/services.py`) porte une **issue financière structurée** `resolution_outcome` ∈ {NONE, REFUND_CLIENT, RELEASE_TRANSPORTER, SPLIT} (+ `refund_amount` pour SPLIT) qui déclenche le mouvement escrow **dans la même transaction** ; champ `Dispute.resolution_outcome` (migration `support/0005`) ; câblage UI admin (sélecteur d'issue + montant conditionnel).
 - **L2** — l'auto-release 48h est suspendue sur tout job dont un litige RESOLVED n'a pas l'issue **explicite** RELEASE_TRANSPORTER (REFUND_CLIENT/SPLIT/NONE bloquent ; REJECTED autorise).
 - **Décision SPLIT (Phase-1)** : l'escrow d'un litige tranché en partage passe REFUNDED (le transporteur n'est jamais payé auto du montant plein) ; part client + part transporteur sont mises en 2 `RefundRequest` manuels. Décrémentation partielle d'escrow = Future.
-- **Preuves** : 169 tests · 0 échec sur PostgreSQL (147 + 22 nouveaux), typecheck front 0 erreur, vérif navigateur admin live (22/07). **Report** : vérif Konnect réel (F1) en session dédiée.
+- **Preuves** : 169 tests · 0 échec sur PostgreSQL (147 + 22 nouveaux), typecheck front 0 erreur, vérif navigateur admin live + **flux exécuté en live sur la DB Postgres** (22/07) : REFUND_CLIENT (job#3 → escrow REFUNDED + RefundRequest 100 PAID + vue client OK) et SPLIT (job#11 → escrow REFUNDED + client 120 PAID / transporteur 80 REQUESTED). **Report** : vérif Konnect réel (F1) en session dédiée.
 
 ## D5 — MODÈLE PRODUIT DU TRAJET RETOUR
 

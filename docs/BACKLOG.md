@@ -77,7 +77,8 @@ Les 4 P1 du contre-audit L5 traités **en un seul bloc** « issue de litige stru
 **Dette env levée** : le blocage n'était pas un bug code mais des conteneurs down/crash-loop (frontend `Exited 137` = OOM) + fenêtre de chauffe ~30 s où `:8000` renvoie 000 avant que daphne soit prêt. Stack chaud → login navigateur bout-en-bout OK (`OPTIONS`+`POST /api/auth/login/` → 200, redirect dashboard).
 - **Parcours transporteur ✅** (Mehdi vérifié) : dashboard, feed missions (15 résultats, dates lib/format), wallet (KPI serveur au millime), litiges — tout vert, 0 erreur console.
 - **UI admin litige (L1) ✅ live** : modal « Résoudre » affiche le sélecteur 4 issues + champ montant conditionnel SPLIT ; API Live.
-- **Reste REC-P** : parcours client (nécessite login client) ; démo live d'un REFUND_CLIENT/SPLIT réel remplissant la file `RefundRequest` (Django admin) ; **vérif Konnect réel F1 reportée** (session dédiée).
+- **Flux litige→escrow exécuté en live sur PostgreSQL (22/07) ✅** : **REFUND_CLIENT** (litige#6/job#3) → escrow REFUNDED + RefundRequest client 100 PAID (passerelle) + notif + **vue client confirmée** ; **SPLIT** (litige#7/job#11, 120/80) → escrow REFUNDED + 2 RefundRequest (client 120 PAID, transporteur 80 REQUESTED). K1/K2/L1 prouvés côté données réelles (pas seulement DB de test).
+- **Reste REC-P** : parcours client navigateur général (browse trajets retour / demande D5 — login client requis) ; **vérif Konnect réel F1 reportée** (session dédiée).
 - **Concern env** : frontend OOM récurrent (`Exited 137`) → prévoir `docker compose up -d` + ~30 s de chauffe avant toute recette ; surveiller la limite mémoire du conteneur frontend.
 
 ## 🎯 Pilote corridor A1 (S18-S19)
