@@ -1,5 +1,5 @@
 # BACKLOG VIVANT — TRANSPORTI V1
-**Mis à jour :** 20 juillet 2026 · **Références :** roadmap = `PIVOT_STRATEGIQUE_TRAJETS_RETOUR_2026-07-14.md` §7.2 · décisions = `DOSSIER_DECISIONS_SPRINT0.md` · vision = `VISION_PRODUIT_FONDATRICE.md`
+**Mis à jour :** 22 juillet 2026 · **Références :** roadmap = `PIVOT_STRATEGIQUE_TRAJETS_RETOUR_2026-07-14.md` §7.2 · décisions = `DOSSIER_DECISIONS_SPRINT0.md` · vision = `VISION_PRODUIT_FONDATRICE.md`
 
 Chaque lot est annoté du Principe Produit officiel qu'il sert (P1 retours publiés · P2 matching · P3 remplissage · P4 temps de mise en relation · P5 confiance · P6 simplicité · NSM).
 
@@ -58,9 +58,27 @@ dark mode app principale (~40+ écrans, ThemeProvider dans `(app)` + variantes `
 Rapport : `CONTRE_AUDIT_L5_2026-07-21.md`. Rejeu **sur PostgreSQL** (iso-prod) : **147 tests · 0 échec**, typecheck frontend clean, flux pivot opérationnels.
 - **Corrigé pendant le contre-audit** : P1 matching trajets retour cassé sur Postgres (`abs(interval)` → 500, invisible en SQLite) ; P2 test-infra (429 throttle-cache bleed sur les tests d'inscription).
 - **I1 corrigé pendant le contre-audit** : collision `username` à l'inscription (username unique suffixé + test) → users 21/21.
-- **Porte « zéro P0/P1 » NON franchie** : 0 P0, **4 P1 ouverts** = chantier financier remboursement/litige (K1/K2/L1/L2, masqué par SANDBOX). Chip créé.
-- **Reste avant pilote** : fermer les 4 P1 (chantier financier) ; recette navigateur REC-P complète (bloquée cette session par l'instabilité d'auth du navigateur d'automatisation) ; re-rejeu suite Postgres.
-- **Verdict : vert fonctionnel (≫ 75/100), conditionnel — 4 P1 (chantier financier) à clôturer avant Konnect réel.**
+- **Porte « zéro P0/P1 » (1re passe) NON franchie** : 0 P0, **4 P1 ouverts** = chantier financier remboursement/litige (K1/K2/L1/L2, masqué par SANDBOX). Chip créé. → **CLÔTURÉS le 22/07** (voir section dédiée ci-dessous).
+- **Reste avant pilote** : ~~fermer les 4 P1~~ ✅ · recette navigateur REC-P complète (env débloqué le 22/07) · re-rejeu suite Postgres ✅ (169 verts) · vérif Konnect réel (F1) reportée en session dédiée.
+- **Verdict 1re passe : vert fonctionnel (≫ 75/100), conditionnel — 4 P1 à clôturer avant Konnect réel.** → **2e passe (22/07) : 4 P1 clôturés, porte zéro P0/P1 franchie côté code.**
+
+## ✅ Chantier financier remboursement/litige (K1/K2/L1/L2) — livré le 22/07
+
+Les 4 P1 du contre-audit L5 traités **en un seul bloc** « issue de litige structurée → mouvement escrow → remboursement passerelle + suivi back-office ». Le trou était masqué par le mode SANDBOX (aucun argent réel ne bougeait). **Preuves : suite backend complète 169 tests · 0 échec sur PostgreSQL (147 + 22 nouveaux) ; typecheck front 0 erreur ; vérif navigateur admin live.** Commits `feat(finance)` (backend) + `feat(admin)` (front L1).
+
+- **K1 — `refund_escrow` rembourse réellement ✅** : après bascule escrow REFUNDED, appelle désormais `gateway.refund()` (helper `_execute_refund`) au lieu de ne toucher que la base. SANDBOX → exécuté auto ; KONNECT (renvoie False by design) → mis en file manuelle.
+- **K2 — file de remboursements back-office ✅** : nouveau modèle `RefundRequest` (statuts REQUESTED→PROCESSING→PAID/REJECTED, patron `WithdrawalRequest`), champs `beneficiary`/`beneficiary_type` (CLIENT/TRANSPORTER), `escrow`, `gateway_reference`, `auto_executed`. Admin Django `RefundRequestAdmin` (actions marquer en cours / payé / rejeté). Migration `payments/0007`.
+- **L1 — résolution de litige à issue financière structurée ✅** : `resolve_dispute` prend `resolution_outcome` (NONE / REFUND_CLIENT / RELEASE_TRANSPORTER / SPLIT) + `refund_amount`, déclenchant le mouvement escrow **dans la même transaction** (`refund_escrow` / `release_escrow_on_completion` / nouveau `split_escrow`). Échec d'un garde escrow → `ValidationError` → rollback total. Champ `Dispute.resolution_outcome` (migration `support/0005`). **Câblé côté produit** : `admin.ts` + modal admin `disputes/page.tsx` (sélecteur d'issue + champ montant conditionnel SPLIT + avertissement « mouvement d'argent réel »).
+- **L2 — auto-release 48h suspendue après litige pro-client ✅** : `get_escrow_eligible_for_auto_release` exclut désormais les jobs dont un litige RESOLVED n'a pas l'issue **explicite** RELEASE_TRANSPORTER (REFUND_CLIENT / SPLIT / NONE bloquent ; REJECTED = plainte rejetée → autorise), en plus des OPEN/INVESTIGATING déjà couverts.
+- **Décision SPLIT (Phase-1, documentée dans le code)** : escrow → REFUNDED (le transporteur n'est jamais payé auto du montant plein), part client + part transporteur mises en 2 `RefundRequest` manuels.
+
+## 🔄 Recette navigateur REC-P (reprise le 22/07)
+
+**Dette env levée** : le blocage n'était pas un bug code mais des conteneurs down/crash-loop (frontend `Exited 137` = OOM) + fenêtre de chauffe ~30 s où `:8000` renvoie 000 avant que daphne soit prêt. Stack chaud → login navigateur bout-en-bout OK (`OPTIONS`+`POST /api/auth/login/` → 200, redirect dashboard).
+- **Parcours transporteur ✅** (Mehdi vérifié) : dashboard, feed missions (15 résultats, dates lib/format), wallet (KPI serveur au millime), litiges — tout vert, 0 erreur console.
+- **UI admin litige (L1) ✅ live** : modal « Résoudre » affiche le sélecteur 4 issues + champ montant conditionnel SPLIT ; API Live.
+- **Reste REC-P** : parcours client (nécessite login client) ; démo live d'un REFUND_CLIENT/SPLIT réel remplissant la file `RefundRequest` (Django admin) ; **vérif Konnect réel F1 reportée** (session dédiée).
+- **Concern env** : frontend OOM récurrent (`Exited 137`) → prévoir `docker compose up -d` + ~30 s de chauffe avant toute recette ; surveiller la limite mémoire du conteneur frontend.
 
 ## 🎯 Pilote corridor A1 (S18-S19)
 
@@ -74,7 +92,7 @@ Capacité décrémentable (D12-b) · alertes corridor transporteurs (D14-b) · c
 - Solde négatif affiché en vert sur /wallet (Phase 4).
 - `docker compose up -d --force-recreate` requis pour appliquer l'alignement daphne.
 - Warnings drf-spectacular sur les APIView (préexistants, non bloquants).
-- **Graphe graphify régénéré le 20/07** (repo entier : 4 074 nœuds) ; `.agents/` exclu via `.graphifyignore` (évite la pollution ~26 k nœuds des skills).
+- **Graphe graphify régénéré le 22/07** (`graphify update . --force`, repo entier) ; `.agents/` exclu via `.graphifyignore`. Nouveaux symboles du chantier financier indexés (`RefundRequest`, `split_escrow`, `_execute_refund`).
 - **Lint frontend cassé dans l'environnement** : module `@eslint-community/regexpp` manquant sous `node_modules` → `next lint` échoue au chargement du plugin `@typescript-eslint`. Refaire `npm ci`. Le typecheck (`tsc --noEmit`) reste vert.
 - **Docker Desktop (Windows) — HMR ne se déclenche pas sur les bind-mounts** : les éditions de source faites *après* le démarrage d'un conteneur `npm run dev` / Django ne sont pas rechargées (inotify non propagé via le montage). Pour vérifier une édition : `docker restart transporti_frontend` (ou `_backend`) — le serveur relit la source montée au démarrage. À garder en tête pour toute recette en environnement Docker.
 - **SQLite ≠ PostgreSQL en test** : la recette locale historique tournait sur SQLite (104/104 verts) mais masquait des bugs Postgres-only (ex. `abs(interval)`, corrigé le 21/07). Recommandation : lancer la suite sur Postgres (`docker exec transporti_backend python manage.py test`) avant chaque porte.

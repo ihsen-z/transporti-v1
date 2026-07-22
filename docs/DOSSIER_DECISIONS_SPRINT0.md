@@ -57,6 +57,14 @@
 
 **DÉCISION D4 : ✅ Option A — Ledger + retrait manuel** (arbitré le 14/07/2026). Phase 1 : livre de compte transporteur (crédits = escrows libérés ; débits = retraits, compensations COD), demande de retrait par virement traitée en back-office avec statuts (demandé → traité → payé). Automatisation des payouts réévaluée post-pilote.
 
+**État d'implémentation (22/07/2026) — chantier financier remboursement/litige (clôture des P1 K1/K2/L1/L2 du contre-audit L5, réf. `AUDIT_L4_ZONES_NON_COUVERTES_2026-07-20.md` + `CONTRE_AUDIT_L5_2026-07-21.md`).** Le trou financier était masqué par le mode SANDBOX. Traité en un bloc « issue de litige structurée → mouvement escrow → remboursement passerelle + suivi back-office » :
+- **K1** — `refund_escrow` (`backend/payments/services.py`) appelle désormais réellement `gateway.refund()` (helper `_execute_refund`) au lieu de ne basculer l'escrow REFUNDED qu'en base.
+- **K2** — nouveau modèle `RefundRequest` (statuts REQUESTED→PROCESSING→PAID/REJECTED, **même patron que `WithdrawalRequest` de D4**) tracé en back-office (Django admin), avec `beneficiary`/`beneficiary_type`, `gateway_reference` et `auto_executed`. En SANDBOX la ligne naît PAID (auto) ; en Konnect (refund manuel by design) elle naît REQUESTED pour traitement à la main. Migration `payments/0007`.
+- **L1** — `resolve_dispute` (`backend/support/services.py`) porte une **issue financière structurée** `resolution_outcome` ∈ {NONE, REFUND_CLIENT, RELEASE_TRANSPORTER, SPLIT} (+ `refund_amount` pour SPLIT) qui déclenche le mouvement escrow **dans la même transaction** ; champ `Dispute.resolution_outcome` (migration `support/0005`) ; câblage UI admin (sélecteur d'issue + montant conditionnel).
+- **L2** — l'auto-release 48h est suspendue sur tout job dont un litige RESOLVED n'a pas l'issue **explicite** RELEASE_TRANSPORTER (REFUND_CLIENT/SPLIT/NONE bloquent ; REJECTED autorise).
+- **Décision SPLIT (Phase-1)** : l'escrow d'un litige tranché en partage passe REFUNDED (le transporteur n'est jamais payé auto du montant plein) ; part client + part transporteur sont mises en 2 `RefundRequest` manuels. Décrémentation partielle d'escrow = Future.
+- **Preuves** : 169 tests · 0 échec sur PostgreSQL (147 + 22 nouveaux), typecheck front 0 erreur, vérif navigateur admin live (22/07). **Report** : vérif Konnect réel (F1) en session dédiée.
+
 ## D5 — MODÈLE PRODUIT DU TRAJET RETOUR
 
 **État réel constaté :**

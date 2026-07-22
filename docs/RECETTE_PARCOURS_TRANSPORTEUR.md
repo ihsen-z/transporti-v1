@@ -1,9 +1,11 @@
 # CAHIER DE RECETTE — PARCOURS TRANSPORTEUR
 ## Transporti V1 (plateforme web)
 
-**Version :** 1.0 (Sprint 0) — 14 juillet 2026
+**Version :** 1.0 (Sprint 0) — 14 juillet 2026 · **Rév. 1.1 :** 22 juillet 2026 (chantier financier : REC-P7 litige→escrow ; REC-L3 mis à jour)
 **Source :** `docs/AUDIT_PARCOURS_TRANSPORTEUR_2026-07-14.md` · Plan : `docs/PLAN_EXECUTION_REMEDIATION_TRANSPORTEUR_2026-07-14.md`
 **Usage :** chaque scénario reproduit un constat de l'audit. Un lot n'est « fermé » que lorsque ses scénarios passent en environnement de recette de référence, avec captures archivées.
+
+> **Rappel env (22/07)** : le stack Docker doit être **chaud** avant toute recette navigateur. Après `docker compose up -d` (ou un redémarrage), attendre ~30 s : tant que daphne n'a pas fini de démarrer, `:8000` renvoie 000/empty (faux « backend injoignable »). Le frontend `npm run dev` peut crasher en OOM (`Exited 137`) — le relancer si `:3000` ne répond pas.
 
 ## Conventions
 - **Compte transporteur de recette :** `mehdi.khelifi@test.transporti.tn` / seed standard
@@ -276,6 +278,8 @@
 - **Note** : la NSM *réalisée* (`nsmKmTransformed`) reste 0 tant que la volumétrie ne crée que de l'offre publiée (pas de bookings) — attendu ; un lot de trajets retour COMPLETED serait requis pour une NSM transformée non nulle.
 ### REC-L2 — Non-régression client : le parcours client minimal (publier une annonce, recevoir l'offre, accepter, payer, confirmer) passe après chaque porte de phase.
 ### REC-L3 — Zones ex-non-auditées : inscription transporteur complète ; flux Konnect client ; litige de bout en bout (création → décision → impact paiement).
+- **Litige → impact paiement ✅ (22/07)** : couvert par **REC-P7** — l'issue de résolution (REFUND_CLIENT/RELEASE_TRANSPORTER/SPLIT) déclenche le mouvement escrow + la file de remboursement. Backend 22 tests ; UI admin vérifiée live.
+- **Inscription transporteur** : I1 (collision username) corrigé (21/07). **Flux Konnect réel** : reporté en session dédiée (F1 — clés preprod + `PAYMENT_GATEWAY=KONNECT`).
 
 ---
 
@@ -310,6 +314,20 @@
 3. Client-payeur voit son code 4 chiffres ; transporteur ne le voit pas.
 4. « Marquer comme livré » : PIN faux → rejeté ; PIN bon (+ photo optionnelle) → mission Terminée.
 - **Attendu :** `/complete/` sans Booking = sans PIN OK ; avec Booking = PIN obligatoire. Annulation transporteur tracée (JobEvent) → K7 baisse.
+
+### REC-P7 — Litige → issue financière structurée → mouvement escrow (chantier financier, 22/07)
+*Ferme K1/K2/L1/L2. Backend prouvé par 22 tests (payments+support) ; UI admin vérifiée live le 22/07.*
+1. **Ouverture** : sur une mission avec escrow `HELD`, le client ouvre un litige (motif, description) → conversation verrouillée, statut OPEN.
+2. **Investigation** : un modérateur/admin passe le litige INVESTIGATING.
+3. **Résolution avec issue** (modal admin « Résoudre ») — vérifier le **sélecteur d'issue** (Aucun mouvement / Rembourser le client / Verser au transporteur / Partage) :
+   - **REFUND_CLIENT** → escrow `REFUNDED`, `gateway.refund()` appelé, un `RefundRequest` client créé (PAID auto en SANDBOX ; REQUESTED en Konnect manuel).
+   - **RELEASE_TRANSPORTER** → escrow `RELEASED` (flux wallet normal), aucun remboursement.
+   - **SPLIT** (champ **montant** conditionnel visible) → escrow `REFUNDED` + 2 `RefundRequest` (part client = montant saisi, part transporteur = reste) ; montant hors ]0 ; total escrow[ refusé.
+   - **NONE** → note seule, escrow inchangé (compat historique).
+- **Attendu :** l'issue déclenche le mouvement escrow **dans la même transaction** ; un échec de garde escrow annule toute la résolution (rollback). Avertissement « mouvement d'argent réel » affiché dès qu'une issue ≠ NONE.
+4. **Back-office (K2)** : la file `RefundRequest` est traitable dans le **Django admin** (`/admin/`, actions marquer en cours / payé / rejeté), avec `gateway_reference` pour rapprocher le remboursement Konnect manuel.
+5. **Auto-release (L2)** : un job dont le litige a été tranché pro-client (REFUND_CLIENT/SPLIT) ou résolu en note seule (NONE) **n'est plus** éligible à l'auto-release 48h ; seul RELEASE_TRANSPORTER (ou un litige REJECTED) le laisse payer le transporteur.
+- **Vérifié navigateur (22/07)** : sélecteur 4 issues + champ montant SPLIT présents (session admin, API Live). **Reste à rejouer** : exécution live d'un REFUND_CLIENT/SPLIT réel remplissant la file ; parcours client complet (login client requis).
 
 ## Registre d'exécution
 
