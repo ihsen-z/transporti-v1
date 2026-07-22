@@ -11,6 +11,7 @@ import {
   resolveDispute,
   rejectDispute,
   type BackendDispute,
+  type DisputeResolutionOutcome,
 } from "@/lib/services/admin";
 import {
   AlertTriangle,
@@ -84,6 +85,10 @@ export default function AdminDisputesPage() {
     message: string;
   } | null>(null);
   const [resolveNotes, setResolveNotes] = useState("");
+  // L1 — structured financial outcome + (for SPLIT) the client's refunded share.
+  const [resolveOutcome, setResolveOutcome] =
+    useState<DisputeResolutionOutcome>("NONE");
+  const [refundAmount, setRefundAmount] = useState("");
   const [showResolveModal, setShowResolveModal] = useState(false);
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [pendingActionId, setPendingActionId] = useState<number | null>(null);
@@ -141,14 +146,30 @@ export default function AdminDisputesPage() {
   const handleResolve = (id: number) => {
     setPendingActionId(id);
     setResolveNotes("");
+    setResolveOutcome("NONE");
+    setRefundAmount("");
     setShowResolveModal(true);
   };
 
   const confirmResolve = async () => {
     if (!pendingActionId || !resolveNotes.trim()) return;
+    // SPLIT requires a positive refund amount for the client's share.
+    const parsedRefund = parseFloat(refundAmount);
+    if (
+      resolveOutcome === "SPLIT" &&
+      (!refundAmount || isNaN(parsedRefund) || parsedRefund <= 0)
+    ) {
+      showFeedback("error", "Le partage exige un montant client valide (> 0).");
+      return;
+    }
     setActionLoading(true);
     try {
-      await resolveDispute(pendingActionId, resolveNotes);
+      await resolveDispute(
+        pendingActionId,
+        resolveNotes,
+        resolveOutcome,
+        resolveOutcome === "SPLIT" ? parsedRefund : undefined,
+      );
       showFeedback("success", `✅ Litige #${pendingActionId} résolu`);
       setShowResolveModal(false);
       setSelectedDispute(null);
@@ -606,6 +627,58 @@ export default function AdminDisputesPage() {
               rows={3}
               className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
             />
+
+            {/* L1 — financial outcome that drives the escrow movement */}
+            <div className="mt-4">
+              <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">
+                Issue financière
+              </label>
+              <select
+                value={resolveOutcome}
+                onChange={(e) =>
+                  setResolveOutcome(e.target.value as DisputeResolutionOutcome)
+                }
+                className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"
+              >
+                <option value="NONE">Aucun mouvement (note seule)</option>
+                <option value="REFUND_CLIENT">
+                  Rembourser le client (intégral)
+                </option>
+                <option value="RELEASE_TRANSPORTER">
+                  Verser au transporteur
+                </option>
+                <option value="SPLIT">Partage (remboursement partiel)</option>
+              </select>
+
+              {resolveOutcome === "SPLIT" && (
+                <div className="mt-3">
+                  <label className="block text-xs font-medium text-neutral-500 dark:text-neutral-400 mb-1.5">
+                    Part remboursée au client (TND)
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={refundAmount}
+                    onChange={(e) => setRefundAmount(e.target.value)}
+                    placeholder="Ex. 50.00"
+                    className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
+                  />
+                  <p className="text-xs text-neutral-400 mt-1">
+                    Le reste de la somme séquestrée est versé au transporteur.
+                  </p>
+                </div>
+              )}
+
+              {resolveOutcome !== "NONE" && (
+                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-start gap-1">
+                  <DollarSign className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                  Cette décision déclenche un mouvement d&apos;argent réel sur
+                  la mission.
+                </p>
+              )}
+            </div>
+
             <div className="flex gap-3 mt-4">
               <button
                 onClick={() => setShowResolveModal(false)}
