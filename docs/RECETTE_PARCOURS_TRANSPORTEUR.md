@@ -279,7 +279,7 @@
 ### REC-L2 — Non-régression client : le parcours client minimal (publier une annonce, recevoir l'offre, accepter, payer, confirmer) passe après chaque porte de phase.
 ### REC-L3 — Zones ex-non-auditées : inscription transporteur complète ; flux Konnect client ; litige de bout en bout (création → décision → impact paiement).
 - **Litige → impact paiement ✅ (22/07)** : couvert par **REC-P7** — l'issue de résolution (REFUND_CLIENT/RELEASE_TRANSPORTER/SPLIT) déclenche le mouvement escrow + la file de remboursement. Backend 22 tests ; UI admin vérifiée live.
-- **Inscription transporteur** : I1 (collision username) corrigé (21/07). **Flux Konnect réel** : reporté en session dédiée (F1 — clés preprod + `PAYMENT_GATEWAY=KONNECT`).
+- **Inscription transporteur** : I1 (collision username) corrigé (21/07). **Flux de paiement réel** : Konnect **abandonné pour cette version** (décision D15) → cible = **D17** (F1, intégration à cadrer). Squelette `D17Gateway` en place ; recette paiement réel à rejouer une fois D17 intégré (`PAYMENT_GATEWAY='D17'`).
 
 ---
 

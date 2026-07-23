@@ -59,8 +59,8 @@ Rapport : `CONTRE_AUDIT_L5_2026-07-21.md`. Rejeu **sur PostgreSQL** (iso-prod) :
 - **Corrigé pendant le contre-audit** : P1 matching trajets retour cassé sur Postgres (`abs(interval)` → 500, invisible en SQLite) ; P2 test-infra (429 throttle-cache bleed sur les tests d'inscription).
 - **I1 corrigé pendant le contre-audit** : collision `username` à l'inscription (username unique suffixé + test) → users 21/21.
 - **Porte « zéro P0/P1 » (1re passe) NON franchie** : 0 P0, **4 P1 ouverts** = chantier financier remboursement/litige (K1/K2/L1/L2, masqué par SANDBOX). Chip créé. → **CLÔTURÉS le 22/07** (voir section dédiée ci-dessous).
-- **Reste avant pilote** : ~~fermer les 4 P1~~ ✅ · recette navigateur REC-P complète (env débloqué le 22/07) · re-rejeu suite Postgres ✅ (169 verts) · vérif Konnect réel (F1) reportée en session dédiée.
-- **Verdict 1re passe : vert fonctionnel (≫ 75/100), conditionnel — 4 P1 à clôturer avant Konnect réel.** → **2e passe (22/07) : 4 P1 clôturés, porte zéro P0/P1 franchie côté code.**
+- **Reste avant pilote** : ~~fermer les 4 P1~~ ✅ · recette navigateur REC-P complète (env débloqué le 22/07) ✅ · re-rejeu suite Postgres ✅ (169 verts) · **intégration D17** (F1, décision D15 — remplace Konnect) reportée/à cadrer.
+- **Verdict 1re passe : vert fonctionnel (≫ 75/100), conditionnel — 4 P1 à clôturer avant paiement réel.** → **2e passe (22/07) : 4 P1 clôturés, porte zéro P0/P1 franchie côté code.** Le paiement réel se fera via **D17 (D15)**, pas Konnect.
 
 ## ✅ Chantier financier remboursement/litige (K1/K2/L1/L2) — livré le 22/07
 
@@ -79,7 +79,7 @@ Les 4 P1 du contre-audit L5 traités **en un seul bloc** « issue de litige stru
 - **UI admin litige (L1) ✅ live** : modal « Résoudre » affiche le sélecteur 4 issues + champ montant conditionnel SPLIT ; API Live.
 - **Flux litige→escrow exécuté en live sur PostgreSQL (22/07) ✅** : **REFUND_CLIENT** (litige#6/job#3) → escrow REFUNDED + RefundRequest client 100 PAID (passerelle) + notif + **vue client confirmée** ; **SPLIT** (litige#7/job#11, 120/80) → escrow REFUNDED + 2 RefundRequest (client 120 PAID, transporteur 80 REQUESTED). K1/K2/L1 prouvés côté données réelles (pas seulement DB de test).
 - **Parcours client (REC-P4) ✅ vérifié le 22/07** (client ramzi) : dashboard + funnel pivot ; recherche trajets retour Cas A (résultats) et Cas B (corridor vide → demande pré-remplie + alerte corridor D14) ; console propre.
-- **Reste REC-P** : **vérif Konnect réel F1 reportée** (session dédiée) — dernier item avant la porte pilote.
+- **Reste REC-P** : **intégration D17** (F1, décision D15 — D17 remplace Konnect pour cette version) — dernier item avant la porte pilote. Squelette `D17Gateway` en place (branché sur `PAYMENT_GATEWAY='D17'`, méthodes `NotImplementedError`) ; approche API vs manuel à cadrer. Garder SANDBOX en dev.
 - **Concern env** : frontend OOM récurrent (`Exited 137`) → prévoir `docker compose up -d` + ~30 s de chauffe avant toute recette ; surveiller la limite mémoire du conteneur frontend.
 
 ## 🎯 Pilote corridor A1 (S18-S19)

@@ -264,17 +264,77 @@ class KonnectGateway(PaymentGateway):
 
 
 # =============================================================================
+# D17 Gateway (Production — Tunisia) — SKELETON (décision D15, remplace Konnect)
+# =============================================================================
+
+class D17Gateway(PaymentGateway):
+    """
+    Passerelle de paiement D17 (décision D15) — remplace Konnect pour cette
+    version. **Squelette : intégration non encore implémentée** (voir F1).
+
+    L'approche technique reste à cadrer (« je ne sais pas encore », 22/07) :
+    - soit une API (init paiement / redirection / webhook / statut), comme
+      KonnectGateway ;
+    - soit un traitement manuel back-office (comme les retraits D4), auquel cas
+      cette classe restera minimale et le suivi passera par un modèle dédié.
+
+    Tant que l'intégration n'est pas faite, chaque méthode échoue **bruyamment**
+    (NotImplementedError) : on ne veut surtout pas qu'un paiement paraisse
+    « réussi » silencieusement. Le factory ne renvoie cette passerelle que si
+    `PAYMENT_GATEWAY='D17'` — laisser SANDBOX en dev tant que D17 n'est pas prêt.
+    """
+
+    # Message unique réutilisé par toutes les méthodes stub.
+    _NOT_READY = (
+        "D17Gateway non implémenté (décision D15 / chantier F1). "
+        "Garder PAYMENT_GATEWAY=SANDBOX tant que l'intégration D17 n'est pas cadrée."
+    )
+
+    def __init__(self):
+        # Placeholders de configuration : à renseigner selon la doc D17 une fois
+        # l'approche (API vs manuel) arrêtée.
+        self.api_key = getattr(settings, 'D17_API_KEY', '')
+        self.merchant_id = getattr(settings, 'D17_MERCHANT_ID', '')
+        logger.warning(
+            "D17Gateway instancié mais NON implémenté — "
+            "aucun paiement réel ne sera traité (voir décision D15 / F1)."
+        )
+
+    def init_payment(
+        self,
+        amount: Decimal,
+        description: str,
+        order_id: str,
+        success_url: str,
+        fail_url: str,
+    ) -> PaymentInitResult:
+        raise NotImplementedError(self._NOT_READY)
+
+    def check_status(self, gateway_ref: str) -> PaymentStatusResult:
+        raise NotImplementedError(self._NOT_READY)
+
+    def refund(self, gateway_ref: str, amount: Decimal) -> bool:
+        raise NotImplementedError(self._NOT_READY)
+
+
+# =============================================================================
 # Factory
 # =============================================================================
 
 def get_payment_gateway() -> PaymentGateway:
     """
     Factory function to get the configured payment gateway.
-    Reads from settings.PAYMENT_GATEWAY ('SANDBOX' or 'KONNECT').
+    Reads from settings.PAYMENT_GATEWAY ('SANDBOX', 'KONNECT' or 'D17').
+
+    NB (décision D15) : 'D17' est le fournisseur cible de cette version mais son
+    intégration est un squelette (voir D17Gateway/F1) — garder 'SANDBOX' tant
+    qu'elle n'est pas cadrée.
     """
     gateway_type = getattr(settings, 'PAYMENT_GATEWAY', 'SANDBOX')
 
     if gateway_type == 'KONNECT':
         return KonnectGateway()
+    elif gateway_type == 'D17':
+        return D17Gateway()
     else:
         return SandboxGateway()
