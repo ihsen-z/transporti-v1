@@ -5,11 +5,48 @@
   },
   "common": {
     "loading": "جارٍ التحميل…",
-    "retry": "إعادة المحاولة"
+    "retry": "إعادة المحاولة",
+    "cancel": "إلغاء"
   },
   "s0": {
     "ready": "الأساس الجاهز (S0)",
     "session_active": "الجلسة نشطة",
     "session_none": "غير متصل"
+  },
+  "auth": {
+    "login": {
+      "title": "تسجيل الدخول",
+      "subtitle": "ادخل إلى رحلات العودة متاعك",
+      "submit": "دخول",
+      "submitting": "جارٍ الدخول…"
+    },
+    "fields": {
+      "email": "البريد الإلكتروني",
+      "email_placeholder": "you@example.tn",
+      "password": "كلمة السر",
+      "password_placeholder": "••••••••"
+    },
+    "errors": {
+      "email_required": "البريد الإلكتروني مطلوب",
+      "email_invalid": "بريد إلكتروني غير صالح",
+      "password_required": "كلمة السر مطلوبة",
+      "invalid_credentials": "البريد الإلكتروني أو كلمة السر غير صحيحة",
+      "network": "تعذّر الاتصال بالخادم. عاود المحاولة."
+    }
+  },
+  "home": {
+    "welcome": "مرحبا",
+    "role_label": "الدور",
+    "logout": "تسجيل الخروج",
+    "wip": "شاشات حسب الدور قريبا (S1)"
+  },
+  "role": {
+    "CLIENT": "حريف",
+    "TRANSPORTER": "ناقل",
+    "ADMIN": "مشرف",
+    "MODERATOR": "مراقب"
+  },
+  "lang": {
+    "toggle": "Français"
   }
 }

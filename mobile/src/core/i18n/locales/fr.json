@@ -5,11 +5,48 @@
   },
   "common": {
     "loading": "Chargement…",
-    "retry": "Réessayer"
+    "retry": "Réessayer",
+    "cancel": "Annuler"
   },
   "s0": {
     "ready": "Fondation mobile prête (S0)",
     "session_active": "Session active",
     "session_none": "Non connecté"
+  },
+  "auth": {
+    "login": {
+      "title": "Connexion",
+      "subtitle": "Accédez à vos trajets retour",
+      "submit": "Se connecter",
+      "submitting": "Connexion…"
+    },
+    "fields": {
+      "email": "E-mail",
+      "email_placeholder": "vous@exemple.tn",
+      "password": "Mot de passe",
+      "password_placeholder": "••••••••"
+    },
+    "errors": {
+      "email_required": "L'e-mail est requis",
+      "email_invalid": "Adresse e-mail invalide",
+      "password_required": "Le mot de passe est requis",
+      "invalid_credentials": "E-mail ou mot de passe incorrect",
+      "network": "Connexion au serveur impossible. Réessayez."
+    }
+  },
+  "home": {
+    "welcome": "Bienvenue",
+    "role_label": "Rôle",
+    "logout": "Se déconnecter",
+    "wip": "Écrans par rôle à venir (S1)"
+  },
+  "role": {
+    "CLIENT": "Client",
+    "TRANSPORTER": "Transporteur",
+    "ADMIN": "Administrateur",
+    "MODERATOR": "Modérateur"
+  },
+  "lang": {
+    "toggle": "العربية"
   }
 }

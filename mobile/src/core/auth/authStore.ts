@@ -10,6 +10,11 @@ export interface AuthUser {
   email: string;
   role: UserRole;
   isVerified: boolean;
+  firstName: string;
+  lastName: string;
+  phone: string;
+  // Statut de vérification confiance (transporteurs) ; null sinon.
+  verificationStatus: string | null;
 }
 
 type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated';
@@ -19,6 +24,8 @@ interface AuthState {
   status: AuthStatus;
   hydrate: () => Promise<void>;
   setSession: (user: AuthUser, access: string, refresh: string) => Promise<void>;
+  // Renseigne le profil sans toucher aux tokens (ex : rechargement au boot).
+  setUser: (user: AuthUser) => void;
   logout: () => Promise<void>;
 }
 
@@ -37,6 +44,9 @@ export const useAuthStore = create<AuthState>((set) => ({
   async setSession(user, access, refresh) {
     await tokenService.setTokens(access, refresh);
     set({ user, status: 'authenticated' });
+  },
+  setUser(user) {
+    set({ user });
   },
   async logout() {
     await tokenService.clear();
