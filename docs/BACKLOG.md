@@ -78,7 +78,8 @@ Les 4 P1 du contre-audit L5 traités **en un seul bloc** « issue de litige stru
 - **Parcours transporteur ✅** (Mehdi vérifié) : dashboard, feed missions (15 résultats, dates lib/format), wallet (KPI serveur au millime), litiges — tout vert, 0 erreur console.
 - **UI admin litige (L1) ✅ live** : modal « Résoudre » affiche le sélecteur 4 issues + champ montant conditionnel SPLIT ; API Live.
 - **Flux litige→escrow exécuté en live sur PostgreSQL (22/07) ✅** : **REFUND_CLIENT** (litige#6/job#3) → escrow REFUNDED + RefundRequest client 100 PAID (passerelle) + notif + **vue client confirmée** ; **SPLIT** (litige#7/job#11, 120/80) → escrow REFUNDED + 2 RefundRequest (client 120 PAID, transporteur 80 REQUESTED). K1/K2/L1 prouvés côté données réelles (pas seulement DB de test).
-- **Reste REC-P** : parcours client navigateur général (browse trajets retour / demande D5 — login client requis) ; **vérif Konnect réel F1 reportée** (session dédiée).
+- **Parcours client (REC-P4) ✅ vérifié le 22/07** (client ramzi) : dashboard + funnel pivot ; recherche trajets retour Cas A (résultats) et Cas B (corridor vide → demande pré-remplie + alerte corridor D14) ; console propre.
+- **Reste REC-P** : **vérif Konnect réel F1 reportée** (session dédiée) — dernier item avant la porte pilote.
 - **Concern env** : frontend OOM récurrent (`Exited 137`) → prévoir `docker compose up -d` + ~30 s de chauffe avant toute recette ; surveiller la limite mémoire du conteneur frontend.
 
 ## 🎯 Pilote corridor A1 (S18-S19)

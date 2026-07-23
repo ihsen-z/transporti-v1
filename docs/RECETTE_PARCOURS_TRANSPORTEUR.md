@@ -303,6 +303,7 @@
 2. Trajets trouvés → demande depuis le détail. Aucun trajet → « Publier une demande » **pré-remplie** (1 clic) + « Créer une alerte corridor ».
 3. Dans /jobs/new, si des trajets compatibles existent → bannière de suggestion avant publication.
 - **Attendu :** aucun cul-de-sac ; le flux classique reste accessible à chaque étape ; bascule intégrale derrière `RETURN_TRIPS_FIRST`.
+- **Vérifié navigateur (22/07, client ramzi) :** dashboard client affiche le funnel pivot (« Cherchez d'abord un trajet retour… » + CTA « Trouver un trajet ») ; **Cas A** — la recherche liste les trajets retour (Sfax→Sousse ≈152 km, badge « 🔄 Trajet retour », argumentaire -40 %) ; **Cas B** — un corridor sans trajet (Gafsa→Tozeur) affiche « 0 trajet retour disponible » + les deux CTA « Publier une demande pré-remplie » et « M'alerter sur ce corridor » (D14). Console propre.
 
 ### REC-P5 — Alerte corridor (Sprint 4 v0 / Sprint 5 active)
 1. Client crée une alerte Sfax→Tunis. 2. Un transporteur publie un trajet compatible.
