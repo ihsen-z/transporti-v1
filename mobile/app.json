@@ -12,8 +12,7 @@
       "bundleIdentifier": "tn.transporti.app"
     },
     "android": {
-      "package": "tn.transporti.app",
-      "edgeToEdgeEnabled": true
+      "package": "tn.transporti.app"
     },
     "web": {
       "bundler": "metro",
