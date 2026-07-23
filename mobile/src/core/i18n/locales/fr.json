@@ -1,0 +1,15 @@
+{
+  "app": {
+    "name": "Transporti",
+    "tagline": "La marketplace des trajets retour"
+  },
+  "common": {
+    "loading": "Chargement…",
+    "retry": "Réessayer"
+  },
+  "s0": {
+    "ready": "Fondation mobile prête (S0)",
+    "session_active": "Session active",
+    "session_none": "Non connecté"
+  }
+}

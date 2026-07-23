@@ -1,0 +1,21 @@
+# Dépendances
+node_modules/
+
+# Expo
+.expo/
+dist/
+web-build/
+expo-env.d.ts
+
+# Builds natifs
+/ios
+/android
+
+# Env local (ne jamais commiter — voir .env.example)
+.env
+.env.local
+.env.*.local
+
+# Divers
+*.log
+.DS_Store
