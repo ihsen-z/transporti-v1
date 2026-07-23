@@ -4,7 +4,12 @@
 **Date :** 23 juillet 2026 · **Statut :** proposition (v1, à valider)
 **Références :** VISION_PRODUIT_FONDATRICE · PIVOT_STRATEGIQUE_TRAJETS_RETOUR_2026-07-14 · DOSSIER_DECISIONS_SPRINT0 (D1–D15) · DICTIONNAIRE_KPI · le squelette Expo existant sous mobile/ (présent dans git).
 
-> Ce plan est ancré dans le code réel du dépôt (endpoints backend, squelette mobile, décisions figées). Il ne repart pas de zéro : il assume une reprise contrôlée du squelette mobile/ existant.
+> Ce plan est ancré dans le code réel du dépôt (endpoints backend, décisions figées, contrat API).
+
+> **Addendum décision (23/07/2026) — GREENFIELD.** L'équipe a tranché : **on ne restaure PAS le squelette `mobile/` existant ; l'application mobile est refaite depuis zéro.** Conséquences sur ce document :
+> - L'hypothèse « reprise contrôlée du squelette » (§1, Réserve #2) est **caduque** — on repart d'un projet Expo neuf (`create-expo-app` + `expo install`), on ne récupère PAS le code existant.
+> - La §6.4 « dette qualité à purger avant reprise » devient **sans objet** (pas de reprise).
+> - Ce qui reste **pleinement valable** : le périmètre MoSCoW (§2), le contrat API/endpoints (§4), les parcours (§5), les décisions de stack (§6.1/6.2), sécurité (§7), temps réel/paiement (§8/§9), tests/CI (§10), le phasage S0–S5 (§11) et les risques (§12). Le §6.2 (choix de libs) et l'arbo cible (§3) servent de **cible de scaffolding**, non de réutilisation.
 
 ---
 
