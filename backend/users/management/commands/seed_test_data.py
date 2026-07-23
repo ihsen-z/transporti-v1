@@ -69,10 +69,12 @@ class Command(BaseCommand):
         self.stdout.write('🧹 Clearing existing test data...')
 
         # Clear in reverse dependency order.
-        # Plusieurs modèles pointent Job/Offer via des FK PROTECT (Booking,
-        # Review, WithdrawalRequest) : il faut les supprimer AVANT Offer/Job,
-        # sinon la purge échoue (bug corrigé Sprint 8 / L3).
-        from payments.models import Booking, WithdrawalRequest
+        # Plusieurs modèles pointent Job/Offer/Escrow via des FK PROTECT (Booking,
+        # Review, WithdrawalRequest, RefundRequest) : il faut les supprimer AVANT
+        # Offer/Job/Escrow, sinon la purge échoue (bug corrigé Sprint 8 / L3 ;
+        # RefundRequest ajouté avec le chantier financier — FK PROTECT vers
+        # escrow/job/beneficiary).
+        from payments.models import Booking, WithdrawalRequest, RefundRequest
         from reviews.models import Review
         Notification.objects.all().delete()
         Message.objects.all().delete()
@@ -82,6 +84,7 @@ class Command(BaseCommand):
         Dispute.objects.all().delete()
         Review.objects.all().delete()
         WithdrawalRequest.objects.all().delete()
+        RefundRequest.objects.all().delete()
         Booking.objects.all().delete()
         CommissionLedger.objects.all().delete()
         EscrowTransaction.objects.all().delete()

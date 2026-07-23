@@ -90,6 +90,12 @@ Amorçage offre : 20-25 transporteurs corridor A1, ≥ 40 trajets actifs, puis o
 
 Capacité décrémentable (D12-b) · alertes corridor transporteurs (D14-b) · contre-offres flux classique · trajets récurrents · mobile Expo · matching v2 (haversine/détours) · tarification par corridor · PWA/offline · payouts automatisés (D4) · WebSocket (T1).
 
+## ✅ Dettes env traitées (23/07)
+- **Frontend OOM (`Exited 137`) — atténué** : `NODE_OPTIONS=--max-old-space-size=2048` ajouté au service `frontend` (docker-compose.yml) pour borner le heap V8 de Next dev + `restart: unless-stopped` déjà présent (relance auto). **Cause racine = RAM de la VM Docker Desktop (WSL2)** → complément hôte non repo : augmenter la mémoire (Settings > Resources ou `.wslconfig memory=`). Vérifié : conteneur recréé, `NODE_OPTIONS` actif, `:3000` up en ~8 s.
+- **Seed `--clear` cassé — corrigé** : le chantier financier avait introduit `RefundRequest` (FK PROTECT vers escrow/job/beneficiary) sans l'ajouter à `clear_test_data` → `ProtectedError`. Ajouté avant `EscrowTransaction`. Reseed vérifié : `--clear --jobs 500` OK (509 jobs, 202 trajets retour). *(Même classe de bug que Booking/WithdrawalRequest en L3.)*
+- **Seed dev remis à zéro** : les mutations de recette (litiges #6/#7, escrows jobs #3/#11 remboursés) ont été purgées par le reseed → état propre.
+- **Non corrigeables dans le repo (niveau hôte/outil, documentés)** : Docker Desktop qui retombe (pipe injoignable) et le panneau navigateur d'automatisation instable (screenshots timeout, coords a11y décalées) — dépendent de l'environnement Windows/Docker Desktop et de l'outil de recette, pas du code.
+
 ## ⚠️ Dettes & rappels
 - Solde négatif affiché en vert sur /wallet (Phase 4).
 - `docker compose up -d --force-recreate` requis pour appliquer l'alignement daphne.

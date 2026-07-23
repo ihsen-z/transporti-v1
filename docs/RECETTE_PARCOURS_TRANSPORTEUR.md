@@ -5,7 +5,8 @@
 **Source :** `docs/AUDIT_PARCOURS_TRANSPORTEUR_2026-07-14.md` · Plan : `docs/PLAN_EXECUTION_REMEDIATION_TRANSPORTEUR_2026-07-14.md`
 **Usage :** chaque scénario reproduit un constat de l'audit. Un lot n'est « fermé » que lorsque ses scénarios passent en environnement de recette de référence, avec captures archivées.
 
-> **Rappel env (22/07)** : le stack Docker doit être **chaud** avant toute recette navigateur. Après `docker compose up -d` (ou un redémarrage), attendre ~30 s : tant que daphne n'a pas fini de démarrer, `:8000` renvoie 000/empty (faux « backend injoignable »). Le frontend `npm run dev` peut crasher en OOM (`Exited 137`) — le relancer si `:3000` ne répond pas.
+> **Rappel env** : le stack Docker doit être **chaud** avant toute recette navigateur. Après `docker compose up -d` (ou un redémarrage), attendre ~30 s : tant que daphne n'a pas fini de démarrer, `:8000` renvoie 000/empty (faux « backend injoignable »).
+> **Frontend OOM atténué (23/07)** : `NODE_OPTIONS=--max-old-space-size=2048` borne désormais le heap de Next dev (docker-compose.yml) + `restart: unless-stopped` relance auto. Si `:3000` ne répond toujours pas, augmenter la RAM de la VM Docker Desktop (`.wslconfig`). **Reseed propre** : `docker exec -e PYTHONUTF8=1 transporti_backend python manage.py seed_test_data --clear --jobs 500` (bug `--clear`/RefundRequest corrigé le 23/07).
 
 ## Conventions
 - **Compte transporteur de recette :** `mehdi.khelifi@test.transporti.tn` / seed standard

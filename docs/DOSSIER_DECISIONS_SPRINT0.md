@@ -156,6 +156,8 @@
 
 **État d'implémentation (Sprint 8, 20/07/2026) — L3.** Le seed de volumétrie (`--jobs N`) est désormais **orienté pilote** : ~40 % de trajets retour sur le corridor A1 + `distance_km` estimé par centroïdes (NSM mesurable). Deux défauts du seed corrigés au passage : (a) `clear_test_data` ne purgeait pas `Booking`/`Review`/`WithdrawalRequest` (FK PROTECT vers Offer/Job) → `--clear` échouait ; (b) la sortie console (emojis) plante sous Windows en cp1252 → lancer avec `PYTHONUTF8=1`. Recette : `PYTHONUTF8=1 python manage.py seed_test_data --clear --jobs 500`.
 
+**Mise à jour (23/07/2026) — dettes env traitées.** (a) `clear_test_data` échouait de nouveau (`ProtectedError`) car le chantier financier a ajouté `RefundRequest` (FK PROTECT vers escrow/job/beneficiary) sans l'inscrire à la purge → corrigé (suppression avant `EscrowTransaction`) ; reseed `--clear --jobs 500` revérifié OK. (b) **Frontend OOM (`Exited 137`)** atténué via `NODE_OPTIONS=--max-old-space-size=2048` (docker-compose.yml) — cause racine = RAM de la VM Docker Desktop (réglage hôte `.wslconfig`, hors repo). (c) Restent hors périmètre repo : instabilité de Docker Desktop (pipe) et du navigateur d'automatisation.
+
 ---
 
 # ANNEXE — ÉTAT DES LIEUX CONSOLIDÉ (issu de l'investigation Sprint 0)

@@ -66,6 +66,14 @@ services:
     environment:
       - NEXT_PUBLIC_API_URL=http://localhost:8000
       - NEXT_PUBLIC_API_TIMEOUT=5000
+      # Dette env — frontend OOM (Exit 137) : borne le heap V8 de Next dev pour
+      # éviter la croissance non maîtrisée qui déclenche l'OOM-killer de la VM
+      # Docker Desktop (WSL2). Ajuster selon la RAM allouée à Docker Desktop.
+      # Complément hôte : augmenter la mémoire de la VM (Settings > Resources,
+      # ou .wslconfig `memory=`) — non gérable depuis le repo.
+      - NODE_OPTIONS=--max-old-space-size=2048
+    # restart: unless-stopped (ci-dessus) → relance auto après un OOM ; prévoir
+    # ~30 s de chauffe avant recette (le serveur relit la source montée).
     volumes:
       - ./frontend:/app
       - /app/node_modules
