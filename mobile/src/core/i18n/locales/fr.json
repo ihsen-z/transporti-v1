@@ -52,6 +52,51 @@
     "logout": "Se déconnecter",
     "language": "Langue"
   },
+  "trips": {
+    "publish": {
+      "title": "Publier un retour",
+      "subtitle": "Proposez votre trajet retour aux clients",
+      "submit": "Publier le trajet",
+      "submitting": "Publication…"
+    },
+    "job_type": "Type de trajet",
+    "job_type_transport": "Transport",
+    "job_type_moving": "Déménagement",
+    "pickup": "Départ",
+    "dropoff": "Arrivée",
+    "governorate": "Gouvernorat",
+    "governorate_ph": "Choisir un gouvernorat",
+    "address": "Adresse",
+    "address_ph": "ex : Zone industrielle, Tunis",
+    "day": "Jour",
+    "day_ph": "Choisir un jour",
+    "time": "Heure",
+    "time_ph": "Choisir une heure",
+    "price_min": "Prix min (TND)",
+    "price_max": "Prix max (TND)",
+    "price_ph": "0",
+    "capacity": "Capacité disponible",
+    "capacity_ph": "ex : 2 palettes, 500 kg",
+    "description": "Description (optionnel)",
+    "description_ph": "Précisions sur le trajet…",
+    "instant_booking": "Réservation immédiate",
+    "instant_booking_hint": "Si désactivé, les clients envoient une demande à valider (recommandé).",
+    "estimate": {
+      "button": "Estimer le prix",
+      "hint": "Fourchette indicative calculée par le serveur.",
+      "result": "Estimation : {{min}} – {{max}} TND ({{distance}} km)",
+      "need_route": "Choisissez départ et arrivée d'abord."
+    },
+    "success": "Trajet publié ! {{count}} demande(s) ouverte(s) sur ce corridor.",
+    "errors": {
+      "required": "Champ requis",
+      "price": "Montant invalide",
+      "price_range": "Le max doit être ≥ au min",
+      "validation": "Vérifiez les champs du formulaire.",
+      "forbidden": "Réservé aux transporteurs.",
+      "network": "Connexion au serveur impossible. Réessayez."
+    }
+  },
   "role": {
     "CLIENT": "Client",
     "TRANSPORTER": "Transporteur",
