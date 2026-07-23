@@ -6,12 +6,8 @@
   "common": {
     "loading": "جارٍ التحميل…",
     "retry": "إعادة المحاولة",
-    "cancel": "إلغاء"
-  },
-  "s0": {
-    "ready": "الأساس الجاهز (S0)",
-    "session_active": "الجلسة نشطة",
-    "session_none": "غير متصل"
+    "cancel": "إلغاء",
+    "coming_soon": "قريبا"
   },
   "auth": {
     "login": {
@@ -34,11 +30,27 @@
       "network": "تعذّر الاتصال بالخادم. عاود المحاولة."
     }
   },
+  "tabs": {
+    "home": "الرئيسية",
+    "search": "بحث",
+    "publish": "نشر",
+    "messages": "الرسائل",
+    "profile": "الحساب"
+  },
   "home": {
     "welcome": "مرحبا",
     "role_label": "الدور",
+    "subtitle": "فضاءك في ترانسبورتي"
+  },
+  "screens": {
+    "search": { "title": "لوّج على رحلة عودة" },
+    "publish": { "title": "انشر رحلة عودة" },
+    "messages": { "title": "الرسائل" }
+  },
+  "profile": {
+    "title": "الحساب",
     "logout": "تسجيل الخروج",
-    "wip": "شاشات حسب الدور قريبا (S1)"
+    "language": "اللغة"
   },
   "role": {
     "CLIENT": "حريف",

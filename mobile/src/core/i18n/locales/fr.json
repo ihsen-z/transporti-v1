@@ -6,12 +6,8 @@
   "common": {
     "loading": "Chargement…",
     "retry": "Réessayer",
-    "cancel": "Annuler"
-  },
-  "s0": {
-    "ready": "Fondation mobile prête (S0)",
-    "session_active": "Session active",
-    "session_none": "Non connecté"
+    "cancel": "Annuler",
+    "coming_soon": "Bientôt disponible"
   },
   "auth": {
     "login": {
@@ -34,11 +30,27 @@
       "network": "Connexion au serveur impossible. Réessayez."
     }
   },
+  "tabs": {
+    "home": "Accueil",
+    "search": "Recherche",
+    "publish": "Publier",
+    "messages": "Messages",
+    "profile": "Profil"
+  },
   "home": {
     "welcome": "Bienvenue",
     "role_label": "Rôle",
+    "subtitle": "Votre espace Transporti"
+  },
+  "screens": {
+    "search": { "title": "Rechercher un trajet retour" },
+    "publish": { "title": "Publier un retour" },
+    "messages": { "title": "Messages" }
+  },
+  "profile": {
+    "title": "Profil",
     "logout": "Se déconnecter",
-    "wip": "Écrans par rôle à venir (S1)"
+    "language": "Langue"
   },
   "role": {
     "CLIENT": "Client",
