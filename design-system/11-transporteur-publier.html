@@ -1,0 +1,90 @@
+<!-- @dsCard group="Transporteur" -->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transporteur — Publier un retour</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root{--brand:#1E3A8A;--brand-light:#2563B3;--brand-50:#eef2ff;--accent:#10b981;--accent-dark:#059669;--cta:#f97316;--cta-50:#fff7ed;--ink:#111827;--muted:#6b7280;--line:#eef0f3;--bg:#f9fafb;--shadow:0 10px 30px rgba(17,24,39,.10)}
+  *{box-sizing:border-box;margin:0}
+  body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:#E9ECF1;display:grid;place-items:center;padding:26px}
+  .phone{width:390px;height:812px;background:var(--bg);border-radius:46px;box-shadow:var(--shadow);overflow:hidden;position:relative;border:1px solid #dfe3e8}
+  .status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600}
+  .nav{display:flex;align-items:center;gap:12px;padding:6px 18px 12px}
+  .nav .bk{width:38px;height:38px;border-radius:12px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;font-size:18px}
+  .nav b{font-size:18px}
+  .screen{height:calc(812px - 44px - 92px);overflow:hidden;padding:2px 18px}
+  .field{margin-bottom:12px}
+  .field>label{font-size:12px;font-weight:600;color:var(--muted);margin:0 2px 6px;display:block}
+  .input{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px;font-size:15px;display:flex;align-items:center;gap:10px}
+  .input .val{font-weight:600}
+  .route-box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px 14px;position:relative}
+  .rline{display:flex;align-items:center;gap:12px;padding:12px 0}
+  .rline+.rline{border-top:1px solid var(--line)}
+  .g{width:10px;height:10px;border-radius:50%;background:var(--brand)}
+  .g2{background:#2FAC55}
+  .rline .t{flex:1}
+  .rline .t small{display:block;font-size:11px;color:var(--muted)}
+  .rline .t b{font-size:15px}
+  .swap{position:absolute;right:14px;top:50%;transform:translateY(-50%);width:36px;height:36px;border-radius:50%;background:var(--brand-50);color:var(--brand);display:grid;place-items:center;border:2px solid #fff;font-size:16px}
+  .two{display:flex;gap:10px}
+  .two>*{flex:1}
+  .net{background:var(--accent-50,#f0fdf4);border:1px solid #bbf7d0;border-radius:14px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between}
+  .net .l{font-size:12px;color:var(--accent-dark)}
+  .net b{font-size:20px;color:var(--accent-dark);font-weight:800}
+  .hintbox{background:var(--brand-50);border:1px solid #c7d2fe;border-radius:14px;padding:12px 14px;display:flex;gap:10px;align-items:center;margin-top:2px}
+  .hintbox .ic{font-size:20px}
+  .hintbox .tx{font-size:12.5px;color:var(--brand)}
+  .hintbox .tx b{color:var(--brand-light)}
+  .toggle{display:flex;align-items:center;justify-content:space-between;background:#fff;border:1px solid var(--line);border-radius:14px;padding:12px 14px}
+  .toggle .tx{font-size:13px}
+  .toggle .tx small{display:block;color:var(--muted);font-size:11px}
+  .sw{width:44px;height:26px;border-radius:999px;background:#d7dce3;position:relative}
+  .sw i{position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+  .footer{position:absolute;bottom:0;left:0;right:0;padding:14px 18px 26px;background:linear-gradient(180deg,transparent,#f9fafb 22%)}
+  .ctabtn{width:100%;padding:16px;border-radius:16px;background:var(--cta);color:#fff;border:none;font-size:16px;font-weight:700;box-shadow:0 8px 18px rgba(249,115,22,.4)}
+  .home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;background:#11182722;border-radius:999px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+  <div class="nav"><div class="bk">‹</div><b>Publier mon retour</b></div>
+  <div class="screen">
+    <div class="field">
+      <div class="route-box">
+        <div class="rline"><span class="g"></span><div class="t"><small>Départ</small><b>Sfax</b></div></div>
+        <div class="rline"><span class="g g2"></span><div class="t"><small>Arrivée</small><b>Tunis</b></div></div>
+        <div class="swap">⇅</div>
+      </div>
+    </div>
+    <div class="two">
+      <div class="field"><label>Date</label><div class="input"><span>📅</span><span class="val">Demain</span></div></div>
+      <div class="field"><label>Heure</label><div class="input"><span>🕑</span><span class="val">14:00</span></div></div>
+    </div>
+    <div class="field"><label>Véhicule <span style="color:var(--brand)">· depuis votre profil</span></label><div class="input"><span>🚚</span><span class="val">Camionnette · 2 T · 8 m³</span></div></div>
+
+    <div class="field">
+      <label>Votre prix net garanti (D1)</label>
+      <div class="net"><span class="l">Vous touchez</span><b>120,000 TND</b></div>
+    </div>
+
+    <div class="hintbox">
+      <span class="ic">💡</span>
+      <div class="tx"><b>3 demandes ouvertes</b> sur le corridor Sfax→Tunis. Publiez et proposez-leur votre retour.</div>
+    </div>
+
+    <div class="field" style="margin-top:12px">
+      <div class="toggle">
+        <div class="tx">Réservation immédiate<small>Off par défaut — vous validez chaque demande</small></div>
+        <div class="sw"><i></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="footer"><button class="ctabtn">Publier le trajet retour</button></div>
+  <div class="home"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,94 @@
+<!-- @dsCard group="Client" -->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client — Trajets retour</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root{--brand:#1E3A8A;--brand-light:#2563B3;--brand-50:#eef2ff;--accent:#10b981;--accent-dark:#059669;--accent-50:#f0fdf4;--cta:#f97316;--ink:#111827;--muted:#6b7280;--line:#eef0f3;--bg:#f9fafb;--shadow:0 10px 30px rgba(17,24,39,.10)}
+  *{box-sizing:border-box;margin:0}
+  body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:#E9ECF1;display:grid;place-items:center;padding:26px}
+  .phone{width:390px;height:812px;background:var(--bg);border-radius:46px;box-shadow:var(--shadow);overflow:hidden;position:relative;border:1px solid #dfe3e8}
+  .status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600}
+  .head{background:var(--brand);color:#fff;padding:4px 18px 16px;border-radius:0 0 22px 22px}
+  .htop{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .htop b{font-size:20px;letter-spacing:-.01em}
+  .av{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center}
+  .searchbar{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:11px 12px;box-shadow:0 6px 14px rgba(15,23,42,.18)}
+  .searchbar .r{flex:1;font-size:14px;font-weight:700;color:var(--ink)}
+  .searchbar .r span{color:var(--muted);font-weight:400}
+  .searchbar .ed{font-size:12px;color:var(--brand);font-weight:700}
+  .promo{display:flex;gap:8px;margin-top:12px}
+  .promo .b{flex:1;background:rgba(255,255,255,.14);border-radius:10px;padding:8px;text-align:center;font-size:11px;font-weight:600}
+  .screen{height:calc(812px - 44px - 168px);overflow:hidden;padding:14px 18px}
+  .count{font-size:12px;color:var(--muted);margin:0 2px 12px;display:flex;justify-content:space-between}
+  .count b{color:var(--ink)}
+  .card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:0 4px 14px rgba(17,24,39,.05);margin-bottom:14px}
+  .ct{display:flex;align-items:center;gap:10px}
+  .ct .pic{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--brand),var(--brand-light));display:grid;place-items:center;color:#fff;font-weight:700}
+  .ct .n{flex:1}
+  .ct .n b{font-size:14.5px}
+  .ct .n .s{font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:6px;margin-top:1px}
+  .ct .n .v{color:var(--accent-dark);font-weight:600}
+  .save{background:var(--accent);color:#fff;font-size:12px;font-weight:800;padding:5px 9px;border-radius:10px}
+  .route{display:flex;align-items:center;gap:8px;margin:14px 0 2px;font-size:14px}
+  .route .g{width:9px;height:9px;border-radius:50%;background:var(--brand)}
+  .route .g2{background:#2FAC55}
+  .route .ln{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 12px)}
+  .route .km{font-size:11px;color:var(--muted)}
+  .foot{display:flex;align-items:center;justify-content:space-between;margin-top:14px}
+  .pricebox .old{font-size:12px;color:var(--muted);text-decoration:line-through}
+  .pricebox .now{font-size:20px;font-weight:800;color:var(--ink)}
+  .pricebox .now span{font-size:12px;font-weight:600;color:var(--muted)}
+  .resa{background:var(--cta);color:#fff;border:none;padding:12px 22px;border-radius:14px;font-size:14px;font-weight:700;box-shadow:0 6px 14px rgba(249,115,22,.35)}
+  .meta{display:flex;gap:8px;margin-top:4px}
+  .tag{font-size:11px;padding:4px 9px;border-radius:999px;background:#f1f4f7;color:#475569;font-weight:600}
+  .tag.rt{background:var(--brand-50);color:var(--brand)}
+  .home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;background:#11182722;border-radius:999px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+  <div class="head">
+    <div class="htop"><b>Trajets retour</b><div class="av">👤</div></div>
+    <div class="searchbar"><span class="r">📍 Sfax → Tunis <span>· demain</span></span><span class="ed">Modifier</span></div>
+    <div class="promo"><div class="b">Jusqu'à −40%</div><div class="b">✓ Vérifiés</div><div class="b">Toute la Tunisie</div></div>
+  </div>
+  <div class="screen">
+    <div class="count"><span><b>2</b> trajets disponibles</span><span>Prix croissant ⌄</span></div>
+
+    <div class="card">
+      <div class="ct">
+        <div class="pic">M</div>
+        <div class="n"><b>Mehdi K.</b><div class="s">⭐ 4,9 (32) · <span class="v">✓ Vérifié</span></div></div>
+        <div class="save">−38%</div>
+      </div>
+      <div class="route"><span class="g"></span><b>Sfax</b><span class="ln"></span><span class="km">≈ 294 km</span><span class="ln"></span><b>Tunis</b><span class="g g2"></span></div>
+      <div class="meta"><span class="tag rt">🔄 Retour à vide</span><span class="tag">Camionnette 2T</span><span class="tag">demain 14h</span></div>
+      <div class="foot">
+        <div class="pricebox"><div class="old">190 TND</div><div class="now">118 <span>TND</span></div></div>
+        <button class="resa">Réserver</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="ct">
+        <div class="pic" style="background:linear-gradient(135deg,#374151,#4b5563)">S</div>
+        <div class="n"><b>Sami T.</b><div class="s">⭐ 4,7 (18) · <span class="v">✓ Vérifié</span></div></div>
+        <div class="save">−28%</div>
+      </div>
+      <div class="route"><span class="g"></span><b>Sfax</b><span class="ln"></span><span class="km">≈ 294 km</span><span class="ln"></span><b>Tunis</b><span class="g g2"></span></div>
+      <div class="meta"><span class="tag rt">🔄 Retour à vide</span><span class="tag">Fourgon 1T</span><span class="tag">demain 17h</span></div>
+      <div class="foot">
+        <div class="pricebox"><div class="old">190 TND</div><div class="now">137 <span>TND</span></div></div>
+        <button class="resa">Réserver</button>
+      </div>
+    </div>
+  </div>
+  <div class="home"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,106 @@
+<!-- @dsCard group="Fondations" -->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transporti — Fondations (charte officielle)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Cairo:wght@400;600;700;800&display=swap');
+  :root{
+    --brand:#1E3A8A;--brand-light:#2563B3;--brand-deep:#0F1D4E;--brand-50:#eef2ff;--brand-100:#dce4fd;
+    --accent:#10b981;--accent-dark:#059669;--accent-50:#f0fdf4;
+    --cta:#f97316;--cta-dark:#ea580c;--cta-50:#fff7ed;
+    --ink:#111827;--muted:#6b7280;--line:#e5e7eb;--bg:#f9fafb;--surface:#fff;
+    --success:#10b981;--warning:#f59e0b;--error:#ef4444;
+    --radius:16px;--shadow:0 10px 30px rgba(17,24,39,.10);
+  }
+  *{box-sizing:border-box;margin:0}
+  body{font-family:'Inter',-apple-system,'Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--ink);padding:32px;line-height:1.5}
+  .wrap{max-width:920px;margin:0 auto}
+  h1{font-size:32px;letter-spacing:-.02em}
+  .sub{color:var(--muted);margin-top:6px;font-size:15px}
+  h2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin:32px 0 14px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logobox{width:52px;height:52px;border-radius:14px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;box-shadow:var(--shadow)}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px}
+  .sw{border-radius:14px;border:1px solid var(--line);background:#fff;overflow:hidden}
+  .sw .c{height:60px}
+  .sw .m{padding:8px 10px;font-size:12px}
+  .sw .m b{display:block;font-size:12.5px}
+  .sw .m span{color:var(--muted)}
+  .type div{margin:6px 0}
+  .t-d{font-size:30px;font-weight:800;letter-spacing:-.02em;color:var(--brand)}
+  .t-h{font-size:21px;font-weight:700}
+  .t-b{font-size:16px}
+  .t-c{font-size:13px;color:var(--muted)}
+  .ar{font-family:'Cairo','Segoe UI',system-ui;direction:rtl;text-align:right}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .p{background:#fff;border:1px solid var(--line);border-radius:var(--radius);padding:16px}
+  .p h3{font-size:15px;margin-bottom:6px}
+  .p p{font-size:13px;color:var(--muted)}
+  .pill{display:inline-block;font-size:11px;padding:3px 9px;border-radius:999px;font-weight:600}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="brand">
+    <div class="logobox">
+      <svg viewBox="0 0 512 512" width="34" height="34" aria-hidden="true">
+        <path d="M108 120 L310 120 L280 210 L78 210 Z" fill="#2563B3"/>
+        <path d="M130 460 C100 350, 82 280, 100 230 C118 185, 160 168, 230 168 L230 95 L420 195 L230 295 L230 225 C180 225, 155 240, 145 268 C132 300, 135 360, 155 460 Z" fill="#2FAC55"/>
+      </svg>
+    </div>
+    <div><h1>Transporti</h1><div class="sub">Charte officielle appliquée au mobile · Royal Blue + accent vert + CTA orange · Inter / Cairo (AR RTL)</div></div>
+  </div>
+
+  <h2>Palette de marque (extraite du frontend)</h2>
+  <div class="grid">
+    <div class="sw"><div class="c" style="background:#1E3A8A"></div><div class="m"><b>Brand 600</b><span>#1E3A8A</span></div></div>
+    <div class="sw"><div class="c" style="background:#2563B3"></div><div class="m"><b>Brand logo</b><span>#2563B3</span></div></div>
+    <div class="sw"><div class="c" style="background:#0F1D4E"></div><div class="m"><b>Brand deep</b><span>#0F1D4E</span></div></div>
+    <div class="sw"><div class="c" style="background:#eef2ff"></div><div class="m"><b>Brand 50</b><span>#eef2ff</span></div></div>
+    <div class="sw"><div class="c" style="background:#10b981"></div><div class="m"><b>Accent vert</b><span>#10b981</span></div></div>
+    <div class="sw"><div class="c" style="background:#2FAC55"></div><div class="m"><b>Vert logo</b><span>#2FAC55</span></div></div>
+    <div class="sw"><div class="c" style="background:#f97316"></div><div class="m"><b>CTA orange</b><span>#f97316</span></div></div>
+    <div class="sw"><div class="c" style="background:#111827"></div><div class="m"><b>Encre</b><span>#111827</span></div></div>
+    <div class="sw"><div class="c" style="background:#6b7280"></div><div class="m"><b>Texte doux</b><span>#6b7280</span></div></div>
+    <div class="sw"><div class="c" style="background:#f59e0b"></div><div class="m"><b>Warning</b><span>#f59e0b</span></div></div>
+    <div class="sw"><div class="c" style="background:#ef4444"></div><div class="m"><b>Error</b><span>#ef4444</span></div></div>
+    <div class="sw"><div class="c" style="background:#f9fafb"></div><div class="m"><b>Fond</b><span>#f9fafb</span></div></div>
+  </div>
+
+  <h2>Typographie — Inter (FR) · Cairo (AR)</h2>
+  <div class="cards">
+    <div class="p type">
+      <div class="t-c">FR · Inter</div>
+      <div class="t-d">Publiez votre retour</div>
+      <div class="t-h">Trajet Sfax → Tunis</div>
+      <div class="t-b">Recevez des demandes sur votre corridor.</div>
+      <div class="t-c">120 TND · ≈ 294 km · vérifié</div>
+    </div>
+    <div class="p type ar">
+      <div class="t-c">AR (derja) · Cairo</div>
+      <div class="t-d">انشر رحلة العودة</div>
+      <div class="t-h">رحلة صفاقس ← تونس</div>
+      <div class="t-b">اقبل الطلبات على مسارك.</div>
+      <div class="t-c">120 د.ت · ≈ 294 كم · موثّق</div>
+    </div>
+  </div>
+
+  <h2>Rôles couleur</h2>
+  <div class="cards">
+    <div class="p"><h3 style="color:var(--brand)">Bleu royal = structure</h3><p>Entêtes, hero, navigation, éléments de marque. La couleur dominante et rassurante.</p></div>
+    <div class="p"><h3 style="color:var(--cta-dark)">Orange = action</h3><p>Le CTA principal d'un écran (Publier, Réserver). Un seul par vue, pour guider l'œil.</p></div>
+    <div class="p"><h3 style="color:var(--accent-dark)">Vert = valeur/positif</h3><p>Économie affichée, badge vérifié, succès, montants gagnés.</p></div>
+    <div class="p"><h3>Neutres = contenu</h3><p>Gris hiérarchisés pour texte, séparateurs, surfaces. Contraste AA garanti.</p></div>
+  </div>
+
+  <h2>Sessions</h2>
+  <div class="cards">
+    <div class="p"><span class="pill" style="background:var(--brand-50);color:var(--brand)">Transporteur</span><p style="margin-top:8px">Efficacité &amp; revenus : KPIs (revenus, remplissage, km transformés), publier un retour, demandes reçues, gains.</p></div>
+    <div class="p"><span class="pill" style="background:var(--accent-50);color:var(--accent-dark)">Client</span><p style="margin-top:8px">Réassurance &amp; économie : recherche d'abord, économie (-40 %), transporteur noté &amp; vérifié, demande en 1 clic.</p></div>
+  </div>
+</div>
+</body>
+</html>

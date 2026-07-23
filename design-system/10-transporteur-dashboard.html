@@ -1,0 +1,121 @@
+<!-- @dsCard group="Transporteur" -->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Transporteur — Accueil</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root{
+    --brand:#1E3A8A;--brand-light:#2563B3;--brand-deep:#0F1D4E;--brand-50:#eef2ff;--brand-100:#dce4fd;
+    --accent:#10b981;--accent-dark:#059669;--accent-50:#f0fdf4;
+    --cta:#f97316;--cta-dark:#ea580c;
+    --ink:#111827;--muted:#6b7280;--line:#eef0f3;--bg:#f9fafb;
+    --error:#ef4444;--shadow:0 10px 30px rgba(17,24,39,.10);
+  }
+  *{box-sizing:border-box;margin:0}
+  body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:#E9ECF1;display:grid;place-items:center;padding:26px}
+  .phone{width:390px;height:812px;background:var(--bg);border-radius:46px;box-shadow:var(--shadow);overflow:hidden;position:relative;border:1px solid #dfe3e8}
+  .status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600;color:var(--ink)}
+  .screen{height:calc(812px - 44px - 74px);overflow:hidden;padding:4px 18px 12px}
+  .top{display:flex;align-items:center;gap:12px;padding:8px 2px 14px}
+  .av{width:44px;height:44px;border-radius:14px;background:linear-gradient(135deg,var(--brand),var(--brand-light));display:grid;place-items:center;color:#fff;font-weight:700}
+  .hi{flex:1}
+  .hi b{font-size:17px}
+  .hi .v{display:inline-flex;align-items:center;gap:4px;font-size:11px;color:var(--accent-dark);background:var(--accent-50);padding:2px 8px;border-radius:999px;margin-top:2px;font-weight:600}
+  .bell{width:40px;height:40px;border-radius:12px;background:#fff;border:1px solid var(--line);display:grid;place-items:center;position:relative}
+  .dot{position:absolute;top:8px;right:9px;width:8px;height:8px;background:var(--error);border-radius:50%;border:2px solid #fff}
+  .hero{background:linear-gradient(150deg,#1E3A8A,#2563B3);border-radius:22px;padding:18px;color:#fff;box-shadow:0 12px 26px rgba(30,58,138,.35)}
+  .hero .lbl{font-size:12px;opacity:.85}
+  .hero .big{font-size:30px;font-weight:800;letter-spacing:-.02em;margin-top:2px}
+  .hero .row{display:flex;gap:10px;margin-top:14px}
+  .kpi{flex:1;background:rgba(255,255,255,.12);border-radius:14px;padding:10px 12px}
+  .kpi b{font-size:16px;display:block}
+  .kpi span{font-size:11px;opacity:.85}
+  .bar{height:6px;background:rgba(255,255,255,.22);border-radius:999px;margin-top:8px;overflow:hidden}
+  .bar i{display:block;height:100%;width:62%;background:#2FAC55;border-radius:999px}
+  .cta{margin-top:14px;background:var(--cta);color:#fff;border:none;width:100%;padding:16px;border-radius:16px;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 18px rgba(249,115,22,.4)}
+  .sh{display:flex;align-items:center;justify-content:space-between;margin:20px 2px 10px}
+  .sh b{font-size:15px}
+  .sh .cnt{font-size:11px;font-weight:700;color:#fff;background:var(--error);padding:2px 8px;border-radius:999px}
+  .sh a{font-size:12px;color:var(--brand);font-weight:600;text-decoration:none;margin-left:auto}
+  .card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;box-shadow:0 4px 14px rgba(17,24,39,.04)}
+  .rc-top{display:flex;align-items:center;gap:10px}
+  .rc-av{width:34px;height:34px;border-radius:10px;background:#eef1f6;display:grid;place-items:center;font-size:14px}
+  .rc-top .n{flex:1;font-size:13.5px;font-weight:600}
+  .rc-top .n span{display:block;font-size:11px;color:var(--muted);font-weight:400}
+  .price{font-size:16px;font-weight:800;color:var(--accent-dark)}
+  .route{display:flex;align-items:center;gap:8px;margin:12px 0 4px;font-size:13px}
+  .route .g{width:8px;height:8px;border-radius:50%;background:var(--brand)}
+  .route .g2{background:#2FAC55}
+  .route .ln{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 12px)}
+  .meta{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+  .tag{font-size:11px;padding:4px 9px;border-radius:999px;background:#f1f4f7;color:#475569;font-weight:600}
+  .tag.rt{background:var(--brand-50);color:var(--brand)}
+  .acts{display:flex;gap:8px;margin-top:12px}
+  .btn{flex:1;padding:11px;border-radius:12px;font-size:13px;font-weight:700;border:none}
+  .b-pri{background:var(--brand);color:#fff}
+  .b-gho{background:#fff;color:var(--ink);border:1px solid var(--line)}
+  .tabs{position:absolute;bottom:0;left:0;right:0;height:74px;background:#fff;border-top:1px solid var(--line);display:flex;align-items:flex-start;justify-content:space-around;padding-top:10px}
+  .tab{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;color:var(--muted);width:56px}
+  .tab.on{color:var(--brand)}
+  .tab .ic{font-size:20px}
+  .fab{width:52px;height:52px;border-radius:18px;background:var(--cta);color:#fff;display:grid;place-items:center;font-size:26px;margin-top:-16px;box-shadow:0 8px 18px rgba(249,115,22,.45)}
+  .home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;background:#11182722;border-radius:999px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+  <div class="screen">
+    <div class="top">
+      <div class="av">M</div>
+      <div class="hi"><b>Bonjour, Mehdi 👋</b><br><span class="v">✓ Vérifié · corridor A1</span></div>
+      <div class="bell">🔔<span class="dot"></span></div>
+    </div>
+
+    <div class="hero">
+      <div class="lbl">Revenus ce mois</div>
+      <div class="big">1 240 <span style="font-size:16px;font-weight:600">TND</span></div>
+      <div class="row">
+        <div class="kpi"><b>62%</b><span>Remplissage</span><div class="bar"><i></i></div></div>
+        <div class="kpi"><b>880 km</b><span>À vide → chargés</span></div>
+      </div>
+    </div>
+
+    <button class="cta">➕ Publier mon retour</button>
+
+    <div class="sh"><b>Demandes reçues</b><span class="cnt">3</span><a>Tout voir</a></div>
+    <div class="card">
+      <div class="rc-top">
+        <div class="rc-av">👤</div>
+        <div class="n">Ahmed B.<span>Électroménager · 120 kg</span></div>
+        <div class="price">95 TND</div>
+      </div>
+      <div class="route">
+        <span class="g"></span><b>Sfax</b><span class="ln"></span><b>Tunis</b><span class="g g2"></span>
+      </div>
+      <div class="meta">
+        <span class="tag rt">🔄 Trajet retour</span>
+        <span class="tag">demain · 14h</span>
+        <span class="tag">💵 À la livraison</span>
+      </div>
+      <div class="acts">
+        <button class="btn b-gho">Contre-proposer</button>
+        <button class="btn b-pri">Accepter</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="tabs">
+    <div class="tab on"><span class="ic">🏠</span>Accueil</div>
+    <div class="tab"><span class="ic">🧭</span>Missions</div>
+    <div class="fab">+</div>
+    <div class="tab"><span class="ic">💬</span>Messages</div>
+    <div class="tab"><span class="ic">👛</span>Gains</div>
+  </div>
+  <div class="home"></div>
+</div>
+</body>
+</html>

@@ -1,0 +1,72 @@
+<!-- @dsCard group="Client" -->
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Client — Aucun trajet (repli)</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+  :root{--brand:#1E3A8A;--brand-light:#2563B3;--brand-50:#eef2ff;--accent:#10b981;--accent-dark:#059669;--cta:#f97316;--ink:#111827;--muted:#6b7280;--line:#eef0f3;--bg:#f9fafb;--shadow:0 10px 30px rgba(17,24,39,.10)}
+  *{box-sizing:border-box;margin:0}
+  body{font-family:'Inter','Segoe UI',system-ui,sans-serif;background:#E9ECF1;display:grid;place-items:center;padding:26px}
+  .phone{width:390px;height:812px;background:var(--bg);border-radius:46px;box-shadow:var(--shadow);overflow:hidden;position:relative;border:1px solid #dfe3e8}
+  .status{height:44px;display:flex;align-items:center;justify-content:space-between;padding:0 26px;font-size:13px;font-weight:600}
+  .head{background:var(--brand);color:#fff;padding:4px 18px 16px;border-radius:0 0 22px 22px}
+  .htop{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .htop b{font-size:20px}
+  .av{width:38px;height:38px;border-radius:12px;background:rgba(255,255,255,.18);display:grid;place-items:center}
+  .searchbar{display:flex;align-items:center;gap:8px;background:#fff;border-radius:14px;padding:11px 12px;box-shadow:0 6px 14px rgba(15,23,42,.18)}
+  .searchbar .r{flex:1;font-size:14px;font-weight:700;color:var(--ink)}
+  .searchbar .r span{color:var(--muted);font-weight:400}
+  .searchbar .ed{font-size:12px;color:var(--brand);font-weight:700}
+  .screen{height:calc(812px - 44px - 126px);overflow:hidden;padding:18px;display:flex;flex-direction:column}
+  .empty{text-align:center;padding:22px 8px 8px}
+  .ill{width:96px;height:96px;border-radius:28px;background:var(--brand-50);display:grid;place-items:center;font-size:44px;margin:0 auto 18px}
+  .empty h2{font-size:20px;letter-spacing:-.01em}
+  .empty p{font-size:14px;color:var(--muted);margin-top:8px;line-height:1.55}
+  .empty p b{color:var(--ink)}
+  .prefill{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;margin-top:22px;text-align:left}
+  .prefill .l{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+  .prow{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:600;margin-top:8px}
+  .prow .g{width:8px;height:8px;border-radius:50%;background:var(--brand)}
+  .prow .g2{background:#2FAC55}
+  .prow .ln{flex:1;height:1px;background:repeating-linear-gradient(90deg,var(--line) 0 6px,transparent 6px 12px)}
+  .spacer{flex:1}
+  .cta{width:100%;padding:16px;border-radius:16px;background:var(--cta);color:#fff;border:none;font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 8px 18px rgba(249,115,22,.4)}
+  .cta small{font-weight:500;opacity:.9;font-size:12px}
+  .alert{width:100%;padding:15px;border-radius:16px;background:var(--brand-50);color:var(--brand);border:1px solid #c7d2fe;font-size:15px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:10px}
+  .reassure{display:flex;align-items:center;justify-content:center;gap:6px;font-size:11.5px;color:var(--muted);margin-top:14px}
+  .home{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);width:130px;height:5px;background:#11182722;border-radius:999px}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="status"><span>9:41</span><span>📶 🔋</span></div>
+  <div class="head">
+    <div class="htop"><b>Trajets retour</b><div class="av">👤</div></div>
+    <div class="searchbar"><span class="r">📍 Gabès → Tozeur <span>· demain</span></span><span class="ed">Modifier</span></div>
+  </div>
+  <div class="screen">
+    <div class="empty">
+      <div class="ill">🧭</div>
+      <h2>Aucun trajet pour l'instant</h2>
+      <p>Aucun retour ne correspond à votre corridor pour ces dates. <b>Publiez votre demande</b> — les transporteurs vous feront des offres — ou <b>créez une alerte</b>.</p>
+    </div>
+
+    <div class="prefill">
+      <div class="l">Votre demande, pré-remplie</div>
+      <div class="prow"><span class="g"></span>Gabès<span class="ln"></span>Tozeur<span class="g g2"></span></div>
+      <div class="prow" style="font-weight:400;color:var(--muted);font-size:12.5px;margin-top:10px">📅 demain · 💵 paiement à la livraison · ✏️ à compléter</div>
+    </div>
+
+    <div class="spacer"></div>
+
+    <button class="cta">Publier ma demande <small>· en 1 clic</small></button>
+    <button class="alert">🔔 M'alerter sur ce corridor</button>
+    <div class="reassure">🔒 Paiement sécurisé · transporteurs vérifiés</div>
+  </div>
+  <div class="home"></div>
+</div>
+</body>
+</html>
