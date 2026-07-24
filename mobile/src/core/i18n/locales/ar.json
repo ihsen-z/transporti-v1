@@ -238,6 +238,39 @@
     "empty": "ما فماش إشعارات.",
     "mark_all": "علّم الكل كمقروء"
   },
+  "disputes": {
+    "open": "بلّغ على مشكل",
+    "my_title": "نزاعاتي",
+    "empty": "ما فماش نزاعات.",
+    "reason_label": "السبب",
+    "reason_ph": "اختر السبب",
+    "description_label": "الوصف (20 حرف على الأقل)",
+    "description_ph": "افسّر المشكل بالتفصيل…",
+    "submit": "افتح النزاع",
+    "success": "النزاع تفتح. الفريق متاعنا باش يفحصو.",
+    "reason": {
+      "DAMAGED_ITEMS": "أغراض متضررة",
+      "NO_SHOW": "عدم الحضور",
+      "PAYMENT_ISSUE": "مشكل خلاص",
+      "LATE_DELIVERY": "تأخير في التسليم",
+      "HARASSMENT": "تحرش",
+      "FRAUD": "شبهة احتيال",
+      "OTHER": "آخر"
+    },
+    "status": {
+      "OPEN": "مفتوح",
+      "INVESTIGATING": "قيد الفحص",
+      "RESOLVED": "محلول",
+      "REJECTED": "مرفوض"
+    },
+    "errors": {
+      "min_desc": "20 حرف على الأقل.",
+      "reason_required": "اختر سبب.",
+      "validation": "الفتح مستحيل. تثبّت من الخانات.",
+      "forbidden": "النزاع غير مسموح على هالمهمة.",
+      "network": "تعذّر الاتصال. عاود المحاولة."
+    }
+  },
   "role": {
     "CLIENT": "حريف",
     "TRANSPORTER": "ناقل",

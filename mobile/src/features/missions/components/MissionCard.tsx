@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
+import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { MissionDto, MissionStatus } from '../api/dto';
 import { useConfirmStart } from '../api/useConfirmStart';
@@ -31,6 +32,7 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
   const complete = useCompleteJob();
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
+  const [disputeOpen, setDisputeOpen] = useState(false);
 
   const isMatched = mission.status === 'MATCHED';
   const isInProgress = mission.status === 'IN_PROGRESS';
@@ -104,8 +106,16 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
           {completeErrKey ? (
             <Text style={styles.error}>{t(`missions.errors.${completeErrKey}`)}</Text>
           ) : null}
+          <Pressable onPress={() => setDisputeOpen(true)} accessibilityRole="button">
+            <Text style={styles.dispute}>{t('disputes.open')}</Text>
+          </Pressable>
         </View>
       ) : null}
+
+      <OpenDisputeSheet
+        jobId={disputeOpen ? mission.id : null}
+        onClose={() => setDisputeOpen(false)}
+      />
     </View>
   );
 }
@@ -132,4 +142,11 @@ const styles = StyleSheet.create({
   action: { gap: spacing.sm, marginTop: spacing.sm },
   hint: { fontSize: fontSize.sm, color: colors.neutral[500] },
   error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  dispute: {
+    color: colors.neutral[500],
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: spacing.xs,
+  },
 });

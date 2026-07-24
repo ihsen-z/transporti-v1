@@ -238,6 +238,39 @@
     "empty": "Aucune notification.",
     "mark_all": "Tout marquer lu"
   },
+  "disputes": {
+    "open": "Signaler un problème",
+    "my_title": "Mes litiges",
+    "empty": "Aucun litige.",
+    "reason_label": "Motif",
+    "reason_ph": "Choisir un motif",
+    "description_label": "Description (min. 20 caractères)",
+    "description_ph": "Décrivez le problème en détail…",
+    "submit": "Ouvrir le litige",
+    "success": "Litige ouvert. Notre équipe va l'examiner.",
+    "reason": {
+      "DAMAGED_ITEMS": "Objets endommagés",
+      "NO_SHOW": "Absence",
+      "PAYMENT_ISSUE": "Problème de paiement",
+      "LATE_DELIVERY": "Retard de livraison",
+      "HARASSMENT": "Harcèlement",
+      "FRAUD": "Fraude suspectée",
+      "OTHER": "Autre"
+    },
+    "status": {
+      "OPEN": "Ouvert",
+      "INVESTIGATING": "En examen",
+      "RESOLVED": "Résolu",
+      "REJECTED": "Rejeté"
+    },
+    "errors": {
+      "min_desc": "Au moins 20 caractères.",
+      "reason_required": "Choisissez un motif.",
+      "validation": "Ouverture impossible. Vérifiez les champs.",
+      "forbidden": "Litige non autorisé sur cette mission.",
+      "network": "Connexion impossible. Réessayez."
+    }
+  },
   "role": {
     "CLIENT": "Client",
     "TRANSPORTER": "Transporteur",

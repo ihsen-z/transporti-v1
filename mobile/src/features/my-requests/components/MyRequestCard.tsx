@@ -1,6 +1,8 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
+import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { MyRequestDto, MyRequestStatus } from '../api/dto';
 import { useAcceptCounter } from '../api/useAcceptCounter';
@@ -25,6 +27,7 @@ function formatWhen(iso: string): string {
 export function MyRequestCard({ request }: { request: MyRequestDto }) {
   const { t } = useTranslation();
   const accept = useAcceptCounter();
+  const [disputeOpen, setDisputeOpen] = useState(false);
 
   const isCountered = request.status === 'COUNTERED';
   const accepted = request.status === 'ACCEPTED' || accept.isSuccess;
@@ -80,8 +83,16 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
           ) : (
             <Text style={styles.hint}>{t('my_requests.pin_note')}</Text>
           )}
+          <Pressable onPress={() => setDisputeOpen(true)} accessibilityRole="button">
+            <Text style={styles.dispute}>{t('disputes.open')}</Text>
+          </Pressable>
         </View>
       ) : null}
+
+      <OpenDisputeSheet
+        jobId={disputeOpen ? request.job : null}
+        onClose={() => setDisputeOpen(false)}
+      />
     </View>
   );
 }
@@ -126,4 +137,11 @@ const styles = StyleSheet.create({
     color: colors.green[700],
   },
   hint: { fontSize: fontSize.sm, color: colors.neutral[500] },
+  dispute: {
+    color: colors.neutral[500],
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: spacing.sm,
+  },
 });
