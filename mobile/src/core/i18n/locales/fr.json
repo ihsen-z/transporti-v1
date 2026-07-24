@@ -194,6 +194,33 @@
       "network": "Connexion au serveur impossible. Réessayez."
     }
   },
+  "my_requests": {
+    "title": "Mes demandes",
+    "empty": "Aucune demande envoyée.",
+    "status": {
+      "PENDING": "En attente",
+      "COUNTERED": "Contre-proposé",
+      "ACCEPTED": "Acceptée",
+      "REJECTED": "Refusée",
+      "CANCELLED": "Annulée"
+    },
+    "proposed": "Proposé : {{price}} TND",
+    "countered": "Contre-proposition : {{price}} TND",
+    "payment": {
+      "DIGITAL": "Paiement digital",
+      "COD": "Paiement à la livraison"
+    },
+    "accept_counter": "Accepter la contre-proposition",
+    "accepted_digital": "Réservé. Finalisez le paiement digital pour démarrer.",
+    "accepted_cod": "Réservé. Paiement en espèces à la livraison.",
+    "pin_label": "Code de livraison (à donner au transporteur)",
+    "pin_note": "Votre code de livraison s'affiche à l'acceptation.",
+    "errors": {
+      "state": "Aucune contre-proposition à accepter.",
+      "forbidden": "Cette demande ne vous appartient pas.",
+      "network": "Connexion au serveur impossible. Réessayez."
+    }
+  },
   "role": {
     "CLIENT": "Client",
     "TRANSPORTER": "Transporteur",

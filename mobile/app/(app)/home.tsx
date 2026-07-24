@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { MissionsList } from '@/features/missions/components/MissionsList';
+import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 
 // Onglet Accueil, rôle-aware. Le transporteur y voit ses missions actives
@@ -11,6 +12,7 @@ export default function HomeScreen() {
   const { t } = useTranslation();
   const user = useAuthStore((s) => s.user);
   const isTransporter = user?.role === 'TRANSPORTER';
+  const isClient = user?.role === 'CLIENT';
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -32,6 +34,7 @@ export default function HomeScreen() {
         </View>
 
         {isTransporter ? <MissionsList /> : null}
+        {isClient ? <MyRequestsList /> : null}
       </ScrollView>
     </SafeAreaView>
   );
