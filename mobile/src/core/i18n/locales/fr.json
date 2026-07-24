@@ -221,6 +221,18 @@
       "network": "Connexion au serveur impossible. Réessayez."
     }
   },
+  "messaging": {
+    "empty": "Aucune conversation.",
+    "back": "← Conversations",
+    "input_ph": "Écrire un message…",
+    "no_messages": "Aucun message. Démarrez la conversation.",
+    "locked": "Conversation verrouillée (mission terminée).",
+    "errors": {
+      "locked": "Envoi impossible : conversation verrouillée.",
+      "forbidden": "Vous ne participez pas à cette conversation.",
+      "network": "Connexion impossible. Réessayez."
+    }
+  },
   "role": {
     "CLIENT": "Client",
     "TRANSPORTER": "Transporteur",
