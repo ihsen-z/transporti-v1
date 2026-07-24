@@ -134,6 +134,31 @@
       "network": "Connexion au serveur impossible. Réessayez."
     }
   },
+  "missions": {
+    "title": "Mes missions",
+    "empty": "Aucune mission active.",
+    "status": {
+      "MATCHED": "À démarrer",
+      "IN_PROGRESS": "En cours",
+      "COMPLETED": "Terminée",
+      "PUBLISHED": "Publiée",
+      "CANCELLED": "Annulée"
+    },
+    "confirm_start": "Confirmer le démarrage",
+    "confirm_start_hint": "Paiement en espèces à la livraison (COD).",
+    "pin_label": "Code de livraison (4 chiffres)",
+    "pin_ph": "1234",
+    "pin_format": "Le code fait 4 chiffres",
+    "complete": "Marquer livré",
+    "photo_deferred": "Photo de preuve : bientôt.",
+    "errors": {
+      "pin_required": "Code requis. Demandez les 4 chiffres au client.",
+      "pin_invalid": "Code de livraison incorrect.",
+      "state": "Action impossible dans l'état actuel.",
+      "forbidden": "Vous n'êtes pas assigné à cette mission.",
+      "network": "Connexion au serveur impossible. Réessayez."
+    }
+  },
   "role": {
     "CLIENT": "Client",
     "TRANSPORTER": "Transporteur",
