@@ -233,6 +233,11 @@
       "network": "Connexion impossible. Réessayez."
     }
   },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "Aucune notification.",
+    "mark_all": "Tout marquer lu"
+  },
   "role": {
     "CLIENT": "Client",
     "TRANSPORTER": "Transporteur",

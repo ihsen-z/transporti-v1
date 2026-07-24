@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { MissionsList } from '@/features/missions/components/MissionsList';
 import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
+import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 
 // Onglet Accueil, rôle-aware. Le transporteur y voit ses missions actives
@@ -17,6 +18,10 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView contentContainerStyle={styles.content}>
+        <View style={styles.topBar}>
+          <NotificationBell />
+        </View>
+
         <View style={styles.header}>
           <Text style={styles.welcome}>
             {t('home.welcome')}
@@ -43,6 +48,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.neutral[0] },
   content: { padding: spacing.xl, gap: spacing.xl },
+  topBar: { flexDirection: 'row', justifyContent: 'flex-end' },
   header: { gap: spacing.xs },
   welcome: {
     fontSize: fontSize['2xl'],
