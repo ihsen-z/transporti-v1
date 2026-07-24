@@ -7,6 +7,7 @@
     "loading": "Chargement…",
     "retry": "Réessayer",
     "cancel": "Annuler",
+    "close": "Fermer",
     "coming_soon": "Bientôt disponible"
   },
   "auth": {
@@ -156,6 +157,40 @@
       "pin_invalid": "Code de livraison incorrect.",
       "state": "Action impossible dans l'état actuel.",
       "forbidden": "Vous n'êtes pas assigné à cette mission.",
+      "network": "Connexion au serveur impossible. Réessayez."
+    }
+  },
+  "search": {
+    "title": "Trouver un retour",
+    "subtitle": "Cherchez un trajet retour sur votre corridor",
+    "button": "Rechercher",
+    "from": "Départ",
+    "to": "Arrivée",
+    "date_optional": "Jour (optionnel)",
+    "results_count": "{{count}} trajet(s) trouvé(s)",
+    "no_results_title": "Aucun trajet retour pour l'instant",
+    "no_results_hint": "Créez une alerte : on vous prévient dès qu'un trajet compatible est publié.",
+    "create_alert": "Créer une alerte corridor",
+    "alert_created": "Alerte créée. Vous serez notifié.",
+    "instant": "Réservation immédiate",
+    "price_range": "{{min}} – {{max}} TND",
+    "request": {
+      "title": "Envoyer une demande",
+      "price_label": "Votre prix proposé (TND)",
+      "price_ph": "0",
+      "method": "Paiement",
+      "method_digital": "Digital",
+      "method_cod": "À la livraison (≤ 300 TND)",
+      "description": "Message (optionnel)",
+      "description_ph": "Ce que vous voulez transporter…",
+      "submit": "Envoyer",
+      "success": "Demande envoyée ! Le transporteur va répondre."
+    },
+    "errors": {
+      "route_required": "Choisissez départ et arrivée.",
+      "same": "Le départ et l'arrivée doivent être différents.",
+      "price": "Montant invalide",
+      "validation": "Demande impossible. Vérifiez le montant (COD ≤ 300 TND) ou une demande est déjà en cours.",
       "network": "Connexion au serveur impossible. Réessayez."
     }
   },
