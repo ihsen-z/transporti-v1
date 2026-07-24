@@ -34,6 +34,7 @@
     "home": "Accueil",
     "search": "Recherche",
     "publish": "Publier",
+    "requests": "Demandes",
     "messages": "Messages",
     "profile": "Profil"
   },
@@ -94,6 +95,42 @@
       "price_range": "Le max doit être ≥ au min",
       "validation": "Vérifiez les champs du formulaire.",
       "forbidden": "Réservé aux transporteurs.",
+      "network": "Connexion au serveur impossible. Réessayez."
+    }
+  },
+  "requests": {
+    "title": "Demandes reçues",
+    "select_trip": "Choisissez un trajet pour voir ses demandes.",
+    "trips_empty": "Aucun trajet retour publié pour le moment.",
+    "no_requests": "Aucune demande sur ce trajet.",
+    "back": "← Mes trajets",
+    "proposed": "Propose {{price}} TND",
+    "countered": "Contre-proposé : {{price}} TND",
+    "payment": {
+      "DIGITAL": "Paiement digital",
+      "COD": "Paiement à la livraison"
+    },
+    "status": {
+      "PENDING": "En attente",
+      "COUNTERED": "Contre-proposé",
+      "ACCEPTED": "Acceptée",
+      "REJECTED": "Refusée",
+      "CANCELLED": "Annulée"
+    },
+    "action": {
+      "accept": "Accepter",
+      "reject": "Refuser",
+      "counter": "Contre-proposer"
+    },
+    "counter": {
+      "title": "Contre-proposition",
+      "placeholder": "Votre prix (TND)",
+      "confirm": "Envoyer",
+      "invalid": "Montant invalide"
+    },
+    "errors": {
+      "validation": "Action impossible. Vérifiez le montant.",
+      "forbidden": "Action non autorisée.",
       "network": "Connexion au serveur impossible. Réessayez."
     }
   },

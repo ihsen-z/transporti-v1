@@ -73,6 +73,14 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="requests"
+        options={{
+          title: t('tabs.requests'),
+          href: showPublish ? '/requests' : null,
+          tabBarIcon: tabIcon('file-tray-full', 'file-tray-full-outline'),
+        }}
+      />
+      <Tabs.Screen
         name="messages"
         options={{
           title: t('tabs.messages'),
