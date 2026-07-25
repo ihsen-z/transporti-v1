@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/Button';
 import { LanguageToggle } from '@/shared/ui/LanguageToggle';
 import { DisputesPanel } from '@/features/disputes/components/DisputesPanel';
 import { ReviewsPanel } from '@/features/reviews/components/ReviewsPanel';
+import { TrustPanel } from '@/features/trust/components/TrustPanel';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 
 // Onglet Profil : identité, rôle, langue, litiges et déconnexion.
@@ -17,6 +18,8 @@ export default function ProfileScreen() {
   const logout = useAuthStore((s) => s.logout);
   const [disputesOpen, setDisputesOpen] = useState(false);
   const [reviewsOpen, setReviewsOpen] = useState(false);
+  const [trustOpen, setTrustOpen] = useState(false);
+  const isTransporter = user?.role === 'TRANSPORTER';
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -56,6 +59,18 @@ export default function ProfileScreen() {
           <Text style={styles.linkText}>{t('disputes.my_title')}</Text>
           <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
         </Pressable>
+
+        {isTransporter ? (
+          <Pressable
+            style={styles.link}
+            onPress={() => setTrustOpen(true)}
+            accessibilityRole="button"
+          >
+            <Ionicons name="shield-checkmark-outline" size={22} color={colors.brand[600]} />
+            <Text style={styles.linkText}>{t('trust.title')}</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={styles.footer}>
@@ -64,6 +79,7 @@ export default function ProfileScreen() {
 
       <DisputesPanel visible={disputesOpen} onClose={() => setDisputesOpen(false)} />
       <ReviewsPanel visible={reviewsOpen} onClose={() => setReviewsOpen(false)} />
+      <TrustPanel visible={trustOpen} onClose={() => setTrustOpen(false)} />
     </SafeAreaView>
   );
 }

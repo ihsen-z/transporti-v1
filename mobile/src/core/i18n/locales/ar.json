@@ -293,6 +293,61 @@
       "unknown": "الإجراء مستحيل حاليا."
     }
   },
+  "trust": {
+    "title": "التوثيق",
+    "status_label": "الحالة",
+    "status": {
+      "UNVERIFIED": "غير موثّق",
+      "PENDING": "قيد الفحص",
+      "PARTIALLY_REVIEWED": "موثّق جزئيا",
+      "VERIFIED": "موثّق",
+      "REJECTED": "مرفوض",
+      "SUSPENDED": "معلّق"
+    },
+    "vehicle_title": "الكرهبة متاعي",
+    "vehicle_type": "نوع الكرهبة",
+    "vehicle_type_ph": "مثال: كاميونات، شاحنة…",
+    "vehicle_capacity": "الحمولة (كغ)",
+    "vehicle_capacity_ph": "مثال: 1500",
+    "vehicle_plate": "رقم التسجيل",
+    "vehicle_plate_ph": "مثال: 123 تونس 4567",
+    "vehicle_save": "سجّل",
+    "vehicle_saved": "معلومات الكرهبة تسجّلت.",
+    "docs_title": "وثائقي",
+    "docs_empty": "ما فماش وثائق.",
+    "add_doc": "زيد وثيقة",
+    "doc_type": "نوع الوثيقة",
+    "doc_type_ph": "اختر نوع",
+    "expires_at": "تاريخ الانتهاء (سسسس-شش-يي)",
+    "expires_ph": "2027-12-31",
+    "pick_image": "اختر صورة",
+    "image_selected": "الصورة تختارت ✓",
+    "upload": "ابعث الوثيقة",
+    "uploaded": "الوثيقة تبعثت. الفريق باش يفحصها.",
+    "badge_valid": "موثّقة",
+    "badge_pending": "في الانتظار",
+    "badge_expired": "منتهية",
+    "badge_expires_soon": "قريب تنتهي",
+    "doc": {
+      "CIN_FRONT": "بطاقة التعريف (وجه)",
+      "CIN_BACK": "بطاقة التعريف (ظهر)",
+      "LICENSE_FRONT": "رخصة السياقة (وجه)",
+      "LICENSE_BACK": "رخصة السياقة (ظهر)",
+      "CARTE_GRISE_FRONT": "البطاقة الرمادية (وجه)",
+      "CARTE_GRISE_BACK": "البطاقة الرمادية (ظهر)",
+      "INSURANCE_FRONT": "التأمين (وجه)",
+      "INSURANCE_BACK": "التأمين (ظهر)",
+      "SELFIE": "سيلفي"
+    },
+    "errors": {
+      "image_required": "اختر صورة.",
+      "type_required": "اختر نوع الوثيقة.",
+      "expires_required": "تاريخ الانتهاء مطلوب (سسسس-شش-يي).",
+      "permission": "الوصول للصور مرفوض.",
+      "validation": "الإرسال مرفوض (≤ 5 ميڤا، JPG/PNG، الحد 10).",
+      "network": "تعذّر الاتصال. عاود المحاولة."
+    }
+  },
   "role": {
     "CLIENT": "حريف",
     "TRANSPORTER": "ناقل",

@@ -293,6 +293,61 @@
       "unknown": "Action impossible pour le moment."
     }
   },
+  "trust": {
+    "title": "Vérification",
+    "status_label": "Statut",
+    "status": {
+      "UNVERIFIED": "Non vérifié",
+      "PENDING": "En cours d'examen",
+      "PARTIALLY_REVIEWED": "Partiellement vérifié",
+      "VERIFIED": "Vérifié",
+      "REJECTED": "Rejeté",
+      "SUSPENDED": "Suspendu"
+    },
+    "vehicle_title": "Mon véhicule",
+    "vehicle_type": "Type de véhicule",
+    "vehicle_type_ph": "ex : Camionnette, Camion…",
+    "vehicle_capacity": "Capacité (kg)",
+    "vehicle_capacity_ph": "ex : 1500",
+    "vehicle_plate": "Immatriculation",
+    "vehicle_plate_ph": "ex : 123 TUN 4567",
+    "vehicle_save": "Enregistrer",
+    "vehicle_saved": "Infos véhicule enregistrées.",
+    "docs_title": "Mes documents",
+    "docs_empty": "Aucun document.",
+    "add_doc": "Ajouter un document",
+    "doc_type": "Type de document",
+    "doc_type_ph": "Choisir un type",
+    "expires_at": "Date d'expiration (AAAA-MM-JJ)",
+    "expires_ph": "2027-12-31",
+    "pick_image": "Choisir une photo",
+    "image_selected": "Photo sélectionnée ✓",
+    "upload": "Envoyer le document",
+    "uploaded": "Document envoyé. Il sera vérifié par notre équipe.",
+    "badge_valid": "Validé",
+    "badge_pending": "En attente",
+    "badge_expired": "Expiré",
+    "badge_expires_soon": "Expire bientôt",
+    "doc": {
+      "CIN_FRONT": "CIN (recto)",
+      "CIN_BACK": "CIN (verso)",
+      "LICENSE_FRONT": "Permis (recto)",
+      "LICENSE_BACK": "Permis (verso)",
+      "CARTE_GRISE_FRONT": "Carte grise (recto)",
+      "CARTE_GRISE_BACK": "Carte grise (verso)",
+      "INSURANCE_FRONT": "Assurance (recto)",
+      "INSURANCE_BACK": "Assurance (verso)",
+      "SELFIE": "Selfie"
+    },
+    "errors": {
+      "image_required": "Choisissez une photo.",
+      "type_required": "Choisissez un type de document.",
+      "expires_required": "Date d'expiration requise (AAAA-MM-JJ).",
+      "permission": "Accès aux photos refusé.",
+      "validation": "Envoi refusé (≤ 5 Mo, JPG/PNG, quota 10).",
+      "network": "Connexion impossible. Réessayez."
+    }
+  },
   "role": {
     "CLIENT": "Client",
     "TRANSPORTER": "Transporteur",

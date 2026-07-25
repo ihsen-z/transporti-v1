@@ -21,7 +21,14 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Transporti accède à vos photos pour envoyer vos documents de vérification.",
+          "cameraPermission": "Transporti accède à la caméra pour photographier vos documents."
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
