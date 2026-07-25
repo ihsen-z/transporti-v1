@@ -42,7 +42,8 @@
   "home": {
     "welcome": "مرحبا",
     "role_label": "الدور",
-    "subtitle": "فضاءك في ترانسبورتي"
+    "subtitle": "فضاءك في ترانسبورتي",
+    "verified": "موثّق"
   },
   "screens": {
     "search": { "title": "لوّج على رحلة عودة" },

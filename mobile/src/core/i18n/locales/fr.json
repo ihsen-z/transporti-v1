@@ -42,7 +42,8 @@
   "home": {
     "welcome": "Bienvenue",
     "role_label": "Rôle",
-    "subtitle": "Votre espace Transporti"
+    "subtitle": "Votre espace Transporti",
+    "verified": "Vérifié"
   },
   "screens": {
     "search": { "title": "Rechercher un trajet retour" },

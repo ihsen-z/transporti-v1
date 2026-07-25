@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { LoginForm } from '@/features/auth/components/LoginForm';
 import { LanguageToggle } from '@/shared/ui/LanguageToggle';
+import { Logo } from '@/shared/ui/Logo';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
 // Route mince : composition uniquement. La logique du formulaire vit dans
@@ -33,10 +34,9 @@ export default function LoginScreen() {
           </View>
 
           <View style={styles.main}>
-            {/* Identité de marque : bleu + accent vert (charte). */}
+            {/* Identité de marque : logo officiel (charte). */}
             <View style={styles.header}>
-              <Text style={styles.brand}>{t('app.name')}</Text>
-              <View style={styles.accent} />
+              <Logo wordmark size={40} />
               <Text style={styles.tagline}>{t('app.tagline')}</Text>
             </View>
 
@@ -60,21 +60,8 @@ const styles = StyleSheet.create({
   topBar: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: spacing.xl },
   // Bloc central : le formulaire est centré verticalement sur écran haut.
   main: { flex: 1, justifyContent: 'center', gap: spacing['2xl'] },
-  header: { gap: spacing.xs },
-  brand: {
-    fontSize: fontSize.lg,
-    fontWeight: '800',
-    color: colors.brand[500],
-    letterSpacing: 0.5,
-  },
-  accent: {
-    width: 36,
-    height: 3,
-    borderRadius: 2,
-    backgroundColor: colors.green[600],
-    marginTop: spacing.xs,
-  },
-  tagline: { fontSize: fontSize.sm, color: colors.neutral[500], marginTop: spacing.xs },
+  header: { gap: spacing.sm },
+  tagline: { fontSize: fontSize.sm, color: colors.neutral[500] },
   titleBlock: { gap: spacing.xs },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
   subtitle: { fontSize: fontSize.md, color: colors.neutral[500] },
