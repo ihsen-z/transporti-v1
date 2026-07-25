@@ -28,7 +28,9 @@
           "photosPermission": "Transporti accède à vos photos pour envoyer vos documents de vérification.",
           "cameraPermission": "Transporti accède à la caméra pour photographier vos documents."
         }
-      ]
+      ],
+      "expo-asset",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true
