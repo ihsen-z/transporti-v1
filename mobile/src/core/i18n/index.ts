@@ -4,10 +4,12 @@ import { getLocales } from 'expo-localization';
 import { I18nManager } from 'react-native';
 import fr from './locales/fr.json';
 import ar from './locales/ar.json';
+import { getStoredLang } from './langStorage';
 
-// Langue par défaut = langue de l'appareil si supportée (fr/ar), sinon FR.
+// Langue initiale = choix persisté s'il existe, sinon langue de l'appareil
+// (fr/ar supportées), sinon FR.
 const deviceLang = getLocales()[0]?.languageCode ?? 'fr';
-const initialLang = deviceLang === 'ar' ? 'ar' : 'fr';
+const initialLang = getStoredLang() ?? (deviceLang === 'ar' ? 'ar' : 'fr');
 
 // Autorise le RTL (derja AR). Le vrai basculement de layout impose un
 // redémarrage via I18nManager.forceRTL — géré au changement de langue en S1.

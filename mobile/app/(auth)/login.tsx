@@ -27,17 +27,26 @@ export default function LoginScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
+          {/* Row + flex-end => se place au bord de fin de lecture (flip RTL). */}
           <View style={styles.topBar}>
             <LanguageToggle />
           </View>
 
-          <View style={styles.header}>
-            <Text style={styles.brand}>{t('app.name')}</Text>
-            <Text style={styles.title}>{t('auth.login.title')}</Text>
-            <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
-          </View>
+          <View style={styles.main}>
+            {/* Identité de marque : bleu + accent vert (charte). */}
+            <View style={styles.header}>
+              <Text style={styles.brand}>{t('app.name')}</Text>
+              <View style={styles.accent} />
+              <Text style={styles.tagline}>{t('app.tagline')}</Text>
+            </View>
 
-          <LoginForm />
+            <View style={styles.titleBlock}>
+              <Text style={styles.title}>{t('auth.login.title')}</Text>
+              <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
+            </View>
+
+            <LoginForm />
+          </View>
         </ScrollView>
       </KeyboardAvoidingView>
     </SafeAreaView>
@@ -47,20 +56,26 @@ export default function LoginScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.neutral[0] },
   flex: { flex: 1 },
-  content: {
-    flexGrow: 1,
-    padding: spacing.xl,
-    gap: spacing['2xl'],
-  },
-  // Row + flex-end => se place au bord de fin de lecture (flip auto en RTL).
-  topBar: { flexDirection: 'row', justifyContent: 'flex-end' },
+  content: { flexGrow: 1, padding: spacing.xl },
+  topBar: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: spacing.xl },
+  // Bloc central : le formulaire est centré verticalement sur écran haut.
+  main: { flex: 1, justifyContent: 'center', gap: spacing['2xl'] },
   header: { gap: spacing.xs },
   brand: {
-    fontSize: fontSize.sm,
-    fontWeight: '700',
+    fontSize: fontSize.lg,
+    fontWeight: '800',
     color: colors.brand[500],
-    letterSpacing: 1,
+    letterSpacing: 0.5,
   },
+  accent: {
+    width: 36,
+    height: 3,
+    borderRadius: 2,
+    backgroundColor: colors.green[600],
+    marginTop: spacing.xs,
+  },
+  tagline: { fontSize: fontSize.sm, color: colors.neutral[500], marginTop: spacing.xs },
+  titleBlock: { gap: spacing.xs },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
   subtitle: { fontSize: fontSize.md, color: colors.neutral[500] },
 });
