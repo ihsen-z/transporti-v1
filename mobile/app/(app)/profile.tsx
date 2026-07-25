@@ -7,6 +7,7 @@ import { useAuthStore } from '@/core/auth/authStore';
 import { Button } from '@/shared/ui/Button';
 import { LanguageToggle } from '@/shared/ui/LanguageToggle';
 import { DisputesPanel } from '@/features/disputes/components/DisputesPanel';
+import { ReviewsPanel } from '@/features/reviews/components/ReviewsPanel';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 
 // Onglet Profil : identité, rôle, langue, litiges et déconnexion.
@@ -15,6 +16,7 @@ export default function ProfileScreen() {
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const [disputesOpen, setDisputesOpen] = useState(false);
+  const [reviewsOpen, setReviewsOpen] = useState(false);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -37,6 +39,16 @@ export default function ProfileScreen() {
 
         <Pressable
           style={styles.link}
+          onPress={() => setReviewsOpen(true)}
+          accessibilityRole="button"
+        >
+          <Ionicons name="star-outline" size={22} color={colors.brand[600]} />
+          <Text style={styles.linkText}>{t('reviews.my_title')}</Text>
+          <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+        </Pressable>
+
+        <Pressable
+          style={styles.link}
           onPress={() => setDisputesOpen(true)}
           accessibilityRole="button"
         >
@@ -51,6 +63,7 @@ export default function ProfileScreen() {
       </View>
 
       <DisputesPanel visible={disputesOpen} onClose={() => setDisputesOpen(false)} />
+      <ReviewsPanel visible={reviewsOpen} onClose={() => setReviewsOpen(false)} />
     </SafeAreaView>
   );
 }

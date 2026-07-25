@@ -3,6 +3,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
+import { OpenReviewSheet } from '@/features/reviews/components/OpenReviewSheet';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { MyRequestDto, MyRequestStatus } from '../api/dto';
 import { useAcceptCounter } from '../api/useAcceptCounter';
@@ -28,6 +29,7 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
   const { t } = useTranslation();
   const accept = useAcceptCounter();
   const [disputeOpen, setDisputeOpen] = useState(false);
+  const [reviewOpen, setReviewOpen] = useState(false);
 
   const isCountered = request.status === 'COUNTERED';
   const accepted = request.status === 'ACCEPTED' || accept.isSuccess;
@@ -83,6 +85,11 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
           ) : (
             <Text style={styles.hint}>{t('my_requests.pin_note')}</Text>
           )}
+          <Button
+            label={t('reviews.open')}
+            onPress={() => setReviewOpen(true)}
+            variant="primary"
+          />
           <Pressable onPress={() => setDisputeOpen(true)} accessibilityRole="button">
             <Text style={styles.dispute}>{t('disputes.open')}</Text>
           </Pressable>
@@ -92,6 +99,10 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
       <OpenDisputeSheet
         jobId={disputeOpen ? request.job : null}
         onClose={() => setDisputeOpen(false)}
+      />
+      <OpenReviewSheet
+        jobId={reviewOpen ? request.job : null}
+        onClose={() => setReviewOpen(false)}
       />
     </View>
   );

@@ -271,6 +271,28 @@
       "network": "Connexion impossible. Réessayez."
     }
   },
+  "reviews": {
+    "open": "Laisser un avis",
+    "rate_title": "Laisser un avis",
+    "rate_label": "Votre note",
+    "comment_label": "Commentaire (optionnel)",
+    "comment_ph": "Partagez votre expérience…",
+    "submit": "Envoyer l'avis",
+    "success": "Merci ! Votre avis a été enregistré.",
+    "my_title": "Mes avis",
+    "empty": "Aucun avis reçu.",
+    "masked": "Avis masqué — en attente de l'avis de l'autre partie.",
+    "completed_title": "Missions terminées",
+    "completed_empty": "Aucune mission terminée.",
+    "errors": {
+      "rating_required": "Choisissez une note.",
+      "already_reviewed": "Vous avez déjà noté cette mission.",
+      "not_completed": "La mission n'est pas encore terminée.",
+      "not_participant": "Vous ne participez pas à cette mission.",
+      "network": "Connexion impossible. Réessayez.",
+      "unknown": "Action impossible pour le moment."
+    }
+  },
   "role": {
     "CLIENT": "Client",
     "TRANSPORTER": "Transporteur",

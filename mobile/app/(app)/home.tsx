@@ -3,6 +3,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { MissionsList } from '@/features/missions/components/MissionsList';
+import { CompletedMissionsList } from '@/features/reviews/components/CompletedMissionsList';
 import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
 import { NotificationBell } from '@/features/notifications/components/NotificationBell';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
@@ -39,6 +40,7 @@ export default function HomeScreen() {
         </View>
 
         {isTransporter ? <MissionsList /> : null}
+        {isTransporter ? <CompletedMissionsList /> : null}
         {isClient ? <MyRequestsList /> : null}
       </ScrollView>
     </SafeAreaView>
