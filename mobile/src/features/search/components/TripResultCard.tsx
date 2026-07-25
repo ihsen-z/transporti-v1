@@ -1,17 +1,12 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { Card } from '@/shared/ui/Card';
+import { Avatar } from '@/shared/ui/Avatar';
+import { Badge } from '@/shared/ui/Badge';
+import { RouteRow } from '@/shared/ui/RouteRow';
+import { colors, spacing, fontSize } from '@/shared/theme';
 import type { TripResultDto } from '../api/dto';
-
-function formatWhen(iso: string): string {
-  const d = new Date(iso);
-  const dd = String(d.getDate()).padStart(2, '0');
-  const mm = String(d.getMonth() + 1).padStart(2, '0');
-  const hh = String(d.getHours()).padStart(2, '0');
-  const mi = String(d.getMinutes()).padStart(2, '0');
-  return `${dd}/${mm} ${hh}:${mi}`;
-}
 
 interface Props {
   trip: TripResultDto;
@@ -20,58 +15,46 @@ interface Props {
 
 export function TripResultCard({ trip, onRequest }: Props) {
   const { t } = useTranslation();
+  const km = trip.distance_km ? `≈ ${Math.round(Number(trip.distance_km))} km` : undefined;
 
   return (
-    <View style={styles.card}>
-      <View style={styles.headerRow}>
-        <Text style={styles.route} numberOfLines={1}>
-          {trip.pickup_governorate} → {trip.dropoff_governorate}
-        </Text>
-        {trip.instant_booking ? (
-          <View style={styles.instantBadge}>
-            <Text style={styles.instantText}>{t('search.instant')}</Text>
-          </View>
-        ) : null}
+    <Card>
+      <View style={styles.top}>
+        <Avatar name={trip.owner_name} size={42} />
+        <Text style={styles.owner} numberOfLines={1}>{trip.owner_name}</Text>
+        {trip.instant_booking ? <Badge label={t('search.instant')} variant="save" /> : null}
       </View>
 
-      <Text style={styles.when}>{formatWhen(trip.scheduled_time)}</Text>
-      <Text style={styles.owner}>{trip.owner_name}</Text>
+      <View style={styles.route}>
+        <RouteRow from={trip.pickup_governorate} to={trip.dropoff_governorate} middle={km} />
+      </View>
 
-      {/* VERT = valeur : la fourchette de prix serveur. */}
-      <Text style={styles.price}>
-        {t('search.price_range', { min: trip.price_tnd_min, max: trip.price_tnd_max })}
-      </Text>
+      <View style={styles.meta}>
+        <Badge label={t('search.badge_return')} variant="brand" />
+      </View>
 
-      <Button label={t('search.request.title')} onPress={onRequest} variant="cta" style={styles.btn} />
-    </View>
+      <View style={styles.foot}>
+        {/* VERT = valeur : fourchette de prix serveur. */}
+        <Text style={styles.price}>
+          {t('search.price_range', { min: trip.price_tnd_min, max: trip.price_tnd_max })}
+        </Text>
+        <Button label={t('search.request.title')} onPress={onRequest} variant="cta" size="sm" />
+      </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
-    backgroundColor: colors.neutral[0],
-    gap: spacing.xs,
-  },
-  headerRow: {
+  top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  owner: { flex: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
+  route: { marginTop: spacing.md },
+  meta: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' },
+  foot: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    gap: spacing.sm,
+    marginTop: spacing.lg,
+    gap: spacing.md,
   },
-  route: { flex: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
-  instantBadge: {
-    backgroundColor: colors.green[600],
-    paddingVertical: 2,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radii.full,
-  },
-  instantText: { color: colors.neutral[0], fontSize: fontSize.sm, fontWeight: '700' },
-  when: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  owner: { fontSize: fontSize.sm, color: colors.neutral[700] },
-  price: { fontSize: fontSize.lg, fontWeight: '800', color: colors.green[700] },
-  btn: { marginTop: spacing.sm },
+  price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.green[700] },
 });

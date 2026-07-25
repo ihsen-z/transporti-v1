@@ -169,6 +169,7 @@
     "to": "Arrivée",
     "date_optional": "Jour (optionnel)",
     "results_count": "{{count}} trajet(s) trouvé(s)",
+    "badge_return": "Retour à vide",
     "no_results_title": "Aucun trajet retour pour l'instant",
     "no_results_hint": "Créez une alerte : on vous prévient dès qu'un trajet compatible est publié.",
     "create_alert": "Créer une alerte corridor",

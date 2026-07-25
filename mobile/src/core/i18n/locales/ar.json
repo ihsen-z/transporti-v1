@@ -169,6 +169,7 @@
     "to": "الوصول",
     "date_optional": "اليوم (اختياري)",
     "results_count": "{{count}} رحلة موجودة",
+    "badge_return": "عودة على فارغ",
     "no_results_title": "ما فماش رحلات عودة حاليا",
     "no_results_hint": "اعمل تنبيه: نعلموك كي تتنشر رحلة تناسبك.",
     "create_alert": "اعمل تنبيه مسار",
