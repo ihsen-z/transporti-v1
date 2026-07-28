@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useProfile } from '@/features/auth/api/useProfile';
+import { FloatingTabBar } from '@/shared/ui/FloatingTabBar';
 import { colors } from '@/shared/theme';
 
 // Fabrique d'icône d'onglet (état plein si actif, contour sinon).
@@ -41,16 +42,14 @@ export default function AppLayout() {
   }
 
   const role = user?.role;
-  const showSearch = role === 'CLIENT';
-  const showPublish = role === 'TRANSPORTER';
 
+  // Barre flottante custom (pilule + FAB orange central). La visibilité des
+  // onglets et le choix du FAB par rôle vivent dans FloatingTabBar : ici on
+  // déclare simplement tous les écrans + leurs icônes/titres.
   return (
     <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: colors.brand[500],
-        tabBarInactiveTintColor: colors.neutral[400],
-      }}
+      tabBar={(props) => <FloatingTabBar {...props} role={role} />}
+      screenOptions={{ headerShown: false }}
     >
       <Tabs.Screen
         name="home"
@@ -58,25 +57,16 @@ export default function AppLayout() {
       />
       <Tabs.Screen
         name="search"
-        options={{
-          title: t('tabs.search'),
-          href: showSearch ? '/search' : null,
-          tabBarIcon: tabIcon('search', 'search-outline'),
-        }}
+        options={{ title: t('tabs.search'), tabBarIcon: tabIcon('search', 'search-outline') }}
       />
       <Tabs.Screen
         name="publish"
-        options={{
-          title: t('tabs.publish'),
-          href: showPublish ? '/publish' : null,
-          tabBarIcon: tabIcon('add-circle', 'add-circle-outline'),
-        }}
+        options={{ title: t('tabs.publish'), tabBarIcon: tabIcon('add-circle', 'add-circle-outline') }}
       />
       <Tabs.Screen
         name="requests"
         options={{
           title: t('tabs.requests'),
-          href: showPublish ? '/requests' : null,
           tabBarIcon: tabIcon('file-tray-full', 'file-tray-full-outline'),
         }}
       />
