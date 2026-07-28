@@ -2,19 +2,15 @@ import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
+import { Card } from '@/shared/ui/Card';
+import { Badge } from '@/shared/ui/Badge';
+import { RouteRow } from '@/shared/ui/RouteRow';
+import { statusVariant } from '@/shared/ui/statusVariant';
 import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
 import { OpenReviewSheet } from '@/features/reviews/components/OpenReviewSheet';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
-import type { MyRequestDto, MyRequestStatus } from '../api/dto';
+import type { MyRequestDto } from '../api/dto';
 import { useAcceptCounter } from '../api/useAcceptCounter';
-
-const STATUS_COLOR: Record<MyRequestStatus, string> = {
-  PENDING: colors.warning,
-  COUNTERED: colors.brand[500],
-  ACCEPTED: colors.green[600],
-  REJECTED: colors.error,
-  CANCELLED: colors.neutral[400],
-};
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -43,16 +39,14 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
     : null;
 
   return (
-    <View style={styles.card}>
+    <Card>
       <View style={styles.headerRow}>
-        <Text style={styles.route} numberOfLines={1}>
-          {request.job_pickup} → {request.job_dropoff}
-        </Text>
-        <View style={[styles.badge, { backgroundColor: STATUS_COLOR[request.status] }]}>
-          <Text style={styles.badgeText}>{t(`my_requests.status.${request.status}`)}</Text>
-        </View>
+        <Badge label={t(`my_requests.status.${request.status}`)} variant={statusVariant(request.status)} />
+        <Text style={styles.when}>{formatWhen(request.job_date)}</Text>
       </View>
-      <Text style={styles.when}>{formatWhen(request.job_date)}</Text>
+      <View style={styles.route}>
+        <RouteRow from={request.job_pickup} to={request.job_dropoff} />
+      </View>
       <Text style={styles.price}>{t('my_requests.proposed', { price: request.proposed_price })}</Text>
 
       {isCountered && request.counter_price ? (
@@ -104,31 +98,21 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
         jobId={reviewOpen ? request.job : null}
         onClose={() => setReviewOpen(false)}
       />
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
-    backgroundColor: colors.neutral[0],
-    gap: spacing.xs,
-  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  route: { flex: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
-  badge: { paddingVertical: 2, paddingHorizontal: spacing.sm, borderRadius: radii.full },
-  badgeText: { color: colors.neutral[0], fontSize: fontSize.sm, fontWeight: '700' },
+  route: { marginTop: spacing.md },
   when: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  price: { fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[700] },
-  block: { gap: spacing.sm, marginTop: spacing.sm },
+  price: { fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[700], marginTop: spacing.sm },
+  block: { gap: spacing.sm, marginTop: spacing.md },
   counter: { fontSize: fontSize.md, fontWeight: '800', color: colors.brand[500] },
   payment: { fontSize: fontSize.sm, color: colors.neutral[700] },
   error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },

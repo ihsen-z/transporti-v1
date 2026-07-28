@@ -3,18 +3,13 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
+import { Card } from '@/shared/ui/Card';
+import { Avatar } from '@/shared/ui/Avatar';
+import { Badge } from '@/shared/ui/Badge';
+import { statusVariant } from '@/shared/ui/statusVariant';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
-import type { RespondAction, TripRequestDto, TripRequestStatus } from '../api/dto';
+import type { RespondAction, TripRequestDto } from '../api/dto';
 import { useRespondRequest } from '../api/useRespondRequest';
-
-// Couleur du badge de statut.
-const STATUS_COLOR: Record<TripRequestStatus, string> = {
-  PENDING: colors.warning,
-  COUNTERED: colors.brand[500],
-  ACCEPTED: colors.green[600],
-  REJECTED: colors.error,
-  CANCELLED: colors.neutral[400],
-};
 
 interface Props {
   request: TripRequestDto;
@@ -49,16 +44,18 @@ export function RequestCard({ request, jobId }: Props) {
     : null;
 
   return (
-    <View style={styles.card}>
-      <View style={styles.headerRow}>
+    <Card>
+      <View style={styles.top}>
+        <Avatar name={request.client_name} size={42} />
         <Text style={styles.client} numberOfLines={1}>{request.client_name}</Text>
-        <View style={[styles.badge, { backgroundColor: STATUS_COLOR[request.status] }]}>
-          <Text style={styles.badgeText}>{t(`requests.status.${request.status}`)}</Text>
-        </View>
+        <Badge label={t(`requests.status.${request.status}`)} variant={statusVariant(request.status)} />
       </View>
 
+      {/* VERT = valeur : le prix proposé par le client. */}
       <Text style={styles.price}>{t('requests.proposed', { price: request.proposed_price })}</Text>
-      <Text style={styles.payment}>{t(`requests.payment.${request.payment_method}`)}</Text>
+      <View style={styles.meta}>
+        <Badge label={t(`requests.payment.${request.payment_method}`)} variant="cod" />
+      </View>
       {request.counter_price ? (
         <Text style={styles.counter}>{t('requests.countered', { price: request.counter_price })}</Text>
       ) : null}
@@ -119,37 +116,18 @@ export function RequestCard({ request, jobId }: Props) {
           </Pressable>
         </Pressable>
       </Modal>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
-    backgroundColor: colors.neutral[0],
-    gap: spacing.xs,
-  },
-  headerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
+  top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   client: { flex: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
-  badge: {
-    paddingVertical: 2,
-    paddingHorizontal: spacing.sm,
-    borderRadius: radii.full,
-  },
-  badgeText: { color: colors.neutral[0], fontSize: fontSize.sm, fontWeight: '700' },
-  price: { fontSize: fontSize.lg, fontWeight: '800', color: colors.green[700] },
-  payment: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  counter: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[500] },
-  desc: { fontSize: fontSize.sm, color: colors.neutral[700] },
-  actions: { gap: spacing.sm, marginTop: spacing.sm },
+  price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.green[700], marginTop: spacing.md },
+  meta: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm, flexWrap: 'wrap' },
+  counter: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[500], marginTop: spacing.xs },
+  desc: { fontSize: fontSize.sm, color: colors.neutral[700], marginTop: spacing.xs },
+  actions: { gap: spacing.sm, marginTop: spacing.md },
   actionBtn: { minHeight: 44 },
   rejectBtn: { alignSelf: 'center', paddingVertical: spacing.sm },
   rejectText: { color: colors.error, fontWeight: '700', fontSize: fontSize.sm },

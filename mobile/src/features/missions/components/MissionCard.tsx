@@ -3,19 +3,15 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
+import { Card } from '@/shared/ui/Card';
+import { Badge } from '@/shared/ui/Badge';
+import { RouteRow } from '@/shared/ui/RouteRow';
+import { statusVariant } from '@/shared/ui/statusVariant';
 import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
-import type { MissionDto, MissionStatus } from '../api/dto';
+import { colors, spacing, fontSize } from '@/shared/theme';
+import type { MissionDto } from '../api/dto';
 import { useConfirmStart } from '../api/useConfirmStart';
 import { useCompleteJob } from '../api/useCompleteJob';
-
-const STATUS_COLOR: Record<MissionStatus, string> = {
-  MATCHED: colors.warning,
-  IN_PROGRESS: colors.brand[500],
-  COMPLETED: colors.green[600],
-  PUBLISHED: colors.neutral[400],
-  CANCELLED: colors.neutral[400],
-};
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -60,16 +56,14 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
     : null;
 
   return (
-    <View style={styles.card}>
+    <Card>
       <View style={styles.headerRow}>
-        <Text style={styles.route} numberOfLines={1}>
-          {mission.pickup_governorate} → {mission.dropoff_governorate}
-        </Text>
-        <View style={[styles.badge, { backgroundColor: STATUS_COLOR[mission.status] }]}>
-          <Text style={styles.badgeText}>{t(`missions.status.${mission.status}`)}</Text>
-        </View>
+        <Badge label={t(`missions.status.${mission.status}`)} variant={statusVariant(mission.status)} />
+        <Text style={styles.when}>{formatWhen(mission.scheduled_time)}</Text>
       </View>
-      <Text style={styles.when}>{formatWhen(mission.scheduled_time)}</Text>
+      <View style={styles.route}>
+        <RouteRow from={mission.pickup_governorate} to={mission.dropoff_governorate} />
+      </View>
 
       {isMatched ? (
         <View style={styles.action}>
@@ -116,30 +110,20 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
         jobId={disputeOpen ? mission.id : null}
         onClose={() => setDisputeOpen(false)}
       />
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
-    backgroundColor: colors.neutral[0],
-    gap: spacing.xs,
-  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  route: { flex: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
-  badge: { paddingVertical: 2, paddingHorizontal: spacing.sm, borderRadius: radii.full },
-  badgeText: { color: colors.neutral[0], fontSize: fontSize.sm, fontWeight: '700' },
+  route: { marginTop: spacing.md },
   when: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  action: { gap: spacing.sm, marginTop: spacing.sm },
+  action: { gap: spacing.sm, marginTop: spacing.md },
   hint: { fontSize: fontSize.sm, color: colors.neutral[500] },
   error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
   dispute: {

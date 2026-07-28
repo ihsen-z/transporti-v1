@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Card } from '@/shared/ui/Card';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { NotificationDto } from '../api/dto';
 
@@ -18,17 +19,16 @@ function formatWhen(iso: string): string {
 
 export function NotificationRow({ notif, onPress }: Props) {
   return (
-    <Pressable
-      style={[styles.row, !notif.is_read && styles.unread]}
-      onPress={onPress}
-      accessibilityRole="button"
-    >
-      {!notif.is_read ? <View style={styles.dot} /> : <View style={styles.dotPlaceholder} />}
-      <View style={styles.flex}>
-        <Text style={styles.title} numberOfLines={1}>{notif.title}</Text>
-        <Text style={styles.message} numberOfLines={2}>{notif.message}</Text>
-        <Text style={styles.when}>{formatWhen(notif.created_at)}</Text>
-      </View>
+    <Pressable onPress={onPress} accessibilityRole="button">
+      {/* Non lu : teinte bleue (structure) + pastille orange (CTA d'attention). */}
+      <Card style={[styles.row, !notif.is_read && styles.unread]}>
+        {!notif.is_read ? <View style={styles.dot} /> : <View style={styles.dotPlaceholder} />}
+        <View style={styles.flex}>
+          <Text style={styles.title} numberOfLines={1}>{notif.title}</Text>
+          <Text style={styles.message} numberOfLines={2}>{notif.message}</Text>
+          <Text style={styles.when}>{formatWhen(notif.created_at)}</Text>
+        </View>
+      </Card>
     </Pressable>
   );
 }
@@ -37,11 +37,8 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     gap: spacing.md,
-    padding: spacing.lg,
-    borderRadius: radii.lg,
-    backgroundColor: colors.neutral[0],
   },
-  unread: { backgroundColor: colors.brand[50] },
+  unread: { backgroundColor: colors.brand[50], borderColor: colors.brand[100] },
   dot: {
     width: 8,
     height: 8,

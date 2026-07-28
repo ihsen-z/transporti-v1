@@ -1,45 +1,32 @@
 import { StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
-import type { DisputeStatus, MyDisputeDto } from '../api/dto';
-
-const STATUS_COLOR: Record<DisputeStatus, string> = {
-  OPEN: colors.warning,
-  INVESTIGATING: colors.brand[500],
-  RESOLVED: colors.green[600],
-  REJECTED: colors.neutral[400],
-};
+import { Card } from '@/shared/ui/Card';
+import { Badge } from '@/shared/ui/Badge';
+import { RouteRow } from '@/shared/ui/RouteRow';
+import { statusVariant } from '@/shared/ui/statusVariant';
+import { colors, spacing, fontSize } from '@/shared/theme';
+import type { MyDisputeDto } from '../api/dto';
 
 export function DisputeRow({ dispute }: { dispute: MyDisputeDto }) {
   const { t } = useTranslation();
 
   return (
-    <View style={styles.card}>
+    <Card>
       <View style={styles.headerRow}>
         <Text style={styles.reason} numberOfLines={1}>
           {t(`disputes.reason.${dispute.reason}`)}
         </Text>
-        <View style={[styles.badge, { backgroundColor: STATUS_COLOR[dispute.status] }]}>
-          <Text style={styles.badgeText}>{t(`disputes.status.${dispute.status}`)}</Text>
-        </View>
+        <Badge label={t(`disputes.status.${dispute.status}`)} variant={statusVariant(dispute.status)} />
       </View>
-      <Text style={styles.route} numberOfLines={1}>
-        {dispute.job_summary.pickup} → {dispute.job_summary.dropoff}
-      </Text>
+      <View style={styles.route}>
+        <RouteRow from={dispute.job_summary.pickup} to={dispute.job_summary.dropoff} />
+      </View>
       <Text style={styles.desc} numberOfLines={2}>{dispute.description}</Text>
-    </View>
+    </Card>
   );
 }
 
 const styles = StyleSheet.create({
-  card: {
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
-    backgroundColor: colors.neutral[0],
-    gap: spacing.xs,
-  },
   headerRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -47,8 +34,6 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
   },
   reason: { flex: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
-  badge: { paddingVertical: 2, paddingHorizontal: spacing.sm, borderRadius: radii.full },
-  badgeText: { color: colors.neutral[0], fontSize: fontSize.sm, fontWeight: '700' },
-  route: { fontSize: fontSize.sm, color: colors.neutral[700] },
-  desc: { fontSize: fontSize.sm, color: colors.neutral[500] },
+  route: { marginTop: spacing.md },
+  desc: { fontSize: fontSize.sm, color: colors.neutral[500], marginTop: spacing.sm },
 });

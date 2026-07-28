@@ -32,7 +32,7 @@ const styles = StyleSheet.create({
   mineWrap: { alignSelf: 'flex-end' },
   otherWrap: { alignSelf: 'flex-start' },
   bubble: { paddingVertical: spacing.sm, paddingHorizontal: spacing.md, borderRadius: radii.lg },
-  mine: { backgroundColor: colors.brand[500], borderBottomRightRadius: radii.md },
+  mine: { backgroundColor: colors.brand[600], borderBottomRightRadius: radii.md },
   other: { backgroundColor: colors.neutral[100], borderBottomLeftRadius: radii.md },
   sender: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[600], marginBottom: 2 },
   textMine: { fontSize: fontSize.md, color: colors.neutral[0] },

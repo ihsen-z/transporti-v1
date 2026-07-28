@@ -1,5 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Card } from '@/shared/ui/Card';
+import { Avatar } from '@/shared/ui/Avatar';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { ConversationListDto } from '../api/dto';
 
@@ -12,38 +14,33 @@ export function ConversationRow({ conv, onPress }: Props) {
   const hasUnread = conv.unread_count > 0;
 
   return (
-    <Pressable style={styles.row} onPress={onPress} accessibilityRole="button">
-      <View style={styles.flex}>
-        <Text style={styles.title} numberOfLines={1}>{conv.job_title}</Text>
-        <Text style={styles.party} numberOfLines={1}>{conv.other_party_name}</Text>
-        {conv.last_message ? (
-          <Text style={[styles.last, hasUnread && styles.lastUnread]} numberOfLines={1}>
-            {conv.last_message.content}
-          </Text>
-        ) : null}
-      </View>
-
-      {hasUnread ? (
-        <View style={styles.badge}>
-          <Text style={styles.badgeText}>{conv.unread_count}</Text>
+    <Pressable onPress={onPress} accessibilityRole="button">
+      <Card style={styles.card}>
+        <Avatar name={conv.other_party_name} size={44} />
+        <View style={styles.flex}>
+          <Text style={styles.title} numberOfLines={1}>{conv.job_title}</Text>
+          <Text style={styles.party} numberOfLines={1}>{conv.other_party_name}</Text>
+          {conv.last_message ? (
+            <Text style={[styles.last, hasUnread && styles.lastUnread]} numberOfLines={1}>
+              {conv.last_message.content}
+            </Text>
+          ) : null}
         </View>
-      ) : null}
-      <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+
+        {/* Bulle numérique (compteur non lu) — pas un tag texte, donc custom. */}
+        {hasUnread ? (
+          <View style={styles.badge}>
+            <Text style={styles.badgeText}>{conv.unread_count}</Text>
+          </View>
+        ) : null}
+        <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+      </Card>
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
-    backgroundColor: colors.neutral[0],
-  },
+  card: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   flex: { flex: 1, gap: 2 },
   title: { fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
   party: { fontSize: fontSize.sm, color: colors.neutral[700] },

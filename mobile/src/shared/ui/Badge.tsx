@@ -7,6 +7,7 @@ export type BadgeVariant =
   | 'verified' // ✓ vérifié
   | 'save' // −40% (valeur, plein vert)
   | 'cod' // 💵 à la livraison
+  | 'warning' // ⏳ en attente / en cours (ambre)
   | 'urgent'
   | 'neutral';
 
@@ -15,6 +16,8 @@ const VARIANTS: Record<BadgeVariant, { bg: string; fg: string }> = {
   verified: { bg: colors.green[50], fg: colors.green[700] },
   save: { bg: colors.green[600], fg: colors.neutral[0] },
   cod: { bg: colors.tagBg, fg: colors.slate },
+  // Teintes ambre (état warning) — cohérentes avec colors.warning #f59e0b.
+  warning: { bg: '#fef3c7', fg: '#b45309' },
   urgent: { bg: '#fee2e2', fg: colors.error },
   neutral: { bg: colors.tagBg, fg: colors.slate },
 };
