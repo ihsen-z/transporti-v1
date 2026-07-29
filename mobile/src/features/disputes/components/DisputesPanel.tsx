@@ -51,7 +51,7 @@ export function DisputesPanel({ visible, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  modal: { flex: 1, backgroundColor: colors.neutral[0] },
+  modal: { flex: 1, backgroundColor: colors.neutral[50] },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

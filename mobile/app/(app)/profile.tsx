@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { Button } from '@/shared/ui/Button';
+import { Card } from '@/shared/ui/Card';
 import { LanguageToggle } from '@/shared/ui/LanguageToggle';
 import { DisputesPanel } from '@/features/disputes/components/DisputesPanel';
 import { ReviewsPanel } from '@/features/reviews/components/ReviewsPanel';
@@ -27,50 +28,53 @@ export default function ProfileScreen() {
         <Text style={styles.title}>{t('profile.title')}</Text>
 
         {user ? (
-          <View style={styles.identity}>
+          <Card style={styles.identity}>
             <Text style={styles.email}>{user.email}</Text>
             <View style={styles.roleChip}>
               <Text style={styles.roleChipText}>{t(`role.${user.role}`)}</Text>
             </View>
-          </View>
+          </Card>
         ) : null}
 
-        <View style={styles.row}>
-          <Text style={styles.rowLabel}>{t('profile.language')}</Text>
-          <LanguageToggle />
-        </View>
+        {/* Menu : langue + accès aux panneaux (avis, litiges, confiance). */}
+        <Card style={styles.menu}>
+          <View style={styles.row}>
+            <Text style={styles.rowLabel}>{t('profile.language')}</Text>
+            <LanguageToggle />
+          </View>
 
-        <Pressable
-          style={styles.link}
-          onPress={() => setReviewsOpen(true)}
-          accessibilityRole="button"
-        >
-          <Ionicons name="star-outline" size={22} color={colors.brand[600]} />
-          <Text style={styles.linkText}>{t('reviews.my_title')}</Text>
-          <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
-        </Pressable>
-
-        <Pressable
-          style={styles.link}
-          onPress={() => setDisputesOpen(true)}
-          accessibilityRole="button"
-        >
-          <Ionicons name="alert-circle-outline" size={22} color={colors.brand[600]} />
-          <Text style={styles.linkText}>{t('disputes.my_title')}</Text>
-          <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
-        </Pressable>
-
-        {isTransporter ? (
           <Pressable
             style={styles.link}
-            onPress={() => setTrustOpen(true)}
+            onPress={() => setReviewsOpen(true)}
             accessibilityRole="button"
           >
-            <Ionicons name="shield-checkmark-outline" size={22} color={colors.brand[600]} />
-            <Text style={styles.linkText}>{t('trust.title')}</Text>
+            <Ionicons name="star-outline" size={22} color={colors.brand[600]} />
+            <Text style={styles.linkText}>{t('reviews.my_title')}</Text>
             <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
           </Pressable>
-        ) : null}
+
+          <Pressable
+            style={styles.link}
+            onPress={() => setDisputesOpen(true)}
+            accessibilityRole="button"
+          >
+            <Ionicons name="alert-circle-outline" size={22} color={colors.brand[600]} />
+            <Text style={styles.linkText}>{t('disputes.my_title')}</Text>
+            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+          </Pressable>
+
+          {isTransporter ? (
+            <Pressable
+              style={styles.link}
+              onPress={() => setTrustOpen(true)}
+              accessibilityRole="button"
+            >
+              <Ionicons name="shield-checkmark-outline" size={22} color={colors.brand[600]} />
+              <Text style={styles.linkText}>{t('trust.title')}</Text>
+              <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+            </Pressable>
+          ) : null}
+        </Card>
       </View>
 
       <View style={styles.footer}>
@@ -85,8 +89,8 @@ export default function ProfileScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[0], padding: spacing.xl },
-  body: { flex: 1, gap: spacing.xl, paddingTop: spacing.xl },
+  safe: { flex: 1, backgroundColor: colors.neutral[50], padding: spacing.xl },
+  body: { flex: 1, gap: spacing.lg, paddingTop: spacing.lg },
   title: {
     fontSize: fontSize['2xl'],
     fontWeight: '800',
@@ -106,10 +110,12 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     fontSize: fontSize.sm,
   },
+  menu: { paddingVertical: spacing.xs },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingVertical: spacing.sm,
   },
   rowLabel: {
     fontSize: fontSize.md,
@@ -122,7 +128,7 @@ const styles = StyleSheet.create({
     gap: spacing.md,
     paddingVertical: spacing.md,
     borderTopWidth: 1,
-    borderTopColor: colors.neutral[100],
+    borderTopColor: colors.neutral[200],
   },
   linkText: { flex: 1, fontSize: fontSize.md, fontWeight: '600', color: colors.neutral[900] },
   footer: { paddingTop: spacing.lg },

@@ -15,12 +15,16 @@ const STATUS_VARIANT: Record<string, BadgeVariant> = {
   COUNTERED: 'brand',
   INVESTIGATING: 'brand',
   IN_PROGRESS: 'brand',
+  PARTIALLY_REVIEWED: 'brand', // vérification en cours de revue
   ACCEPTED: 'verified',
   RESOLVED: 'verified',
   COMPLETED: 'verified',
+  VERIFIED: 'verified', // profil transporteur vérifié
   PUBLISHED: 'neutral',
   CANCELLED: 'neutral',
+  UNVERIFIED: 'neutral',
   REJECTED: 'urgent',
+  SUSPENDED: 'urgent',
 };
 
 export function statusVariant(status: string): BadgeVariant {

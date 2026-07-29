@@ -5,22 +5,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { Badge } from '@/shared/ui/Badge';
+import { statusVariant } from '@/shared/ui/statusVariant';
+import { colors, spacing, fontSize } from '@/shared/theme';
 import type { DocumentDto, VehicleSubmitBody, VerificationStatus } from '../api/dto';
 import { useTrustStatus } from '../api/useTrustStatus';
 import { useSubmitVehicle } from '../api/useSubmitVehicle';
 import { useTrustDocuments } from '../api/useTrustDocuments';
 import { DocumentRow } from './DocumentRow';
 import { AddDocumentSheet } from './AddDocumentSheet';
-
-const STATUS_COLOR: Record<VerificationStatus, string> = {
-  UNVERIFIED: colors.neutral[400],
-  PENDING: colors.warning,
-  PARTIALLY_REVIEWED: colors.brand[500],
-  VERIFIED: colors.green[600],
-  REJECTED: colors.error,
-  SUSPENDED: colors.error,
-};
 
 interface Props {
   visible: boolean;
@@ -75,9 +68,7 @@ export function TrustPanel({ visible, onClose }: Props) {
             {/* Statut */}
             <View style={styles.statusRow}>
               <Text style={styles.label}>{t('trust.status_label')}</Text>
-              <View style={[styles.badge, { backgroundColor: STATUS_COLOR[currentStatus] }]}>
-                <Text style={styles.badgeText}>{t(`trust.status.${currentStatus}`)}</Text>
-              </View>
+              <Badge label={t(`trust.status.${currentStatus}`)} variant={statusVariant(currentStatus)} />
             </View>
 
             {/* Véhicule */}
@@ -135,7 +126,7 @@ export function TrustPanel({ visible, onClose }: Props) {
 }
 
 const styles = StyleSheet.create({
-  modal: { flex: 1, backgroundColor: colors.neutral[0] },
+  modal: { flex: 1, backgroundColor: colors.neutral[50] },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -147,8 +138,6 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, gap: spacing.md },
   statusRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   label: { fontSize: fontSize.md, fontWeight: '600', color: colors.neutral[700] },
-  badge: { paddingVertical: 4, paddingHorizontal: spacing.md, borderRadius: radii.full },
-  badgeText: { color: colors.neutral[0], fontSize: fontSize.sm, fontWeight: '800' },
   section: {
     fontSize: fontSize.lg,
     fontWeight: '800',

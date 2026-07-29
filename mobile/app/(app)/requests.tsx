@@ -71,7 +71,7 @@ export default function RequestsScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[0] },
+  safe: { flex: 1, backgroundColor: colors.neutral[50] },
   header: { padding: spacing.xl, gap: spacing.sm },
   back: { color: colors.brand[500], fontWeight: '700', fontSize: fontSize.md },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
