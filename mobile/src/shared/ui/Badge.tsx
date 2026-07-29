@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, radii, fontSize, spacing } from '@/shared/theme';
 
 // Pastilles/tags de la charte (design-system/30-composants).
@@ -31,7 +32,7 @@ export function Badge({ label, variant = 'neutral' }: Props) {
   const c = VARIANTS[variant];
   return (
     <View style={[styles.badge, { backgroundColor: c.bg }]}>
-      <Text style={[styles.text, { color: c.fg }]}>{label}</Text>
+      <Txt style={[styles.text, { color: c.fg }]}>{label}</Txt>
     </View>
   );
 }

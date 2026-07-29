@@ -1,8 +1,9 @@
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
+import { Txt } from '@/shared/ui/Txt';
 import { MissionsList } from '@/features/missions/components/MissionsList';
 import { CompletedMissionsList } from '@/features/reviews/components/CompletedMissionsList';
 import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
@@ -28,27 +29,27 @@ export default function HomeScreen() {
         <View style={styles.top}>
           <Avatar name={firstName || user?.email} size={44} />
           <View style={styles.hi}>
-            <Text style={styles.hiName} numberOfLines={1}>
+            <Txt style={styles.hiName} numberOfLines={1}>
               {t('home.welcome')}
               {firstName ? `, ${firstName}` : ''}
-            </Text>
-            {user ? <Text style={styles.role}>{t(`role.${user.role}`)}</Text> : null}
+            </Txt>
+            {user ? <Txt style={styles.role}>{t(`role.${user.role}`)}</Txt> : null}
           </View>
           <NotificationBell />
         </View>
 
         {/* Hero dégradé de marque. */}
         <GradientCard>
-          <Text style={styles.heroLabel}>{t('app.name')}</Text>
-          <Text style={styles.heroBig}>{t('app.tagline')}</Text>
+          <Txt style={styles.heroLabel}>{t('app.name')}</Txt>
+          <Txt style={styles.heroBig}>{t('app.tagline')}</Txt>
           {user ? (
             <View style={styles.heroBadges}>
               <View style={styles.heroBadge}>
-                <Text style={styles.heroBadgeText}>{t(`role.${user.role}`)}</Text>
+                <Txt style={styles.heroBadgeText}>{t(`role.${user.role}`)}</Txt>
               </View>
               {user.isVerified ? (
                 <View style={styles.heroBadge}>
-                  <Text style={styles.heroBadgeText}>✓ {t('home.verified')}</Text>
+                  <Txt style={styles.heroBadgeText}>✓ {t('home.verified')}</Txt>
                 </View>
               ) : null}
             </View>

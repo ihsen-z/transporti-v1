@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
 interface Props {
@@ -16,8 +17,8 @@ export function PlaceholderScreen({ title, subtitle, icon = 'construct-outline' 
     <SafeAreaView style={styles.safe}>
       <View style={styles.center}>
         <Ionicons name={icon} size={48} color={colors.brand[500]} />
-        <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>{subtitle}</Text>
+        <Txt style={styles.title}>{title}</Txt>
+        <Txt style={styles.subtitle}>{subtitle}</Txt>
       </View>
     </SafeAreaView>
   );

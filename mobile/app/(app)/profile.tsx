@@ -1,9 +1,10 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
+import { Txt } from '@/shared/ui/Txt';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { LanguageToggle } from '@/shared/ui/LanguageToggle';
@@ -25,13 +26,13 @@ export default function ProfileScreen() {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.body}>
-        <Text style={styles.title}>{t('profile.title')}</Text>
+        <Txt style={styles.title}>{t('profile.title')}</Txt>
 
         {user ? (
           <Card style={styles.identity}>
-            <Text style={styles.email}>{user.email}</Text>
+            <Txt style={styles.email}>{user.email}</Txt>
             <View style={styles.roleChip}>
-              <Text style={styles.roleChipText}>{t(`role.${user.role}`)}</Text>
+              <Txt style={styles.roleChipText}>{t(`role.${user.role}`)}</Txt>
             </View>
           </Card>
         ) : null}
@@ -39,7 +40,7 @@ export default function ProfileScreen() {
         {/* Menu : langue + accès aux panneaux (avis, litiges, confiance). */}
         <Card style={styles.menu}>
           <View style={styles.row}>
-            <Text style={styles.rowLabel}>{t('profile.language')}</Text>
+            <Txt style={styles.rowLabel}>{t('profile.language')}</Txt>
             <LanguageToggle />
           </View>
 
@@ -49,7 +50,7 @@ export default function ProfileScreen() {
             accessibilityRole="button"
           >
             <Ionicons name="star-outline" size={22} color={colors.brand[600]} />
-            <Text style={styles.linkText}>{t('reviews.my_title')}</Text>
+            <Txt style={styles.linkText}>{t('reviews.my_title')}</Txt>
             <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
           </Pressable>
 
@@ -59,7 +60,7 @@ export default function ProfileScreen() {
             accessibilityRole="button"
           >
             <Ionicons name="alert-circle-outline" size={22} color={colors.brand[600]} />
-            <Text style={styles.linkText}>{t('disputes.my_title')}</Text>
+            <Txt style={styles.linkText}>{t('disputes.my_title')}</Txt>
             <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
           </Pressable>
 
@@ -70,7 +71,7 @@ export default function ProfileScreen() {
               accessibilityRole="button"
             >
               <Ionicons name="shield-checkmark-outline" size={22} color={colors.brand[600]} />
-              <Text style={styles.linkText}>{t('trust.title')}</Text>
+              <Txt style={styles.linkText}>{t('trust.title')}</Txt>
               <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
             </Pressable>
           ) : null}

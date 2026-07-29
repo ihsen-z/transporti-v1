@@ -2,10 +2,10 @@ import {
   ActivityIndicator,
   Pressable,
   StyleSheet,
-  Text,
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, radii, spacing, fontSize, shadows } from '@/shared/theme';
 
 // Variantes charte : primary=bleu (structure), cta=orange (action unique),
@@ -74,9 +74,9 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={FG[variant]} />
       ) : (
-        <Text style={[styles.label, size === 'sm' ? styles.labelSm : null, { color: FG[variant] }]}>
+        <Txt style={[styles.label, size === 'sm' ? styles.labelSm : null, { color: FG[variant] }]}>
           {label}
-        </Text>
+        </Txt>
       )}
     </Pressable>
   );

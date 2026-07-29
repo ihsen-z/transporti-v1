@@ -1,5 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
+import { Txt } from '@/shared/ui/Txt';
 import { colors } from '@/shared/theme';
 
 // Logo officiel : barre/triangle bleu + flèche verte (design-system).
@@ -29,9 +30,9 @@ export function Logo({ size = 32, wordmark = false }: Props) {
   return (
     <View style={styles.row}>
       {mark}
-      <Text style={[styles.word, { fontSize: size * 0.62, marginLeft: -size * 0.06 }]}>
+      <Txt style={[styles.word, { fontSize: size * 0.62, marginLeft: -size * 0.06 }]}>
         ransporti
-      </Text>
+      </Txt>
     </View>
   );
 }

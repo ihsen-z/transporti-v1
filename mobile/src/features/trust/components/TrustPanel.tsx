@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
+import { Txt } from '@/shared/ui/Txt';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
 import { Badge } from '@/shared/ui/Badge';
@@ -55,7 +56,7 @@ export function TrustPanel({ visible, onClose }: Props) {
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
       <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
         <View style={styles.header}>
-          <Text style={styles.title}>{t('trust.title')}</Text>
+          <Txt style={styles.title}>{t('trust.title')}</Txt>
           <Pressable onPress={onClose} accessibilityRole="button">
             <Ionicons name="close" size={26} color={colors.neutral[700]} />
           </Pressable>
@@ -67,12 +68,12 @@ export function TrustPanel({ visible, onClose }: Props) {
           <ScrollView contentContainerStyle={styles.content}>
             {/* Statut */}
             <View style={styles.statusRow}>
-              <Text style={styles.label}>{t('trust.status_label')}</Text>
+              <Txt style={styles.label}>{t('trust.status_label')}</Txt>
               <Badge label={t(`trust.status.${currentStatus}`)} variant={statusVariant(currentStatus)} />
             </View>
 
             {/* Véhicule */}
-            <Text style={styles.section}>{t('trust.vehicle_title')}</Text>
+            <Txt style={styles.section}>{t('trust.vehicle_title')}</Txt>
             <TextField
               label={t('trust.vehicle_type')}
               placeholder={t('trust.vehicle_type_ph')}
@@ -100,14 +101,14 @@ export function TrustPanel({ visible, onClose }: Props) {
               variant="primary"
               loading={submit.isPending}
             />
-            {submit.isSuccess ? <Text style={styles.saved}>{t('trust.vehicle_saved')}</Text> : null}
+            {submit.isSuccess ? <Txt style={styles.saved}>{t('trust.vehicle_saved')}</Txt> : null}
 
             {/* Documents */}
-            <Text style={styles.section}>{t('trust.docs_title')}</Text>
+            <Txt style={styles.section}>{t('trust.docs_title')}</Txt>
             {documents.isLoading ? (
               <ActivityIndicator color={colors.brand[500]} />
             ) : docs.length === 0 ? (
-              <Text style={styles.empty}>{t('trust.docs_empty')}</Text>
+              <Txt style={styles.empty}>{t('trust.docs_empty')}</Txt>
             ) : (
               docs.map((d: DocumentDto) => <DocumentRow key={d.id} doc={d} />)
             )}

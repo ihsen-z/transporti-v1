@@ -5,10 +5,10 @@ import {
   Modal,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, radii, spacing, fontSize } from '@/shared/theme';
 
 export interface SelectOption<T> {
@@ -41,23 +41,23 @@ export function Select<T extends string | number>({
 
   return (
     <View style={styles.wrap}>
-      <Text style={[styles.label, { textAlign }]}>{label}</Text>
+      <Txt style={[styles.label, { textAlign }]}>{label}</Txt>
 
       <Pressable
         accessibilityRole="button"
         style={[styles.field, error ? styles.fieldError : null]}
         onPress={() => setOpen(true)}
       >
-        <Text
+        <Txt
           style={[styles.value, !selected && styles.placeholder]}
           numberOfLines={1}
         >
           {selected ? selected.label : placeholder}
-        </Text>
+        </Txt>
         <Ionicons name="chevron-down" size={18} color={colors.neutral[400]} />
       </Pressable>
 
-      {error ? <Text style={[styles.error, { textAlign }]}>{error}</Text> : null}
+      {error ? <Txt style={[styles.error, { textAlign }]}>{error}</Txt> : null}
 
       <Modal
         visible={open}
@@ -67,7 +67,7 @@ export function Select<T extends string | number>({
       >
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
           <View style={styles.sheet}>
-            <Text style={styles.sheetTitle}>{label}</Text>
+            <Txt style={styles.sheetTitle}>{label}</Txt>
             <FlatList
               data={options}
               keyExtractor={(item) => String(item.value)}
@@ -79,7 +79,7 @@ export function Select<T extends string | number>({
                     setOpen(false);
                   }}
                 >
-                  <Text style={styles.rowText}>{item.label}</Text>
+                  <Txt style={styles.rowText}>{item.label}</Txt>
                   {item.value === value ? (
                     <Ionicons name="checkmark" size={18} color={colors.brand[500]} />
                   ) : null}

@@ -1,5 +1,6 @@
-import { I18nManager, Pressable, StyleSheet, Text } from 'react-native';
+import { I18nManager, Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, radii, spacing, fontSize } from '@/shared/theme';
 import { setStoredLang } from '@/core/i18n/langStorage';
 
@@ -17,7 +18,7 @@ export function LanguageToggle() {
 
   return (
     <Pressable onPress={onToggle} style={styles.btn} accessibilityRole="button">
-      <Text style={styles.txt}>{t('lang.toggle')}</Text>
+      <Txt style={styles.txt}>{t('lang.toggle')}</Txt>
     </Pressable>
   );
 }

@@ -1,5 +1,6 @@
-import { StyleSheet, Text } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, gradients } from '@/shared/theme';
 
 // Avatar dégradé bleu avec initiale (design-system).
@@ -17,7 +18,7 @@ export function Avatar({ name, size = 44 }: Props) {
       end={{ x: 1, y: 1 }}
       style={[styles.av, { width: size, height: size, borderRadius: size * 0.32 }]}
     >
-      <Text style={[styles.initial, { fontSize: size * 0.4 }]}>{initial}</Text>
+      <Txt style={[styles.initial, { fontSize: size * 0.4 }]}>{initial}</Txt>
     </LinearGradient>
   );
 }

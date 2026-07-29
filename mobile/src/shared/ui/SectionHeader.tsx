@@ -1,4 +1,5 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, radii, fontSize, spacing } from '@/shared/theme';
 
 // En-tête de section : titre + compteur (pastille) + action « tout voir ».
@@ -12,15 +13,15 @@ interface Props {
 export function SectionHeader({ title, count, actionLabel, onAction }: Props) {
   return (
     <View style={styles.row}>
-      <Text style={styles.title}>{title}</Text>
+      <Txt style={styles.title}>{title}</Txt>
       {count != null && count > 0 ? (
         <View style={styles.count}>
-          <Text style={styles.countText}>{count}</Text>
+          <Txt style={styles.countText}>{count}</Txt>
         </View>
       ) : null}
       {actionLabel && onAction ? (
         <Pressable onPress={onAction} style={styles.action} accessibilityRole="button">
-          <Text style={styles.actionText}>{actionLabel}</Text>
+          <Txt style={styles.actionText}>{actionLabel}</Txt>
         </Pressable>
       ) : null}
     </View>

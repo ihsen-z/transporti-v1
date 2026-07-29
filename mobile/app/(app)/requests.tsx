@@ -4,12 +4,12 @@ import {
   FlatList,
   Pressable,
   StyleSheet,
-  Text,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
+import { Txt } from '@/shared/ui/Txt';
 import { useMyReturnTrips } from '@/features/requests/api/useMyReturnTrips';
 import { useJobRequests } from '@/features/requests/api/useJobRequests';
 import { TripSummaryCard } from '@/features/requests/components/TripSummaryCard';
@@ -30,14 +30,14 @@ export default function RequestsScreen() {
       <View style={styles.header}>
         {selected ? (
           <Pressable onPress={() => setSelected(null)} accessibilityRole="button">
-            <Text style={styles.back}>{t('requests.back')}</Text>
+            <Txt style={styles.back}>{t('requests.back')}</Txt>
           </Pressable>
         ) : null}
-        <Text style={styles.title}>
+        <Txt style={styles.title}>
           {selected
             ? `${selected.pickup_governorate} → ${selected.dropoff_governorate}`
             : t('requests.title')}
-        </Text>
+        </Txt>
       </View>
 
       {!selected ? (
@@ -48,8 +48,8 @@ export default function RequestsScreen() {
             data={trips.data ?? []}
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
-            ListHeaderComponent={<Text style={styles.hint}>{t('requests.select_trip')}</Text>}
-            ListEmptyComponent={<Text style={styles.empty}>{t('requests.trips_empty')}</Text>}
+            ListHeaderComponent={<Txt style={styles.hint}>{t('requests.select_trip')}</Txt>}
+            ListEmptyComponent={<Txt style={styles.empty}>{t('requests.trips_empty')}</Txt>}
             renderItem={({ item }) => (
               <TripSummaryCard trip={item} onPress={() => setSelected(item)} />
             )}
@@ -62,7 +62,7 @@ export default function RequestsScreen() {
           data={requests.data ?? []}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.empty}>{t('requests.no_requests')}</Text>}
+          ListEmptyComponent={<Txt style={styles.empty}>{t('requests.no_requests')}</Txt>}
           renderItem={({ item }) => <RequestCard request={item} jobId={selected.id} />}
         />
       )}

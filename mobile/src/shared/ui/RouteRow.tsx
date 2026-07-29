@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, fontSize, spacing } from '@/shared/theme';
 
 // Visualisation de trajet : point bleu (départ) → ligne pointillée → point vert
@@ -13,11 +14,11 @@ export function RouteRow({ from, to, middle }: Props) {
   return (
     <View style={styles.row}>
       <View style={styles.dotBlue} />
-      <Text style={styles.city} numberOfLines={1}>{from}</Text>
+      <Txt style={styles.city} numberOfLines={1}>{from}</Txt>
       <View style={styles.line} />
-      {middle ? <Text style={styles.km}>{middle}</Text> : null}
+      {middle ? <Txt style={styles.km}>{middle}</Txt> : null}
       {middle ? <View style={styles.line} /> : null}
-      <Text style={styles.city} numberOfLines={1}>{to}</Text>
+      <Txt style={styles.city} numberOfLines={1}>{to}</Txt>
       <View style={styles.dotGreen} />
     </View>
   );

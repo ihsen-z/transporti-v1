@@ -1,12 +1,14 @@
 import {
   I18nManager,
   StyleSheet,
-  Text,
   TextInput,
   View,
   type KeyboardTypeOptions,
   type TextInputProps,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { Txt } from '@/shared/ui/Txt';
+import { resolveFontFamily } from '@/shared/theme/typography';
 import { colors, radii, spacing, fontSize } from '@/shared/theme';
 
 interface Props {
@@ -34,16 +36,19 @@ export function TextField({
   autoCapitalize = 'none',
   autoComplete,
 }: Props) {
+  const { i18n } = useTranslation();
   // Alignement du texte suivant le sens de lecture (derja AR = RTL).
   const textAlign = I18nManager.isRTL ? 'right' : 'left';
+  // Police de la charte pour le texte saisi (TextInput n'est pas un <Txt>).
+  const fontFamily = resolveFontFamily('400', i18n.language);
 
   return (
     <View style={styles.wrap}>
-      <Text style={[styles.label, { textAlign }]}>{label}</Text>
+      <Txt style={[styles.label, { textAlign }]}>{label}</Txt>
       <TextInput
         style={[
           styles.input,
-          { textAlign },
+          { textAlign, fontFamily },
           error ? styles.inputError : null,
         ]}
         value={value}
@@ -57,7 +62,7 @@ export function TextField({
         autoComplete={autoComplete}
       />
       {error ? (
-        <Text style={[styles.error, { textAlign }]}>{error}</Text>
+        <Txt style={[styles.error, { textAlign }]}>{error}</Txt>
       ) : null}
     </View>
   );

@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
+import { Txt } from '@/shared/ui/Txt';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { SearchForm } from '@/features/search/components/SearchForm';
@@ -33,8 +34,8 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Text style={styles.title}>{t('search.title')}</Text>
-        <Text style={styles.subtitle}>{t('search.subtitle')}</Text>
+        <Txt style={styles.title}>{t('search.title')}</Txt>
+        <Txt style={styles.subtitle}>{t('search.subtitle')}</Txt>
       </View>
 
       <FlatList
@@ -48,19 +49,19 @@ export default function SearchScreen() {
               <SearchForm onSearch={onSearch} loading={match.isPending} />
             </Card>
             {match.isSuccess && match.data.count > 0 ? (
-              <Text style={styles.count}>
+              <Txt style={styles.count}>
                 {t('search.results_count', { count: match.data.count })}
-              </Text>
+              </Txt>
             ) : null}
           </View>
         }
         ListEmptyComponent={
           showEmpty ? (
             <Card style={styles.emptyCard}>
-              <Text style={styles.emptyTitle}>{t('search.no_results_title')}</Text>
-              <Text style={styles.emptyHint}>{t('search.no_results_hint')}</Text>
+              <Txt style={styles.emptyTitle}>{t('search.no_results_title')}</Txt>
+              <Txt style={styles.emptyHint}>{t('search.no_results_hint')}</Txt>
               {createAlert.isSuccess ? (
-                <Text style={styles.alertOk}>{t('search.alert_created')}</Text>
+                <Txt style={styles.alertOk}>{t('search.alert_created')}</Txt>
               ) : (
                 <Button
                   label={t('search.create_alert')}
