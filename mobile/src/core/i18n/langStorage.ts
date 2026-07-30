@@ -1,8 +1,12 @@
 import { Platform } from 'react-native';
+import * as SecureStore from 'expo-secure-store';
 
-// Persistance du choix de langue. Lecture SYNCHRONE sur web (localStorage) pour
-// initialiser i18n sans flash. Sur natif, la persistance synchrone arrivera avec
-// MMKV (différé) : on retourne null -> langue de l'appareil par défaut.
+// Persistance du choix de langue, en LECTURE SYNCHRONE pour initialiser i18n
+// (et le sens RTL) sans flash ni désynchronisation :
+//   - web    : localStorage
+//   - natif  : expo-secure-store API synchrone (getItem/setItem, SDK 52+)
+// La lecture synchrone est indispensable : la langue conditionne
+// I18nManager.forceRTL, qui doit être posé avant le premier rendu / au boot.
 const LANG_KEY = 'transporti.lang';
 
 export type AppLang = 'fr' | 'ar';
@@ -13,16 +17,19 @@ export type AppLang = 'fr' | 'ar';
 const hasLocalStorage = typeof localStorage !== 'undefined';
 
 export function getStoredLang(): AppLang | null {
-  if (Platform.OS === 'web' && hasLocalStorage) {
-    const v = localStorage.getItem(LANG_KEY);
-    return v === 'fr' || v === 'ar' ? v : null;
+  let v: string | null = null;
+  if (Platform.OS === 'web') {
+    v = hasLocalStorage ? localStorage.getItem(LANG_KEY) : null;
+  } else {
+    v = SecureStore.getItem(LANG_KEY);
   }
-  return null;
+  return v === 'fr' || v === 'ar' ? v : null;
 }
 
 export function setStoredLang(lang: AppLang): void {
-  if (Platform.OS === 'web' && hasLocalStorage) {
-    localStorage.setItem(LANG_KEY, lang);
+  if (Platform.OS === 'web') {
+    if (hasLocalStorage) localStorage.setItem(LANG_KEY, lang);
+    return;
   }
-  // Natif : persistance différée (MMKV, S1).
+  SecureStore.setItem(LANG_KEY, lang);
 }

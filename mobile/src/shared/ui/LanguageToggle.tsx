@@ -3,17 +3,24 @@ import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, radii, spacing, fontSize } from '@/shared/theme';
 import { setStoredLang } from '@/core/i18n/langStorage';
+import { reloadApp } from '@/core/reloadApp';
 
-// Bascule FR <-> AR. Le changement re-render tout l'arbre (via re-key de la
-// Stack dans _layout sur 'languageChanged') et persiste le choix.
+// Bascule FR <-> AR. Persiste le choix, met à jour i18n, puis — si le SENS
+// (LTR/RTL) change — force le RTL natif et redémarre l'app : c'est la seule
+// façon de faire rebasculer le layout natif (Yoga). Comme la langue est
+// persistée (langStorage), l'app repart directement dans le bon sens.
 export function LanguageToggle() {
   const { i18n, t } = useTranslation();
 
   const onToggle = () => {
     const next = i18n.language === 'ar' ? 'fr' : 'ar';
+    const nextRTL = next === 'ar';
     setStoredLang(next);
     void i18n.changeLanguage(next);
-    I18nManager.forceRTL(next === 'ar');
+    if (I18nManager.isRTL !== nextRTL) {
+      I18nManager.forceRTL(nextRTL);
+      reloadApp();
+    }
   };
 
   return (

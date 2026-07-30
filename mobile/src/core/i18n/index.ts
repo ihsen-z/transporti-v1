@@ -11,9 +11,14 @@ import { getStoredLang } from './langStorage';
 const deviceLang = getLocales()[0]?.languageCode ?? 'fr';
 const initialLang = getStoredLang() ?? (deviceLang === 'ar' ? 'ar' : 'fr');
 
-// Autorise le RTL (derja AR). Le vrai basculement de layout impose un
-// redémarrage via I18nManager.forceRTL — géré au changement de langue en S1.
+// RTL (derja AR). On autorise le RTL puis on pose le sens correspondant à la
+// langue initiale AVANT le premier rendu. Le moteur de layout natif (Yoga) lit
+// ce drapeau au démarrage du process : combiné à la persistance de la langue
+// (langStorage), un lancement à froid en arabe est ainsi entièrement miroité.
+// Le changement de langue EN COURS de session déclenche un reload (voir
+// LanguageToggle) pour que le natif rebascule le sens.
 I18nManager.allowRTL(true);
+I18nManager.forceRTL(initialLang === 'ar');
 
 void i18n.use(initReactI18next).init({
   resources: {
