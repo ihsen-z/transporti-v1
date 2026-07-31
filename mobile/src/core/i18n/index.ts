@@ -27,6 +27,11 @@ void i18n.use(initReactI18next).init({
   },
   lng: initialLang,
   fallbackLng: 'fr',
+  // Format de pluriels v3 (moteur intégré i18next, sans dépendance à
+  // Intl.PluralRules) : Hermes n'embarque pas PluralRules -> le format v4 par
+  // défaut émettrait un avertissement au boot. Clés : `_plural` (FR),
+  // `_0`.. `_5` (AR, 6 catégories).
+  compatibilityJSON: 'v3',
   interpolation: { escapeValue: false },
 });
 

@@ -90,7 +90,8 @@
       "result": "Estimation : {{min}} – {{max}} TND ({{distance}} km)",
       "need_route": "Choisissez départ et arrivée d'abord."
     },
-    "success": "Trajet publié ! {{count}} demande(s) ouverte(s) sur ce corridor.",
+    "success": "Trajet publié ! {{count}} demande ouverte sur ce corridor.",
+    "success_plural": "Trajet publié ! {{count}} demandes ouvertes sur ce corridor.",
     "errors": {
       "required": "Champ requis",
       "price": "Montant invalide",
@@ -168,7 +169,8 @@
     "from": "Départ",
     "to": "Arrivée",
     "date_optional": "Jour (optionnel)",
-    "results_count": "{{count}} trajet(s) trouvé(s)",
+    "results_count": "{{count}} trajet trouvé",
+    "results_count_plural": "{{count}} trajets trouvés",
     "badge_return": "Retour à vide",
     "no_results_title": "Aucun trajet retour pour l'instant",
     "no_results_hint": "Créez une alerte : on vous prévient dès qu'un trajet compatible est publié.",
