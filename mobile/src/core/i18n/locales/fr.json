@@ -15,19 +15,56 @@
       "title": "Connexion",
       "subtitle": "Accédez à vos trajets retour",
       "submit": "Se connecter",
-      "submitting": "Connexion…"
+      "submitting": "Connexion…",
+      "forgot_link": "Mot de passe oublié ?",
+      "no_account": "Pas encore de compte ?",
+      "register_link": "Créer un compte"
+    },
+    "register": {
+      "title": "Créer un compte",
+      "subtitle": "Rejoignez la marketplace des trajets retour",
+      "role_label": "Je suis…",
+      "role_client": "Client",
+      "role_transporter": "Transporteur",
+      "submit": "Créer mon compte",
+      "submitting": "Création…",
+      "have_account": "Déjà un compte ?",
+      "login_link": "Se connecter"
+    },
+    "forgot": {
+      "title": "Mot de passe oublié",
+      "subtitle": "Entrez votre e-mail : on vous envoie un lien de réinitialisation.",
+      "submit": "Envoyer le lien",
+      "submitting": "Envoi…",
+      "sent": "Si un compte existe avec cet e-mail, un lien de réinitialisation vient d'être envoyé.",
+      "back_link": "Retour à la connexion"
     },
     "fields": {
       "email": "E-mail",
       "email_placeholder": "vous@exemple.tn",
       "password": "Mot de passe",
-      "password_placeholder": "••••••••"
+      "password_placeholder": "••••••••",
+      "password_confirm": "Confirmer le mot de passe",
+      "first_name": "Prénom",
+      "first_name_placeholder": "Mehdi",
+      "last_name": "Nom",
+      "last_name_placeholder": "Khelifi",
+      "phone": "Téléphone",
+      "phone_placeholder": "+216 …"
     },
     "errors": {
       "email_required": "L'e-mail est requis",
       "email_invalid": "Adresse e-mail invalide",
       "password_required": "Le mot de passe est requis",
+      "password_min": "8 caractères minimum",
+      "password_mismatch": "Les mots de passe ne correspondent pas",
+      "first_name_required": "Le prénom est requis",
+      "last_name_required": "Le nom est requis",
+      "phone_required": "Le téléphone est requis",
       "invalid_credentials": "E-mail ou mot de passe incorrect",
+      "email_taken": "Cet e-mail est déjà utilisé",
+      "phone_taken": "Ce numéro est déjà utilisé",
+      "validation": "Vérifiez les informations saisies",
       "network": "Connexion au serveur impossible. Réessayez."
     }
   },

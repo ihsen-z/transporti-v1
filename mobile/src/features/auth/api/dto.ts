@@ -30,3 +30,36 @@ export interface LoginResponseDto {
     refresh: string;
   };
 }
+
+// Réponse 200 de ProfileView (GET /api/v1/auth/profile/) : le UserDto est
+// IMBRIQUÉ sous `user`, comme pour le login — pas à la racine. Le serveur
+// ajoute aussi avatar_url / address_summary / language_pref, ignorés ici.
+export interface ProfileResponseDto {
+  user: UserDto;
+}
+
+// POST /api/v1/auth/register/ — corps (UserRegistrationSerializer).
+// Tous les champs sont requis côté serveur (first_name/last_name explicitement).
+export interface RegisterRequestDto {
+  email: string;
+  phone: string;
+  password: string;
+  password_confirm: string;
+  role: 'CLIENT' | 'TRANSPORTER';
+  first_name: string;
+  last_name: string;
+}
+
+// Réponse 201 de RegisterView : MÊME forme que le login (auto-login) —
+// { message, user, tokens }. On réutilise donc LoginResponseDto.
+export type RegisterResponseDto = LoginResponseDto;
+
+// POST /api/v1/auth/password-reset/ — corps + réponse 200.
+// Le serveur répond toujours 200 (anti-énumération) avec un message générique.
+export interface PasswordResetRequestDto {
+  email: string;
+}
+
+export interface PasswordResetResponseDto {
+  message: string;
+}

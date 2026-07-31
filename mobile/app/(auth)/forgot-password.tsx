@@ -9,14 +9,13 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Link } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { LoginForm } from '@/features/auth/components/LoginForm';
+import { ForgotPasswordForm } from '@/features/auth/components/ForgotPasswordForm';
 import { LanguageToggle } from '@/shared/ui/LanguageToggle';
 import { Logo } from '@/shared/ui/Logo';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
-// Route mince : composition uniquement. La logique du formulaire vit dans
-// la feature auth (LoginForm).
-export default function LoginScreen() {
+// Route mince : composition uniquement. La logique vit dans ForgotPasswordForm.
+export default function ForgotPasswordScreen() {
   const { t } = useTranslation();
 
   return (
@@ -29,35 +28,26 @@ export default function LoginScreen() {
           contentContainerStyle={styles.content}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Row + flex-end => se place au bord de fin de lecture (flip RTL). */}
           <View style={styles.topBar}>
             <LanguageToggle />
           </View>
 
           <View style={styles.main}>
-            {/* Identité de marque : logo officiel (charte). */}
             <View style={styles.header}>
-              <Logo wordmark size={40} />
-              <Text style={styles.tagline}>{t('app.tagline')}</Text>
+              <Logo wordmark size={36} />
             </View>
 
             <View style={styles.titleBlock}>
-              <Text style={styles.title}>{t('auth.login.title')}</Text>
-              <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
+              <Text style={styles.title}>{t('auth.forgot.title')}</Text>
+              <Text style={styles.subtitle}>{t('auth.forgot.subtitle')}</Text>
             </View>
 
-            <LoginForm />
+            <ForgotPasswordForm />
 
-            <View style={styles.links}>
-              <Link href="/forgot-password" style={styles.link}>
-                {t('auth.login.forgot_link')}
+            <View style={styles.footer}>
+              <Link href="/login" style={styles.footerLink}>
+                {t('auth.forgot.back_link')}
               </Link>
-              <View style={styles.registerRow}>
-                <Text style={styles.registerText}>{t('auth.login.no_account')} </Text>
-                <Link href="/register" style={styles.link}>
-                  {t('auth.login.register_link')}
-                </Link>
-              </View>
             </View>
           </View>
         </ScrollView>
@@ -71,15 +61,11 @@ const styles = StyleSheet.create({
   flex: { flex: 1 },
   content: { flexGrow: 1, padding: spacing.xl },
   topBar: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: spacing.xl },
-  // Bloc central : le formulaire est centré verticalement sur écran haut.
   main: { flex: 1, justifyContent: 'center', gap: spacing['2xl'] },
   header: { gap: spacing.sm },
-  tagline: { fontSize: fontSize.sm, color: colors.neutral[500] },
   titleBlock: { gap: spacing.xs },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
   subtitle: { fontSize: fontSize.md, color: colors.neutral[500] },
-  links: { gap: spacing.md, alignItems: 'center' },
-  registerRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' },
-  registerText: { fontSize: fontSize.md, color: colors.neutral[500] },
-  link: { fontSize: fontSize.md, fontWeight: '700', color: colors.brand[600] },
+  footer: { alignItems: 'center' },
+  footerLink: { fontSize: fontSize.md, fontWeight: '700', color: colors.brand[600] },
 });

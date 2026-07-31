@@ -15,19 +15,56 @@
       "title": "تسجيل الدخول",
       "subtitle": "ادخل إلى رحلات العودة متاعك",
       "submit": "دخول",
-      "submitting": "جارٍ الدخول…"
+      "submitting": "جارٍ الدخول…",
+      "forgot_link": "نسيت كلمة السر؟",
+      "no_account": "معندكش حساب؟",
+      "register_link": "أنشئ حساب"
+    },
+    "register": {
+      "title": "إنشاء حساب",
+      "subtitle": "انضمّ لمنصة رحلات العودة",
+      "role_label": "أنا…",
+      "role_client": "عميل",
+      "role_transporter": "ناقل",
+      "submit": "أنشئ حسابي",
+      "submitting": "جارٍ الإنشاء…",
+      "have_account": "عندك حساب؟",
+      "login_link": "دخول"
+    },
+    "forgot": {
+      "title": "نسيت كلمة السر",
+      "subtitle": "أدخل بريدك الإلكتروني: نبعثولك رابط لإعادة التعيين.",
+      "submit": "ابعث الرابط",
+      "submitting": "جارٍ الإرسال…",
+      "sent": "إذا فمّة حساب بهذا البريد، تبعث رابط إعادة التعيين توّا.",
+      "back_link": "الرجوع للدخول"
     },
     "fields": {
       "email": "البريد الإلكتروني",
       "email_placeholder": "you@example.tn",
       "password": "كلمة السر",
-      "password_placeholder": "••••••••"
+      "password_placeholder": "••••••••",
+      "password_confirm": "أكّد كلمة السر",
+      "first_name": "الاسم",
+      "first_name_placeholder": "مهدي",
+      "last_name": "اللقب",
+      "last_name_placeholder": "خليفي",
+      "phone": "الهاتف",
+      "phone_placeholder": "‎+216 …"
     },
     "errors": {
       "email_required": "البريد الإلكتروني مطلوب",
       "email_invalid": "بريد إلكتروني غير صالح",
       "password_required": "كلمة السر مطلوبة",
+      "password_min": "8 حروف على الأقل",
+      "password_mismatch": "كلمتا السر ما يتطابقوش",
+      "first_name_required": "الاسم مطلوب",
+      "last_name_required": "اللقب مطلوب",
+      "phone_required": "الهاتف مطلوب",
       "invalid_credentials": "البريد الإلكتروني أو كلمة السر غير صحيحة",
+      "email_taken": "البريد الإلكتروني مستعمل من قبل",
+      "phone_taken": "الرقم مستعمل من قبل",
+      "validation": "تثبّت من المعلومات المدخلة",
       "network": "تعذّر الاتصال بالخادم. عاود المحاولة."
     }
   },
