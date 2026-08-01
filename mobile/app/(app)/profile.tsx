@@ -11,6 +11,7 @@ import { LanguageToggle } from '@/shared/ui/LanguageToggle';
 import { DisputesPanel } from '@/features/disputes/components/DisputesPanel';
 import { ReviewsPanel } from '@/features/reviews/components/ReviewsPanel';
 import { TrustPanel } from '@/features/trust/components/TrustPanel';
+import { EditProfilePanel } from '@/features/auth/components/EditProfilePanel';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 
 // Onglet Profil : identité, rôle, langue, litiges et déconnexion.
@@ -21,6 +22,7 @@ export default function ProfileScreen() {
   const [disputesOpen, setDisputesOpen] = useState(false);
   const [reviewsOpen, setReviewsOpen] = useState(false);
   const [trustOpen, setTrustOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const isTransporter = user?.role === 'TRANSPORTER';
 
   return (
@@ -43,6 +45,16 @@ export default function ProfileScreen() {
             <Txt style={styles.rowLabel}>{t('profile.language')}</Txt>
             <LanguageToggle />
           </View>
+
+          <Pressable
+            style={styles.link}
+            onPress={() => setEditOpen(true)}
+            accessibilityRole="button"
+          >
+            <Ionicons name="create-outline" size={22} color={colors.brand[600]} />
+            <Txt style={styles.linkText}>{t('profile.edit_link')}</Txt>
+            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+          </Pressable>
 
           <Pressable
             style={styles.link}
@@ -82,6 +94,7 @@ export default function ProfileScreen() {
         <Button label={t('profile.logout')} onPress={() => void logout()} />
       </View>
 
+      <EditProfilePanel visible={editOpen} onClose={() => setEditOpen(false)} />
       <DisputesPanel visible={disputesOpen} onClose={() => setDisputesOpen(false)} />
       <ReviewsPanel visible={reviewsOpen} onClose={() => setReviewsOpen(false)} />
       <TrustPanel visible={trustOpen} onClose={() => setTrustOpen(false)} />

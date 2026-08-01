@@ -63,3 +63,17 @@ export interface PasswordResetRequestDto {
 export interface PasswordResetResponseDto {
   message: string;
 }
+
+// PUT /api/v1/auth/profile/ — corps (UserProfileUpdateSerializer, partiel).
+// Seuls les champs éditables côté mobile.
+export interface UpdateProfileRequestDto {
+  first_name: string;
+  last_name: string;
+  phone: string;
+}
+
+// Réponse 200 de ProfileView.put : { message, user } (user = UserProfileSerializer).
+export interface UpdateProfileResponseDto {
+  message: string;
+  user: UserDto;
+}

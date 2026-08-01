@@ -90,7 +90,11 @@
   "profile": {
     "title": "Profil",
     "logout": "Se déconnecter",
-    "language": "Langue"
+    "language": "Langue",
+    "edit_link": "Modifier le profil",
+    "edit_title": "Modifier le profil",
+    "save": "Enregistrer",
+    "saving": "Enregistrement…"
   },
   "trips": {
     "publish": {

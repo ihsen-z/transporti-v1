@@ -90,7 +90,11 @@
   "profile": {
     "title": "الحساب",
     "logout": "تسجيل الخروج",
-    "language": "اللغة"
+    "language": "اللغة",
+    "edit_link": "تعديل الحساب",
+    "edit_title": "تعديل الحساب",
+    "save": "حفظ",
+    "saving": "جارٍ الحفظ…"
   },
   "trips": {
     "publish": {
