@@ -27,5 +27,6 @@ export function mapUserDto(dto: UserDto): AuthUser {
     lastName: dto.last_name,
     phone: dto.phone,
     verificationStatus: dto.verification_status,
+    avatarUrl: dto.avatar_url ?? null,
   };
 }

@@ -19,6 +19,8 @@ export interface UserDto {
   last_name: string;
   is_phone_verified: boolean;
   verification_status: string | null;
+  // Ajouté par ProfileView.get (absent des réponses login/register) -> optionnel.
+  avatar_url?: string | null;
 }
 
 // Réponse 200 de LoginView : tokens IMBRIQUÉS sous `tokens`.
@@ -86,4 +88,17 @@ export interface ChangePasswordRequestDto {
 
 export interface ChangePasswordResponseDto {
   message: string;
+}
+
+// POST /api/v1/auth/avatar/ (multipart, champ `avatar`). En RN un fichier se
+// décrit par { uri, name, type }.
+export interface AvatarUploadArgs {
+  uri: string;
+  fileName: string;
+  mimeType: string;
+}
+
+// Réponse 200 : l'URL absolue de l'avatar enregistré.
+export interface AvatarUploadResponseDto {
+  avatar_url: string;
 }

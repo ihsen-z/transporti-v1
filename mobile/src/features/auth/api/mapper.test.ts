@@ -23,6 +23,7 @@ describe('mapUserDto', () => {
       lastName: 'B',
       phone: '+21612345678',
       verificationStatus: 'VERIFIED',
+      avatarUrl: null,
     });
   });
 

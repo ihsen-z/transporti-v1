@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
+import { useProfile } from '@/features/auth/api/useProfile';
+import { ProfileAvatar } from '@/features/auth/components/ProfileAvatar';
 import { Txt } from '@/shared/ui/Txt';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
@@ -29,6 +31,9 @@ export default function ProfileScreen() {
   const [notifOpen, setNotifOpen] = useState(false);
   const isTransporter = user?.role === 'TRANSPORTER';
 
+  // Recharge le profil (inclut avatar_url) pour afficher la photo à jour.
+  useProfile(true);
+
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.body}>
@@ -36,6 +41,7 @@ export default function ProfileScreen() {
 
         {user ? (
           <Card style={styles.identity}>
+            <ProfileAvatar />
             <Txt style={styles.email}>{user.email}</Txt>
             <View style={styles.roleChip}>
               <Txt style={styles.roleChipText}>{t(`role.${user.role}`)}</Txt>
@@ -136,10 +142,10 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     color: colors.neutral[900],
   },
-  identity: { gap: spacing.sm },
+  identity: { gap: spacing.sm, alignItems: 'center' },
   email: { fontSize: fontSize.md, color: colors.neutral[700] },
   roleChip: {
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
     backgroundColor: colors.brand[50],
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,

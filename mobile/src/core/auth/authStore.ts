@@ -15,6 +15,8 @@ export interface AuthUser {
   phone: string;
   // Statut de vérification confiance (transporteurs) ; null sinon.
   verificationStatus: string | null;
+  // URL de la photo de profil ; null si non définie (initiale affichée).
+  avatarUrl: string | null;
 }
 
 type AuthStatus = 'idle' | 'loading' | 'authenticated' | 'unauthenticated';
