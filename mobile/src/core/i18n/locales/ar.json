@@ -50,10 +50,16 @@
       "last_name": "اللقب",
       "last_name_placeholder": "خليفي",
       "phone": "الهاتف",
-      "phone_placeholder": "‎+216 …"
+      "phone_placeholder": "‎+216 …",
+      "current_password": "كلمة السر الحالية",
+      "new_password": "كلمة السر الجديدة",
+      "new_password_confirm": "أكّد كلمة السر الجديدة"
     },
     "errors": {
       "email_required": "البريد الإلكتروني مطلوب",
+      "current_password_required": "كلمة السر الحالية مطلوبة",
+      "current_password_wrong": "كلمة السر الحالية غير صحيحة",
+      "new_password_weak": "كلمة السر ضعيفة (8 حروف على الأقل)",
       "email_invalid": "بريد إلكتروني غير صالح",
       "password_required": "كلمة السر مطلوبة",
       "password_min": "8 حروف على الأقل",
@@ -94,7 +100,11 @@
     "edit_link": "تعديل الحساب",
     "edit_title": "تعديل الحساب",
     "save": "حفظ",
-    "saving": "جارٍ الحفظ…"
+    "saving": "جارٍ الحفظ…",
+    "change_password_link": "تبديل كلمة السر",
+    "change_password_title": "تبديل كلمة السر",
+    "change_password_submit": "بدّل كلمة السر",
+    "change_password_submitting": "جارٍ التبديل…"
   },
   "trips": {
     "publish": {

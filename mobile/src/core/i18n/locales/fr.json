@@ -50,10 +50,16 @@
       "last_name": "Nom",
       "last_name_placeholder": "Khelifi",
       "phone": "Téléphone",
-      "phone_placeholder": "+216 …"
+      "phone_placeholder": "+216 …",
+      "current_password": "Mot de passe actuel",
+      "new_password": "Nouveau mot de passe",
+      "new_password_confirm": "Confirmer le nouveau mot de passe"
     },
     "errors": {
       "email_required": "L'e-mail est requis",
+      "current_password_required": "Le mot de passe actuel est requis",
+      "current_password_wrong": "Le mot de passe actuel est incorrect",
+      "new_password_weak": "Mot de passe trop faible (min. 8 caractères)",
       "email_invalid": "Adresse e-mail invalide",
       "password_required": "Le mot de passe est requis",
       "password_min": "8 caractères minimum",
@@ -94,7 +100,11 @@
     "edit_link": "Modifier le profil",
     "edit_title": "Modifier le profil",
     "save": "Enregistrer",
-    "saving": "Enregistrement…"
+    "saving": "Enregistrement…",
+    "change_password_link": "Changer le mot de passe",
+    "change_password_title": "Changer le mot de passe",
+    "change_password_submit": "Modifier le mot de passe",
+    "change_password_submitting": "Modification…"
   },
   "trips": {
     "publish": {

@@ -77,3 +77,13 @@ export interface UpdateProfileResponseDto {
   message: string;
   user: UserDto;
 }
+
+// POST /api/v1/auth/change-password/ — corps + réponse 200.
+export interface ChangePasswordRequestDto {
+  current_password: string;
+  new_password: string;
+}
+
+export interface ChangePasswordResponseDto {
+  message: string;
+}
