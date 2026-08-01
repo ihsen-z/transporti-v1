@@ -106,6 +106,20 @@
     "change_password_submit": "بدّل كلمة السر",
     "change_password_submitting": "جارٍ التبديل…"
   },
+  "notif_prefs": {
+    "link": "الإشعارات",
+    "title": "الإشعارات",
+    "channels": "القنوات",
+    "categories": "أنواع التنبيهات",
+    "email_enabled": "البريد الإلكتروني",
+    "push_enabled": "إشعارات فورية",
+    "sms_enabled": "رسائل SMS",
+    "notify_new_offer": "طلب جديد",
+    "notify_offer_accepted": "عرض مقبول",
+    "notify_job_completed": "مهمة مكتملة",
+    "notify_new_message": "رسالة جديدة",
+    "notify_dispute": "نزاع"
+  },
   "trips": {
     "publish": {
       "title": "انشر رحلة عودة",

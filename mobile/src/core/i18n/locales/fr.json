@@ -106,6 +106,20 @@
     "change_password_submit": "Modifier le mot de passe",
     "change_password_submitting": "Modification…"
   },
+  "notif_prefs": {
+    "link": "Notifications",
+    "title": "Notifications",
+    "channels": "Canaux",
+    "categories": "Types d'alertes",
+    "email_enabled": "E-mail",
+    "push_enabled": "Notifications push",
+    "sms_enabled": "SMS",
+    "notify_new_offer": "Nouvelle demande",
+    "notify_offer_accepted": "Offre acceptée",
+    "notify_job_completed": "Mission terminée",
+    "notify_new_message": "Nouveau message",
+    "notify_dispute": "Litige"
+  },
   "trips": {
     "publish": {
       "title": "Publier un retour",

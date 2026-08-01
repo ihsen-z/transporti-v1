@@ -13,6 +13,7 @@ import { ReviewsPanel } from '@/features/reviews/components/ReviewsPanel';
 import { TrustPanel } from '@/features/trust/components/TrustPanel';
 import { EditProfilePanel } from '@/features/auth/components/EditProfilePanel';
 import { ChangePasswordPanel } from '@/features/auth/components/ChangePasswordPanel';
+import { NotificationPrefsPanel } from '@/features/notifications/components/NotificationPrefsPanel';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 
 // Onglet Profil : identité, rôle, langue, litiges et déconnexion.
@@ -25,6 +26,7 @@ export default function ProfileScreen() {
   const [trustOpen, setTrustOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
   const isTransporter = user?.role === 'TRANSPORTER';
 
   return (
@@ -70,6 +72,16 @@ export default function ProfileScreen() {
 
           <Pressable
             style={styles.link}
+            onPress={() => setNotifOpen(true)}
+            accessibilityRole="button"
+          >
+            <Ionicons name="notifications-outline" size={22} color={colors.brand[600]} />
+            <Txt style={styles.linkText}>{t('notif_prefs.link')}</Txt>
+            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+          </Pressable>
+
+          <Pressable
+            style={styles.link}
             onPress={() => setReviewsOpen(true)}
             accessibilityRole="button"
           >
@@ -108,6 +120,7 @@ export default function ProfileScreen() {
 
       <EditProfilePanel visible={editOpen} onClose={() => setEditOpen(false)} />
       <ChangePasswordPanel visible={passwordOpen} onClose={() => setPasswordOpen(false)} />
+      <NotificationPrefsPanel visible={notifOpen} onClose={() => setNotifOpen(false)} />
       <DisputesPanel visible={disputesOpen} onClose={() => setDisputesOpen(false)} />
       <ReviewsPanel visible={reviewsOpen} onClose={() => setReviewsOpen(false)} />
       <TrustPanel visible={trustOpen} onClose={() => setTrustOpen(false)} />
