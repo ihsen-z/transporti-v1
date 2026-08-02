@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
@@ -16,6 +16,7 @@ import { TrustPanel } from '@/features/trust/components/TrustPanel';
 import { EditProfilePanel } from '@/features/auth/components/EditProfilePanel';
 import { ChangePasswordPanel } from '@/features/auth/components/ChangePasswordPanel';
 import { NotificationPrefsPanel } from '@/features/notifications/components/NotificationPrefsPanel';
+import { AboutPanel } from '@/shared/ui/AboutPanel';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 
 // Onglet Profil : identité, rôle, langue, litiges et déconnexion.
@@ -29,10 +30,19 @@ export default function ProfileScreen() {
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [aboutOpen, setAboutOpen] = useState(false);
   const isTransporter = user?.role === 'TRANSPORTER';
 
   // Recharge le profil (inclut avatar_url) pour afficher la photo à jour.
   useProfile(true);
+
+  // Confirmation avant déconnexion (action irréversible : reperte de session).
+  const confirmLogout = () => {
+    Alert.alert(t('profile.logout_confirm_title'), t('profile.logout_confirm_msg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('profile.logout'), style: 'destructive', onPress: () => void logout() },
+    ]);
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -117,11 +127,21 @@ export default function ProfileScreen() {
               <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
             </Pressable>
           ) : null}
+
+          <Pressable
+            style={styles.link}
+            onPress={() => setAboutOpen(true)}
+            accessibilityRole="button"
+          >
+            <Ionicons name="information-circle-outline" size={22} color={colors.brand[600]} />
+            <Txt style={styles.linkText}>{t('profile.about_link')}</Txt>
+            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+          </Pressable>
         </Card>
       </View>
 
       <View style={styles.footer}>
-        <Button label={t('profile.logout')} onPress={() => void logout()} />
+        <Button label={t('profile.logout')} onPress={confirmLogout} />
       </View>
 
       <EditProfilePanel visible={editOpen} onClose={() => setEditOpen(false)} />
@@ -130,6 +150,7 @@ export default function ProfileScreen() {
       <DisputesPanel visible={disputesOpen} onClose={() => setDisputesOpen(false)} />
       <ReviewsPanel visible={reviewsOpen} onClose={() => setReviewsOpen(false)} />
       <TrustPanel visible={trustOpen} onClose={() => setTrustOpen(false)} />
+      <AboutPanel visible={aboutOpen} onClose={() => setAboutOpen(false)} />
     </SafeAreaView>
   );
 }

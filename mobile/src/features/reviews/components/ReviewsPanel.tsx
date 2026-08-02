@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
+import { EmptyState } from '@/shared/ui/EmptyState';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useMyReviews } from '../api/useMyReviews';
 import { ReviewRow } from './ReviewRow';
@@ -43,7 +44,7 @@ export function ReviewsPanel({ visible, onClose }: Props) {
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
             refreshControl={queryRefreshControl(reviews)}
-            ListEmptyComponent={<Txt style={styles.empty}>{t('reviews.empty')}</Txt>}
+            ListEmptyComponent={<EmptyState icon="star-outline" title={t('reviews.empty')} />}
             renderItem={({ item }) => <ReviewRow review={item} />}
           />
         )}

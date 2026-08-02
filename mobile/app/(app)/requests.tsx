@@ -7,9 +7,11 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
+import { EmptyState } from '@/shared/ui/EmptyState';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useMyReturnTrips } from '@/features/requests/api/useMyReturnTrips';
 import { useJobRequests } from '@/features/requests/api/useJobRequests';
@@ -50,8 +52,20 @@ export default function RequestsScreen() {
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
             refreshControl={queryRefreshControl(trips)}
-            ListHeaderComponent={<Txt style={styles.hint}>{t('requests.select_trip')}</Txt>}
-            ListEmptyComponent={<Txt style={styles.empty}>{t('requests.trips_empty')}</Txt>}
+            ListHeaderComponent={
+              trips.data && trips.data.length > 0 ? (
+                <Txt style={styles.hint}>{t('requests.select_trip')}</Txt>
+              ) : null
+            }
+            ListEmptyComponent={
+              <EmptyState
+                icon="cube-outline"
+                title={t('requests.trips_empty')}
+                subtitle={t('requests.trips_empty_hint')}
+                ctaLabel={t('requests.trips_empty_cta')}
+                onCta={() => router.push('/publish')}
+              />
+            }
             renderItem={({ item }) => (
               <TripSummaryCard trip={item} onPress={() => setSelected(item)} />
             )}
@@ -65,7 +79,9 @@ export default function RequestsScreen() {
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
           refreshControl={queryRefreshControl(requests)}
-          ListEmptyComponent={<Txt style={styles.empty}>{t('requests.no_requests')}</Txt>}
+          ListEmptyComponent={
+            <EmptyState icon="file-tray-outline" title={t('requests.no_requests')} />
+          }
           renderItem={({ item }) => <RequestCard request={item} jobId={selected.id} />}
         />
       )}

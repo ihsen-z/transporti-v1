@@ -105,7 +105,16 @@
     "change_password_link": "تبديل كلمة السر",
     "change_password_title": "تبديل كلمة السر",
     "change_password_submit": "بدّل كلمة السر",
-    "change_password_submitting": "جارٍ التبديل…"
+    "change_password_submitting": "جارٍ التبديل…",
+    "about_link": "معلومات",
+    "logout_confirm_title": "تسجيل الخروج",
+    "logout_confirm_msg": "تحب تسجل خروج بالفعل؟"
+  },
+  "about": {
+    "title": "معلومات",
+    "version": "الإصدار",
+    "description": "ترانسبورتي يربط الناقلين والعملاء باش يستغلّو رحلات العودة على فارغ في تونس.",
+    "copyright": "© 2026 ترانسبورتي"
   },
   "notif_prefs": {
     "link": "الإشعارات",
@@ -174,8 +183,10 @@
   "requests": {
     "title": "الطلبات الواردة",
     "select_trip": "اختر رحلة باش تشوف طلباتها.",
-    "trips_empty": "ما فماش رحلات عودة منشورة حاليا.",
-    "no_requests": "ما فماش طلبات على هالرحلة.",
+    "trips_empty": "ما فماش رحلات عودة منشورة",
+    "trips_empty_hint": "انشر أول رحلة عودة على فارغ باش تبدا تجيك طلبات.",
+    "trips_empty_cta": "انشر رحلة عودة",
+    "no_requests": "ما فماش طلبات على هالرحلة",
     "back": "← رحلاتي",
     "proposed": "يعرض {{price}} د.ت",
     "countered": "عرض مقابل: {{price}} د.ت",

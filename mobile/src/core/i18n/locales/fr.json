@@ -105,7 +105,16 @@
     "change_password_link": "Changer le mot de passe",
     "change_password_title": "Changer le mot de passe",
     "change_password_submit": "Modifier le mot de passe",
-    "change_password_submitting": "Modification…"
+    "change_password_submitting": "Modification…",
+    "about_link": "À propos",
+    "logout_confirm_title": "Se déconnecter",
+    "logout_confirm_msg": "Voulez-vous vraiment vous déconnecter ?"
+  },
+  "about": {
+    "title": "À propos",
+    "version": "Version",
+    "description": "Transporti connecte transporteurs et clients pour rentabiliser les trajets retour à vide en Tunisie.",
+    "copyright": "© 2026 Transporti"
   },
   "notif_prefs": {
     "link": "Notifications",
@@ -170,8 +179,10 @@
   "requests": {
     "title": "Demandes reçues",
     "select_trip": "Choisissez un trajet pour voir ses demandes.",
-    "trips_empty": "Aucun trajet retour publié pour le moment.",
-    "no_requests": "Aucune demande sur ce trajet.",
+    "trips_empty": "Aucun trajet retour publié",
+    "trips_empty_hint": "Publiez votre premier retour à vide pour recevoir des demandes.",
+    "trips_empty_cta": "Publier un retour",
+    "no_requests": "Aucune demande sur ce trajet",
     "back": "← Mes trajets",
     "proposed": "Propose {{price}} TND",
     "countered": "Contre-proposé : {{price}} TND",
