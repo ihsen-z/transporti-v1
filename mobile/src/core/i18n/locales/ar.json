@@ -260,6 +260,7 @@
     "badge_return": "عودة على فارغ",
     "no_results_title": "ما فماش رحلات عودة حاليا",
     "no_results_hint": "اعمل تنبيه: نعلموك كي تتنشر رحلة تناسبك.",
+    "map_unavailable": "الخريطة موش متوفرة: مفتاح Google Maps موش مكوّن.",
     "create_alert": "اعمل تنبيه مسار",
     "alert_created": "التنبيه تعمل. باش نعلموك.",
     "instant": "حجز فوري",

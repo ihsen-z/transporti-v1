@@ -9,6 +9,7 @@ import { Card } from '@/shared/ui/Card';
 import { SearchForm } from '@/features/search/components/SearchForm';
 import { TripResultCard } from '@/features/search/components/TripResultCard';
 import { SendRequestSheet } from '@/features/search/components/SendRequestSheet';
+import { ResultsMap } from '@/features/search/components/ResultsMap';
 import { useReturnTripMatch } from '@/features/search/api/useReturnTripMatch';
 import { useCreateCorridorAlert } from '@/features/search/api/useCreateCorridorAlert';
 import type { MatchParams, TripResultDto } from '@/features/search/api/dto';
@@ -49,9 +50,12 @@ export default function SearchScreen() {
               <SearchForm onSearch={onSearch} loading={match.isPending} />
             </Card>
             {match.isSuccess && match.data.count > 0 ? (
-              <Txt style={styles.count}>
-                {t('search.results_count', { count: match.data.count })}
-              </Txt>
+              <>
+                <ResultsMap trips={results} />
+                <Txt style={styles.count}>
+                  {t('search.results_count', { count: match.data.count })}
+                </Txt>
+              </>
             ) : null}
           </View>
         }

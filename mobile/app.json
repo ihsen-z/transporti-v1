@@ -29,6 +29,12 @@
           "cameraPermission": "Transporti accède à la caméra pour photographier vos documents."
         }
       ],
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Transporti utilise votre position pour vous situer sur la carte des retours disponibles."
+        }
+      ],
       "expo-asset",
       "expo-font"
     ],
