@@ -12,6 +12,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useUnreadCount } from '../api/useUnreadCount';
 import { useNotifications } from '../api/useNotifications';
 import { useMarkRead, useMarkAllRead } from '../api/useMarkNotifications';
@@ -61,6 +62,7 @@ export function NotificationBell() {
               data={list.data ?? []}
               keyExtractor={(item) => String(item.id)}
               contentContainerStyle={styles.list}
+              refreshControl={queryRefreshControl(list)}
               ListEmptyComponent={<Text style={styles.empty}>{t('notifications.empty')}</Text>}
               renderItem={({ item }) => (
                 <NotificationRow

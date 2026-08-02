@@ -11,6 +11,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
+import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useMyDisputes } from '../api/useMyDisputes';
 import { DisputeRow } from './DisputeRow';
 
@@ -41,6 +42,7 @@ export function DisputesPanel({ visible, onClose }: Props) {
             data={disputes.data ?? []}
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
+            refreshControl={queryRefreshControl(disputes)}
             ListEmptyComponent={<Txt style={styles.empty}>{t('disputes.empty')}</Txt>}
             renderItem={({ item }) => <DisputeRow dispute={item} />}
           />

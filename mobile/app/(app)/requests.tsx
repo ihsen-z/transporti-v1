@@ -10,6 +10,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
+import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useMyReturnTrips } from '@/features/requests/api/useMyReturnTrips';
 import { useJobRequests } from '@/features/requests/api/useJobRequests';
 import { TripSummaryCard } from '@/features/requests/components/TripSummaryCard';
@@ -48,6 +49,7 @@ export default function RequestsScreen() {
             data={trips.data ?? []}
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
+            refreshControl={queryRefreshControl(trips)}
             ListHeaderComponent={<Txt style={styles.hint}>{t('requests.select_trip')}</Txt>}
             ListEmptyComponent={<Txt style={styles.empty}>{t('requests.trips_empty')}</Txt>}
             renderItem={({ item }) => (
@@ -62,6 +64,7 @@ export default function RequestsScreen() {
           data={requests.data ?? []}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
+          refreshControl={queryRefreshControl(requests)}
           ListEmptyComponent={<Txt style={styles.empty}>{t('requests.no_requests')}</Txt>}
           renderItem={({ item }) => <RequestCard request={item} jobId={selected.id} />}
         />

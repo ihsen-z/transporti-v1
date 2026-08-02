@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
+import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useConversations } from '@/features/messaging/api/useConversations';
 import { ConversationRow } from '@/features/messaging/components/ConversationRow';
 import { ChatView } from '@/features/messaging/components/ChatView';
@@ -41,6 +42,7 @@ export default function MessagesScreen() {
             data={conversations.data ?? []}
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
+            refreshControl={queryRefreshControl(conversations)}
             ListEmptyComponent={<Txt style={styles.empty}>{t('messaging.empty')}</Txt>}
             renderItem={({ item }) => (
               <ConversationRow
