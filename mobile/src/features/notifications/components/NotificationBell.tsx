@@ -1,18 +1,11 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Modal,
-  Pressable,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useUnreadCount } from '../api/useUnreadCount';
 import { useNotifications } from '../api/useNotifications';
@@ -57,7 +50,7 @@ export function NotificationBell() {
           ) : null}
 
           {list.isLoading ? (
-            <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
+            <SkeletonList />
           ) : (
             <FlatList
               data={list.data ?? []}

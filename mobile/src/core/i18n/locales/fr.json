@@ -8,7 +8,8 @@
     "retry": "Réessayer",
     "cancel": "Annuler",
     "close": "Fermer",
-    "coming_soon": "Bientôt disponible"
+    "coming_soon": "Bientôt disponible",
+    "saved": "Modifications enregistrées"
   },
   "auth": {
     "login": {

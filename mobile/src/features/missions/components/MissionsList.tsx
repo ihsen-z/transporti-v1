@@ -1,6 +1,7 @@
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
+import { EmptyState } from '@/shared/ui/EmptyState';
 import type { MissionDto } from '../api/dto';
 import { useMyMissions } from '../api/useMyMissions';
 import { MissionCard } from './MissionCard';
@@ -19,7 +20,7 @@ export function MissionsList() {
       {missions.isLoading ? (
         <ActivityIndicator color={colors.brand[500]} />
       ) : data.length === 0 ? (
-        <Text style={styles.empty}>{t('missions.empty')}</Text>
+        <EmptyState icon="cube-outline" title={t('missions.empty')} />
       ) : (
         data.map((m: MissionDto) => <MissionCard key={m.id} mission={m} />)
       )}

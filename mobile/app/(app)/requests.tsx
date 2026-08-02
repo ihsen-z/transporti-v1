@@ -1,17 +1,12 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useMyReturnTrips } from '@/features/requests/api/useMyReturnTrips';
 import { useJobRequests } from '@/features/requests/api/useJobRequests';
@@ -45,7 +40,7 @@ export default function RequestsScreen() {
 
       {!selected ? (
         trips.isLoading ? (
-          <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
+          <SkeletonList />
         ) : (
           <FlatList
             data={trips.data ?? []}
@@ -72,7 +67,7 @@ export default function RequestsScreen() {
           />
         )
       ) : requests.isLoading ? (
-        <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
+        <SkeletonList />
       ) : (
         <FlatList
           data={requests.data ?? []}

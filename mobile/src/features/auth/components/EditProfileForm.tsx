@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize } from '@/shared/theme';
+import { showToast } from '@/shared/ui/toastStore';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useUpdateProfile } from '../api/useUpdateProfile';
 
@@ -44,8 +45,11 @@ export function EditProfileForm({ onDone }: Props) {
   });
 
   useEffect(() => {
-    if (update.isSuccess) onDone();
-  }, [update.isSuccess, onDone]);
+    if (update.isSuccess) {
+      showToast(t('common.saved'));
+      onDone();
+    }
+  }, [update.isSuccess, onDone, t]);
 
   const onSubmit = handleSubmit((values) => update.mutate(values));
 

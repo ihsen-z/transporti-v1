@@ -8,7 +8,8 @@
     "retry": "إعادة المحاولة",
     "cancel": "إلغاء",
     "close": "إغلاق",
-    "coming_soon": "قريبا"
+    "coming_soon": "قريبا",
+    "saved": "تسجّلت التغييرات"
   },
   "auth": {
     "login": {

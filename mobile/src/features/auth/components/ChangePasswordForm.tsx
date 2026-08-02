@@ -7,6 +7,7 @@ import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize } from '@/shared/theme';
+import { showToast } from '@/shared/ui/toastStore';
 import { useChangePassword } from '../api/useChangePassword';
 
 // Messages = clés i18n (traduites au rendu).
@@ -43,8 +44,11 @@ export function ChangePasswordForm({ onDone }: Props) {
   });
 
   useEffect(() => {
-    if (change.isSuccess) onDone();
-  }, [change.isSuccess, onDone]);
+    if (change.isSuccess) {
+      showToast(t('common.saved'));
+      onDone();
+    }
+  }, [change.isSuccess, onDone, t]);
 
   const onSubmit = handleSubmit((values) =>
     change.mutate({

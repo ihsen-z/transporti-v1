@@ -8,6 +8,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { queryClient } from '@/core/api/queryClient';
 import { useAuthStore } from '@/core/auth/authStore';
 import { fontsToLoad } from '@/shared/theme/typography';
+import { ToastHost } from '@/shared/ui/ToastHost';
 import i18n from '@/core/i18n'; // init i18n (effet de bord) + instance pour le re-render
 
 // Garde le splash affiché tant que les polices ne sont pas prêtes.
@@ -56,6 +57,7 @@ export default function RootLayout() {
       <SafeAreaProvider>
         <StatusBar style="auto" />
         <Stack key={langTick} screenOptions={{ headerShown: false }} />
+        <ToastHost />
       </SafeAreaProvider>
     </QueryClientProvider>
   );

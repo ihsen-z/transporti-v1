@@ -3,6 +3,7 @@ import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native'
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize } from '@/shared/theme';
+import { showToast } from '@/shared/ui/toastStore';
 import { useNotificationPrefs, useUpdateNotificationPrefs } from '../api/useNotificationPrefs';
 import type { NotificationPrefKey, NotificationPrefsDto } from '../api/prefsDto';
 
@@ -34,8 +35,11 @@ export function NotificationPrefsForm({ onDone }: Props) {
   }, [prefs.data, local]);
 
   useEffect(() => {
-    if (update.isSuccess) onDone();
-  }, [update.isSuccess, onDone]);
+    if (update.isSuccess) {
+      showToast(t('common.saved'));
+      onDone();
+    }
+  }, [update.isSuccess, onDone, t]);
 
   const serverError = useMemo(() => {
     if (prefs.isError) return t('common.retry');

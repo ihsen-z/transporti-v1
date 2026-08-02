@@ -30,11 +30,15 @@ async function putProfile(body: UpdateProfileRequestDto): Promise<UpdateProfileR
 }
 
 // Hook d'édition du profil : sur succès, met à jour le user en store SANS
-// toucher aux tokens (setUser). La réponse renvoie le user à jour.
+// toucher aux tokens (setUser). La réponse (UserProfileSerializer) ne renvoie
+// PAS avatar_url -> on conserve l'avatar courant pour ne pas l'effacer.
 export function useUpdateProfile() {
   const setUser = useAuthStore((s) => s.setUser);
   return useMutation<UpdateProfileResponseDto, UpdateProfileError, UpdateProfileRequestDto>({
     mutationFn: putProfile,
-    onSuccess: (data) => setUser(mapUserDto(data.user)),
+    onSuccess: (data) => {
+      const currentAvatar = useAuthStore.getState().user?.avatarUrl ?? null;
+      setUser({ ...mapUserDto(data.user), avatarUrl: currentAvatar });
+    },
   });
 }

@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useConversations } from '@/features/messaging/api/useConversations';
 import { ConversationRow } from '@/features/messaging/components/ConversationRow';
@@ -37,7 +38,7 @@ export default function MessagesScreen() {
 
       {!selected ? (
         conversations.isLoading ? (
-          <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
+          <SkeletonList />
         ) : (
           <FlatList
             data={conversations.data ?? []}

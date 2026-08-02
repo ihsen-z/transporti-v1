@@ -2,7 +2,10 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { colors, spacing, radii, shadows } from '@/shared/theme';
+import { colors, spacing, radii, shadows, fontSize } from '@/shared/theme';
+import { Txt } from '@/shared/ui/Txt';
+import { useConversations } from '@/features/messaging/api/useConversations';
+import type { ConversationListDto } from '@/features/messaging/api/dto';
 import type { UserRole } from '@/core/auth/authStore';
 
 // Navigation par rôle : quels onglets afficher (dans l'ordre de la barre) et
@@ -29,6 +32,12 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
   // ADMIN/MODERATOR ne sont pas des rôles de l'app mobile -> repli client.
   const nav = role === 'TRANSPORTER' ? ROLE_NAV.TRANSPORTER : ROLE_NAV.CLIENT;
 
+  // Nombre de conversations non lues -> pastille sur l'onglet Messages.
+  const conversations = useConversations();
+  const unreadMessages = (conversations.data ?? []).filter(
+    (c: ConversationListDto) => c.unread_count > 0,
+  ).length;
+
   const currentName = state.routes[state.index]?.name;
 
   const go = (name: string) => {
@@ -53,6 +62,7 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
     const { options } = descriptor;
     const isFocused = currentName === name;
     const color = isFocused ? colors.brand[600] : colors.neutral[400];
+    const badge = name === 'messages' && unreadMessages > 0 ? unreadMessages : 0;
     return (
       <Pressable
         key={name}
@@ -62,7 +72,14 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
         accessibilityState={{ selected: isFocused }}
         accessibilityLabel={options.title}
       >
-        {options.tabBarIcon?.({ focused: isFocused, color, size: 24 })}
+        <View>
+          {options.tabBarIcon?.({ focused: isFocused, color, size: 24 })}
+          {badge > 0 ? (
+            <View style={styles.badge}>
+              <Txt style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Txt>
+            </View>
+          ) : null}
+        </View>
       </Pressable>
     );
   };
@@ -121,6 +138,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  // Pastille non-lus, ancrée en haut-droite de l'icône.
+  badge: {
+    position: 'absolute',
+    top: -6,
+    right: -12,
+    minWidth: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.cta[500],
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 4,
+    borderWidth: 1.5,
+    borderColor: colors.neutral[0],
+  },
+  badgeText: { color: colors.neutral[0], fontSize: fontSize.sm - 2, fontWeight: '800' },
   // FAB orange (CTA unique) surélevé au centre.
   fab: {
     width: FAB,
