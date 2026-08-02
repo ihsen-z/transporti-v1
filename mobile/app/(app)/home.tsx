@@ -27,7 +27,7 @@ export default function HomeScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         {/* Barre du haut : avatar + salutation + cloche notifications. */}
         <View style={styles.top}>
-          <Avatar name={firstName || user?.email} size={44} />
+          <Avatar name={firstName || user?.email} size={44} imageUrl={user?.avatarUrl} />
           <View style={styles.hi}>
             <Txt style={styles.hiName} numberOfLines={1}>
               {t('home.welcome')}
