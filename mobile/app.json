@@ -6,7 +6,7 @@
     "orientation": "portrait",
     "scheme": "transporti",
     "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "tn.transporti.app"
