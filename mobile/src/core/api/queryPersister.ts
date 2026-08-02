@@ -43,18 +43,25 @@ const persister = createSyncStoragePersister({
 // l'ouverture) ou inutile (le fil de discussion est rechargé à l'écran).
 const VOLATILE_QUERY_KEYS = new Set(['notificationsUnreadCount', 'jobMessages']);
 
+/**
+ * Une clé de requête est-elle éligible au cache persisté ? La racine de la clé
+ * (`queryKey[0]`) suffit à décider : `['jobMessages', 42]` est exclue comme
+ * `['jobMessages']`.
+ */
+export function isPersistableQueryKey(queryKey: readonly unknown[]): boolean {
+  const root = queryKey[0];
+  return typeof root !== 'string' || !VOLATILE_QUERY_KEYS.has(root);
+}
+
 export const persistOptions: Omit<PersistQueryClientOptions, 'queryClient'> = {
   persister,
   maxAge: CACHE_MAX_AGE,
   buster: APP_VERSION,
   dehydrateOptions: {
-    shouldDehydrateQuery: (query) => {
+    shouldDehydrateQuery: (query) =>
       // Ne persister que les requêtes abouties : réhydrater une erreur ou un
       // chargement en cours fausserait l'état initial de l'écran.
-      if (query.state.status !== 'success') return false;
-      const root = query.queryKey[0];
-      return typeof root !== 'string' || !VOLATILE_QUERY_KEYS.has(root);
-    },
+      query.state.status === 'success' && isPersistableQueryKey(query.queryKey),
   },
 };
 
