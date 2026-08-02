@@ -1,5 +1,7 @@
 import { create } from 'zustand';
 import { tokenService } from './tokenService';
+import { queryClient } from '@/core/api/queryClient';
+import { clearPersistedQueries } from '@/core/api/queryPersister';
 
 // Rôles portés par l'utilisateur backend (l'autorisation reste autoritative
 // côté serveur via RequireRole ; le mobile ne fait que de l'affichage conditionnel).
@@ -31,9 +33,9 @@ interface AuthState {
   logout: () => Promise<void>;
 }
 
-// État d'auth client. En S0 l'état vit en mémoire (la persistance riche du
-// profil viendra avec MMKV en S1) ; les tokens sont déjà persistés de façon
-// sécurisée via tokenService.
+// État d'auth client. L'état vit en mémoire ; les tokens sont persistés de
+// façon sécurisée via tokenService (Keystore/Keychain), et les données serveur
+// (dont le profil) le sont par le cache React Query adossé à MMKV.
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   status: 'idle',
@@ -52,6 +54,12 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
   async logout() {
     await tokenService.clear();
+    // Le cache React Query est persisté dans MMKV, en clair : sans cette purge,
+    // les données du compte précédent (messages, trajets, téléphones) seraient
+    // réhydratées au prochain démarrage. Placé ici, et pas dans l'écran profil,
+    // pour couvrir aussi la déconnexion déclenchée par l'intercepteur 401.
+    queryClient.clear();
+    clearPersistedQueries();
     set({ user: null, status: 'unauthenticated' });
   },
 }));
