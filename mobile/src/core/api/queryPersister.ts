@@ -1,6 +1,9 @@
 import Constants from 'expo-constants';
 import { createSyncStoragePersister } from '@tanstack/query-sync-storage-persister';
-import type { PersistQueryClientOptions } from '@tanstack/react-query-persist-client';
+import type {
+  PersistedClient,
+  PersistQueryClientOptions,
+} from '@tanstack/react-query-persist-client';
 import { appStorage } from '@/core/storage/appStorage';
 
 // Persistance du cache React Query dans MMKV. C'est ici que le stockage
@@ -28,6 +31,26 @@ export const CACHE_MAX_AGE = 1000 * 60 * 60 * 24; // 24 h
 // les écrans plutôt que de les accélérer.
 const APP_VERSION = Constants.expoConfig?.version ?? 'dev';
 
+/**
+ * Retire les raisons d'échec avant écriture. Un échec réseau laisse une
+ * AxiosError entière — stack trace incluse — dans
+ * `query.state.fetchFailureReason`. La persister gonfle le fichier pour rien :
+ * l'erreur d'une session précédente n'a plus aucun sens après redémarrage, et
+ * React Query refera la requête de toute façon.
+ */
+export function stripFailureReasons(client: PersistedClient): PersistedClient {
+  return {
+    ...client,
+    clientState: {
+      ...client.clientState,
+      queries: client.clientState.queries.map((query) => ({
+        ...query,
+        state: { ...query.state, fetchFailureReason: null },
+      })),
+    },
+  };
+}
+
 const persister = createSyncStoragePersister({
   key: CACHE_KEY,
   storage: {
@@ -35,6 +58,7 @@ const persister = createSyncStoragePersister({
     setItem: (key, value) => appStorage.setString(key, value),
     removeItem: (key) => appStorage.remove(key),
   },
+  serialize: (client) => JSON.stringify(stripFailureReasons(client)),
 });
 
 // Requêtes tenues hors du cache persisté. Elles sont sondées en continu
