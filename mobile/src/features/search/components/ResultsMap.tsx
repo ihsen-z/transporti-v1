@@ -1,100 +1,27 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
-import MapView, { Marker, Polyline, PROVIDER_GOOGLE, type Region } from 'react-native-maps';
+import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 import { colors, fontSize, radii, shadows, spacing } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
-import { findGovernorate } from '@/features/trips/data/governorates';
+import { buildCorridors, regionFor } from '../data/corridors';
 import type { TripResultDto } from '../api/dto';
 
-// Carte des retours trouvés : un trait départ -> arrivée par trajet.
-// Le backend ne renvoie pas de géométrie, seulement des noms de gouvernorats :
-// les coordonnées viennent des chefs-lieux déjà présents dans GOVERNORATES.
-// C'est donc une vue indicative du corridor, pas un itinéraire routier.
-
-interface LatLng {
-  latitude: number;
-  longitude: number;
-}
-
-interface Leg {
-  id: number;
-  from: LatLng;
-  to: LatLng;
-  fromLabel: string;
-  toLabel: string;
-  ownerName: string;
-}
-
-// Repli quand aucune coordonnée n'est exploitable : la Tunisie entière.
-const TUNISIA_REGION: Region = {
-  latitude: 34.5,
-  longitude: 9.5,
-  latitudeDelta: 6,
-  longitudeDelta: 6,
-};
-
-// Marge autour des points pour que les marqueurs ne collent pas au bord.
-const REGION_PADDING = 1.4;
-const MIN_DELTA = 0.5;
+// Carte des retours trouvés : un trait par corridor. Le calcul des tracés vit
+// dans ../data/corridors (module pur, testé) ; ce fichier ne fait que le rendu.
 
 // Le plugin Expo n'écrit la balise geo.API_KEY dans l'AndroidManifest que si la
 // clé est renseignée ; monter un MapView Google sans elle casse l'écran. On
 // affiche donc un repli explicite plutôt qu'une recherche inutilisable.
 //
-// Le drapeau vient de `extra`, pose par app.config.js, et NON de
-// `android.config.googleMaps` : ce dernier est elague de la config publique
-// servie a l'app, donc toujours vide cote JS. Renseigner la cle exige un
-// rebuild natif : ce test n'a pas besoin d'etre reactif.
+// Le drapeau vient de `extra`, posé par app.config.js, et NON de
+// `android.config.googleMaps` : ce dernier est élagué de la config publique
+// servie à l'app, donc toujours vide côté JS. Renseigner la clé exige un
+// rebuild natif : ce test n'a pas besoin d'être réactif.
 // `extra` est typé librement par expo-constants, d'où la comparaison stricte.
 const hasMapsKey = Constants.expoConfig?.extra?.hasGoogleMapsKey === true;
-
-function buildLegs(trips: readonly TripResultDto[], arabic: boolean): Leg[] {
-  const legs: Leg[] = [];
-  for (const trip of trips) {
-    const from = findGovernorate(trip.pickup_governorate);
-    const to = findGovernorate(trip.dropoff_governorate);
-    // Un gouvernorat inconnu du référentiel est ignoré plutôt que placé au
-    // large : mieux vaut un trajet absent de la carte qu'un trait faux.
-    if (from === undefined || to === undefined) continue;
-    legs.push({
-      id: trip.id,
-      from: { latitude: from.lat, longitude: from.lng },
-      to: { latitude: to.lat, longitude: to.lng },
-      fromLabel: arabic ? from.nameAr : from.nameFr,
-      toLabel: arabic ? to.nameAr : to.nameFr,
-      ownerName: trip.owner_name,
-    });
-  }
-  return legs;
-}
-
-/** Cadre englobant tous les points, centré. */
-function regionFor(legs: readonly Leg[]): Region {
-  const points = legs.flatMap((leg) => [leg.from, leg.to]);
-  const first = points[0];
-  if (first === undefined) return TUNISIA_REGION;
-
-  let minLat = first.latitude;
-  let maxLat = first.latitude;
-  let minLng = first.longitude;
-  let maxLng = first.longitude;
-  for (const point of points) {
-    minLat = Math.min(minLat, point.latitude);
-    maxLat = Math.max(maxLat, point.latitude);
-    minLng = Math.min(minLng, point.longitude);
-    maxLng = Math.max(maxLng, point.longitude);
-  }
-
-  return {
-    latitude: (minLat + maxLat) / 2,
-    longitude: (minLng + maxLng) / 2,
-    latitudeDelta: Math.max((maxLat - minLat) * REGION_PADDING, MIN_DELTA),
-    longitudeDelta: Math.max((maxLng - minLng) * REGION_PADDING, MIN_DELTA),
-  };
-}
 
 interface Props {
   trips: readonly TripResultDto[];
@@ -102,8 +29,11 @@ interface Props {
 
 export function ResultsMap({ trips }: Props) {
   const { t, i18n } = useTranslation();
-  const legs = useMemo(() => buildLegs(trips, i18n.language === 'ar'), [trips, i18n.language]);
-  const region = useMemo(() => regionFor(legs), [legs]);
+  const corridors = useMemo(
+    () => buildCorridors(trips, i18n.language === 'ar'),
+    [trips, i18n.language],
+  );
+  const region = useMemo(() => regionFor(corridors), [corridors]);
   const mapRef = useRef<MapView>(null);
   const [showUser, setShowUser] = useState(false);
 
@@ -126,7 +56,7 @@ export function ResultsMap({ trips }: Props) {
     mapRef.current?.animateToRegion(region, 400);
   }, [region]);
 
-  if (legs.length === 0) return null;
+  if (corridors.length === 0) return null;
 
   if (!hasMapsKey) {
     return (
@@ -147,15 +77,29 @@ export function ResultsMap({ trips }: Props) {
         showsMyLocationButton={false}
         toolbarEnabled={false}
       >
-        {legs.map((leg) => (
-          <Fragment key={leg.id}>
+        {corridors.map((corridor) => (
+          <Fragment key={corridor.key}>
             <Polyline
-              coordinates={[leg.from, leg.to]}
+              coordinates={[corridor.from, corridor.to]}
               strokeColor={colors.brand[500]}
               strokeWidth={3}
             />
-            <Marker coordinate={leg.from} title={leg.fromLabel} description={leg.ownerName} />
-            <Marker coordinate={leg.to} title={leg.toLabel} pinColor={colors.green[600]} />
+            <Marker
+              coordinate={corridor.from}
+              title={corridor.fromLabel}
+              // Le trait est une ligne droite entre chefs-lieux ; la distance
+              // vient du serveur et reflète la vraie route.
+              description={
+                corridor.distanceKm === null
+                  ? undefined
+                  : t('search.map_distance', { km: Math.round(corridor.distanceKm) })
+              }
+            />
+            <Marker
+              coordinate={corridor.to}
+              title={corridor.toLabel}
+              pinColor={colors.green[600]}
+            />
           </Fragment>
         ))}
       </MapView>
