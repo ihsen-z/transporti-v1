@@ -41,12 +41,15 @@ const REGION_PADDING = 1.4;
 const MIN_DELTA = 0.5;
 
 // Le plugin Expo n'écrit la balise geo.API_KEY dans l'AndroidManifest que si la
-// clé est renseignée ; monter un MapView Google sans elle casse l'écran. On lit
-// donc la même valeur côté JS pour afficher un repli explicite plutôt qu'une
-// recherche inutilisable. Renseigner la clé exige un rebuild natif : ce test
-// n'a pas besoin d'être réactif.
-const hasMapsKey =
-  (Constants.expoConfig?.android?.config?.googleMaps?.apiKey ?? '').length > 0;
+// clé est renseignée ; monter un MapView Google sans elle casse l'écran. On
+// affiche donc un repli explicite plutôt qu'une recherche inutilisable.
+//
+// Le drapeau vient de `extra`, pose par app.config.js, et NON de
+// `android.config.googleMaps` : ce dernier est elague de la config publique
+// servie a l'app, donc toujours vide cote JS. Renseigner la cle exige un
+// rebuild natif : ce test n'a pas besoin d'etre reactif.
+// `extra` est typé librement par expo-constants, d'où la comparaison stricte.
+const hasMapsKey = Constants.expoConfig?.extra?.hasGoogleMapsKey === true;
 
 function buildLegs(trips: readonly TripResultDto[], arabic: boolean): Leg[] {
   const legs: Leg[] = [];
