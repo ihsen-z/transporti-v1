@@ -1,4 +1,5 @@
 import { findGovernorate } from '@/features/trips/data/governorates';
+import { decodePolyline } from './polyline';
 import type { TripResultDto } from '../api/dto';
 
 // Transformation des résultats de recherche en tracés cartographiques.
@@ -31,6 +32,13 @@ export interface Corridor {
   toLabel: string;
   /** Distance routière renvoyée par le serveur, `null` si absente. */
   distanceKm: number | null;
+  /**
+   * Points à tracer. Itinéraire routier décodé quand le serveur l'a fourni,
+   * sinon une simple ligne droite entre les deux chefs-lieux.
+   */
+  path: LatLng[];
+  /** `true` quand `path` suit la route, `false` quand c'est le repli droit. */
+  isRealRoute: boolean;
 }
 
 /** Repli quand aucune coordonnée n'est exploitable : la Tunisie entière. */
@@ -70,20 +78,36 @@ export function buildCorridors(trips: readonly TripResultDto[], arabic: boolean)
     const key = `${from.code}|${to.code}`;
     const existing = byKey.get(key);
     const distanceKm = parseDistance(trip.distance_km);
+    const fromPoint = { latitude: from.lat, longitude: from.lng };
+    const toPoint = { latitude: to.lat, longitude: to.lng };
 
     if (existing === undefined) {
+      // Une polyligne d'un seul point ne trace rien : on exige au moins deux
+      // points avant de préférer l'itinéraire à la ligne droite.
+      const route = decodePolyline(trip.route_polyline);
+      const isRealRoute = route.length >= 2;
       byKey.set(key, {
         key,
-        from: { latitude: from.lat, longitude: from.lng },
-        to: { latitude: to.lat, longitude: to.lng },
+        from: fromPoint,
+        to: toPoint,
         fromLabel: arabic ? from.nameAr : from.nameFr,
         toLabel: arabic ? to.nameAr : to.nameFr,
         distanceKm,
+        path: isRealRoute ? route : [fromPoint, toPoint],
+        isRealRoute,
       });
-    } else if (existing.distanceKm === null) {
-      // Tous les trajets d'un corridor parcourent la même route : la première
-      // distance renseignée vaut pour l'ensemble.
-      existing.distanceKm = distanceKm;
+      continue;
+    }
+
+    // Tous les trajets d'un corridor parcourent la même route : on complète ce
+    // qui manque au premier vu, sans le remplacer.
+    if (existing.distanceKm === null) existing.distanceKm = distanceKm;
+    if (!existing.isRealRoute) {
+      const route = decodePolyline(trip.route_polyline);
+      if (route.length >= 2) {
+        existing.path = route;
+        existing.isRealRoute = true;
+      }
     }
   }
 
@@ -92,7 +116,14 @@ export function buildCorridors(trips: readonly TripResultDto[], arabic: boolean)
 
 /** Cadre englobant tous les points, centré. */
 export function regionFor(corridors: readonly Corridor[]): MapRegion {
-  const points = corridors.flatMap((corridor) => [corridor.from, corridor.to]);
+  // Le tracé ET les marqueurs : un itinéraire routier s'écarte de la ligne
+  // droite (contournements, relief), et le routeur accroche ses extrémités à la
+  // route la plus proche, pas exactement au chef-lieu.
+  const points = corridors.flatMap((corridor) => [
+    ...corridor.path,
+    corridor.from,
+    corridor.to,
+  ]);
   const first = points[0];
   if (first === undefined) return TUNISIA_REGION;
 

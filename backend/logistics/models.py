@@ -69,10 +69,18 @@ class TransportJob(models.Model):
     instant_booking = models.BooleanField(default=False,
         help_text="D11: return trips only — allow direct booking without a structured request (off by default)")
 
-    # NSM instrumentation (vision v1.0): road distance estimate, computed once
-    # server-side at creation (haversine × 1.25 — T4), never client-side.
+    # NSM instrumentation (vision v1.0): road distance, computed once
+    # server-side at creation, never client-side. Valeur du routeur quand il
+    # repond, sinon repli haversine × 1.25 (qui surestime ~13% sur autoroute).
     distance_km = models.DecimalField(max_digits=7, decimal_places=1, null=True, blank=True,
-        help_text="Estimated road distance in km (haversine × 1.25), set at creation")
+        help_text="Road distance in km, from the router or haversine × 1.25 fallback, set at creation")
+
+    # Geometrie de l'itineraire, polyligne encodee (precision 5), issue du meme
+    # appel de routage que distance_km : le trace et le kilometrage ne peuvent
+    # donc pas se contredire. Vide quand le routeur etait injoignable — le
+    # mobile retombe alors sur une ligne droite entre chefs-lieux.
+    route_polyline = models.TextField(blank=True, default='',
+        help_text="Encoded polyline (precision 5) of the driving route, empty when routing failed")
 
     # Analytics
     view_count = models.PositiveIntegerField(default=0, help_text="Number of times the job detail page was viewed by non-owners")

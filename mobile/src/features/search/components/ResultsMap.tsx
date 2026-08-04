@@ -80,15 +80,18 @@ export function ResultsMap({ trips }: Props) {
         {corridors.map((corridor) => (
           <Fragment key={corridor.key}>
             <Polyline
-              coordinates={[corridor.from, corridor.to]}
+              coordinates={corridor.path}
               strokeColor={colors.brand[500]}
               strokeWidth={3}
+              // Un repli en ligne droite est signalé comme tel : pointillés,
+              // pour ne pas faire passer une approximation pour un itinéraire.
+              lineDashPattern={corridor.isRealRoute ? undefined : [8, 6]}
             />
             <Marker
               coordinate={corridor.from}
               title={corridor.fromLabel}
-              // Le trait est une ligne droite entre chefs-lieux ; la distance
-              // vient du serveur et reflète la vraie route.
+              // La distance vient du serveur, du même appel de routage que le
+              // tracé : les deux ne peuvent pas se contredire.
               description={
                 corridor.distanceKm === null
                   ? undefined

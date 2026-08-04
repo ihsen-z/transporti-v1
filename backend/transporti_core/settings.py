@@ -3,9 +3,20 @@ Django settings for transporti_core project.
 Production-hardened configuration with environment variable support.
 """
 import os
+import sys
 from decimal import Decimal
 from pathlib import Path
 from datetime import timedelta
+
+# True while running the test suite. Le routage sort sur le reseau : le laisser
+# actif rendrait les tests lents et dependants d'un service tiers.
+TESTING = 'test' in sys.argv
+
+# Routage des trajets (logistics/routing.py). Desactive -> repli haversine.
+ROUTING_ENABLED = (
+    os.environ.get('ROUTING_ENABLED', '1').strip().lower() not in ('0', 'false', 'no')
+    and not TESTING
+)
 
 # Load environment from .env file if present
 try:

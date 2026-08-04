@@ -26,13 +26,10 @@ class TransportJobCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['owner'] = self.context['request'].user
         validated_data['status'] = TransportJob.Status.PUBLISHED
-        # NSM: road distance computed once server-side at creation
-        from .pricing import estimate_distance_for_job
-        validated_data['distance_km'] = estimate_distance_for_job(
-            validated_data.get('pickup_lat'), validated_data.get('pickup_lng'),
-            validated_data.get('dropoff_lat'), validated_data.get('dropoff_lng'),
-            validated_data.get('pickup_governorate'), validated_data.get('dropoff_governorate'),
-        )
+        # NSM: road distance and route geometry computed once server-side at
+        # creation, jamais côté client.
+        from .routing import annotate_distance_and_route
+        annotate_distance_and_route(validated_data)
         return super().create(validated_data)
 
 
@@ -51,7 +48,7 @@ class TransportJobListSerializer(serializers.ModelSerializer):
             'scheduled_time', 'specifications', 'owner_name', 'offer_count',
             'price_tnd_min', 'price_tnd_max',
             'is_return_trip', 'available_capacity', 'instant_booking',
-            'distance_km',
+            'distance_km', 'route_polyline',
             'created_at'
         ]
         read_only_fields = fields
@@ -866,12 +863,8 @@ class ReturnTripCreateSerializer(serializers.ModelSerializer):
         validated_data['owner'] = self.context['request'].user
         validated_data['status'] = TransportJob.Status.PUBLISHED
         validated_data['is_return_trip'] = True
-        from .pricing import estimate_distance_for_job
-        validated_data['distance_km'] = estimate_distance_for_job(
-            validated_data.get('pickup_lat'), validated_data.get('pickup_lng'),
-            validated_data.get('dropoff_lat'), validated_data.get('dropoff_lng'),
-            validated_data.get('pickup_governorate'), validated_data.get('dropoff_governorate'),
-        )
+        from .routing import annotate_distance_and_route
+        annotate_distance_and_route(validated_data)
         return super().create(validated_data)
 
 

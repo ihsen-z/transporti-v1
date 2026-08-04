@@ -16,9 +16,14 @@ function trip(overrides: Partial<TripResultDto> = {}): TripResultDto {
     instant_booking: false,
     available_capacity: '3',
     distance_km: '127.4',
+    route_polyline: '',
     ...overrides,
   };
 }
+
+// Vecteur de reference de la specification Google : trois points, suffisant
+// pour distinguer un itineraire decode d'un repli en ligne droite.
+const ENCODED_ROUTE = '_p~iF~ps|U_ulLnnqC_mqNvxq`@';
 
 // Une recherche filtre sur UN couple depart/arrivee : sans regroupement, dix
 // resultats empileraient dix traits identiques au meme endroit.
@@ -84,6 +89,41 @@ describe('buildCorridors', () => {
       );
 
       expect(corridors[0]?.distanceKm).toBe(130);
+    });
+  });
+
+  describe('trace', () => {
+    it('suit l itineraire quand le serveur fournit la geometrie', () => {
+      const corridor = buildCorridors([trip({ route_polyline: ENCODED_ROUTE })], false)[0];
+
+      expect(corridor?.isRealRoute).toBe(true);
+      expect(corridor?.path).toHaveLength(3);
+    });
+
+    it('retombe sur la ligne droite chef-lieu a chef-lieu sans geometrie', () => {
+      const corridor = buildCorridors([trip({ route_polyline: '' })], false)[0];
+
+      expect(corridor?.isRealRoute).toBe(false);
+      expect(corridor?.path).toEqual([corridor?.from, corridor?.to]);
+    });
+
+    it('recupere la geometrie sur un trajet ulterieur du meme corridor', () => {
+      // Les trajets d'avant le routage ont une geometrie vide : il suffit qu'UN
+      // seul du corridor la porte pour que la carte trace la vraie route.
+      const corridors = buildCorridors(
+        [trip({ id: 1, route_polyline: '' }), trip({ id: 2, route_polyline: ENCODED_ROUTE })],
+        false,
+      );
+
+      expect(corridors).toHaveLength(1);
+      expect(corridors[0]?.isRealRoute).toBe(true);
+    });
+
+    it('ignore une geometrie reduite a un seul point, qui ne tracerait rien', () => {
+      const corridor = buildCorridors([trip({ route_polyline: '_p~iF~ps|U' })], false)[0];
+
+      expect(corridor?.isRealRoute).toBe(false);
+      expect(corridor?.path).toHaveLength(2);
     });
   });
 });

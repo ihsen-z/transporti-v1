@@ -28,6 +28,9 @@ export interface TripResultDto {
   instant_booking: boolean;
   available_capacity: string;
   distance_km: string | null;
+  // Polyligne encodée (précision 5) de l'itinéraire routier, calculée par le
+  // serveur. Chaîne vide quand le routage a échoué à la création.
+  route_polyline: string;
 }
 
 export interface MatchResponse {
