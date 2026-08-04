@@ -126,8 +126,10 @@ def annotate_distance_and_route(validated_data: dict) -> None:
 
     La distance vient du routeur quand il répond : le tracé affiché et le
     kilométrage proviennent alors du même calcul, donc ne se contredisent pas.
-    Sinon on retombe sur l'estimation historique (haversine × 1.25), qui
-    surestime d'environ 13 % sur les corridors autoroutiers.
+    Sinon on retombe sur l'estimation historique (haversine × 1.25). Mesuré sur
+    les 14 corridors en base, cet écart va de -9 % à +14 % selon le tracé : le
+    facteur fixe sous-estime les corridors à détour autant qu'il surestime les
+    liaisons directes.
     """
     from .pricing import estimate_distance_for_job
 

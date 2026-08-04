@@ -71,7 +71,12 @@ class TransportJob(models.Model):
 
     # NSM instrumentation (vision v1.0): road distance, computed once
     # server-side at creation, never client-side. Valeur du routeur quand il
-    # repond, sinon repli haversine × 1.25 (qui surestime ~13% sur autoroute).
+    # repond, sinon repli haversine × 1.25.
+    #
+    # Le facteur fixe n'est PAS un biais systematique : mesure sur les 14
+    # corridors en base, il va de -9% (ariana->sfax, nabeul->kairouan) a +14%
+    # (sfax->gabes). Il sous-estime les corridors a detour autant qu'il
+    # surestime les liaisons directes — ne pas le "corriger" par une constante.
     distance_km = models.DecimalField(max_digits=7, decimal_places=1, null=True, blank=True,
         help_text="Road distance in km, from the router or haversine × 1.25 fallback, set at creation")
 
