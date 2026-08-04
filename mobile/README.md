@@ -40,6 +40,55 @@ npm run start                 # puis 'a' (Android), 'i' (iOS), 'w' (web)
 
 Le client ajoute automatiquement le préfixe **`/api/v1`** (contrat versionné).
 
+### Test live sur l'émulateur Android (un seul script)
+
+```bash
+scripts/mobile-emulator.sh                      # AVD par défaut, Metro sur 8082
+scripts/mobile-emulator.sh Pixel_5_API_33 8083  # autre AVD / autre port
+scripts/mobile-emulator.sh --shot mon-ecran     # capture → mobile/.expo/shots/
+```
+
+Boote l'AVD, lance Metro en *watch mode*, puis ouvre l'app dans Expo Go
+(déjà installé sur les AVD). Le hot-reload est actif : éditer un fichier de
+`app/` ou `src/` rafraîchit l'émulateur.
+
+Trois pièges rencontrés, déjà traités par le script :
+
+- **Port 8081** est pris par la config `mobile-web` (`expo start --web`) →
+  l'émulateur utilise **8082**.
+- **`exp://127.0.0.1`** échoue en *connection refused* même avec
+  `adb reverse` → utiliser **`exp://10.0.2.2:<port>`** (alias de l'hôte).
+- **`CI=1`** évite les prompts interactifs mais **désactive le hot-reload**
+  (« reloads are disabled ») → ne pas l'utiliser pour du test live.
+
+Piloter l'UI et lire les logs sans quitter le terminal :
+
+```bash
+ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
+"$ADB" shell input tap 540 1368          # toucher un élément
+"$ADB" shell input text "a@b.tn"         # saisir du texte
+tail -f .expo/metro.log                  # logs JS (voir note ci-dessous)
+```
+
+> En **mode bridgeless** (New Architecture, activée ici), les `console.log` de
+> l'app n'apparaissent **pas** dans `adb logcat -s ReactNativeJS` — uniquement
+> dans la sortie Metro. D'où le fichier `.expo/metro.log`.
+
+### Backend en vis-à-vis de l'émulateur
+
+L'AVD voit l'hôte comme `10.0.2.2`, mais ce host n'est pas dans
+`ALLOWED_HOSTS` par défaut (`localhost,127.0.0.1`) → Django répondrait **400**.
+Il est lu depuis l'environnement, donc aucun code à modifier :
+
+```bash
+cd backend && ALLOWED_HOSTS="localhost,127.0.0.1,10.0.2.2" ./venv/Scripts/python.exe manage.py runserver 0.0.0.0:8000
+```
+
+Comptes de test : `python manage.py seed_test_data` (idempotent, `--clear` pour
+repartir de zéro). Il crée entre autres `leila.benamor@test.transporti.tn`
+(CLIENT) et `mehdi.khelifi@test.transporti.tn` (TRANSPORTER), mot de passe
+`Test@123!` — voir `backend/users/management/commands/seed_test_data.py`.
+
 ## Structure
 
 ```
