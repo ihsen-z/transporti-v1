@@ -81,18 +81,31 @@
     "publish": "Publier",
     "requests": "Demandes",
     "messages": "Messages",
-    "profile": "Profil"
+    "profile": "Profil",
+    "gains": "Gains"
   },
   "home": {
     "welcome": "Bienvenue",
     "role_label": "Rôle",
     "subtitle": "Votre espace Transporti",
-    "verified": "Vérifié"
+    "verified": "Vérifié",
+    "earnings_label": "Gains confirmés",
+    "fill_rate": "Remplissage",
+    "km_transformed": "À vide → chargés",
+    "requests_section": "Demandes reçues",
+    "see_all": "Tout voir",
+    "kpi_unavailable": "—"
   },
   "screens": {
-    "search": { "title": "Rechercher un trajet retour" },
-    "publish": { "title": "Publier un retour" },
-    "messages": { "title": "Messages" }
+    "search": {
+      "title": "Rechercher un trajet retour"
+    },
+    "publish": {
+      "title": "Publier un retour"
+    },
+    "messages": {
+      "title": "Messages"
+    }
   },
   "profile": {
     "title": "Profil",
@@ -440,5 +453,13 @@
   },
   "lang": {
     "toggle": "العربية"
+  },
+  "gains": {
+    "title": "Gains",
+    "available": "Disponible",
+    "confirmed": "Confirmés",
+    "pending": "En attente",
+    "potential": "Potentiels",
+    "hint": "Les montants confirmés sont ceux dont le séquestre a été libéré."
   }
 }

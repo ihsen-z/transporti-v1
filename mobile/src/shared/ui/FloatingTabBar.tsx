@@ -1,8 +1,8 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon, type IconName } from '@/shared/ui/icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { colors, spacing, radii, shadows, fontSize } from '@/shared/theme';
+import { colors, spacing, radii, shadows, fontSize, TOUCH_TARGET } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
 import { useConversations } from '@/features/messaging/api/useConversations';
 import type { ConversationListDto } from '@/features/messaging/api/dto';
@@ -14,14 +14,20 @@ import type { UserRole } from '@/core/auth/authStore';
 interface RoleNav {
   tabs: string[];
   fab: string;
-  fabIcon: keyof typeof Ionicons.glyphMap;
+  fabIcon: IconName;
 }
 
 const ROLE_NAV: Record<'CLIENT' | 'TRANSPORTER', RoleNav> = {
   // Client : chercher un retour = l'action première du parcours.
   CLIENT: { tabs: ['home', 'messages', 'profile'], fab: 'search', fabIcon: 'search' },
-  // Transporteur : publier un retour à vide.
-  TRANSPORTER: { tabs: ['home', 'requests', 'messages', 'profile'], fab: 'publish', fabIcon: 'add' },
+  // Transporteur : publier un retour à vide. La charte place Gains en 5ᵉ onglet
+  // à la place de Profil ; le profil reste atteignable par l'avatar de la barre
+  // du haut (c'est déjà son emplacement dans la maquette du tableau de bord).
+  TRANSPORTER: {
+    tabs: ['home', 'requests', 'messages', 'gains'],
+    fab: 'publish',
+    fabIcon: 'plus',
+  },
 };
 
 type Props = BottomTabBarProps & { role?: UserRole };
@@ -73,13 +79,19 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
         accessibilityLabel={options.title}
       >
         <View>
-          {options.tabBarIcon?.({ focused: isFocused, color, size: 24 })}
+          {/* 20 px : taille d'icône d'onglet de la charte (.tab .ic). */}
+          {options.tabBarIcon?.({ focused: isFocused, color, size: 20 })}
           {badge > 0 ? (
             <View style={styles.badge}>
               <Txt style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Txt>
             </View>
           ) : null}
         </View>
+        {/* Libellé 10 px sous l'icône : exigé par la charte, il lève
+            l'ambiguïté d'une barre qui n'affichait que des pictogrammes. */}
+        <Txt numberOfLines={1} style={[styles.tabLabel, { color }]}>
+          {options.title}
+        </Txt>
       </Pressable>
     );
   };
@@ -99,7 +111,7 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
           accessibilityRole="button"
           accessibilityLabel={descriptors[state.routes.find((r) => r.name === nav.fab)?.key ?? '']?.options.title}
         >
-          <Ionicons name={nav.fabIcon} size={30} color={colors.neutral[0]} />
+          <Icon name={nav.fabIcon} size={24} color={colors.neutral[0]} strokeWidth={2.5} />
         </Pressable>
         <View style={styles.group}>{right.map(renderTab)}</View>
       </View>
@@ -107,22 +119,25 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
   );
 }
 
-const BAR_HEIGHT = 62;
-const FAB = 58;
+// La barre doit loger une icône de 20 + un libellé de 10 sans tasser : 66 px.
+const BAR_HEIGHT = 66;
+// Charte : 48×48, rayon 16 — un carré arrondi, pas un cercle.
+const FAB = 48;
 const styles = StyleSheet.create({
   wrap: {
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
     backgroundColor: 'transparent',
   },
+  // Charte (.tabbar) : rayon 20, bordure 1 px #e5e7eb, padding 10/8.
   bar: {
     flexDirection: 'row',
     alignItems: 'center',
     height: BAR_HEIGHT,
     backgroundColor: colors.neutral[0],
-    borderRadius: radii.hero,
+    borderRadius: radii.tabbar,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
+    borderColor: colors.neutral[300],
     paddingHorizontal: spacing.sm,
     ...shadows.card,
   },
@@ -133,11 +148,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   tab: {
-    minWidth: 44,
-    minHeight: 44,
+    minWidth: TOUCH_TARGET,
+    minHeight: TOUCH_TARGET,
     alignItems: 'center',
     justifyContent: 'center',
+    gap: 3,
   },
+  // .tab font-size:10px — l'onglet actif prend la couleur de marque via `color`.
+  tabLabel: { fontSize: fontSize.xs, fontWeight: '600' },
   // Pastille non-lus, ancrée en haut-droite de l'icône.
   badge: {
     position: 'absolute',
@@ -154,16 +172,17 @@ const styles = StyleSheet.create({
     borderColor: colors.neutral[0],
   },
   badgeText: { color: colors.neutral[0], fontSize: fontSize.sm - 2, fontWeight: '800' },
-  // FAB orange (CTA unique) surélevé au centre.
+  // FAB orange (CTA unique) surélevé au centre. Carré arrondi de rayon 16 :
+  // c'est ce qui le distingue d'un bouton flottant générique.
   fab: {
     width: FAB,
     height: FAB,
-    borderRadius: FAB / 2,
+    borderRadius: radii.fab,
     backgroundColor: colors.cta[500],
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: spacing.sm,
-    transform: [{ translateY: -16 }],
-    ...shadows.cta,
+    transform: [{ translateY: -14 }],
+    ...shadows.fab,
   },
 });

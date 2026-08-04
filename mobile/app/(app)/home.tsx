@@ -3,60 +3,51 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
-import { Txt } from '@/shared/ui/Txt';
+import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
+import { HomeTopBar } from '@/features/dashboard/components/HomeTopBar';
+import { TransporterHero } from '@/features/dashboard/components/TransporterHero';
 import { MissionsList } from '@/features/missions/components/MissionsList';
 import { CompletedMissionsList } from '@/features/reviews/components/CompletedMissionsList';
 import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
-import { NotificationBell } from '@/features/notifications/components/NotificationBell';
-import { Avatar } from '@/shared/ui/Avatar';
 import { Button } from '@/shared/ui/Button';
 import { GradientCard } from '@/shared/ui/GradientCard';
+import { SectionHeader } from '@/shared/ui/SectionHeader';
+import { Txt } from '@/shared/ui/Txt';
+import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
-// Onglet Accueil, rôle-aware (design-system : top bar + hero dégradé + CTA).
+// Onglet Accueil, rôle-aware. Pour le transporteur c'est le tableau de bord de
+// design-system/10-transporteur-dashboard.html : hero chiffré, CTA unique,
+// puis ses sections. Le client garde un hero de marque — les KPI du pivot
+// (remplissage, km transformés) ne veulent rien dire pour lui.
 export default function HomeScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const isTransporter = user?.role === 'TRANSPORTER';
   const isClient = user?.role === 'CLIENT';
-  const firstName = user?.firstName ?? '';
+
+  // Vue protégée par RequireRole('TRANSPORTER') : ne la demande pas pour un client.
+  const stats = useTransporterStats(isTransporter);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView contentContainerStyle={styles.content}>
-        {/* Barre du haut : avatar + salutation + cloche notifications. */}
-        <View style={styles.top}>
-          <Avatar name={firstName || user?.email} size={44} imageUrl={user?.avatarUrl} />
-          <View style={styles.hi}>
-            <Txt style={styles.hiName} numberOfLines={1}>
-              {t('home.welcome')}
-              {firstName ? `, ${firstName}` : ''}
-            </Txt>
-            {user ? <Txt style={styles.role}>{t(`role.${user.role}`)}</Txt> : null}
-          </View>
-          <NotificationBell />
-        </View>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        refreshControl={isTransporter ? queryRefreshControl(stats) : undefined}
+      >
+        <HomeTopBar />
 
-        {/* Hero dégradé de marque. */}
-        <GradientCard>
-          <Txt style={styles.heroLabel}>{t('app.name')}</Txt>
-          <Txt style={styles.heroBig}>{t('app.tagline')}</Txt>
-          {user ? (
-            <View style={styles.heroBadges}>
-              <View style={styles.heroBadge}>
-                <Txt style={styles.heroBadgeText}>{t(`role.${user.role}`)}</Txt>
-              </View>
-              {user.isVerified ? (
-                <View style={styles.heroBadge}>
-                  <Txt style={styles.heroBadgeText}>✓ {t('home.verified')}</Txt>
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-        </GradientCard>
+        {isTransporter ? (
+          <TransporterHero stats={stats.data} loading={stats.isLoading} />
+        ) : (
+          <GradientCard>
+            <Txt style={styles.heroLabel}>{t('app.name')}</Txt>
+            <Txt style={styles.heroBig}>{t('app.tagline')}</Txt>
+          </GradientCard>
+        )}
 
-        {/* CTA unique selon le rôle. */}
+        {/* CTA unique de l'écran — le seul orange autorisé ici. */}
         {isTransporter ? (
           <Button
             label={t('trips.publish.title')}
@@ -72,6 +63,13 @@ export default function HomeScreen() {
           />
         ) : null}
 
+        {/* La maquette place ici « Demandes reçues » avec ses cartes. Non
+            livré : les demandes ne sont lisibles que trajet par trajet
+            (GET jobs/<id>/requests/), il n'existe aucun endpoint transverse
+            pour en faire une liste à plat. Un en-tête suivi de rien se lirait
+            comme un écran cassé — l'onglet Demandes assure ce rôle en
+            attendant. */}
+
         {/* Sections rôle-aware. */}
         {isTransporter ? <MissionsList /> : null}
         {isTransporter ? <CompletedMissionsList /> : null}
@@ -84,10 +82,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.neutral[50] },
   content: { padding: spacing.xl, gap: spacing.xl },
-  top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
-  hi: { flex: 1 },
-  hiName: { fontSize: fontSize.lg, fontWeight: '800', color: colors.neutral[900] },
-  role: { fontSize: fontSize.sm, color: colors.neutral[500], marginTop: 1 },
+  section: { marginBottom: -spacing.md },
   heroLabel: { fontSize: fontSize.sm, color: colors.neutral[0], opacity: 0.85 },
   heroBig: {
     fontSize: fontSize.xl,
@@ -95,12 +90,4 @@ const styles = StyleSheet.create({
     color: colors.neutral[0],
     marginTop: 4,
   },
-  heroBadges: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-  heroBadge: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    borderRadius: 999,
-    paddingVertical: 4,
-    paddingHorizontal: spacing.md,
-  },
-  heroBadgeText: { color: colors.neutral[0], fontSize: 12, fontWeight: '700' },
 });

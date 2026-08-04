@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { EmptyState } from '@/shared/ui/EmptyState';
@@ -26,7 +26,7 @@ export function NotificationBell() {
   return (
     <>
       <Pressable onPress={() => setOpen(true)} style={styles.bell} accessibilityRole="button">
-        <Ionicons name="notifications-outline" size={26} color={colors.brand[600]} />
+        <Icon name="bell" size={26} color={colors.brand[600]} />
         {count > 0 ? (
           <View style={styles.badge}>
             <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
@@ -39,7 +39,7 @@ export function NotificationBell() {
           <View style={styles.header}>
             <Text style={styles.title}>{t('notifications.title')}</Text>
             <Pressable onPress={() => setOpen(false)} accessibilityRole="button">
-              <Ionicons name="close" size={26} color={colors.neutral[700]} />
+              <Icon name="x" size={26} color={colors.neutral[700]} />
             </Pressable>
           </View>
 
@@ -58,7 +58,7 @@ export function NotificationBell() {
               contentContainerStyle={styles.list}
               refreshControl={queryRefreshControl(list)}
               ListEmptyComponent={
-                <EmptyState icon="notifications-outline" title={t('notifications.empty')} />
+                <EmptyState icon="bell" title={t('notifications.empty')} />
               }
               renderItem={({ item }) => (
                 <NotificationRow

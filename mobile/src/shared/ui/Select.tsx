@@ -7,7 +7,7 @@ import {
   StyleSheet,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, radii, spacing, fontSize } from '@/shared/theme';
 
@@ -54,7 +54,7 @@ export function Select<T extends string | number>({
         >
           {selected ? selected.label : placeholder}
         </Txt>
-        <Ionicons name="chevron-down" size={18} color={colors.neutral[400]} />
+        <Icon name="chevron-down" size={18} color={colors.neutral[400]} />
       </Pressable>
 
       {error ? <Txt style={[styles.error, { textAlign }]}>{error}</Txt> : null}
@@ -81,7 +81,7 @@ export function Select<T extends string | number>({
                 >
                   <Txt style={styles.rowText}>{item.label}</Txt>
                   {item.value === value ? (
-                    <Ionicons name="checkmark" size={18} color={colors.brand[500]} />
+                    <Icon name="check" size={18} color={colors.brand[500]} />
                   ) : null}
                 </Pressable>
               )}
@@ -118,8 +118,8 @@ const styles = StyleSheet.create({
   },
   sheet: {
     backgroundColor: colors.neutral[0],
-    borderTopLeftRadius: radii['2xl'],
-    borderTopRightRadius: radii['2xl'],
+    borderTopLeftRadius: radii.sheet,
+    borderTopRightRadius: radii.sheet,
     paddingVertical: spacing.lg,
     paddingHorizontal: spacing.xl,
     maxHeight: '70%',

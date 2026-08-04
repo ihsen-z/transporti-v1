@@ -1,5 +1,5 @@
 import { StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon, type IconName } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -7,7 +7,7 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 // État vide soigné : pastille + icône, titre, sous-titre optionnel et CTA
 // optionnel. Remplace les simples textes « Aucun … » des listes.
 interface Props {
-  icon: keyof typeof Ionicons.glyphMap;
+  icon: IconName;
   title: string;
   subtitle?: string;
   ctaLabel?: string;
@@ -18,7 +18,7 @@ export function EmptyState({ icon, title, subtitle, ctaLabel, onCta }: Props) {
   return (
     <View style={styles.wrap}>
       <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={38} color={colors.brand[500]} />
+        <Icon name={icon} size={38} color={colors.brand[500]} />
       </View>
       <Txt style={styles.title}>{title}</Txt>
       {subtitle ? <Txt style={styles.subtitle}>{subtitle}</Txt> : null}

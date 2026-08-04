@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/shared/ui/Avatar';
@@ -50,7 +50,7 @@ export function ProfileAvatar() {
           {upload.isPending ? (
             <ActivityIndicator color={colors.neutral[0]} size="small" />
           ) : (
-            <Ionicons name="camera" size={15} color={colors.neutral[0]} />
+            <Icon name="camera" size={15} color={colors.neutral[0]} />
           )}
         </View>
       </Pressable>

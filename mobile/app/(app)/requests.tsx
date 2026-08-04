@@ -54,7 +54,7 @@ export default function RequestsScreen() {
             }
             ListEmptyComponent={
               <EmptyState
-                icon="cube-outline"
+                icon="package"
                 title={t('requests.trips_empty')}
                 subtitle={t('requests.trips_empty_hint')}
                 ctaLabel={t('requests.trips_empty_cta')}
@@ -75,7 +75,7 @@ export default function RequestsScreen() {
           contentContainerStyle={styles.list}
           refreshControl={queryRefreshControl(requests)}
           ListEmptyComponent={
-            <EmptyState icon="file-tray-outline" title={t('requests.no_requests')} />
+            <EmptyState icon="inbox" title={t('requests.no_requests')} />
           }
           renderItem={({ item }) => <RequestCard request={item} jobId={selected.id} />}
         />

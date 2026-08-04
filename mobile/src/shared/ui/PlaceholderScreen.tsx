@@ -1,22 +1,22 @@
 import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon, type IconName } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
 interface Props {
   title: string;
   subtitle: string;
-  icon?: keyof typeof Ionicons.glyphMap;
+  icon?: IconName;
 }
 
 // Écran d'attente réutilisable pour les onglets dont le contenu réel arrive
 // dans un incrément ultérieur (funnel recherche/publication S1-S2).
-export function PlaceholderScreen({ title, subtitle, icon = 'construct-outline' }: Props) {
+export function PlaceholderScreen({ title, subtitle, icon = 'wrench' }: Props) {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.center}>
-        <Ionicons name={icon} size={48} color={colors.brand[500]} />
+        <Icon name={icon} size={48} color={colors.brand[500]} />
         <Txt style={styles.title}>{title}</Txt>
         <Txt style={styles.subtitle}>{subtitle}</Txt>
       </View>

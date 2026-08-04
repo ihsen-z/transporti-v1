@@ -1,20 +1,26 @@
 import { Redirect, Tabs } from 'expo-router';
 import { ActivityIndicator, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon, type IconName } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useProfile } from '@/features/auth/api/useProfile';
 import { FloatingTabBar } from '@/shared/ui/FloatingTabBar';
 import { colors } from '@/shared/theme';
 
-// Fabrique d'icône d'onglet (état plein si actif, contour sinon).
-function tabIcon(
-  active: keyof typeof Ionicons.glyphMap,
-  inactive: keyof typeof Ionicons.glyphMap,
-) {
-  return ({ color, size, focused }: { color: string; size: number; focused: boolean }) => (
-    <Ionicons name={focused ? active : inactive} color={color} size={size} />
-  );
+// Fabrique d'icône d'onglet. Lucide n'a pas de paires plein/contour : l'état
+// actif se lit à la couleur (posée par la barre) et à un trait plus appuyé.
+function tabIcon(name: IconName) {
+  const TabIcon = ({
+    color,
+    size,
+    focused,
+  }: {
+    color: string;
+    size: number;
+    focused: boolean;
+  }) => <Icon name={name} color={color} size={size} strokeWidth={focused ? 2.5 : 2} />;
+  TabIcon.displayName = `TabIcon(${name})`;
+  return TabIcon;
 }
 
 // Zone authentifiée = navigation à onglets CONDITIONNELLE par rôle.
@@ -53,33 +59,37 @@ export default function AppLayout() {
     >
       <Tabs.Screen
         name="home"
-        options={{ title: t('tabs.home'), tabBarIcon: tabIcon('home', 'home-outline') }}
+        options={{ title: t('tabs.home'), tabBarIcon: tabIcon('house') }}
       />
       <Tabs.Screen
         name="search"
-        options={{ title: t('tabs.search'), tabBarIcon: tabIcon('search', 'search-outline') }}
+        options={{ title: t('tabs.search'), tabBarIcon: tabIcon('search') }}
       />
       <Tabs.Screen
         name="publish"
-        options={{ title: t('tabs.publish'), tabBarIcon: tabIcon('add-circle', 'add-circle-outline') }}
+        options={{ title: t('tabs.publish'), tabBarIcon: tabIcon('circle-plus') }}
       />
       <Tabs.Screen
         name="requests"
         options={{
           title: t('tabs.requests'),
-          tabBarIcon: tabIcon('file-tray-full', 'file-tray-full-outline'),
+          tabBarIcon: tabIcon('inbox'),
         }}
       />
       <Tabs.Screen
         name="messages"
         options={{
           title: t('tabs.messages'),
-          tabBarIcon: tabIcon('chatbubbles', 'chatbubbles-outline'),
+          tabBarIcon: tabIcon('message-circle'),
         }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: t('tabs.profile'), tabBarIcon: tabIcon('person', 'person-outline') }}
+        options={{ title: t('tabs.profile'), tabBarIcon: tabIcon('user') }}
+      />
+      <Tabs.Screen
+        name="gains"
+        options={{ title: t('tabs.gains'), tabBarIcon: tabIcon('wallet') }}
       />
     </Tabs>
   );

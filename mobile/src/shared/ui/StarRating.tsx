@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { colors, spacing } from '@/shared/theme';
 
 interface Props {
@@ -24,7 +24,9 @@ export function StarRating({ value, onChange, size = 28 }: Props) {
           : filled
             ? colors.cta[500]
             : colors.neutral[200];
-        const icon = filled && !masked ? 'star' : 'star-outline';
+        // Une étoile acquise est pleine, les autres restent en contour : le
+        // glyphe est le même, seul le remplissage change.
+        const solid = filled && !masked;
 
         if (editable) {
           return (
@@ -34,11 +36,11 @@ export function StarRating({ value, onChange, size = 28 }: Props) {
               accessibilityRole="button"
               hitSlop={6}
             >
-              <Ionicons name={icon} size={size} color={color} />
+              <Icon name="star" size={size} color={color} filled={solid} />
             </Pressable>
           );
         }
-        return <Ionicons key={star} name={icon} size={size} color={color} />;
+        return <Icon key={star} name="star" size={size} color={color} filled={solid} />;
       })}
     </View>
   );

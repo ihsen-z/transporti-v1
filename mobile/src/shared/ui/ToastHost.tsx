@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
 import { useToastStore } from './toastStore';
@@ -32,7 +32,7 @@ export function ToastHost() {
     <View style={styles.wrap} pointerEvents="none">
       <SafeAreaView edges={['top']}>
         <Animated.View style={[styles.toast, { opacity }]}>
-          <Ionicons name="checkmark-circle" size={20} color={colors.green[600]} />
+          <Icon name="circle-check" size={20} color={colors.green[600]} />
           <Txt style={styles.text} numberOfLines={2}>
             {message}
           </Txt>

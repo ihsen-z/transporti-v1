@@ -46,7 +46,7 @@ export default function MessagesScreen() {
             contentContainerStyle={styles.list}
             refreshControl={queryRefreshControl(conversations)}
             ListEmptyComponent={
-              <EmptyState icon="chatbubbles-outline" title={t('messaging.empty')} />
+              <EmptyState icon="message-circle" title={t('messaging.empty')} />
             }
             renderItem={({ item }) => (
               <ConversationRow

@@ -112,8 +112,8 @@ const styles = StyleSheet.create({
   backdrop: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   sheet: {
     backgroundColor: colors.neutral[0],
-    borderTopLeftRadius: radii['2xl'],
-    borderTopRightRadius: radii['2xl'],
+    borderTopLeftRadius: radii.sheet,
+    borderTopRightRadius: radii.sheet,
     padding: spacing.xl,
     gap: spacing.lg,
   },

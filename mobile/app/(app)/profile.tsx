@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useProfile } from '@/features/auth/api/useProfile';
@@ -71,9 +71,9 @@ export default function ProfileScreen() {
             onPress={() => setEditOpen(true)}
             accessibilityRole="button"
           >
-            <Ionicons name="create-outline" size={22} color={colors.brand[600]} />
+            <Icon name="pencil" size={22} color={colors.brand[600]} />
             <Txt style={styles.linkText}>{t('profile.edit_link')}</Txt>
-            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
 
           <Pressable
@@ -81,9 +81,9 @@ export default function ProfileScreen() {
             onPress={() => setPasswordOpen(true)}
             accessibilityRole="button"
           >
-            <Ionicons name="lock-closed-outline" size={22} color={colors.brand[600]} />
+            <Icon name="lock" size={22} color={colors.brand[600]} />
             <Txt style={styles.linkText}>{t('profile.change_password_link')}</Txt>
-            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
 
           <Pressable
@@ -91,9 +91,9 @@ export default function ProfileScreen() {
             onPress={() => setNotifOpen(true)}
             accessibilityRole="button"
           >
-            <Ionicons name="notifications-outline" size={22} color={colors.brand[600]} />
+            <Icon name="bell" size={22} color={colors.brand[600]} />
             <Txt style={styles.linkText}>{t('notif_prefs.link')}</Txt>
-            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
 
           <Pressable
@@ -101,9 +101,9 @@ export default function ProfileScreen() {
             onPress={() => setReviewsOpen(true)}
             accessibilityRole="button"
           >
-            <Ionicons name="star-outline" size={22} color={colors.brand[600]} />
+            <Icon name="star" size={22} color={colors.brand[600]} />
             <Txt style={styles.linkText}>{t('reviews.my_title')}</Txt>
-            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
 
           <Pressable
@@ -111,9 +111,9 @@ export default function ProfileScreen() {
             onPress={() => setDisputesOpen(true)}
             accessibilityRole="button"
           >
-            <Ionicons name="alert-circle-outline" size={22} color={colors.brand[600]} />
+            <Icon name="circle-alert" size={22} color={colors.brand[600]} />
             <Txt style={styles.linkText}>{t('disputes.my_title')}</Txt>
-            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
 
           {isTransporter ? (
@@ -122,9 +122,9 @@ export default function ProfileScreen() {
               onPress={() => setTrustOpen(true)}
               accessibilityRole="button"
             >
-              <Ionicons name="shield-checkmark-outline" size={22} color={colors.brand[600]} />
+              <Icon name="shield-check" size={22} color={colors.brand[600]} />
               <Txt style={styles.linkText}>{t('trust.title')}</Txt>
-              <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+              <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
             </Pressable>
           ) : null}
 
@@ -133,9 +133,9 @@ export default function ProfileScreen() {
             onPress={() => setAboutOpen(true)}
             accessibilityRole="button"
           >
-            <Ionicons name="information-circle-outline" size={22} color={colors.brand[600]} />
+            <Icon name="info" size={22} color={colors.brand[600]} />
             <Txt style={styles.linkText}>{t('profile.about_link')}</Txt>
-            <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
         </Card>
       </View>

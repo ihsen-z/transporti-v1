@@ -6,7 +6,7 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, radii, spacing, fontSize, shadows } from '@/shared/theme';
+import { colors, radii, fontSize, shadows, TOUCH_TARGET } from '@/shared/theme';
 
 // Variantes charte : primary=bleu (structure), cta=orange (action unique),
 // accent=vert (valeur), ghost/danger=contour. Ombres colorées sur cta/primary.
@@ -51,11 +51,18 @@ export function Button({
   const bordered = variant === 'ghost' || variant === 'danger';
   const shadow = variant === 'cta' ? shadows.cta : variant === 'primary' ? shadows.brand : null;
 
+  // La charte demande des cibles ≥ 44 px, mais son propre `.b-sm` ne fait que
+  // ~40 px de haut. On garde la compacité visuelle et on étend la zone tactile :
+  // c'est la seule lecture qui respecte les deux règles à la fois.
+  const hitSlop = size === 'sm' ? { top: 4, bottom: 4, left: 0, right: 0 } : undefined;
+
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityState={{ disabled: isDisabled, busy: loading }}
       onPress={onPress}
       disabled={isDisabled}
+      hitSlop={hitSlop}
       style={({ pressed }) => [
         styles.base,
         size === 'sm' ? styles.sm : styles.md,
@@ -82,10 +89,22 @@ export function Button({
   );
 }
 
+// Métriques de la charte : .b = padding 13/20, rayon 14, texte 14/700 ;
+// .b-sm = padding 9/14, rayon 12, texte 13.
 const styles = StyleSheet.create({
-  base: { borderRadius: radii.input, alignItems: 'center', justifyContent: 'center' },
-  md: { minHeight: 52, paddingHorizontal: spacing.lg },
-  sm: { minHeight: 40, paddingHorizontal: spacing.md },
-  label: { fontSize: fontSize.md, fontWeight: '700' },
+  base: { alignItems: 'center', justifyContent: 'center' },
+  md: {
+    borderRadius: radii.input,
+    minHeight: TOUCH_TARGET,
+    paddingVertical: 13,
+    paddingHorizontal: 20,
+  },
+  sm: {
+    borderRadius: radii.buttonSm,
+    minHeight: 40,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+  },
+  label: { fontSize: fontSize.base, fontWeight: '700' },
   labelSm: { fontSize: fontSize.sm },
 });

@@ -10,7 +10,7 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
@@ -73,7 +73,7 @@ export function ChatView({ jobId }: { jobId: number }) {
             disabled={send.isPending}
             accessibilityRole="button"
           >
-            <Ionicons name="send" size={20} color={colors.neutral[0]} />
+            <Icon name="send" size={20} color={colors.neutral[0]} />
           </Pressable>
         </View>
       )}

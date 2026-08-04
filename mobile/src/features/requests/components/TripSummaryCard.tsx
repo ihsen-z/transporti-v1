@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { Card } from '@/shared/ui/Card';
 import { RouteRow } from '@/shared/ui/RouteRow';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -28,7 +28,7 @@ export function TripSummaryCard({ trip, onPress }: Props) {
           <RouteRow from={trip.pickup_governorate} to={trip.dropoff_governorate} />
           <Text style={styles.when}>{formatWhen(trip.scheduled_time)}</Text>
         </View>
-        <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+        <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
       </Card>
     </Pressable>
   );

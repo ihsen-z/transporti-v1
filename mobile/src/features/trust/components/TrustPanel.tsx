@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, Modal, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { TextField } from '@/shared/ui/TextField';
@@ -58,7 +58,7 @@ export function TrustPanel({ visible, onClose }: Props) {
         <View style={styles.header}>
           <Txt style={styles.title}>{t('trust.title')}</Txt>
           <Pressable onPress={onClose} accessibilityRole="button">
-            <Ionicons name="close" size={26} color={colors.neutral[700]} />
+            <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>
 

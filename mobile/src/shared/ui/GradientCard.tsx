@@ -26,6 +26,8 @@ const styles = StyleSheet.create({
   hero: {
     borderRadius: radii.hero,
     padding: spacing.lg + 2,
-    ...shadows.brand,
+    // Le hero porte son ombre propre (0 12px 26px), plus ample que celle d'un
+    // bouton bleu : c'est une surface, pas une commande.
+    ...shadows.hero,
   },
 });

@@ -1,5 +1,5 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { Card } from '@/shared/ui/Card';
 import { Avatar } from '@/shared/ui/Avatar';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
@@ -33,7 +33,7 @@ export function ConversationRow({ conv, onPress }: Props) {
             <Text style={styles.badgeText}>{conv.unread_count}</Text>
           </View>
         ) : null}
-        <Ionicons name="chevron-forward" size={20} color={colors.neutral[400]} />
+        <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
       </Card>
     </Pressable>
   );

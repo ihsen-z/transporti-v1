@@ -1,5 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Txt } from '@/shared/ui/Txt';
+import { Icon, type IconName } from '@/shared/ui/icons';
 import { colors, radii, fontSize, spacing } from '@/shared/theme';
 
 // Pastilles/tags de la charte (design-system/30-composants).
@@ -12,6 +13,8 @@ export type BadgeVariant =
   | 'urgent'
   | 'neutral';
 
+// Les cinq premières variantes sont les cinq tags de la charte, dans l'ordre où
+// 30-composants.html les présente (t-rt, t-v, t-save, t-cod, t-urg).
 const VARIANTS: Record<BadgeVariant, { bg: string; fg: string }> = {
   brand: { bg: colors.brand[50], fg: colors.brand[600] },
   verified: { bg: colors.green[50], fg: colors.green[700] },
@@ -26,23 +29,30 @@ const VARIANTS: Record<BadgeVariant, { bg: string; fg: string }> = {
 interface Props {
   label: string;
   variant?: BadgeVariant;
+  /** Icône optionnelle à gauche du libellé (remplace les émojis de la maquette). */
+  icon?: IconName;
 }
 
-export function Badge({ label, variant = 'neutral' }: Props) {
+export function Badge({ label, variant = 'neutral', icon }: Props) {
   const c = VARIANTS[variant];
   return (
     <View style={[styles.badge, { backgroundColor: c.bg }]}>
+      {icon ? <Icon name={icon} size={12} color={c.fg} strokeWidth={2.5} /> : null}
       <Txt style={[styles.text, { color: c.fg }]}>{label}</Txt>
     </View>
   );
 }
 
+// Charte (.tag) : texte 12/600, padding 5/11, rayon plein.
 const styles = StyleSheet.create({
   badge: {
     alignSelf: 'flex-start',
-    paddingVertical: 4,
-    paddingHorizontal: spacing.sm + 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    paddingVertical: 5,
+    paddingHorizontal: 11,
     borderRadius: radii.full,
   },
-  text: { fontSize: 11, fontWeight: '700' },
+  text: { fontSize: fontSize.tag, fontWeight: '600' },
 });

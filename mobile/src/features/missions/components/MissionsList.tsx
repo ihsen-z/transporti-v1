@@ -20,7 +20,7 @@ export function MissionsList() {
       {missions.isLoading ? (
         <ActivityIndicator color={colors.brand[500]} />
       ) : data.length === 0 ? (
-        <EmptyState icon="cube-outline" title={t('missions.empty')} />
+        <EmptyState icon="package" title={t('missions.empty')} />
       ) : (
         data.map((m: MissionDto) => <MissionCard key={m.id} mission={m} />)
       )}

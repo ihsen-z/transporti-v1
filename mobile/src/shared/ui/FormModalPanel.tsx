@@ -9,7 +9,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
@@ -31,7 +31,7 @@ export function FormModalPanel({ visible, title, onClose, children }: Props) {
         <View style={styles.header}>
           <Txt style={styles.title}>{title}</Txt>
           <Pressable onPress={onClose} accessibilityRole="button">
-            <Ionicons name="close" size={26} color={colors.neutral[700]} />
+            <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>
 

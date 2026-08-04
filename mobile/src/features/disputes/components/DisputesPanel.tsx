@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -32,7 +32,7 @@ export function DisputesPanel({ visible, onClose }: Props) {
         <View style={styles.header}>
           <Txt style={styles.title}>{t('disputes.my_title')}</Txt>
           <Pressable onPress={onClose} accessibilityRole="button">
-            <Ionicons name="close" size={26} color={colors.neutral[700]} />
+            <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>
 
@@ -45,7 +45,7 @@ export function DisputesPanel({ visible, onClose }: Props) {
             contentContainerStyle={styles.list}
             refreshControl={queryRefreshControl(disputes)}
             ListEmptyComponent={
-              <EmptyState icon="shield-checkmark-outline" title={t('disputes.empty')} />
+              <EmptyState icon="shield-check" title={t('disputes.empty')} />
             }
             renderItem={({ item }) => <DisputeRow dispute={item} />}
           />

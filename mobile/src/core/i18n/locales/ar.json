@@ -81,18 +81,31 @@
     "publish": "نشر",
     "requests": "الطلبات",
     "messages": "الرسائل",
-    "profile": "الحساب"
+    "profile": "الحساب",
+    "gains": "المكاسب"
   },
   "home": {
     "welcome": "مرحبا",
     "role_label": "الدور",
     "subtitle": "فضاءك في ترانسبورتي",
-    "verified": "موثّق"
+    "verified": "موثّق",
+    "earnings_label": "مكاسب مؤكدة",
+    "fill_rate": "نسبة الملء",
+    "km_transformed": "فارغ ← محمّل",
+    "requests_section": "الطلبات الواردة",
+    "see_all": "عرض الكل",
+    "kpi_unavailable": "—"
   },
   "screens": {
-    "search": { "title": "لوّج على رحلة عودة" },
-    "publish": { "title": "انشر رحلة عودة" },
-    "messages": { "title": "الرسائل" }
+    "search": {
+      "title": "لوّج على رحلة عودة"
+    },
+    "publish": {
+      "title": "انشر رحلة عودة"
+    },
+    "messages": {
+      "title": "الرسائل"
+    }
   },
   "profile": {
     "title": "الحساب",
@@ -448,5 +461,13 @@
   },
   "lang": {
     "toggle": "Français"
+  },
+  "gains": {
+    "title": "المكاسب",
+    "available": "متاح",
+    "confirmed": "مؤكدة",
+    "pending": "في الانتظار",
+    "potential": "محتملة",
+    "hint": "المبالغ المؤكدة هي التي تم تحرير ضمانها."
   }
 }

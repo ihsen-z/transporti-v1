@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { Txt } from '@/shared/ui/Txt';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
@@ -47,48 +48,56 @@ export function RequestCard({ request, jobId }: Props) {
     <Card>
       <View style={styles.top}>
         <Avatar name={request.client_name} size={42} />
-        <Text style={styles.client} numberOfLines={1}>{request.client_name}</Text>
+        <Txt style={styles.client} numberOfLines={1}>{request.client_name}</Txt>
         <Badge label={t(`requests.status.${request.status}`)} variant={statusVariant(request.status)} />
       </View>
 
       {/* VERT = valeur : le prix proposé par le client. */}
-      <Text style={styles.price}>{t('requests.proposed', { price: request.proposed_price })}</Text>
+      <Txt style={styles.price}>{t('requests.proposed', { price: request.proposed_price })}</Txt>
       <View style={styles.meta}>
         <Badge label={t(`requests.payment.${request.payment_method}`)} variant="cod" />
       </View>
       {request.counter_price ? (
-        <Text style={styles.counter}>{t('requests.countered', { price: request.counter_price })}</Text>
+        <Txt style={styles.counter}>{t('requests.countered', { price: request.counter_price })}</Txt>
       ) : null}
-      {request.description ? <Text style={styles.desc}>{request.description}</Text> : null}
+      {request.description ? <Txt style={styles.desc}>{request.description}</Txt> : null}
 
       {isPending ? (
         <View style={styles.actions}>
-          <Button
-            label={t('requests.action.accept')}
-            onPress={() => act('accept')}
-            variant="cta"
-            loading={respond.isPending}
-            style={styles.actionBtn}
-          />
-          <Button
-            label={t('requests.action.counter')}
-            onPress={() => setCounterOpen(true)}
-            variant="primary"
-            disabled={respond.isPending}
-            style={styles.actionBtn}
-          />
+          {/* Paire de la charte : Accepter en BLEU, Contre-proposer en FANTÔME,
+              côte à côte. L'orange était utilisé ici pour « Accepter », ce qui
+              contredisait sa règle — l'orange est le CTA UNIQUE d'un écran, et
+              une liste de demandes en affichait autant que de cartes. */}
+          <View style={styles.actionRow}>
+            <Button
+              label={t('requests.action.counter')}
+              onPress={() => setCounterOpen(true)}
+              variant="ghost"
+              size="sm"
+              disabled={respond.isPending}
+              style={styles.actionBtn}
+            />
+            <Button
+              label={t('requests.action.accept')}
+              onPress={() => act('accept')}
+              variant="primary"
+              size="sm"
+              loading={respond.isPending}
+              style={styles.actionBtn}
+            />
+          </View>
           <Pressable
             onPress={() => act('reject')}
             disabled={respond.isPending}
             style={styles.rejectBtn}
             accessibilityRole="button"
           >
-            <Text style={styles.rejectText}>{t('requests.action.reject')}</Text>
+            <Txt style={styles.rejectText}>{t('requests.action.reject')}</Txt>
           </Pressable>
         </View>
       ) : null}
 
-      {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
+      {errorMsg ? <Txt style={styles.error}>{errorMsg}</Txt> : null}
 
       <Modal
         visible={counterOpen}
@@ -99,7 +108,7 @@ export function RequestCard({ request, jobId }: Props) {
         <Pressable style={styles.backdrop} onPress={() => setCounterOpen(false)}>
           {/* Pressable interne : absorbe le tap pour ne pas fermer la feuille. */}
           <Pressable style={styles.sheet} onPress={() => undefined}>
-            <Text style={styles.sheetTitle}>{t('requests.counter.title')}</Text>
+            <Txt style={styles.sheetTitle}>{t('requests.counter.title')}</Txt>
             <TextField
               label={t('requests.counter.placeholder')}
               value={counterPrice}
@@ -128,7 +137,9 @@ const styles = StyleSheet.create({
   counter: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[500], marginTop: spacing.xs },
   desc: { fontSize: fontSize.sm, color: colors.neutral[700], marginTop: spacing.xs },
   actions: { gap: spacing.sm, marginTop: spacing.md },
-  actionBtn: { minHeight: 44 },
+  // .acts de la maquette : deux boutons de largeur égale, gouttière 8.
+  actionRow: { flexDirection: 'row', gap: spacing.sm },
+  actionBtn: { flex: 1 },
   rejectBtn: { alignSelf: 'center', paddingVertical: spacing.sm },
   rejectText: { color: colors.error, fontWeight: '700', fontSize: fontSize.sm },
   error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
@@ -139,8 +150,8 @@ const styles = StyleSheet.create({
   },
   sheet: {
     backgroundColor: colors.neutral[0],
-    borderTopLeftRadius: radii['2xl'],
-    borderTopRightRadius: radii['2xl'],
+    borderTopLeftRadius: radii.sheet,
+    borderTopRightRadius: radii.sheet,
     padding: spacing.xl,
     gap: spacing.lg,
   },

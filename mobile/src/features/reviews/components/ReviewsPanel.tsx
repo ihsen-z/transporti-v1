@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -32,7 +32,7 @@ export function ReviewsPanel({ visible, onClose }: Props) {
         <View style={styles.header}>
           <Txt style={styles.title}>{t('reviews.my_title')}</Txt>
           <Pressable onPress={onClose} accessibilityRole="button">
-            <Ionicons name="close" size={26} color={colors.neutral[700]} />
+            <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>
 
@@ -44,7 +44,7 @@ export function ReviewsPanel({ visible, onClose }: Props) {
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
             refreshControl={queryRefreshControl(reviews)}
-            ListEmptyComponent={<EmptyState icon="star-outline" title={t('reviews.empty')} />}
+            ListEmptyComponent={<EmptyState icon="star" title={t('reviews.empty')} />}
             renderItem={({ item }) => <ReviewRow review={item} />}
           />
         )}
