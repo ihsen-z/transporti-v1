@@ -36,5 +36,5 @@ const styles = StyleSheet.create({
     borderColor: colors.neutral[300],
     borderStyle: 'dashed',
   },
-  km: { fontSize: 11, color: colors.neutral[500] },
+  km: { fontSize: fontSize.meta, color: colors.neutral[500] },
 });

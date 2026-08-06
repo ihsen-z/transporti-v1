@@ -90,7 +90,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingHorizontal: 4,
   },
-  badgeText: { color: colors.neutral[0], fontSize: 11, fontWeight: '800' },
+  badgeText: { color: colors.neutral[0], fontSize: fontSize.meta, fontWeight: '800' },
   modal: { flex: 1, backgroundColor: colors.neutral[0] },
   header: {
     flexDirection: 'row',

@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, radii, spacing } from '@/shared/theme';
+import { colors, radii, spacing, fontSize } from '@/shared/theme';
 
 // Tuile de KPI du hero transporteur (.kpi de 10-transporteur-dashboard.html) :
 // posée sur le dégradé bleu, donc fond blanc translucide et texte blanc.
@@ -43,8 +43,8 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: spacing.md,
   },
-  value: { fontSize: 16, fontWeight: '800', color: colors.neutral[0] },
-  label: { fontSize: 11, color: colors.neutral[0], opacity: 0.85 },
+  value: { fontSize: fontSize.stat, fontWeight: '800', color: colors.neutral[0] },
+  label: { fontSize: fontSize.meta, color: colors.neutral[0], opacity: 0.85 },
   bar: {
     height: 6,
     backgroundColor: 'rgba(255,255,255,0.22)',

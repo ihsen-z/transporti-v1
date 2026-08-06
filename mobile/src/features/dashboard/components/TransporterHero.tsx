@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     letterSpacing: -0.5,
     marginTop: 2,
   },
-  unit: { fontSize: 16, fontWeight: '600', color: colors.neutral[0] },
+  unit: { fontSize: fontSize.stat, fontWeight: '600', color: colors.neutral[0] },
   // Même hauteur que le grand chiffre : le hero ne saute pas au chargement.
   loader: { height: fontSize.hero + 4, justifyContent: 'center', alignItems: 'flex-start' },
   row: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md + 2 },

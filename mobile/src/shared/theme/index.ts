@@ -46,10 +46,12 @@ export const focusRing = {
 // Tailles de police.
 export const fontSize = {
   xs: 10, // libellés d'onglets (.tab font-size:10px)
+  meta: 11, // métadonnées secondaires : compteurs, km, libellé de KPI
   tag: 12, // pastilles (.tag font-size:12px)
   sm: 13, // .b-sm
   base: 14, // .b — libellé de bouton
   md: 15, // corps de texte / champs
+  stat: 16, // valeur de KPI (.kpi b) et unité du hero
   lg: 17,
   xl: 22,
   '2xl': 28,

@@ -5,7 +5,7 @@ import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { Avatar } from '@/shared/ui/Avatar';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useUploadAvatar } from '../api/useUploadAvatar';
 
@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
     bottom: -2,
     width: 26,
     height: 26,
-    borderRadius: 13,
+    borderRadius: radii.full, // 26/2 — pastille ronde
     backgroundColor: colors.cta[500],
     alignItems: 'center',
     justifyContent: 'center',

@@ -39,7 +39,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.error,
     alignItems: 'center',
   },
-  countText: { color: colors.neutral[0], fontSize: 11, fontWeight: '800' },
+  countText: { color: colors.neutral[0], fontSize: fontSize.meta, fontWeight: '800' },
   action: { marginLeft: 'auto' },
   actionText: { fontSize: fontSize.sm, color: colors.brand[500], fontWeight: '700' },
 });
