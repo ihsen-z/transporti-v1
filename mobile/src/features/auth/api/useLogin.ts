@@ -4,16 +4,10 @@ import { apiClient } from '@/core/api/client';
 import { useAuthStore } from '@/core/auth/authStore';
 import type { LoginRequestDto, LoginResponseDto } from './dto';
 import { mapUserDto } from './mapper';
+import { LoginError, classifyLoginError } from './loginError';
 
-// Types d'erreur métier exposés à l'UI (pas de fuite d'axios dans l'écran).
-export type LoginErrorKind = 'invalid_credentials' | 'network' | 'unknown';
-
-export class LoginError extends Error {
-  constructor(public readonly kind: LoginErrorKind) {
-    super(kind);
-    this.name = 'LoginError';
-  }
-}
+// Réexport : l'UI importait ces symboles depuis ce module avant l'extraction.
+export { LoginError, type LoginErrorKind } from './loginError';
 
 // Appel réseau + normalisation d'erreur. baseURL = .../api/v1 ; le slash final
 // est requis (Django APPEND_SLASH).
@@ -23,10 +17,10 @@ async function postLogin(body: LoginRequestDto): Promise<LoginResponseDto> {
     return res.data;
   } catch (err) {
     if (isAxiosError(err)) {
-      // 400 = identifiants invalides (serializer.errors). On ne distingue pas
-      // "email inconnu" de "mauvais mot de passe" côté UI (pas d'énumération).
-      if (err.response?.status === 400) throw new LoginError('invalid_credentials');
-      if (!err.response) throw new LoginError('network');
+      // On ne distingue pas « e-mail inconnu » de « mauvais mot de passe » côté
+      // UI (pas d'énumération de comptes) ; en revanche on distingue bien un
+      // refus d'identifiants d'un 400 d'infrastructure — voir classifyLoginError.
+      throw new LoginError(classifyLoginError(err.response?.status, err.response?.data));
     }
     throw new LoginError('unknown');
   }
