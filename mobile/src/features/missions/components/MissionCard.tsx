@@ -7,6 +7,7 @@ import { Card } from '@/shared/ui/Card';
 import { Badge } from '@/shared/ui/Badge';
 import { RouteRow } from '@/shared/ui/RouteRow';
 import { statusVariant } from '@/shared/ui/statusVariant';
+import { formatAmount } from '@/shared/format/money';
 import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MissionDto } from '../api/dto';
@@ -32,6 +33,10 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
 
   const isMatched = mission.status === 'MATCHED';
   const isInProgress = mission.status === 'IN_PROGRESS';
+  // Ce que la mission rapporte VRAIMENT au transporteur : le net, commission
+  // déduite. C'est sa raison d'ouvrir l'application ; le backend le servait
+  // déjà, le mobile le jetait.
+  const hasEarnings = mission.offer_price_net > 0;
 
   const onComplete = () => {
     const value = pin.trim();
@@ -64,6 +69,20 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
       <View style={styles.route}>
         <RouteRow from={mission.pickup_governorate} to={mission.dropoff_governorate} />
       </View>
+
+      {hasEarnings ? (
+        <View style={styles.earnings}>
+          <Text style={styles.earningsNet}>
+            {t('missions.net', { amount: formatAmount(mission.offer_price_net) })}
+          </Text>
+          <Text style={styles.earningsDetail}>
+            {t('missions.gross_commission', {
+              gross: formatAmount(mission.offer_price),
+              commission: formatAmount(mission.offer_commission),
+            })}
+          </Text>
+        </View>
+      ) : null}
 
       {isMatched ? (
         <View style={styles.action}>
@@ -121,6 +140,10 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
+  earnings: { marginTop: spacing.md, gap: 2 },
+  // VERT = la valeur : c'est le net perçu, pas le montant facturé au client.
+  earningsNet: { fontSize: fontSize.lg, fontWeight: '800', color: colors.green[700] },
+  earningsDetail: { fontSize: fontSize.sm, color: colors.neutral[500] },
   route: { marginTop: spacing.md },
   when: { fontSize: fontSize.sm, color: colors.neutral[500] },
   action: { gap: spacing.sm, marginTop: spacing.md },

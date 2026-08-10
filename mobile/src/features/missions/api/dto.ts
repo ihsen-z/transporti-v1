@@ -21,6 +21,15 @@ export interface MissionDto {
   dropoff_address: string;
   scheduled_time: string;
   is_return_trip: boolean;
+  // Montants servis par TransporterMissionSerializer (offer_price,
+  // offer_price_net, offer_commission) et jusqu'ici ignorés par le mobile :
+  // le transporteur ne voyait donc jamais ce qu'une mission lui rapporte
+  // réellement, alors que la promesse du produit est exactement celle-là.
+  // Nombres (et non chaînes) : le serializer renvoie des float, avec 0 comme
+  // sentinelle tant qu'aucune offre n'est acceptée sur le job.
+  offer_price: number;
+  offer_price_net: number;
+  offer_commission: number;
 }
 
 // Corps de POST jobs/<id>/complete/ (D7). Le PIN à 4 chiffres est fourni par

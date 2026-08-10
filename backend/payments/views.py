@@ -13,6 +13,7 @@ from .serializers import (
 from .services import release_escrow_on_completion, settle_commission_debt, create_escrow_on_booking
 from .gateway import get_payment_gateway
 from logistics.models import TransportJob, Offer
+from logistics.participants import get_paying_client, is_job_participant
 from users.permissions import RequireRole
 
 
@@ -34,7 +35,17 @@ class InitiatePaymentView(APIView):
         if not job_id:
             return Response({'error': 'job_id is required'}, status=status.HTTP_400_BAD_REQUEST)
 
-        job = get_object_or_404(TransportJob, id=job_id, owner=request.user)
+        # The payer is not always the job owner: on a return trip the owner is
+        # the TRANSPORTER and the paying client is the one whose request was
+        # accepted. Filtering on owner=request.user made every return-trip
+        # payment return 404 — the pivot could not be paid at all.
+        job = get_object_or_404(TransportJob, id=job_id)
+        payer = get_paying_client(job)
+        if payer is None or payer.id != request.user.id:
+            return Response(
+                {'error': 'You are not the paying client for this job.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
 
         # D3 (escrow strict): payment happens while the job is MATCHED;
         # the job only becomes IN_PROGRESS once the escrow is HELD.
@@ -181,7 +192,10 @@ class VerifyPaymentView(APIView):
 
         escrow = get_object_or_404(EscrowTransaction, gateway_reference=gateway_ref)
         job = escrow.booking_reference
-        if job.owner != request.user:
+        # Same reasoning as InitiatePaymentView: the payer is the job's client,
+        # which on a return trip is not the owner.
+        payer = get_paying_client(job)
+        if payer is None or payer.id != request.user.id:
             return Response(
                 {'error': 'You do not have permission to verify this payment.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -220,20 +234,10 @@ class PaymentStatusView(APIView):
     def get(self, request, reference):
         escrow = get_object_or_404(EscrowTransaction, gateway_reference=reference)
         
-        # Verify the user is either the client (job owner) or the accepted transporter
+        # Verify the user is one of the two parties — resolved through the
+        # shared rule, so the client of a return trip is recognised.
         job = escrow.booking_reference
-        is_client = (job.owner == request.user)
-        
-        # Check if the user is the accepted transporter
-        is_transporter = False
-        try:
-            booking = Booking.objects.get(job=job)
-            if booking.accepted_offer.transporter == request.user:
-                is_transporter = True
-        except Booking.DoesNotExist:
-            pass
-
-        if not is_client and not is_transporter:
+        if not is_job_participant(request.user, job):
             return Response(
                 {'error': 'You do not have permission to view this payment status.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -266,9 +270,16 @@ class ConfirmCompletionView(generics.GenericAPIView):
         
         job_id = serializer.validated_data['job_id']
         
-        # Get job and verify ownership
-        job = get_object_or_404(TransportJob, id=job_id, owner=request.user)
-        
+        # Get job and verify the caller is the paying client (owner on the
+        # classic channel, accepted requester on a return trip).
+        job = get_object_or_404(TransportJob, id=job_id)
+        payer = get_paying_client(job)
+        if payer is None or payer.id != request.user.id:
+            return Response(
+                {'error': 'You are not the paying client for this job.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         # Validate job status
         if job.status != TransportJob.Status.COMPLETED:
             return Response(
@@ -309,12 +320,10 @@ class JobBookingDetailView(APIView):
     def get(self, request, job_id):
         job = get_object_or_404(TransportJob, id=job_id)
 
-        # Authorization: must be job owner or accepted transporter
-        is_owner = job.owner == request.user
-        accepted_offer = job.offers.filter(status='ACCEPTED').first()
-        is_transporter = accepted_offer and accepted_offer.transporter == request.user
-
-        if not is_owner and not is_transporter:
+        # Authorization: both sides of the transaction, resolved through the
+        # shared rule so a return trip (owner == transporter, client from the
+        # accepted request) is handled instead of denying the client.
+        if not is_job_participant(request.user, job):
             return Response(
                 {'error': 'Access denied.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -342,12 +351,10 @@ class JobEscrowDetailView(APIView):
     def get(self, request, job_id):
         job = get_object_or_404(TransportJob, id=job_id)
 
-        # Authorization: must be job owner or accepted transporter
-        is_owner = job.owner == request.user
-        accepted_offer = job.offers.filter(status='ACCEPTED').first()
-        is_transporter = accepted_offer and accepted_offer.transporter == request.user
-
-        if not is_owner and not is_transporter:
+        # Authorization: both sides of the transaction, resolved through the
+        # shared rule so a return trip (owner == transporter, client from the
+        # accepted request) is handled instead of denying the client.
+        if not is_job_participant(request.user, job):
             return Response(
                 {'error': 'Access denied.'},
                 status=status.HTTP_403_FORBIDDEN
@@ -507,6 +514,26 @@ class TransporterWalletView(APIView):
                 'date': (w.processed_at or w.requested_at).isoformat(),
             })
 
+        # COD missions never create an escrow, so they were absent from the
+        # history altogether: the transporter saw no trace of a cash delivery.
+        cod_bookings = Booking.objects.filter(
+            job_id__in=offer_by_job.keys(),
+            payment_method=Booking.PaymentMethod.COD,
+            job__status=TransportJob.Status.COMPLETED,
+        ).select_related('job')
+        for b in cod_bookings:
+            offer = offer_by_job.get(b.job_id)
+            if not offer:
+                continue
+            history.append({
+                'kind': 'COD',
+                'status': 'COLLECTED',
+                'job_id': b.job_id,
+                'gross': float(b.final_price),
+                'net': float(offer.price_net),
+                'date': b.job.updated_at.isoformat(),
+            })
+
         history.sort(key=lambda h: h['date'], reverse=True)
 
         cod_unsettled = CommissionLedger.objects.filter(
@@ -517,6 +544,9 @@ class TransporterWalletView(APIView):
             'available': float(summary['available']),
             'pending_net': float(summary['pending_net']),
             'released_net': float(summary['released_net']),
+            # Cash taken in hand on delivered COD missions — reported apart from
+            # `available`, which only covers what the platform owes.
+            'cod_collected_net': float(summary['cod_collected_net']),
             'cod_debt': float(summary['cod_debt']),
             'withdrawals_total': float(summary['withdrawals_total']),
             'cod_debts': [

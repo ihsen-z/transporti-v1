@@ -10,7 +10,7 @@ Sprint 4 (pivot) — matching v1 & corridor alerts.
 from datetime import timedelta
 
 from django.db.models.functions import Greatest
-from django.db.models import F, ExpressionWrapper, DurationField
+from django.db.models import F, ExpressionWrapper, DurationField, Avg, Count
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_date
@@ -88,9 +88,20 @@ class ReturnTripMatchView(APIView):
         else:
             queryset = queryset.order_by('scheduled_time')
 
-        results = queryset[:self.MAX_RESULTS]
+        total = queryset.count()
+
+        # Trust signals are annotated here (not computed per row in the
+        # serializer) so that showing a rating and a verification badge on the
+        # matching screen costs one query instead of three per result.
+        results = queryset.select_related(
+            'owner', 'owner__trust_profile'
+        ).annotate(
+            _owner_rating=Avg('owner__reviews_received__rating'),
+            _owner_review_count=Count('owner__reviews_received', distinct=True),
+        )[:self.MAX_RESULTS]
+
         return Response({
-            'count': queryset.count(),
+            'count': total,
             'results': TransportJobListSerializer(results, many=True).data,
         })
 

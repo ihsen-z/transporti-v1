@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
 from .models import TransportJob, Offer
+from .participants import get_paying_client
 
 
 class TransportJobCreateSerializer(serializers.ModelSerializer):
@@ -39,6 +40,12 @@ class TransportJobListSerializer(serializers.ModelSerializer):
     """
     owner_name = serializers.SerializerMethodField()
     offer_count = serializers.SerializerMethodField()
+    # Trust signals of the person behind the trip. Without them a client had to
+    # decide from a first name alone, which contradicts the "vérifié" promise —
+    # and had no id to open the public profile with.
+    owner_rating = serializers.SerializerMethodField()
+    owner_review_count = serializers.SerializerMethodField()
+    owner_verification_status = serializers.SerializerMethodField()
 
     class Meta:
         model = TransportJob
@@ -46,6 +53,8 @@ class TransportJobListSerializer(serializers.ModelSerializer):
             'id', 'job_type', 'status', 'pickup_address', 'dropoff_address',
             'pickup_governorate', 'dropoff_governorate',
             'scheduled_time', 'specifications', 'owner_name', 'offer_count',
+            'owner_id', 'owner_rating', 'owner_review_count',
+            'owner_verification_status',
             'price_tnd_min', 'price_tnd_max',
             'is_return_trip', 'available_capacity', 'instant_booking',
             'distance_km', 'route_polyline',
@@ -58,6 +67,29 @@ class TransportJobListSerializer(serializers.ModelSerializer):
 
     def get_offer_count(self, obj) -> int:
         return obj.offers.filter(status='PENDING').count()
+
+    def get_owner_rating(self, obj) -> float | None:
+        """Average rating received by the trip owner, None if never rated.
+
+        Reads the `_owner_rating` annotation when the view provided one
+        (return-trip matching does), and only falls back to a per-row query
+        otherwise — a list endpoint must not pay an aggregate per item.
+        """
+        value = getattr(obj, '_owner_rating', None)
+        if value is None:
+            from django.db.models import Avg
+            value = obj.owner.reviews_received.aggregate(v=Avg('rating'))['v']
+        return round(float(value), 2) if value is not None else None
+
+    def get_owner_review_count(self, obj) -> int:
+        value = getattr(obj, '_owner_review_count', None)
+        if value is None:
+            value = obj.owner.reviews_received.count()
+        return int(value)
+
+    def get_owner_verification_status(self, obj) -> str | None:
+        profile = getattr(obj.owner, 'trust_profile', None)
+        return profile.verification_status if profile is not None else None
 
 
 class TransportJobDetailSerializer(serializers.ModelSerializer):
@@ -117,14 +149,8 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
         request = self.context.get('request')
         if not request or not request.user.is_authenticated:
             return None
-        user = request.user
-        if obj.is_return_trip:
-            is_payer = obj.trip_requests.filter(
-                client=user, status='ACCEPTED'
-            ).exists()
-        else:
-            is_payer = user.id == obj.owner_id
-        if not is_payer:
+        payer = get_paying_client(obj)
+        if payer is None or payer.id != request.user.id:
             return None
         try:
             return obj.booking.delivery_pin

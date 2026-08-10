@@ -9,7 +9,8 @@
     "cancel": "Annuler",
     "close": "Fermer",
     "coming_soon": "Bientôt disponible",
-    "saved": "Modifications enregistrées"
+    "saved": "Modifications enregistrées",
+    "back": "Retour"
   },
   "auth": {
     "login": {
@@ -251,7 +252,9 @@
       "state": "Action impossible dans l'état actuel.",
       "forbidden": "Vous n'êtes pas assigné à cette mission.",
       "network": "Connexion au serveur impossible. Réessayez."
-    }
+    },
+    "net": "{{amount}} TND net",
+    "gross_commission": "Client : {{gross}} TND · commission {{commission}} TND"
   },
   "search": {
     "title": "Trouver un retour",
@@ -316,7 +319,8 @@
       "state": "Aucune contre-proposition à accepter.",
       "forbidden": "Cette demande ne vous appartient pas.",
       "network": "Connexion au serveur impossible. Réessayez."
-    }
+    },
+    "track": "Suivre la mission"
   },
   "messaging": {
     "empty": "Aucune conversation.",
@@ -461,5 +465,100 @@
     "pending": "En attente",
     "potential": "Potentiels",
     "hint": "Les montants confirmés sont ceux dont le séquestre a été libéré."
+  },
+  "wallet": {
+    "withdraw": "Demander un retrait",
+    "withdraw_submit": "Envoyer la demande",
+    "nothing_to_withdraw": "Aucun montant retirable pour le moment.",
+    "available_hint": "Solde disponible : {{amount}} TND",
+    "amount_label": "Montant (TND)",
+    "bank_label": "RIB ou coordonnées bancaires",
+    "bank_placeholder": "TN59 …",
+    "withdrawal_delay": "Les demandes sont traitées sous 3 à 5 jours ouvrés.",
+    "withdrawal_success": "Demande de retrait enregistrée.",
+    "history": "Historique",
+    "empty_history": "Aucun mouvement pour l'instant",
+    "job_ref": "Mission #{{id}}",
+    "cod_title": "Paiements en espèces",
+    "cod_collected": "Encaissé en espèces",
+    "cod_debt": "Commission due",
+    "cod_hint": "Cet argent est déjà entre vos mains : il n'est pas retirable. La commission due est déduite de votre solde disponible.",
+    "kind": {
+      "ESCROW": "Paiement sécurisé",
+      "WITHDRAWAL": "Retrait",
+      "COD": "Espèces à la livraison"
+    },
+    "errors": {
+      "amount_invalid": "Montant invalide.",
+      "amount_min": "Le montant minimum de retrait est de {{min}} TND.",
+      "bank_required": "Veuillez indiquer votre RIB.",
+      "validation": "Demande refusée.",
+      "forbidden": "Action non autorisée.",
+      "network": "Connexion impossible. Vérifiez votre réseau.",
+      "unknown": "Une erreur est survenue."
+    }
+  },
+  "tracking": {
+    "title": "Ma mission",
+    "transporter": "Transporteur : {{name}}",
+    "pin_label": "Code de livraison",
+    "pin_hint": "Communiquez ce code au transporteur uniquement au moment où vous recevez votre marchandise.",
+    "pay_title": "Paiement à effectuer",
+    "pay_hint": "La mission démarrera dès que le paiement sera sécurisé.",
+    "pay_cta": "Payer maintenant",
+    "pay_opened": "Page de paiement ouverte.",
+    "pay_sandbox": "Mode démonstration : aucun paiement réel n'a été effectué.",
+    "confirm_title": "Confirmer la réception",
+    "confirm_hint": "Confirmez seulement après avoir reçu votre marchandise : cela libère le paiement vers le transporteur.",
+    "confirm_cta": "J'ai bien reçu ma marchandise",
+    "confirm_success": "Réception confirmée. Le paiement a été libéré.",
+    "escrow_title": "Paiement sécurisé",
+    "escrow_hint": "Votre argent est conservé par Transporti jusqu'à confirmation de la réception.",
+    "timeline_title": "Suivi",
+    "timeline_empty": "Aucun événement pour l'instant.",
+    "cancel_link": "Annuler cette mission",
+    "cancel_title": "Annuler la mission",
+    "cancel_warning": "Le transporteur sera prévenu. Si vous avez déjà payé, le montant vous sera remboursé.",
+    "cancel_reason_placeholder": "Expliquez brièvement pourquoi…",
+    "cancel_submit": "Confirmer l'annulation",
+    "cancel_keep": "Garder la mission",
+    "cancel_success": "Mission annulée.",
+    "status": {
+      "MATCHED": "Acceptée",
+      "IN_PROGRESS": "En cours",
+      "COMPLETED": "Terminée",
+      "CANCELLED": "Annulée",
+      "PUBLISHED": "Publiée"
+    },
+    "payment": {
+      "DIGITAL": "Paiement sécurisé",
+      "COD": "À la livraison"
+    },
+    "escrow": {
+      "INITIATED": "En attente",
+      "HELD": "Sécurisé",
+      "RELEASED": "Libéré",
+      "REFUNDED": "Remboursé",
+      "BLOCKED": "Bloqué"
+    },
+    "events": {
+      "PUBLISHED": "Trajet publié",
+      "MATCHED": "Demande acceptée",
+      "PAYMENT_HELD": "Paiement sécurisé",
+      "STARTED": "Mission démarrée",
+      "DELIVERED": "Marchandise livrée",
+      "COMPLETED": "Mission terminée",
+      "CANCELLED_BY_CLIENT": "Annulée par le client",
+      "CANCELLED_BY_TRANSPORTER": "Annulée par le transporteur"
+    },
+    "errors": {
+      "pay": "Le paiement n'a pas pu être lancé.",
+      "confirm": "La confirmation a échoué.",
+      "reason_required": "Merci d'indiquer une raison (5 caractères minimum).",
+      "state": "Action impossible dans l'état actuel de la mission.",
+      "forbidden": "Action non autorisée.",
+      "network": "Connexion impossible. Vérifiez votre réseau.",
+      "unknown": "Une erreur est survenue."
+    }
   }
 }

@@ -96,8 +96,12 @@ jobs:
       run: python manage.py makemigrations --check --dry-run
 
     # BLOQUANT — suites saines (doivent rester vertes)
+    # logistics.tests.test_parcours_retour est cité nommément : il couvre le
+    # parcours client du canal « trajet retour », qui était cassé côté serveur
+    # (403/404) sans qu'aucun test ne s'en aperçoive. Il ne doit PAS hériter du
+    # caractère non bloquant de la suite logistics ci-dessous.
     - name: Run Tests (blocking)
-      run: python manage.py test trust payments messaging notifications reviews support --verbosity=2
+      run: python manage.py test trust payments messaging notifications reviews support logistics.tests.test_parcours_retour --verbosity=2
 
     # NON BLOQUANT — tests obsolètes connus (assertions périmées vs serializers
     # actuels + flux register modifié par le social-auth). À corriger en

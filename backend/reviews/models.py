@@ -131,15 +131,21 @@ class Review(models.Model):
                 f"Cannot review job in status {self.job.status}. Only COMPLETED jobs can be reviewed."
             )
         
-        # Reviewer must be participant
-        if self.reviewer:
+        # Reviewer must be participant. Both sides come from the shared rule
+        # (logistics/participants.py): on a return trip the job owner is the
+        # TRANSPORTER, so comparing the CLIENT reviewer to `job.owner` rejected
+        # the only person entitled to leave that review.
+        if self.reviewer and self.job:
+            from logistics.participants import get_job_client, get_job_transporter
+
             if self.role == ReviewRole.CLIENT:
-                if self.job and self.reviewer != self.job.owner:
+                client = get_job_client(self.job)
+                if client is None or self.reviewer != client:
                     raise ValidationError("Only the job client can leave a CLIENT review.")
             elif self.role == ReviewRole.TRANSPORTER:
-                if self.job and hasattr(self.job, 'accepted_offer'):
-                    if self.reviewer != self.job.accepted_offer.transporter:
-                        raise ValidationError("Only the job transporter can leave a TRANSPORTER review.")
+                transporter = get_job_transporter(self.job)
+                if transporter is not None and self.reviewer != transporter:
+                    raise ValidationError("Only the job transporter can leave a TRANSPORTER review.")
         
         # Reviewer cannot review themselves
         if self.reviewer and self.target and self.reviewer == self.target:

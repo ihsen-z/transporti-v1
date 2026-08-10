@@ -86,6 +86,12 @@ EMAIL_TEMPLATES = {
         'subject': '🚀 Bienvenue sur Transporti !',
         'template': 'emails/welcome.html',
     },
+
+    # ── Account ──
+    'password_reset': {
+        'subject': '🔑 Réinitialisation de votre mot de passe — Transporti',
+        'template': 'emails/password_reset.html',
+    },
 }
 
 
@@ -293,5 +299,19 @@ def _get_fallback_body(template_key: str, ctx: dict) -> str:
         'dispute_opened': "Un signalement a été ouvert concernant votre transport.",
         'dispute_resolved': "Le signalement a été résolu par notre équipe.",
         'welcome': "Bienvenue sur Transporti ! Votre compte a été créé avec succès.",
+        # Le lien est dans le corps du message et non uniquement sur le bouton
+        # « Accéder à Transporti » du gabarit de repli, sinon l'utilisateur
+        # arrive sur l'accueil sans jeton et le parcours est cassé.
+        'password_reset': (
+            "Vous avez demandé la réinitialisation de votre mot de passe.\n\n"
+            f"Depuis un ordinateur : {ctx.get('reset_link', '')}\n"
+            + (
+                f"Depuis l'application mobile : {ctx.get('mobile_link', '')}\n"
+                if ctx.get('mobile_link') else ''
+            )
+            + "\nCe lien est valable 24 heures et ne peut servir qu'une fois. "
+            "Si vous n'êtes pas à l'origine de cette demande, ignorez ce message : "
+            "votre mot de passe reste inchangé."
+        ),
     }
     return bodies.get(template_key, "Vous avez une nouvelle notification.")

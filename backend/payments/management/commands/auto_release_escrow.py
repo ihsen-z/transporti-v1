@@ -1,36 +1,41 @@
 """
 P1-03: Auto-release escrow management command.
 
-Releases escrow for COMPLETED jobs older than 72 hours
-where the client has not confirmed and no active dispute exists.
+Releases escrow for COMPLETED jobs with no active dispute, after the delay set
+by settings.ESCROW_AUTO_RELEASE_HOURS (48h — decision L2).
+
+Selection is delegated to payments.services.get_escrow_eligible_for_auto_release
+so that the dispute guards live in exactly one place. This command used to
+re-implement its own query with a 72h cutoff that only excluded OPEN and
+INVESTIGATING disputes: a dispute already RESOLVED in the client's favour
+(REFUND_CLIENT / SPLIT / NONE) did NOT block it, so the timer could pay the
+transporter money that had been ruled to belong to the client.
 
 Usage:
     python manage.py auto_release_escrow
     (Schedule via cron or Celery beat)
 """
 import logging
-from datetime import timedelta
 from django.core.management.base import BaseCommand
-from django.utils import timezone
 from django.db import transaction
 
-from logistics.models import TransportJob
-from payments.models import EscrowTransaction
-from payments.services import release_escrow_on_completion
-from support.models import Dispute
+from payments.services import (
+    get_escrow_eligible_for_auto_release,
+    release_escrow_on_completion,
+)
 
 logger = logging.getLogger('transporti')
 
 
 class Command(BaseCommand):
-    help = 'Auto-release escrow for completed jobs after 72h with no dispute (P1-03)'
+    help = 'Auto-release escrow for completed jobs after the L2 delay, disputes excluded (P1-03)'
 
     def add_arguments(self, parser):
         parser.add_argument(
             '--hours',
             type=int,
-            default=72,
-            help='Number of hours after completion to auto-release (default: 72)',
+            default=None,
+            help='Override the delay in hours (default: settings.ESCROW_AUTO_RELEASE_HOURS)',
         )
         parser.add_argument(
             '--dry-run',
@@ -41,33 +46,16 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         hours = options['hours']
         dry_run = options['dry_run']
-        cutoff = timezone.now() - timedelta(hours=hours)
 
-        # Find COMPLETED jobs with HELD escrow, completed before cutoff
-        eligible_jobs = TransportJob.objects.filter(
-            status=TransportJob.Status.COMPLETED,
-            updated_at__lt=cutoff,  # completed_at approximated by updated_at
-        ).exclude(
-            # Exclude jobs with active disputes
-            id__in=Dispute.objects.filter(
-                status__in=['OPEN', 'INVESTIGATING']
-            ).values_list('job_id', flat=True)
-        )
+        # Single source of truth for eligibility, including the L2 dispute guards
+        eligible_escrows = get_escrow_eligible_for_auto_release(hours=hours)
 
         released_count = 0
         skipped_count = 0
         error_count = 0
 
-        for job in eligible_jobs:
-            # Check if escrow is still HELD (not already released)
-            escrow = EscrowTransaction.objects.filter(
-                booking_reference=job,
-                status=EscrowTransaction.Status.HELD,
-            ).first()
-
-            if not escrow:
-                skipped_count += 1
-                continue
+        for escrow in eligible_escrows:
+            job = escrow.booking_reference
 
             if dry_run:
                 self.stdout.write(
@@ -81,7 +69,10 @@ class Command(BaseCommand):
                 with transaction.atomic():
                     release_escrow_on_completion(
                         job=job,
-                        reason=f"Auto-release after {hours}h (no dispute, no client confirmation)"
+                        reason=(
+                            "Auto-release after the L2 delay "
+                            "(no dispute, no client confirmation)"
+                        )
                     )
                     released_count += 1
                     logger.info(

@@ -1,14 +1,12 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { Badge } from '@/shared/ui/Badge';
 import { RouteRow } from '@/shared/ui/RouteRow';
 import { statusVariant } from '@/shared/ui/statusVariant';
-import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
-import { OpenReviewSheet } from '@/features/reviews/components/OpenReviewSheet';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MyRequestDto } from '../api/dto';
 import { useAcceptCounter } from '../api/useAcceptCounter';
 
@@ -23,14 +21,11 @@ function formatWhen(iso: string): string {
 
 export function MyRequestCard({ request }: { request: MyRequestDto }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const accept = useAcceptCounter();
-  const [disputeOpen, setDisputeOpen] = useState(false);
-  const [reviewOpen, setReviewOpen] = useState(false);
 
   const isCountered = request.status === 'COUNTERED';
   const accepted = request.status === 'ACCEPTED' || accept.isSuccess;
-  // Le PIN n'est disponible que dans la réponse d'acceptation (limite backend).
-  const deliveryPin = accept.data?.job.delivery_pin ?? null;
 
   const errKey = accept.error
     ? accept.error.kind === 'unknown'
@@ -71,33 +66,18 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
               ? t('my_requests.accepted_digital')
               : t('my_requests.accepted_cod')}
           </Text>
-          {deliveryPin ? (
-            <View style={styles.pinBox}>
-              <Text style={styles.pinLabel}>{t('my_requests.pin_label')}</Text>
-              <Text style={styles.pinValue}>{deliveryPin}</Text>
-            </View>
-          ) : (
-            <Text style={styles.hint}>{t('my_requests.pin_note')}</Text>
-          )}
+          {/* Tout ce qui suit l'acceptation — PIN, paiement, suivi, avis,
+              litige — vit maintenant dans l'écran de mission. La carte
+              affichait auparavant un PIN volatile (perdu au rechargement) et
+              des boutons Avis/Litige que le serveur refusait avant la fin de
+              la course. */}
           <Button
-            label={t('reviews.open')}
-            onPress={() => setReviewOpen(true)}
-            variant="primary"
+            label={t('my_requests.track')}
+            onPress={() => router.push(`/mission/${request.job}`)}
+            variant="cta"
           />
-          <Pressable onPress={() => setDisputeOpen(true)} accessibilityRole="button">
-            <Text style={styles.dispute}>{t('disputes.open')}</Text>
-          </Pressable>
         </View>
       ) : null}
-
-      <OpenDisputeSheet
-        jobId={disputeOpen ? request.job : null}
-        onClose={() => setDisputeOpen(false)}
-      />
-      <OpenReviewSheet
-        jobId={reviewOpen ? request.job : null}
-        onClose={() => setReviewOpen(false)}
-      />
     </Card>
   );
 }
@@ -116,27 +96,4 @@ const styles = StyleSheet.create({
   counter: { fontSize: fontSize.md, fontWeight: '800', color: colors.brand[500] },
   payment: { fontSize: fontSize.sm, color: colors.neutral[700] },
   error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
-  // Encadré VERT = valeur (le code qui débloque la livraison).
-  pinBox: {
-    backgroundColor: colors.brand[50],
-    borderRadius: radii.lg,
-    padding: spacing.lg,
-    alignItems: 'center',
-    gap: spacing.xs,
-  },
-  pinLabel: { fontSize: fontSize.sm, color: colors.neutral[700], textAlign: 'center' },
-  pinValue: {
-    fontSize: 32,
-    fontWeight: '800',
-    letterSpacing: 8,
-    color: colors.green[700],
-  },
-  hint: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  dispute: {
-    color: colors.neutral[500],
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    textAlign: 'center',
-    marginTop: spacing.sm,
-  },
 });

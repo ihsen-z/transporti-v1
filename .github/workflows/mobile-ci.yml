@@ -1,0 +1,88 @@
+name: Mobile CI
+
+# Calqué sur frontend-ci.yml, avec deux écarts assumés :
+#  - Node 20 et non 18 : eas-cli exige >= 20, et expo-doctor l'attend aussi.
+#  - job nommé `mobile-build-and-test` : le ruleset de `master` protège déjà les
+#    contextes `build-and-test (18.x)` et `build-and-test (3.11)`. Réutiliser le
+#    nom `build-and-test` créerait une collision de contexte entre workflows.
+#    Le nouveau contexte `mobile-build-and-test (20.x)` est ajouté au ruleset
+#    (github_ruleset_master.json) — sans cela une CI mobile rouge ne bloquerait
+#    aucun merge.
+
+on:
+  push:
+    branches: [ "master", "develop" ]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-ci.yml'
+  pull_request:
+    branches: [ "master" ]
+    paths:
+      - 'mobile/**'
+      - '.github/workflows/mobile-ci.yml'
+
+concurrency:
+  group: mobile-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  mobile-build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    defaults:
+      run:
+        working-directory: ./mobile
+
+    strategy:
+      matrix:
+        node-version: [20.x]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './mobile/package-lock.json'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Check formatting (Prettier)
+      run: npx prettier --check "**/*.{ts,tsx,json,md}"
+      continue-on-error: true
+
+    # BLOQUANT — le typecheck strict doit passer (gate de merge).
+    # `strict` + `noUncheckedIndexedAccess` sont activés : ce garde-fou est la
+    # principale raison pour laquelle ce code tient.
+    - name: Type checking (TypeScript)
+      run: npm run typecheck
+
+    # BLOQUANT — la suite doit rester verte.
+    - name: Run tests
+      run: npm run test:ci
+
+    # BLOQUANT — attrape les incompatibilités de versions avec le SDK Expo,
+    # c'est-à-dire exactement la classe de problème qui rendait l'ancien
+    # squelette mobile non buildable.
+    - name: Expo doctor
+      run: npx expo-doctor
+
+    # BLOQUANT dès l'introduction : la première passe de lint sur la base n'a
+    # remonté que 2 imports inutilisés, corrigés dans le même lot. Il n'y a donc
+    # aucune dette à amortir, et tolérer les avertissements maintenant
+    # reviendrait à en laisser s'accumuler.
+    - name: Run Linter (ESLint)
+      run: npx eslint . --ext .ts,.tsx,.js --max-warnings=0
+
+    - name: Mobile CI Summary
+      if: always()
+      run: |
+        echo "## 📱 Mobile CI Summary" >> $GITHUB_STEP_SUMMARY
+        echo "- Node: ${{ matrix.node-version }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Typecheck / tests / expo-doctor: ${{ job.status == 'success' && '✅' || '❌' }}" >> $GITHUB_STEP_SUMMARY
+        echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY

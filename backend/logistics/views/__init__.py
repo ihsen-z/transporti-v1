@@ -8,6 +8,7 @@ thematic modules. All view classes are re-exported here so importers
 from .jobs import (
     JobCreateView, JobMyListView, TransporterJobListView, JobPublicListView,
     JobDetailView, JobUpdateView, JobPublishView, TransporterCancelView,
+    ClientBookingCancelView,
     JobCancelView, JobCompleteView, JobConfirmStartView, JobEventsView,
 )
 from .offers import (

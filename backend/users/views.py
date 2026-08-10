@@ -400,8 +400,13 @@ class AvatarUploadView(APIView):
 class PasswordResetRequestView(APIView):
     """
     POST /api/auth/password-reset/
-    Accepts { email } and generates a password reset token.
-    V1: logs the reset link to console (no real email sending).
+    Accepts { email } and generates a password reset token, then sends it by
+    e-mail. Whether the message actually leaves the server depends on
+    EMAIL_BACKEND: console in development, SMTP once configured.
+
+    Until now this view only wrote the link to the log, so the "forgot my
+    password" flow was a dead end — the user was told an e-mail had been sent
+    and none ever was.
     """
     permission_classes = [AllowAny]
 
@@ -431,12 +436,31 @@ class PasswordResetRequestView(APIView):
             
             # Deep Link Support for Mobile
             mobile_enabled = getattr(django_settings, 'MOBILE_DEEP_LINK_ENABLED', False)
+            mobile_link = ''
             if mobile_enabled:
                 mobile_scheme = getattr(django_settings, 'MOBILE_APP_SCHEME', 'transporti')
                 mobile_link = f"{mobile_scheme}://reset-password?uid={uid}&token={token}"
                 logger.info(f"PASSWORD_RESET_REQUESTED: email={email}, link={reset_link}, mobile_link={mobile_link}")
             else:
                 logger.info(f"PASSWORD_RESET_REQUESTED: email={email}, link={reset_link}")
+
+            # Actually send the message. Failure is logged inside the service and
+            # must not change the response — leaking "this address is unknown"
+            # or "sending failed" would enable account enumeration.
+            try:
+                from notifications.emails import send_transactional_email
+                send_transactional_email(
+                    'password_reset',
+                    recipient_email=user.email,
+                    recipient_name=user.first_name,
+                    context={
+                        'reset_link': reset_link,
+                        'mobile_link': mobile_link,
+                        'platform_url': reset_link,
+                    },
+                )
+            except Exception as exc:
+                logger.error(f"PASSWORD_RESET_EMAIL_FAILED: email={email}, error={exc}")
         except User.DoesNotExist:
             # Silent — no information leak
             logger.info(f"PASSWORD_RESET_REQUESTED: email={email} (not found)")

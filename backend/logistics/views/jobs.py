@@ -1,4 +1,6 @@
 """Job CRUD and lifecycle views (create, list, detail, publish, cancel, complete)."""
+import logging
+
 from rest_framework import status, generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -8,12 +10,15 @@ from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
 from ..models import TransportJob, Offer
+from ..participants import get_job_client, get_job_transporter, is_job_participant
 from ..serializers import (
     TransportJobCreateSerializer, TransportJobListSerializer,
     TransportJobDetailSerializer, TransportJobUpdateSerializer,
     TransporterMissionSerializer,
 )
 from users.permissions import RequireRole
+
+logger = logging.getLogger('transporti')
 
 
 class JobCreateView(generics.CreateAPIView):
@@ -70,7 +75,22 @@ class TransporterJobListView(generics.ListAPIView):
             owner=user,
             is_return_trip=True
         )
-        return (assigned | return_trips).select_related(
+
+        # ?type= lets the caller ask for one nature of object instead of the
+        # union. Without it, clients had to filter the union themselves — and
+        # since the response is paginated at 20, a transporter with many
+        # finished missions saw "no active mission" because everything they
+        # were looking for sat on page 2. Absent parameter keeps the previous
+        # behaviour (both), so existing callers are unaffected.
+        requested = self.request.query_params.get('type')
+        if requested == 'assigned':
+            queryset = assigned
+        elif requested == 'owned':
+            queryset = return_trips
+        else:
+            queryset = assigned | return_trips
+
+        return queryset.select_related(
             'owner'
         ).prefetch_related('offers').distinct().order_by('-created_at')
 
@@ -177,9 +197,18 @@ class JobDetailView(APIView):
     def get(self, request, job_id):
         job = get_object_or_404(TransportJob.objects.select_related('owner'), id=job_id)
 
-        # Client: must own the job OR job is PUBLISHED (return trips from transporters)
+        # Client: must own the job, OR be the client engaged on this job (return
+        # trip whose request was accepted — there the owner is the transporter),
+        # OR the job is still PUBLISHED and therefore browsable.
+        # Without the middle branch, a client lost access to their own mission
+        # the moment it was accepted (job leaves PUBLISHED for MATCHED), which
+        # made tracking, the delivery PIN and completion unreachable.
         if request.user.role == 'CLIENT':
-            if job.owner != request.user and job.status != TransportJob.Status.PUBLISHED:
+            if (
+                job.owner != request.user
+                and not is_job_participant(request.user, job)
+                and job.status != TransportJob.Status.PUBLISHED
+            ):
                 return Response(
                     {'error': 'You do not own this job.'},
                     status=status.HTTP_403_FORBIDDEN
@@ -198,9 +227,16 @@ class JobDetailView(APIView):
             from django.db.models import F
             TransportJob.objects.filter(id=job_id).update(view_count=F('view_count') + 1)
 
+        # Contact details are shown to the two parties actually engaged in the
+        # transaction, not just the owner: on a return trip the owner is the
+        # transporter, so the previous rule hid the transporter's contact from
+        # the very client who has to receive the delivery.
         serializer = TransportJobDetailSerializer(
             job,
-            context={'request': request, 'show_contact': job.owner == request.user}
+            context={
+                'request': request,
+                'show_contact': is_job_participant(request.user, job),
+            }
         )
         return Response(serializer.data)
 
@@ -414,6 +450,130 @@ class TransporterCancelView(APIView):
         })
 
 
+class ClientBookingCancelView(APIView):
+    """
+    POST /api/jobs/{id}/client-cancel/
+    The engaged CLIENT cancels a mission that has already been accepted.
+
+    JobCancelView only covers a job the client owns while it is still DRAFT or
+    PUBLISHED. Once accepted there was no client-side exit at all: the client
+    was locked in with only the transporter able to cancel.
+
+    Channel asymmetry, deliberate:
+    * classic mission — the job belongs to the client, so cancelling it moves
+      the job to CANCELLED;
+    * return trip — the job is the TRANSPORTER's trip, so the client leaving
+      must not destroy it: the trip goes back to PUBLISHED and can be booked
+      by someone else.
+
+    Cancellation policy (delay window, penalty) is a pending product decision;
+    no penalty is applied here. Refunds go through refund_escrow, so a digital
+    payment already held is released back to the client.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
+
+    @transaction.atomic
+    def post(self, request, job_id):
+        job = get_object_or_404(TransportJob, id=job_id)
+
+        client = get_job_client(job)
+        if client is None or client.id != request.user.id:
+            return Response(
+                {'error': "Vous n'êtes pas le client de cette mission."},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        if job.status not in (TransportJob.Status.MATCHED, TransportJob.Status.IN_PROGRESS):
+            return Response(
+                {'error': 'Annulation possible uniquement pour une mission acceptée ou en cours.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        reason = request.data.get('reason', '').strip()
+        if not reason:
+            return Response(
+                {'error': "Veuillez fournir une raison pour l'annulation."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # 1. The accepted offer is void
+        offer = job.offers.filter(status=Offer.Status.ACCEPTED).first()
+        if offer:
+            offer.status = Offer.Status.WITHDRAWN
+            offer.save()
+
+        # 2. On a return trip, release the accepted request too
+        if job.is_return_trip:
+            from ..models import ReturnTripRequest
+            job.trip_requests.filter(
+                client=request.user, status=ReturnTripRequest.Status.ACCEPTED
+            ).update(
+                status=ReturnTripRequest.Status.CANCELLED,
+                response_message=f"Annulée par le client : {reason}",
+            )
+            job.status = TransportJob.Status.PUBLISHED
+        else:
+            job.status = TransportJob.Status.CANCELLED
+        job.save()
+
+        # 3. Durable trace (D4' — feeds the real K7 completion rate)
+        try:
+            from ..models import JobEvent
+            JobEvent.objects.create(
+                job=job, event='CANCELLED_BY_CLIENT',
+                actor=request.user, metadata={'reason': reason},
+            )
+        except Exception:
+            pass
+
+        # 4. Refund any refundable escrow (HELD/INITIATED)
+        try:
+            from payments.services import refund_escrow
+            refund_escrow(job, reason=f"Client cancellation: {reason}")
+        except Exception:
+            pass  # Never block the cancellation on the refund path
+
+        # 5. The Booking contract is void (Booking.job is a OneToOneField, so it
+        #    must go for a future acceptance to be able to create a fresh one)
+        try:
+            from payments.models import Booking
+            Booking.objects.filter(job=job).delete()
+        except Exception:
+            pass
+
+        # 6. System message + notify the transporter
+        transporter = get_job_transporter(job)
+        try:
+            from messaging.services import send_system_message
+            client_name = f"{request.user.first_name} {request.user.last_name}".strip()
+            send_system_message(
+                job,
+                f"⚠️ Le client {client_name} a annulé la mission.\n"
+                f"Raison : {reason}",
+                actor=request.user
+            )
+        except Exception:
+            pass
+
+        try:
+            from notifications.services import notify
+            if transporter is not None:
+                notify(
+                    user=transporter,
+                    notification_type='JOB_CANCELLED',
+                    title='Mission annulée par le client',
+                    message=f"La mission #{job.id} a été annulée. Raison : {reason}",
+                    metadata={'job_id': job.id},
+                )
+        except Exception:
+            pass
+
+        return Response({
+            'message': 'Mission annulée.',
+            'job_status': job.status,
+        })
+
+
 class JobCancelView(APIView):
     """
     POST /api/jobs/{id}/cancel/
@@ -565,6 +725,23 @@ class JobCompleteView(APIView):
 
         job.status = TransportJob.Status.COMPLETED
         job.save()
+
+        # D13 — COD: the cash never transits through the escrow, so the
+        # platform's commission has to be booked as a debt owed by the
+        # transporter. This call was missing entirely: a delivered COD mission
+        # produced no CommissionLedger entry at all, meaning the platform
+        # invoiced nothing and the transporter's wallet stayed at 0 TND.
+        if booking and booking.payment_method == Booking.PaymentMethod.COD:
+            try:
+                from payments.services import create_commission_debt_on_cod
+                create_commission_debt_on_cod(job, booking.accepted_offer)
+            except ValueError as exc:
+                # Trust guard refusal or an entry that already exists. The
+                # delivery has happened, so completion is never blocked — but
+                # this needs back-office follow-up, hence the ERROR level.
+                logger.error(
+                    'COD_COMMISSION_DEBT_FAILED: job_id=%s reason=%s', job.id, exc
+                )
 
         # Timeline: DELIVERED event carries the proof
         try:

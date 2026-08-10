@@ -10,6 +10,9 @@ import { persistOptions } from '@/core/api/queryPersister';
 import { useAuthStore } from '@/core/auth/authStore';
 import { fontsToLoad } from '@/shared/theme/typography';
 import { ToastHost } from '@/shared/ui/ToastHost';
+import { ErrorBoundary } from '@/shared/ui/ErrorBoundary';
+import { initObservability } from '@/core/observability';
+import { DeepLinkRouter } from '@/core/deeplink/DeepLinkRouter';
 import i18n from '@/core/i18n'; // init i18n (effet de bord) + instance pour le re-render
 
 // Garde le splash affiché tant que les polices ne sont pas prêtes.
@@ -28,6 +31,12 @@ export default function RootLayout() {
   // au changement de langue. On re-monte la Stack via une clé incrémentée à
   // chaque 'languageChanged' : tout l'arbre se re-render (texte + sens RTL).
   const [langTick, bumpLang] = useReducer((x: number) => x + 1, 0);
+
+  // Observabilité en premier : un crash survenant pendant l'hydratation de la
+  // session doit déjà pouvoir être remonté.
+  useEffect(() => {
+    void initObservability();
+  }, []);
 
   useEffect(() => {
     void hydrate();
@@ -54,12 +63,20 @@ export default function RootLayout() {
   }
 
   return (
-    <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
-      <SafeAreaProvider>
-        <StatusBar style="auto" />
-        <Stack key={langTick} screenOptions={{ headerShown: false }} />
-        <ToastHost />
-      </SafeAreaProvider>
-    </PersistQueryClientProvider>
+    // ErrorBoundary au-dessus des providers : une exception levée par
+    // l'hydratation du cache persisté doit elle aussi être rattrapée.
+    <ErrorBoundary>
+      <PersistQueryClientProvider client={queryClient} persistOptions={persistOptions}>
+        <SafeAreaProvider>
+          {/* "dark" = contenu sombre sur nos fonds clairs. L'app est verrouillée
+              en thème clair (app.json userInterfaceStyle), donc "auto" n'a rien
+              à arbitrer et masquait la barre sur un appareil en mode sombre. */}
+          <StatusBar style="dark" />
+          <DeepLinkRouter />
+          <Stack key={langTick} screenOptions={{ headerShown: false }} />
+          <ToastHost />
+        </SafeAreaProvider>
+      </PersistQueryClientProvider>
+    </ErrorBoundary>
   );
 }

@@ -12,6 +12,17 @@
 module.exports = ({ config }) => {
   const apiKey = process.env.GOOGLE_MAPS_ANDROID_API_KEY ?? '';
 
+  // Traçabilité du binaire. EAS expose EAS_BUILD_GIT_COMMIT_HASH et
+  // EAS_BUILD_PROFILE pendant le build ; GitHub Actions expose GITHUB_SHA.
+  // Sans ces valeurs, un rapport de crash ou un bug remonté par un testeur ne
+  // désigne aucune version précise — le binaire n'est rattachable à rien.
+  const commitSha = (
+    process.env.EAS_BUILD_GIT_COMMIT_HASH ??
+    process.env.GITHUB_SHA ??
+    ''
+  ).slice(0, 7);
+  const buildProfile = process.env.EAS_BUILD_PROFILE ?? '';
+
   return {
     ...config,
     android: {
@@ -28,6 +39,8 @@ module.exports = ({ config }) => {
       // conservé. Un booléen, pas la clé : le JS n'a besoin que de savoir
       // s'il peut monter une carte.
       hasGoogleMapsKey: apiKey.length > 0,
+      commitSha,
+      buildProfile,
     },
   };
 };

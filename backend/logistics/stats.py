@@ -133,6 +133,10 @@ def get_transporter_stats(user) -> dict:
         'pending_offers': pending_active,                  # K3
         'earnings_confirmed': float(wallet['released_net']),   # K4
         'earnings_pending': float(wallet['pending_net']),      # K11
+        # K4 bis — espèces déjà encaissées sur les missions COD livrées. Compté
+        # à part de K4 : l'argent n'est jamais passé par la plateforme, donc il
+        # n'est ni « confirmé » par un escrow, ni retirable.
+        'earnings_cod_collected': float(wallet['cod_collected_net']),
         'potential_earnings': float(potential_net),         # K5
         'completed_missions': completed,                    # K6
         'completion_rate': completion_rate,                 # K7 (None → « — »)

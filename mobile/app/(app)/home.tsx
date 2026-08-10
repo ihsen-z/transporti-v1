@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
@@ -11,7 +11,6 @@ import { CompletedMissionsList } from '@/features/reviews/components/CompletedMi
 import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
 import { Button } from '@/shared/ui/Button';
 import { GradientCard } from '@/shared/ui/GradientCard';
-import { SectionHeader } from '@/shared/ui/SectionHeader';
 import { Txt } from '@/shared/ui/Txt';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { colors, spacing, fontSize } from '@/shared/theme';

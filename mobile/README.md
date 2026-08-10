@@ -3,29 +3,61 @@
 MVP mobile de Transporti V1 (marketplace des trajets retour à vide, Tunisie).
 Refonte **greenfield** (décision 23/07/2026) — voir `../docs/PLAN_MOBILE_MVP.md`.
 
-## État : Sprint S0 (socle)
+## État (07/08/2026)
 
-Fondation posée : configuration Expo, navigation (expo-router), client API
-(axios + refresh JWT), auth (tokens en `expo-secure-store` + store Zustand),
-i18n FR/AR, boot minimal. **Aucun parcours métier encore branché** (S1+).
+Sprints S1 à S4 livrés : authentification, i18n FR/AR avec RTL, parcours
+transporteur complet (publication d'un retour → demandes → contre-offre →
+départ → complétion → notation), recherche client avec carte, messagerie,
+notifications, KYC. Le parcours **client** reste tronqué après l'acceptation —
+voir `../docs/PLAN_ACHEVEMENT_MOBILE_2026-08-07.md`, qui fait foi sur le reste
+à faire.
 
-## ⚠️ Baseline de dépendances — À FINALISER (porte de sortie S0)
-
-Les versions de `package.json` ciblent **Expo SDK 52** (baseline réelle et
-stable). Elles doivent être **réconciliées par les outils Expo** avant tout
-build, plutôt que figées à la main :
+Chaîne de qualité en place et **bloquante en CI** (`.github/workflows/mobile-ci.yml`) :
 
 ```bash
-cd mobile
-npm install
-npx expo install --check      # aligne les libs RN sur le SDK
-npx expo-doctor               # doit être VERT = porte de sortie S0
-npm run typecheck             # tsc --noEmit : zéro erreur
+npm run typecheck   # tsc --noEmit, strict + noUncheckedIndexedAccess : 0 erreur
+npm run lint        # ESLint, --max-warnings=0
+npm run test:ci     # jest + couverture
+npm run doctor      # expo-doctor 18/18
 ```
 
-> Différés (nécessitent un *development build*, pas Expo Go) et ajoutés à leur
-> sprint : `react-native-mmkv` (persistance état, S1), `@sentry/react-native`
-> (observabilité, S5), `react-native-maps` + `expo-location` (corridor, S2).
+## ⚠️ Development build, pas Expo Go
+
+L'application embarque des modules natifs indisponibles dans Expo Go —
+`react-native-mmkv` (persistance) et `react-native-maps` (corridor). **Expo Go
+ne peut donc pas lancer cette application** ; il faut un *development build*
+(`eas build --profile development`).
+
+Le projet est en **Continuous Native Generation** : `ios/` et `android/` sont
+générés par `expo prebuild` au moment du build et **ne sont pas commités**
+(`.gitignore`). Conséquence directe : tout réglage natif doit être exprimé en
+configuration (`app.json`, `app.config.js`, plugins Expo) — un fichier natif
+édité à la main serait écrasé au prochain build.
+
+L'ancienne architecture React Native est conservée volontairement
+(`newArchEnabled: false`) : `react-native-mmkv` est épinglé en 2.x, la 3.x
+exigeant la New Architecture.
+
+## Builds (EAS)
+
+Trois profils dans `eas.json` :
+
+| Profil | Distribution | Backend visé |
+|---|---|---|
+| `development` | interne, client de dev | émulateur (`10.0.2.2:8000`) |
+| `preview` | interne (APK / TestFlight) | staging Render |
+| `production` | stores | production Render |
+
+Le versionnement est **distant** (`appVersionSource: "remote"`) : EAS incrémente
+`versionCode`/`buildNumber`, il n'y a rien à gérer dans `app.json` et donc aucun
+conflit de merge sur ces champs.
+
+Le commit et le profil de build sont injectés dans `extra` par `app.config.js`
+et affichés dans l'écran « À propos » — un binaire est ainsi rattachable au code
+qui l'a produit.
+
+> Secrets à provisionner hors dépôt (compte Expo, DSN Sentry, clé Maps de
+> production) : voir `.env.example`.
 
 ## Lancer en dev
 
@@ -48,9 +80,10 @@ scripts/mobile-emulator.sh Pixel_5_API_33 8083  # autre AVD / autre port
 scripts/mobile-emulator.sh --shot mon-ecran     # capture → mobile/.expo/shots/
 ```
 
-Boote l'AVD, lance Metro en *watch mode*, puis ouvre l'app dans Expo Go
-(déjà installé sur les AVD). Le hot-reload est actif : éditer un fichier de
-`app/` ou `src/` rafraîchit l'émulateur.
+Boote l'AVD, lance Metro en *watch mode*, puis ouvre l'app dans le
+*development build* installé sur l'AVD (Expo Go ne convient pas, voir
+ci-dessus). Le hot-reload est actif : éditer un fichier de `app/` ou `src/`
+rafraîchit l'émulateur.
 
 Trois pièges rencontrés, déjà traités par le script :
 
@@ -70,9 +103,9 @@ ADB="$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe"
 tail -f .expo/metro.log                  # logs JS (voir note ci-dessous)
 ```
 
-> En **mode bridgeless** (New Architecture, activée ici), les `console.log` de
-> l'app n'apparaissent **pas** dans `adb logcat -s ReactNativeJS` — uniquement
-> dans la sortie Metro. D'où le fichier `.expo/metro.log`.
+> Les `console.log` de l'app remontent dans la sortie Metro plutôt que de
+> façon fiable dans `adb logcat -s ReactNativeJS`. D'où le fichier
+> `.expo/metro.log`.
 
 ### Backend en vis-à-vis de l'émulateur
 
@@ -93,12 +126,14 @@ repartir de zéro). Il crée entre autres `leila.benamor@test.transporti.tn`
 
 ```
 app/                 # routes expo-router (composition uniquement)
-  _layout.tsx        # providers globaux + hydratation session
-  index.tsx          # écran de boot S0
+  _layout.tsx        # ErrorBoundary + providers globaux + hydratation session
+  (auth)/            # login, register, forgot-password
+  (app)/             # home, search, publish, requests, messages, gains, profile
 src/
-  core/              # env, api (client/queryClient), auth (tokens/store), i18n
-  features/<dom>/    # (S1+) api/ (hooks React Query + dto + mapper), domain/
-  shared/            # (S1+) composants transverses
+  core/              # env, api (client/queryClient), auth, i18n, observability
+  features/<dom>/    # api/ (hooks React Query + dto), components/, data/
+  shared/            # theme (design-system) + ui (composants transverses)
+assets/              # icônes et splash (PNG générés depuis assets/source/*.svg)
 ```
 
 Règles projet : logique dans `src/`, écrans minces ; DTO ↔ domaine via

@@ -355,12 +355,17 @@ def get_wallet_summary(transporter) -> dict:
       has a RELEASED escrow (money actually earned through the platform)
     - pending_net: same but escrow still HELD (delivered/being delivered,
       awaiting confirmation or auto-release)
+    - cod_collected_net: Σ price_net of COD missions already delivered. This is
+      money the transporter took in CASH, so it is reported separately and is
+      deliberately NOT part of `available` — the platform owes nothing on it.
+      Before this figure existed, a delivered COD mission showed 0 TND
+      everywhere, which read as "I worked for nothing".
     - cod_debt: Σ unsettled CommissionLedger (commission owed on cash jobs)
     - withdrawals_total: Σ non-rejected withdrawal requests
     - available: released_net − withdrawals_total − cod_debt (compensation)
     """
     from django.db.models import Sum, F
-    from .models import WithdrawalRequest
+    from .models import WithdrawalRequest, Booking
 
     accepted = Offer.objects.filter(transporter=transporter, status='ACCEPTED')
 
@@ -370,6 +375,13 @@ def get_wallet_summary(transporter) -> dict:
 
     pending_net = accepted.filter(
         job__escrow_transactions__status=EscrowTransaction.Status.HELD
+    ).aggregate(total=Sum('price_net'))['total'] or Decimal('0')
+
+    # Cash already collected on delivered COD missions. Scoped through the
+    # booking so a DIGITAL mission never lands here.
+    cod_collected_net = accepted.filter(
+        job__booking__payment_method=Booking.PaymentMethod.COD,
+        job__status=TransportJob.Status.COMPLETED,
     ).aggregate(total=Sum('price_net'))['total'] or Decimal('0')
 
     cod_debt = CommissionLedger.objects.filter(
@@ -387,6 +399,7 @@ def get_wallet_summary(transporter) -> dict:
     return {
         'released_net': released_net,
         'pending_net': pending_net,
+        'cod_collected_net': cod_collected_net,
         'cod_debt': cod_debt,
         'withdrawals_total': withdrawals_total,
         'available': available,
@@ -732,12 +745,21 @@ def settle_commission_debt(ledger_id: int, admin_user, reason: str) -> Commissio
     return ledger
 
 
-def get_escrow_eligible_for_auto_release() -> list[EscrowTransaction]:
+def get_escrow_eligible_for_auto_release(hours: int | None = None) -> list[EscrowTransaction]:
     """
     Finds escrow transactions eligible for auto-release:
     - Status = HELD
     - Job status = COMPLETED
-    - Created > 48h ago
+    - Created > `hours` ago (defaults to settings.ESCROW_AUTO_RELEASE_HOURS,
+      48h per decision L2 — the management command used to hardcode 72h)
+
+    KNOWN LIMITATION, deliberately left as-is: the timer is measured from the
+    escrow's creation (i.e. the payment), not from the delivery. A mission paid
+    on Monday and delivered on Friday is therefore releasable the moment it is
+    completed, leaving the client no window to dispute. Changing the basis to
+    the completion timestamp is a financial-policy decision (and would flip the
+    seven tests in payments/tests.py that age `created_at`), so it must be
+    decided rather than silently patched.
     - No active dispute (OPEN/INVESTIGATING)
     - L2: no dispute resolved in a way that does NOT explicitly release funds.
 
@@ -752,7 +774,9 @@ def get_escrow_eligible_for_auto_release() -> list[EscrowTransaction]:
     """
     from support.models import Dispute
 
-    cutoff_time = timezone.now() - timedelta(hours=48)
+    if hours is None:
+        hours = getattr(settings, 'ESCROW_AUTO_RELEASE_HOURS', 48)
+    cutoff_time = timezone.now() - timedelta(hours=hours)
 
     # Resolved dispute outcomes that still block auto-release: anything that is
     # not an explicit release to the transporter.

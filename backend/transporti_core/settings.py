@@ -402,6 +402,13 @@ COMMISSION_RATES = {
 # truck, used to estimate "tonnes de CO₂ évitées". Adjustable per fleet data.
 CO2_KG_PER_KM = float(os.environ.get('CO2_KG_PER_KM', '0.35'))
 
+# Décision L2 — délai au bout duquel un séquestre HELD est libéré sans
+# confirmation du client. Source unique : le service
+# payments.get_escrow_eligible_for_auto_release et la commande
+# auto_release_escrow lisent tous les deux cette valeur (la commande codait
+# 72 h en dur, en contradiction avec la décision).
+ESCROW_AUTO_RELEASE_HOURS = int(os.environ.get('ESCROW_AUTO_RELEASE_HOURS', '48'))
+
 
 # =============================================================================
 # PAYMENT GATEWAY CONFIGURATION

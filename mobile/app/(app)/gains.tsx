@@ -1,60 +1,117 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
-import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
+import { useWallet } from '@/features/wallet/api/useWallet';
+import { WithdrawalSheet } from '@/features/wallet/components/WithdrawalSheet';
+import { WalletHistoryRow } from '@/features/wallet/components/WalletHistoryRow';
+import type { WalletHistoryEntry } from '@/features/wallet/api/dto';
 import { formatAmount } from '@/shared/format/money';
 import { Txt } from '@/shared/ui/Txt';
 import { Card } from '@/shared/ui/Card';
+import { Button } from '@/shared/ui/Button';
+import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
-// 5ᵉ onglet transporteur de la charte. Les quatre montants viennent tous de
-// GET transporter/stats/ (K4, K5, K10, K11) : aucun n'est recalculé ici.
+// 5ᵉ onglet transporteur : le PORTEFEUILLE, pas un tableau de KPI.
+//
+// L'écran affichait auparavant quatre tuiles issues de transporter/stats/ et
+// s'arrêtait là : aucun historique, aucun retrait possible, et 0 TND affiché
+// après une livraison payée en espèces. Il consomme désormais GET wallet/,
+// la source unique des montants (aucun calcul côté mobile).
 export default function GainsScreen() {
   const { t } = useTranslation();
   const role = useAuthStore((s) => s.user?.role);
   const isTransporter = role === 'TRANSPORTER';
-  const stats = useTransporterStats(isTransporter);
+  const wallet = useWallet(isTransporter);
+  const [withdrawOpen, setWithdrawOpen] = useState(false);
 
-  const d = stats.data;
-  const tiles = d
-    ? [
-        { key: 'available', value: d.wallet_available }, // K10
-        { key: 'confirmed', value: d.earnings_confirmed }, // K4
-        { key: 'pending', value: d.earnings_pending }, // K11
-        { key: 'potential', value: d.potential_earnings }, // K5
-      ]
-    : [];
+  const d = wallet.data;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
         contentContainerStyle={styles.content}
-        refreshControl={queryRefreshControl(stats)}
+        refreshControl={queryRefreshControl(wallet)}
       >
         <Txt style={styles.title}>{t('gains.title')}</Txt>
 
-        {stats.isLoading ? (
+        {wallet.isLoading || !d ? (
           <SkeletonList />
         ) : (
           <>
+            {/* Solde retirable : la seule somme que la plateforme doit. */}
+            <Card style={styles.hero}>
+              <Txt style={styles.heroLabel}>{t('gains.available')}</Txt>
+              <Txt style={styles.heroValue}>
+                {formatAmount(d.available)}
+                <Txt style={styles.heroUnit}> TND</Txt>
+              </Txt>
+              <Button
+                label={t('wallet.withdraw')}
+                onPress={() => setWithdrawOpen(true)}
+                variant="cta"
+                disabled={d.available <= 0}
+              />
+              {d.available <= 0 ? (
+                <Txt style={styles.hint}>{t('wallet.nothing_to_withdraw')}</Txt>
+              ) : null}
+            </Card>
+
             <View style={styles.grid}>
-              {tiles.map((tile) => (
-                <Card key={tile.key} style={styles.tile}>
-                  <Txt style={styles.tileLabel}>{t(`gains.${tile.key}`)}</Txt>
-                  <Txt style={styles.tileValue}>
-                    {formatAmount(tile.value)}
-                    <Txt style={styles.unit}> TND</Txt>
-                  </Txt>
-                </Card>
-              ))}
+              <Card style={styles.tile}>
+                <Txt style={styles.tileLabel}>{t('gains.pending')}</Txt>
+                <Txt style={styles.tileValue}>{formatAmount(d.pending_net)} TND</Txt>
+              </Card>
+              <Card style={styles.tile}>
+                <Txt style={styles.tileLabel}>{t('gains.confirmed')}</Txt>
+                <Txt style={styles.tileValue}>{formatAmount(d.released_net)} TND</Txt>
+              </Card>
             </View>
-            <Txt style={styles.hint}>{t('gains.hint')}</Txt>
+
+            {/* Espèces déjà en main + commission due en retour. Séparé du solde
+                retirable, sinon le transporteur croirait pouvoir retirer un
+                argent qu'il détient déjà. */}
+            {d.cod_collected_net > 0 || d.cod_debt > 0 ? (
+              <Card style={styles.codCard}>
+                <Txt style={styles.sectionTitle}>{t('wallet.cod_title')}</Txt>
+                <View style={styles.codRow}>
+                  <Txt style={styles.codLabel}>{t('wallet.cod_collected')}</Txt>
+                  <Txt style={styles.codValue}>{formatAmount(d.cod_collected_net)} TND</Txt>
+                </View>
+                <View style={styles.codRow}>
+                  <Txt style={styles.codLabel}>{t('wallet.cod_debt')}</Txt>
+                  <Txt style={styles.codDebt}>−{formatAmount(d.cod_debt)} TND</Txt>
+                </View>
+                <Txt style={styles.hint}>{t('wallet.cod_hint')}</Txt>
+              </Card>
+            ) : null}
+
+            <Txt style={styles.sectionTitle}>{t('wallet.history')}</Txt>
+            {d.history.length === 0 ? (
+              <EmptyState icon="trending-up" title={t('wallet.empty_history')} />
+            ) : (
+              <Card>
+                {d.history.map((entry: WalletHistoryEntry) => (
+                  <WalletHistoryRow
+                    key={`${entry.kind}-${entry.id ?? entry.job_id}-${entry.date}`}
+                    entry={entry}
+                  />
+                ))}
+              </Card>
+            )}
           </>
         )}
       </ScrollView>
+
+      <WithdrawalSheet
+        visible={withdrawOpen}
+        available={d?.available ?? 0}
+        onClose={() => setWithdrawOpen(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -63,12 +120,20 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.neutral[50] },
   content: { padding: spacing.xl, gap: spacing.lg },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
+  hero: { gap: spacing.md },
+  heroLabel: { fontSize: fontSize.md, color: colors.neutral[500], fontWeight: '600' },
+  // VERT = la valeur (règle de la charte).
+  heroValue: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.green[700] },
+  heroUnit: { fontSize: fontSize.md, fontWeight: '600', color: colors.green[700] },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
-  // Deux tuiles par ligne : 48 % laisse la gouttière respirer.
   tile: { width: '48%', gap: spacing.xs },
   tileLabel: { fontSize: fontSize.sm, color: colors.neutral[500], fontWeight: '600' },
-  // VERT = la valeur (règle de la charte).
-  tileValue: { fontSize: fontSize.xl, fontWeight: '800', color: colors.green[700] },
-  unit: { fontSize: fontSize.sm, fontWeight: '600', color: colors.green[700] },
+  tileValue: { fontSize: fontSize.lg, fontWeight: '800', color: colors.neutral[900] },
+  codCard: { gap: spacing.sm },
+  codRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  codLabel: { fontSize: fontSize.md, color: colors.neutral[700] },
+  codValue: { fontSize: fontSize.md, fontWeight: '800', color: colors.neutral[900] },
+  codDebt: { fontSize: fontSize.md, fontWeight: '800', color: colors.error },
+  sectionTitle: { fontSize: fontSize.lg, fontWeight: '800', color: colors.neutral[900] },
   hint: { fontSize: fontSize.sm, color: colors.neutral[500] },
 });

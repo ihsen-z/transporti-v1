@@ -13,25 +13,21 @@ from django.db import transaction
 from django.core.exceptions import ValidationError, PermissionDenied
 
 from .models import Dispute, AuditLog
-from logistics.models import TransportJob, Offer
+from logistics.models import TransportJob
+from logistics.participants import is_job_participant
 
 logger = logging.getLogger('transporti')
 
 
 def _is_job_participant(user, job: TransportJob) -> bool:
-    """Check if user is either job owner or assigned transporter."""
-    # Job owner (client)
-    if job.owner_id == user.id:
-        return True
-    
-    # Assigned transporter (accepted offer)
-    accepted_offer = Offer.objects.filter(
-        job=job,
-        status='ACCEPTED',
-        transporter=user
-    ).exists()
-    
-    return accepted_offer
+    """
+    Delegate to the shared rule (logistics/participants.py).
+
+    Kept as a thin wrapper so the call sites below stay unchanged. The previous
+    local implementation only knew "owner or accepted offer transporter", which
+    denied every client of a return trip — where the owner is the transporter.
+    """
+    return is_job_participant(user, job)
 
 
 def _require_moderator(user) -> None:

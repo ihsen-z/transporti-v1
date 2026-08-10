@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import Review, ReviewRole, ReviewAbuseLog
 from logistics.models import TransportJob
+from logistics.participants import get_job_client, get_job_transporter
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
@@ -28,15 +29,29 @@ class ReviewCreateSerializer(serializers.ModelSerializer):
         if job.status != TransportJob.Status.COMPLETED:
             raise serializers.ValidationError({"job_id": "Job must be COMPLETED to leave a review."})
             
-        # Determine role and validate participation
-        if job.owner == user:
+        # Determine role and validate participation.
+        # Both sides come from the shared rule (logistics/participants.py) so a
+        # return trip resolves correctly: there the job owner is the
+        # TRANSPORTER and the client is the one whose request was accepted.
+        # The previous branch tested `job.owner == user` first, which on a
+        # return trip made the transporter review himself — Review.clean() then
+        # raised "Cannot review yourself" as an unhandled 500.
+        client = get_job_client(job)
+        transporter = get_job_transporter(job)
+
+        if client is not None and client.id == user.id:
             role = ReviewRole.CLIENT
-            target = job.accepted_offer.transporter
-        elif hasattr(job, 'accepted_offer') and job.accepted_offer.transporter == user:
+            target = transporter
+        elif transporter is not None and transporter.id == user.id:
             role = ReviewRole.TRANSPORTER
-            target = job.owner
+            target = client
         else:
             raise serializers.ValidationError({"non_field_errors": "You are not a participant in this job."})
+
+        if target is None:
+            raise serializers.ValidationError(
+                {"non_field_errors": "This job has no counterparty to review."}
+            )
             
         # Check if review already exists
         if Review.objects.filter(job=job, role=role).exists():

@@ -39,6 +39,10 @@
           {
             "context": "build-and-test (3.11)",
             "integration_id": 15368
+          },
+          {
+            "context": "mobile-build-and-test (20.x)",
+            "integration_id": 15368
           }
         ]
       }

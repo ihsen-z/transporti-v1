@@ -14,7 +14,12 @@ from django.db import transaction
 from django.core.exceptions import ValidationError, PermissionDenied
 
 from .models import Conversation, Message
-from logistics.models import TransportJob, Offer
+from logistics.models import TransportJob
+from logistics.participants import (
+    get_job_client,
+    get_job_transporter,
+    is_conversation_participant,
+)
 
 logger = logging.getLogger('transporti')
 
@@ -69,17 +74,21 @@ def _contains_bypass_attempt(content: str) -> tuple[bool, str]:
 # =============================================================================
 
 def _is_job_participant(user, job: TransportJob) -> bool:
-    """Check if user is job owner or assigned transporter."""
-    # Job owner (client)
-    if job.owner_id == user.id:
-        return True
-    
-    # Assigned transporter (accepted offer)
-    return Offer.objects.filter(
-        job=job,
-        status='ACCEPTED',
-        transporter=user
-    ).exists()
+    """
+    Delegate to the shared rule (logistics/participants.py), in its broader
+    conversation flavour.
+
+    Messaging uses ``is_conversation_participant`` rather than the strict rule
+    because the return-trip acceptance path adds the client to
+    ``Conversation.participants`` explicitly, and a moderator may add someone
+    for support reasons. The strict rule stays reserved for money, reviews and
+    disputes.
+
+    The previous local implementation only knew "owner or accepted offer
+    transporter" — on a return trip the owner IS the transporter, so the client
+    was refused (403) on a conversation that GET conversations/ listed for them.
+    """
+    return is_conversation_participant(user, job)
 
 
 def _is_moderator(user) -> bool:
@@ -98,16 +107,15 @@ def get_or_create_conversation(job: TransportJob) -> Conversation:
     Auto-populates participants from job owner and accepted transporter.
     """
     conversation, created = Conversation.objects.get_or_create(job=job)
-    
+
     if created:
-        # Add job owner
-        conversation.participants.add(job.owner)
-        
-        # Add accepted transporter if exists
-        accepted_offer = Offer.objects.filter(job=job, status='ACCEPTED').first()
-        if accepted_offer:
-            conversation.participants.add(accepted_offer.transporter)
-        
+        # Both sides resolved through the shared rule, so a return trip (where
+        # the owner is the transporter and the client comes from the accepted
+        # request) populates correctly instead of leaving the client out.
+        for party in (get_job_transporter(job), get_job_client(job)):
+            if party is not None:
+                conversation.participants.add(party)
+
         logger.info(f"CONVERSATION_CREATED: job_id={job.id}")
     
     return conversation

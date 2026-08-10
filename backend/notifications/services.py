@@ -11,9 +11,22 @@ import logging
 from django.utils import timezone
 from django.db import transaction
 
-from .models import Notification, NotificationType
+from .models import Notification, NotificationType, NotificationCategory
 
 logger = logging.getLogger('transporti')
+
+
+# Coarse category → the concrete NotificationType stored on the row. Used by
+# create_notification(), whose callers reason in categories rather than in the
+# event-level types kept for backward compatibility.
+CATEGORY_DEFAULT_TYPE = {
+    NotificationCategory.JOB: NotificationType.OFFER_RECEIVED,
+    NotificationCategory.PAYMENT: NotificationType.ESCROW_HELD,
+    NotificationCategory.DISPUTE: NotificationType.DISPUTE_OPENED,
+    NotificationCategory.REVIEW: NotificationType.REVIEW_RECEIVED,
+    NotificationCategory.TRUST: NotificationType.TRUST_SCORE_CHANGED,
+    NotificationCategory.SYSTEM: NotificationType.SYSTEM_ALERT,
+}
 
 
 # =============================================================================
@@ -69,6 +82,48 @@ def notify(
         )
     
     return notification
+
+
+def create_notification(
+    user=None,
+    user_id: int = None,
+    title: str = '',
+    message: str = '',
+    category: str = None,
+    metadata: dict = None,
+) -> Notification:
+    """
+    Category-oriented adapter over :func:`notify`.
+
+    Three call sites already used this signature — counter-offer received,
+    counter-offer accepted, and the expire_stale_offers command — but the
+    function had never been written. Every call raised ImportError inside a bare
+    ``except Exception: pass``, so those three events silently produced NO
+    notification at all, in the database or in push.
+
+    Accepts ``user`` or ``user_id`` (the management command has only the id),
+    and a coarse ``category`` which is resolved to a concrete
+    ``NotificationType`` through CATEGORY_DEFAULT_TYPE.
+    """
+    if user is None:
+        if user_id is None:
+            raise ValueError('create_notification requires either user or user_id')
+        from django.contrib.auth import get_user_model
+        user = get_user_model().objects.filter(id=user_id).first()
+        if user is None:
+            raise ValueError(f'create_notification: unknown user_id={user_id}')
+
+    notification_type = CATEGORY_DEFAULT_TYPE.get(
+        (category or '').upper(), NotificationType.SYSTEM_ALERT
+    )
+
+    return notify(
+        user=user,
+        notification_type=notification_type,
+        title=title,
+        message=message,
+        metadata=metadata,
+    )
 
 
 def mark_as_read(notification: Notification) -> Notification:

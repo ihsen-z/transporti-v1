@@ -91,6 +91,11 @@ export default function AppLayout() {
         name="gains"
         options={{ title: t('tabs.gains'), tabBarIcon: tabIcon('wallet') }}
       />
+      {/* Écran de détail, atteint par navigation et non par la barre : `href:
+          null` le retire des onglets tout en le gardant adressable — condition
+          pour qu'une notification puisse un jour ouvrir directement la bonne
+          mission. */}
+      <Tabs.Screen name="mission/[id]" options={{ href: null }} />
     </Tabs>
   );
 }
