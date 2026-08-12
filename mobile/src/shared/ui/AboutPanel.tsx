@@ -23,7 +23,12 @@ export function AboutPanel({ visible, onClose }: Props) {
   const build = [env.buildProfile, env.commitSha].filter(Boolean).join(' · ');
 
   return (
-    <FormModalPanel visible={visible} title={t('about.title')} onClose={onClose}>
+    <FormModalPanel
+      testID="about-panel"
+      visible={visible}
+      title={t('about.title')}
+      onClose={onClose}
+    >
       {visible ? (
         <View style={styles.wrap}>
           <Logo wordmark size={44} />

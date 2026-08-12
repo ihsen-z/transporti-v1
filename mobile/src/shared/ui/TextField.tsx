@@ -23,6 +23,7 @@ interface Props {
   keyboardType?: KeyboardTypeOptions;
   autoCapitalize?: TextInputProps['autoCapitalize'];
   autoComplete?: TextInputProps['autoComplete'];
+  testID?: string;
 }
 
 export function TextField({
@@ -36,6 +37,7 @@ export function TextField({
   keyboardType,
   autoCapitalize = 'none',
   autoComplete,
+  testID,
 }: Props) {
   const { i18n } = useTranslation();
   const [focused, setFocused] = useState(false);
@@ -56,6 +58,9 @@ export function TextField({
             aucune place dans le flux, donc rien ne bouge à la prise de focus. */}
         {showRing ? <View pointerEvents="none" style={styles.ring} /> : null}
         <TextInput
+          testID={testID}
+          accessibilityLabel={label}
+          accessibilityHint={error}
           style={[
             styles.input,
             { textAlign, fontFamily },
@@ -78,7 +83,9 @@ export function TextField({
         />
       </View>
       {error ? (
-        <Txt style={[styles.error, { textAlign }]}>{error}</Txt>
+        <Txt testID={testID ? `${testID}-error` : undefined} style={[styles.error, { textAlign }]}>
+          {error}
+        </Txt>
       ) : null}
     </View>
   );

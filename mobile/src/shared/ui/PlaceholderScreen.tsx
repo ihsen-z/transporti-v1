@@ -8,13 +8,14 @@ interface Props {
   title: string;
   subtitle: string;
   icon?: IconName;
+  testID?: string;
 }
 
 // Écran d'attente réutilisable pour les onglets dont le contenu réel arrive
 // dans un incrément ultérieur (funnel recherche/publication S1-S2).
-export function PlaceholderScreen({ title, subtitle, icon = 'wrench' }: Props) {
+export function PlaceholderScreen({ title, subtitle, icon = 'wrench', testID }: Props) {
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView testID={testID} style={styles.safe}>
       <View style={styles.center}>
         <Icon name={icon} size={48} color={colors.brand[500]} />
         <Txt style={styles.title}>{title}</Txt>

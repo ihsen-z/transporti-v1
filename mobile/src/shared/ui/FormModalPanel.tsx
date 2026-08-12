@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -18,19 +19,31 @@ interface Props {
   title: string;
   onClose: () => void;
   children: ReactNode;
+  testID?: string;
 }
 
 // Panneau modal plein écran pour un formulaire : en-tête (titre + fermeture),
 // évitement du clavier et défilement. Le contenu (formulaire) est fourni par
 // l'appelant, qui peut le monter conditionnellement (`visible && <Form/>`) pour
 // repartir d'un état frais à chaque ouverture.
-export function FormModalPanel({ visible, title, onClose, children }: Props) {
+export function FormModalPanel({ visible, title, onClose, children, testID }: Props) {
+  const { t } = useTranslation();
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
+    <Modal
+      testID={testID}
+      visible={visible}
+      animationType="slide"
+      onRequestClose={onClose}
+    >
       <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
         <View style={styles.header}>
           <Txt style={styles.title}>{title}</Txt>
-          <Pressable onPress={onClose} accessibilityRole="button">
+          <Pressable
+            testID={testID ? `${testID}-close` : undefined}
+            onPress={onClose}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+          >
             <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>

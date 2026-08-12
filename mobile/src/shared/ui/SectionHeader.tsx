@@ -8,11 +8,12 @@ interface Props {
   count?: number;
   actionLabel?: string;
   onAction?: () => void;
+  testID?: string;
 }
 
-export function SectionHeader({ title, count, actionLabel, onAction }: Props) {
+export function SectionHeader({ title, count, actionLabel, onAction, testID }: Props) {
   return (
-    <View style={styles.row}>
+    <View testID={testID} style={styles.row}>
       <Txt style={styles.title}>{title}</Txt>
       {count != null && count > 0 ? (
         <View style={styles.count}>
@@ -20,7 +21,13 @@ export function SectionHeader({ title, count, actionLabel, onAction }: Props) {
         </View>
       ) : null}
       {actionLabel && onAction ? (
-        <Pressable onPress={onAction} style={styles.action} accessibilityRole="button">
+        <Pressable
+          testID={testID ? `${testID}-action` : undefined}
+          onPress={onAction}
+          style={styles.action}
+          accessibilityRole="button"
+          accessibilityLabel={actionLabel}
+        >
           <Txt style={styles.actionText}>{actionLabel}</Txt>
         </Pressable>
       ) : null}

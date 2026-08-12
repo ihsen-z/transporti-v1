@@ -24,7 +24,12 @@ export function LanguageToggle() {
   };
 
   return (
-    <Pressable onPress={onToggle} style={styles.btn} accessibilityRole="button">
+    <Pressable
+      testID="language-toggle"
+      onPress={onToggle}
+      style={styles.btn}
+      accessibilityRole="button"
+    >
       <Txt style={styles.txt}>{t('lang.toggle')}</Txt>
     </Pressable>
   );

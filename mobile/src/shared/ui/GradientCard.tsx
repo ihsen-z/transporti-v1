@@ -7,11 +7,13 @@ import { gradients, radii, spacing, shadows } from '@/shared/theme';
 interface Props {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
 }
 
-export function GradientCard({ children, style }: Props) {
+export function GradientCard({ children, style, testID }: Props) {
   return (
     <LinearGradient
+      testID={testID}
       colors={gradients.brand}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

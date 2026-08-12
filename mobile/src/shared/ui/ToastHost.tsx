@@ -31,7 +31,7 @@ export function ToastHost() {
     // navigateur (qui a sa propre elevation), sinon le toast rend derrière.
     <View style={styles.wrap} pointerEvents="none">
       <SafeAreaView edges={['top']}>
-        <Animated.View style={[styles.toast, { opacity }]}>
+        <Animated.View testID="toast-host" style={[styles.toast, { opacity }]}>
           <Icon name="circle-check" size={20} color={colors.green[600]} />
           <Txt style={styles.text} numberOfLines={2}>
             {message}

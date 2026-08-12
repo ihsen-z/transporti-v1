@@ -23,6 +23,7 @@ interface Props<T> {
   options: SelectOption<T>[];
   onChange: (value: T) => void;
   error?: string;
+  testID?: string;
 }
 
 // Sélecteur générique (RN n'a pas de <select> natif) : champ + feuille modale.
@@ -34,6 +35,7 @@ export function Select<T extends string | number>({
   options,
   onChange,
   error,
+  testID,
 }: Props<T>) {
   const [open, setOpen] = useState(false);
   const textAlign = I18nManager.isRTL ? 'right' : 'left';
@@ -44,7 +46,9 @@ export function Select<T extends string | number>({
       <Txt style={[styles.label, { textAlign }]}>{label}</Txt>
 
       <Pressable
+        testID={testID}
         accessibilityRole="button"
+        accessibilityLabel={label}
         style={[styles.field, error ? styles.fieldError : null]}
         onPress={() => setOpen(true)}
       >
@@ -73,6 +77,8 @@ export function Select<T extends string | number>({
               keyExtractor={(item) => String(item.value)}
               renderItem={({ item }) => (
                 <Pressable
+                  testID={testID ? `${testID}-option-${item.value}` : undefined}
+                  accessibilityRole="button"
                   style={styles.row}
                   onPress={() => {
                     onChange(item.value);

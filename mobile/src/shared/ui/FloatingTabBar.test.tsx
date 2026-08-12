@@ -127,6 +127,7 @@ describe('pastille messages non lus', () => {
     render(<FloatingTabBar {...props} role="TRANSPORTER" />);
 
     // 2 conversations non lues (id 1 et 2), pas 8 (5+3) ni 5.
+    expect(screen.getByTestId('tab-messages-badge')).toBeTruthy();
     expect(screen.getByText('2')).toBeTruthy();
   });
 
@@ -137,6 +138,6 @@ describe('pastille messages non lus', () => {
     const { props } = makeProps('home');
     render(<FloatingTabBar {...props} role="TRANSPORTER" />);
 
-    expect(screen.queryByText('0')).toBeNull();
+    expect(screen.queryByTestId('tab-messages-badge')).toBeNull();
   });
 });

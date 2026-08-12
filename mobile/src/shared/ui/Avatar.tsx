@@ -9,18 +9,26 @@ interface Props {
   name?: string | null;
   size?: number;
   imageUrl?: string | null;
+  testID?: string;
 }
 
-export function Avatar({ name, size = 44, imageUrl }: Props) {
+export function Avatar({ name, size = 44, imageUrl, testID }: Props) {
   const dimStyle = { width: size, height: size, borderRadius: size * 0.32 };
 
   if (imageUrl) {
-    return <Image source={{ uri: imageUrl }} style={[styles.av, styles.photo, dimStyle]} />;
+    return (
+      <Image
+        testID={testID}
+        source={{ uri: imageUrl }}
+        style={[styles.av, styles.photo, dimStyle]}
+      />
+    );
   }
 
   const initial = (name?.trim()?.charAt(0) ?? '?').toUpperCase();
   return (
     <LinearGradient
+      testID={testID}
       colors={gradients.brand}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}

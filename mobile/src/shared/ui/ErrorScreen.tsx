@@ -33,7 +33,13 @@ export function ErrorScreen({ error, onRetry }: Props) {
 
       {__DEV__ ? <Txt style={styles.detail}>{error.message}</Txt> : null}
 
-      <Button label="Réessayer" onPress={onRetry} variant="cta" style={styles.cta} />
+      <Button
+        testID="error-screen-retry"
+        label="Réessayer"
+        onPress={onRetry}
+        variant="cta"
+        style={styles.cta}
+      />
     </View>
   );
 }

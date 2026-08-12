@@ -12,18 +12,26 @@ interface Props {
   subtitle?: string;
   ctaLabel?: string;
   onCta?: () => void;
+  testID?: string;
 }
 
-export function EmptyState({ icon, title, subtitle, ctaLabel, onCta }: Props) {
+export function EmptyState({ icon, title, subtitle, ctaLabel, onCta, testID }: Props) {
   return (
-    <View style={styles.wrap}>
+    <View testID={testID} style={styles.wrap}>
       <View style={styles.iconWrap}>
         <Icon name={icon} size={38} color={colors.brand[500]} />
       </View>
       <Txt style={styles.title}>{title}</Txt>
       {subtitle ? <Txt style={styles.subtitle}>{subtitle}</Txt> : null}
       {ctaLabel && onCta ? (
-        <Button label={ctaLabel} onPress={onCta} variant="cta" size="sm" style={styles.cta} />
+        <Button
+          testID={testID ? `${testID}-cta` : undefined}
+          label={ctaLabel}
+          onPress={onCta}
+          variant="cta"
+          size="sm"
+          style={styles.cta}
+        />
       ) : null}
     </View>
   );

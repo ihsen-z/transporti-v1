@@ -8,11 +8,12 @@ interface Props {
   from: string;
   to: string;
   middle?: string; // ex: "≈ 294 km"
+  testID?: string;
 }
 
-export function RouteRow({ from, to, middle }: Props) {
+export function RouteRow({ from, to, middle, testID }: Props) {
   return (
-    <View style={styles.row}>
+    <View testID={testID} style={styles.row}>
       <View style={styles.dotBlue} />
       <Txt style={styles.city} numberOfLines={1}>{from}</Txt>
       <View style={styles.line} />

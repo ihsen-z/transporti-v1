@@ -7,7 +7,7 @@ import { spacing } from '@/shared/theme';
 // pulsation, affichées pendant le chargement à la place d'un spinner.
 export function SkeletonList({ count = 4 }: { count?: number }) {
   return (
-    <View style={styles.wrap}>
+    <View testID="skeleton-list" style={styles.wrap}>
       {Array.from({ length: count }).map((_, i) => (
         <Card key={i} style={styles.card}>
           <Skeleton width={44} height={44} radius={14} />

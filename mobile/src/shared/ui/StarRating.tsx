@@ -7,10 +7,11 @@ interface Props {
   value: number | null;
   onChange?: (value: number) => void;
   size?: number;
+  testID?: string;
 }
 
 // Notation 1-5. Si `onChange` est fourni -> saisie ; sinon lecture seule.
-export function StarRating({ value, onChange, size = 28 }: Props) {
+export function StarRating({ value, onChange, size = 28, testID }: Props) {
   const editable = typeof onChange === 'function';
   const masked = value === null;
   const rating = value ?? 0;
@@ -32,6 +33,7 @@ export function StarRating({ value, onChange, size = 28 }: Props) {
           return (
             <Pressable
               key={star}
+              testID={testID ? `${testID}-star-${star}` : undefined}
               onPress={() => onChange?.(star)}
               accessibilityRole="button"
               hitSlop={6}

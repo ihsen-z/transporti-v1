@@ -31,12 +31,13 @@ interface Props {
   variant?: BadgeVariant;
   /** Icône optionnelle à gauche du libellé (remplace les émojis de la maquette). */
   icon?: IconName;
+  testID?: string;
 }
 
-export function Badge({ label, variant = 'neutral', icon }: Props) {
+export function Badge({ label, variant = 'neutral', icon, testID }: Props) {
   const c = VARIANTS[variant];
   return (
-    <View style={[styles.badge, { backgroundColor: c.bg }]}>
+    <View testID={testID} style={[styles.badge, { backgroundColor: c.bg }]}>
       {icon ? <Icon name={icon} size={12} color={c.fg} strokeWidth={2.5} /> : null}
       <Txt style={[styles.text, { color: c.fg }]}>{label}</Txt>
     </View>

@@ -21,6 +21,7 @@ interface Props {
   loading?: boolean;
   disabled?: boolean;
   style?: StyleProp<ViewStyle>;
+  testID?: string;
 }
 
 const BG: Record<Variant, string> = {
@@ -46,6 +47,7 @@ export function Button({
   loading = false,
   disabled = false,
   style,
+  testID,
 }: Props) {
   const isDisabled = disabled || loading;
   const bordered = variant === 'ghost' || variant === 'danger';
@@ -58,7 +60,9 @@ export function Button({
 
   return (
     <Pressable
+      testID={testID}
       accessibilityRole="button"
+      accessibilityLabel={label}
       accessibilityState={{ disabled: isDisabled, busy: loading }}
       onPress={onPress}
       disabled={isDisabled}

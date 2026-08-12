@@ -20,7 +20,7 @@ export function OfflineBanner() {
   if (netInfo.isConnected !== false) return null;
 
   return (
-    <SafeAreaView edges={['top']} style={styles.safe}>
+    <SafeAreaView testID="offline-banner" edges={['top']} style={styles.safe}>
       <Txt style={styles.text}>{t('common.offline')}</Txt>
     </SafeAreaView>
   );

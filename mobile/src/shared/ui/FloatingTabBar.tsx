@@ -86,6 +86,7 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
     return (
       <Pressable
         key={name}
+        testID={`tab-${name}`}
         style={styles.tab}
         onPress={() => go(name)}
         accessibilityRole="button"
@@ -96,7 +97,7 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
           {/* 20 px : taille d'icône d'onglet de la charte (.tab .ic). */}
           {options.tabBarIcon?.({ focused: isFocused, color, size: 20 })}
           {badge > 0 ? (
-            <View style={styles.badge}>
+            <View testID={`tab-${name}-badge`} style={styles.badge}>
               <Txt style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Txt>
             </View>
           ) : null}
@@ -120,6 +121,7 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
       <View style={styles.bar}>
         <View style={styles.group}>{left.map(renderTab)}</View>
         <Pressable
+          testID={`tab-${nav.fab}`}
           style={styles.fab}
           onPress={() => go(nav.fab)}
           accessibilityRole="button"

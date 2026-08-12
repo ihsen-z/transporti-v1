@@ -10,16 +10,17 @@ interface Props {
   value: string | null;
   label: string;
   progress?: number | null;
+  testID?: string;
 }
 
-export function Stat({ value, label, progress }: Props) {
+export function Stat({ value, label, progress, testID }: Props) {
   // Les KPI du backend valent `null` quand la donnée n'existe pas encore
   // (aucun trajet publié). Le contrat KPI impose « — », pas 0 %.
   const shown = value ?? '—';
   const ratio = progress == null ? null : Math.max(0, Math.min(1, progress));
 
   return (
-    <View style={styles.kpi}>
+    <View testID={testID} style={styles.kpi}>
       <Txt style={styles.value}>{shown}</Txt>
       <Txt style={styles.label}>{label}</Txt>
       {ratio !== null ? (
