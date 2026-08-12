@@ -61,9 +61,13 @@ export function useDeepLinkRouting(): void {
       }
     }
 
-    // action.type === 'reset-password' est reconnu par `resolve.ts` mais pas
-    // encore routé : l'écran de saisie du nouveau mot de passe arrive au lot 3
-    // du plan d'achèvement. Router vers un écran inexistant serait pire que de
-    // ne rien faire — comportement identique à aujourd'hui, sans fausse promesse.
+    if (action.type === 'reset-password') {
+      // Route non authentifiée : atteinte par définition sans session ouverte.
+      // (auth)/_layout ne redirige vers /home que si une session existe déjà.
+      router.push({
+        pathname: '/reset-password',
+        params: { uid: action.uid, token: action.token },
+      });
+    }
   }, [url, router, qc]);
 }

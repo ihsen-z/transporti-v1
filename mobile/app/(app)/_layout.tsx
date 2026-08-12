@@ -4,6 +4,7 @@ import { Icon, type IconName } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useProfile } from '@/features/auth/api/useProfile';
+import { usePushNotifications } from '@/core/push/usePushNotifications';
 import { FloatingTabBar } from '@/shared/ui/FloatingTabBar';
 import { colors } from '@/shared/theme';
 
@@ -34,6 +35,11 @@ export default function AppLayout() {
   // Recharge le profil si session présente mais rôle inconnu (retour d'appli).
   const needsProfile = status === 'authenticated' && user === null;
   const profile = useProfile(needsProfile);
+
+  // Permission + token + navigation au tap (4.8). Monté ici (zone
+  // authentifiée) et non à la racine : un device token est toujours lié à un
+  // `request.user`, l'enregistrement n'a donc de sens qu'une fois connecté.
+  usePushNotifications();
 
   if (status === 'unauthenticated') {
     return <Redirect href="/login" />;
@@ -77,6 +83,13 @@ export default function AppLayout() {
         }}
       />
       <Tabs.Screen
+        name="mes-demandes"
+        options={{
+          title: t('tabs.mes_demandes'),
+          tabBarIcon: tabIcon('inbox'),
+        }}
+      />
+      <Tabs.Screen
         name="messages"
         options={{
           title: t('tabs.messages'),
@@ -91,11 +104,12 @@ export default function AppLayout() {
         name="gains"
         options={{ title: t('tabs.gains'), tabBarIcon: tabIcon('wallet') }}
       />
-      {/* Écran de détail, atteint par navigation et non par la barre : `href:
-          null` le retire des onglets tout en le gardant adressable — condition
-          pour qu'une notification puisse un jour ouvrir directement la bonne
-          mission. */}
+      {/* Écrans de détail, atteints par navigation et non par la barre : `href:
+          null` les retire des onglets tout en les gardant adressables — c'est
+          ce qui permet à une notification (4.7) ou un tap de push (4.8)
+          d'ouvrir directement le bon écran. */}
       <Tabs.Screen name="mission/[id]" options={{ href: null }} />
+      <Tabs.Screen name="transporteur/[id]" options={{ href: null }} />
     </Tabs>
   );
 }

@@ -1,15 +1,17 @@
 import { useState } from 'react';
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
+import { Icon } from '@/shared/ui/icons';
 import { SearchForm } from '@/features/search/components/SearchForm';
 import { TripResultCard } from '@/features/search/components/TripResultCard';
 import { SendRequestSheet } from '@/features/search/components/SendRequestSheet';
 import { ResultsMap } from '@/features/search/components/ResultsMap';
+import { CorridorAlertsPanel } from '@/features/search/components/CorridorAlertsPanel';
 import { useReturnTripMatch } from '@/features/search/api/useReturnTripMatch';
 import { useCreateCorridorAlert } from '@/features/search/api/useCreateCorridorAlert';
 import type { MatchParams, TripResultDto } from '@/features/search/api/dto';
@@ -22,6 +24,7 @@ export default function SearchScreen() {
   const createAlert = useCreateCorridorAlert();
   const [selected, setSelected] = useState<TripResultDto | null>(null);
   const [lastParams, setLastParams] = useState<MatchParams | null>(null);
+  const [alertsOpen, setAlertsOpen] = useState(false);
 
   const onSearch = (params: MatchParams) => {
     setLastParams(params);
@@ -35,7 +38,17 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
-        <Txt style={styles.title}>{t('search.title')}</Txt>
+        <View style={styles.headerRow}>
+          <Txt style={styles.title}>{t('search.title')}</Txt>
+          <Pressable
+            onPress={() => setAlertsOpen(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('search.alerts.title')}
+            hitSlop={12}
+          >
+            <Icon name="bell" size={22} color={colors.neutral[0]} />
+          </Pressable>
+        </View>
         <Txt style={styles.subtitle}>{t('search.subtitle')}</Txt>
       </View>
 
@@ -89,6 +102,7 @@ export default function SearchScreen() {
       />
 
       <SendRequestSheet trip={selected} onClose={() => setSelected(null)} />
+      <CorridorAlertsPanel visible={alertsOpen} onClose={() => setAlertsOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -105,6 +119,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs,
     ...shadows.brand,
   },
+  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[0] },
   subtitle: { fontSize: fontSize.md, color: colors.neutral[0], opacity: 0.85 },
   content: { padding: spacing.xl, gap: spacing.md },

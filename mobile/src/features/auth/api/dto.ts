@@ -66,6 +66,19 @@ export interface PasswordResetResponseDto {
   message: string;
 }
 
+// POST /api/v1/auth/password-reset/confirm/ — corps + réponse 200
+// (PasswordResetConfirmView). uid/token viennent du lien e-mail ou du deep
+// link `transporti://reset-password?uid=...&token=...`.
+export interface PasswordResetConfirmRequestDto {
+  uid: string;
+  token: string;
+  new_password: string;
+}
+
+export interface PasswordResetConfirmResponseDto {
+  message: string;
+}
+
 // PUT /api/v1/auth/profile/ — corps (UserProfileUpdateSerializer, partiel).
 // Seuls les champs éditables côté mobile.
 export interface UpdateProfileRequestDto {

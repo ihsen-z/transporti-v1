@@ -41,6 +41,15 @@
       "sent": "Si un compte existe avec cet e-mail, un lien de réinitialisation vient d'être envoyé.",
       "back_link": "Retour à la connexion"
     },
+    "reset": {
+      "title": "Nouveau mot de passe",
+      "subtitle": "Choisissez un nouveau mot de passe pour votre compte.",
+      "submit": "Réinitialiser le mot de passe",
+      "submitting": "Réinitialisation…",
+      "success": "Mot de passe réinitialisé avec succès.",
+      "login_link": "Se connecter",
+      "invalid_link": "Ce lien est invalide ou a expiré. Refaites une demande."
+    },
     "fields": {
       "email": "E-mail",
       "email_placeholder": "vous@exemple.tn",
@@ -81,6 +90,7 @@
     "search": "Recherche",
     "publish": "Publier",
     "requests": "Demandes",
+    "mes_demandes": "Mes demandes",
     "messages": "Messages",
     "profile": "Profil",
     "gains": "Gains"
@@ -254,7 +264,20 @@
       "network": "Connexion au serveur impossible. Réessayez."
     },
     "net": "{{amount}} TND net",
-    "gross_commission": "Client : {{gross}} TND · commission {{commission}} TND"
+    "gross_commission": "Client : {{gross}} TND · commission {{commission}} TND",
+    "cancel": {
+      "link": "Annuler cette mission",
+      "title": "Annuler la mission",
+      "warning": "Le trajet redevient disponible pour un autre client. Si le client a déjà payé, il sera remboursé.",
+      "reason_placeholder": "Expliquez brièvement pourquoi…",
+      "submit": "Confirmer l'annulation",
+      "keep": "Garder la mission",
+      "errors": {
+        "reason_required": "Merci d'indiquer une raison (5 caractères minimum).",
+        "state": "Annulation impossible dans l'état actuel de la mission.",
+        "network": "Connexion au serveur impossible. Réessayez."
+      }
+    }
   },
   "search": {
     "title": "Trouver un retour",
@@ -292,6 +315,13 @@
       "price": "Montant invalide",
       "validation": "Demande impossible. Vérifiez le montant (COD ≤ 300 TND) ou une demande est déjà en cours.",
       "network": "Connexion au serveur impossible. Réessayez."
+    },
+    "alerts": {
+      "title": "Mes alertes corridor",
+      "empty": "Aucune alerte active.",
+      "delete": "Supprimer l'alerte",
+      "delete_title": "Supprimer l'alerte",
+      "delete_msg": "Vous ne serez plus notifié des trajets publiés sur ce corridor."
     }
   },
   "my_requests": {
@@ -320,7 +350,10 @@
       "forbidden": "Cette demande ne vous appartient pas.",
       "network": "Connexion au serveur impossible. Réessayez."
     },
-    "track": "Suivre la mission"
+    "track": "Suivre la mission",
+    "withdraw": "Retirer ma demande",
+    "withdraw_confirm_title": "Retirer la demande",
+    "withdraw_confirm_msg": "Le transporteur ne pourra plus y répondre. Vous pourrez en envoyer une nouvelle."
   },
   "messaging": {
     "empty": "Aucune conversation.",
@@ -448,6 +481,19 @@
       "validation": "Envoi refusé (≤ 5 Mo, JPG/PNG, quota 10).",
       "network": "Connexion impossible. Réessayez."
     }
+  },
+  "profiles": {
+    "title": "Profil transporteur",
+    "active_trips": "{{count}} retour actif",
+    "active_trips_plural": "{{count}} retours actifs",
+    "review_count": "{{count}} avis",
+    "review_count_plural": "{{count}} avis",
+    "no_reviews_yet": "Pas encore d'avis.",
+    "jobs_completed": "Missions",
+    "completion_rate": "Taux de réussite",
+    "response_time": "Réponse moy.",
+    "minutes": "{{count}} min",
+    "vehicle": "Véhicule : {{type}}"
   },
   "role": {
     "CLIENT": "Client",

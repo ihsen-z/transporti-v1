@@ -1,20 +1,26 @@
 import { useState } from 'react';
 import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useRouter } from 'expo-router';
 import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
+import { useAuthStore } from '@/core/auth/authStore';
+import { resolveNotificationRoute } from '../data/notificationRoute';
 import { useUnreadCount } from '../api/useUnreadCount';
 import { useNotifications } from '../api/useNotifications';
 import { useMarkRead, useMarkAllRead } from '../api/useMarkNotifications';
+import type { NotificationDto } from '../api/dto';
 import { NotificationRow } from './NotificationRow';
 
 // Cloche + badge non-lus + panneau modal. Placée dans le header de l'Accueil.
 export function NotificationBell() {
   const { t } = useTranslation();
+  const router = useRouter();
+  const role = useAuthStore((s) => s.user?.role);
   const [open, setOpen] = useState(false);
   const unread = useUnreadCount();
   const list = useNotifications(open); // fetch seulement à l'ouverture
@@ -22,6 +28,17 @@ export function NotificationBell() {
   const markAll = useMarkAllRead();
 
   const count = unread.data ?? 0;
+
+  // 4.7 : le tap ouvrait déjà la notification (marquage lu) mais ne menait
+  // jamais nulle part — aucun écran de détail n'était adressable avant 4.5.
+  const onPressNotif = (notif: NotificationDto) => {
+    if (!notif.is_read) markRead.mutate(notif.id);
+    const target = resolveNotificationRoute(notif.type, notif.metadata, role);
+    if (target) {
+      setOpen(false);
+      router.push(target);
+    }
+  };
 
   return (
     <>
@@ -61,12 +78,7 @@ export function NotificationBell() {
                 <EmptyState icon="bell" title={t('notifications.empty')} />
               }
               renderItem={({ item }) => (
-                <NotificationRow
-                  notif={item}
-                  onPress={() => {
-                    if (!item.is_read) markRead.mutate(item.id);
-                  }}
-                />
+                <NotificationRow notif={item} onPress={() => onPressNotif(item)} />
               )}
             />
           )}

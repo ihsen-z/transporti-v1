@@ -284,6 +284,42 @@ digital en sandbox derrière un bandeau explicite.
 > **Objectif business :** la confiance est le premier produit (valeur BO n°2). Aujourd'hui on demande
 > à un client de s'engager à l'aveugle, sans possibilité de revenir en arrière.
 
+> ### ✅ Livré le 12/08/2026
+>
+> **Bonne surprise à l'exécution :** des 8 tâches, deux étaient déjà résolues comme effet de bord du
+> Lot 2. **3.2** (annulation client) vit dans `useClientCancel.ts` depuis l'écran de mission ; **3.5**
+> (n'afficher avis/litige qu'une fois la mission terminée) est déjà le comportement de
+> `mission/[id].tsx:197` (`d.status === 'COMPLETED'`) — la carte « mes demandes » ne propose plus que
+> `track`, tout le reste a été déplacé au Lot 2. Les 6 tâches restantes ont été construites cette
+> session, chacune contre un endpoint déjà vérifié opérationnel (aucun blocage backend, contrairement
+> au Lot 0) :
+>
+> - **3.1** — `src/features/profiles/` (`useTransporterProfile`, `useTransporterReviews`) +
+>   `app/(app)/transporteur/[id].tsx`, lié depuis `TripResultCard` : `owner_id`/`owner_rating`/
+>   `owner_review_count`/`owner_verification_status` étaient déjà servis par `return-trips/match/`
+>   depuis 0.8 mais absents du DTO mobile (`TripResultDto`), donc jamais affichés ni exploitables.
+> - **3.3** — `useTransporterCancel.ts` + `TransporterCancelSheet.tsx` (motif obligatoire, calqué sur
+>   `CancelMissionSheet.tsx`), branché sur `MissionCard.tsx` pour les missions `MATCHED`/`IN_PROGRESS`.
+> - **3.4** — `useCancelRequest.ts`, bouton retrait dans `MyRequestCard` pour `PENDING`/`COUNTERED`.
+> - **3.6** — `useCorridorAlerts` (liste) + `useDeleteCorridorAlert` + `CorridorAlertsPanel.tsx`,
+>   ouvert depuis une icône cloche sur l'écran Recherche.
+> - **3.7** — `usePasswordResetConfirm.ts` + `ResetPasswordForm.tsx` + `app/(auth)/reset-password.tsx`,
+>   routé depuis `useDeepLinkRouting.ts` (le type `reset-password` était déjà reconnu par `resolve.ts`
+>   mais jamais routé).
+> - **3.8** — `app/(app)/mes-demandes.tsx`, nouvel onglet CLIENT (`FloatingTabBar` : `home` /
+>   `mes-demandes` / `messages` / `profile`), extrait de l'accueil où `MyRequestsList` n'avait ni
+>   pull-to-refresh ni existence dans la navigation.
+>
+> **Vérification :** `typecheck` 0 erreur · `lint` 0 avertissement · **12 suites / 66 tests** verts ·
+> `expo-doctor` 18/18. Parité i18n FR/AR vérifiée par diff structurel des deux fichiers de locale
+> (seul écart : le schéma de pluriel à 6 catégories de l'arabe contre singulier/pluriel du français —
+> la convention déjà en usage pour `trips.success`/`search.results_count`).
+>
+> **Non couvert :** comme pour le Lot 2, la DoD prévoit une démonstration sur build EAS / device
+> physique — toujours hors de portée sans compte Expo. Vérification supplémentaire cette fois
+> impossible même en aperçu web : `npm run web` casse dès l'écran de recherche sur un import de module
+> natif (`react-native-maps`, introduit avant ce lot, sans rapport avec lui).
+
 | # | Tâche | Fichiers | Effort |
 |---|---|---|:--:|
 | 3.1 | Profil transporteur + avis reçus consultables **avant** d'envoyer la demande (endpoints déjà 200, il manquait `owner_id` côté liste — livré en 0.8) | **créer** `app/(app)/transporteur/[id].tsx`, `src/features/profiles/api/` | M |
@@ -309,6 +345,63 @@ l'e-mail jusqu'à la reconnexion.
 
 **Ces deux chantiers ne se séparent pas** : une notification qui n'ouvre pas le bon écran ne sert à
 rien, et aucun écran de détail n'est adressable aujourd'hui.
+
+> ### ✅ Livré le 12/08/2026 — sauf ce qui exige un appareil réel ou une décision BO
+>
+> 7 des 9 tâches sont faites. **4.9 n'a délibérément pas été touchée** : le plan lui-même la pose
+> comme un arbitrage à porter au BO (accepter la latence ou provisionner un worker), pas comme un bug
+> à corriger en silence — elle reste ouverte, cf. « Blocage structurel » ci-dessous.
+>
+> - **4.1** — Décision confirmée : **Expo Push**. Aucun code n'y était propre, la recommandation du
+>   07/08 est simplement devenue le chemin réellement câblé par 4.2/4.8.
+> - **4.2** — `_send_expo()` écrit pour de vrai dans `notifications/push_service.py` : un appel HTTP
+>   POST vers `https://exp.host/--/api/v2/push/send` (`requests`, déjà une dépendance backend), sans
+>   clé ni compte — c'est précisément ce que 4.1 avait anticipé. `PUSH_NOTIFICATION_MODE`,
+>   `MOBILE_APP_SCHEME` et `MOBILE_DEEP_LINK_ENABLED` sont désormais déclarés dans `render.yaml`
+>   (absents de tout bloc `envVars` jusqu'ici — vérifié dans le fichier, pas seulement supposé).
+>   `MOBILE_DEEP_LINK_ENABLED` passe à `true` : son seul consommateur mobile (3.7) existe maintenant.
+>   **`PUSH_NOTIFICATION_MODE` reste `SANDBOX`** : aucun
+>   appareil réel n'a pu confirmer une réception, et personne ne surveille encore les tickets d'erreur
+>   Expo en production — même logique de prudence que la passerelle de paiement du Lot 2. Un seul flip
+>   de variable suffira, aucun redéploiement de code.
+> - **4.3 — découverte à l'exécution : ce n'était pas un problème.** `DeviceTokenRegisterSerializer.token`
+>   n'a jamais porté de contrainte de format — un token Expo (`ExponentPushToken[...]`) était déjà
+>   accepté tel quel. Seuls le `help_text` du serializer et du modèle ont été corrigés pour refléter la
+>   réalité (migration `0006_alter_devicetoken_token`).
+> - **4.4** — `send_push_notification()` distingue maintenant `sent` (PRODUCTION, réellement remis à
+>   Expo) de `logged` (SANDBOX) : la métrique ne peut plus lire « 100 % délivré » quand 0 appareil n'a
+>   été contacté.
+> - **4.5** — `messages.tsx` et `requests.tsx` (master-détail par `useState`) remplacés par
+>   `messages/{_layout,index,[jobId]}.tsx` et `requests/{_layout,index,[jobId]}.tsx`. Aucun
+>   renommage d'onglet côté `app/(app)/_layout.tsx` : les deux groupes restent nommés `messages` et
+>   `requests`, seule leur pile interne a changé.
+> - **4.6** — `FloatingTabBar.go()` émet désormais `tabPress` dans tous les cas (pas seulement au
+>   changement d'onglet) : retaper un onglet déjà actif réinitialise sa pile imbriquée à sa racine,
+>   comportement standard de react-navigation que cette barre custom court-circuitait.
+> - **4.7** — `src/features/notifications/data/notificationRoute.ts` (`resolveNotificationRoute`),
+>   **16 tests**. Le rôle de l'utilisateur est un paramètre à part entière : un même `type`
+>   (ex. `JOB_COMPLETED`) part vers le client et le transporteur, mais seul le client a un écran de
+>   suivi adressable (`mission/[id]`, Lot 2) — le transporteur n'en a pas, la fonction rend `null`
+>   plutôt que d'ouvrir un écran qui n'a pas de sens pour son rôle. Branché dans
+>   `NotificationBell.tsx` (le tap ouvrait déjà la notification, ne menait nulle part avant).
+> - **4.8** — `expo-notifications` installé, plugin déclaré dans `app.json`. Permission, canal Android
+>   par défaut, `getExpoPushTokenAsync`, enregistrement (`POST devices/register/`), présentation au
+>   premier plan (`setNotificationHandler`), et navigation au tap (listener + `getLastNotificationResponseAsync`
+>   pour le cold-start) vivent dans un seul hook, `core/push/usePushNotifications.ts`, monté dans
+>   `app/(app)/_layout.tsx`. **Sans `eas.json` `projectId`** (`eas init` jamais lancé dans cet
+>   environnement), `getExpoPushTokenAsync` lèverait à coup sûr : repli silencieux identique à celui
+>   déjà en place pour le DSN Sentry ou la clé Google Maps — l'app démarre normalement, elle
+>   n'enregistre simplement aucun token.
+>
+> **Vérification :** backend — **210 tests** (6 nouveaux sur `_send_expo`/le mode SANDBOX-vs-PRODUCTION),
+> `makemigrations --check` propre. Mobile — `typecheck` 0 erreur · `lint` 0 avertissement ·
+> **13 suites / 82 tests** (16 nouveaux sur la table de routage) · `expo-doctor` 18/18 ·
+> `npx expo config` résout avec le plugin `expo-notifications`.
+>
+> **Non couvert :** la DoD ci-dessous demande une notification reçue « application fermée » sur un
+> appareil réel — structurellement impossible à vérifier sans compte Expo/EAS. Le code est écrit et
+> testé unitairement (résolution de route, appel HTTP, gestion d'erreur de ticket) ; il n'a pas été
+> vérifié de bout en bout par un push réellement livré.
 
 | # | Tâche | Détail | Effort |
 |---|---|---|:--:|
@@ -340,7 +433,7 @@ on provisionne un worker.
 
 | # | Tâche | Détail | Effort |
 |---|---|---|:--:|
-| 5.1 | **Bug actif** : trois hooks filtrent côté client la même page de 20 de `jobs/transporter/`. Un transporteur ayant 25 missions dont les 20 plus récentes sont terminées voit **« aucune mission active »** et son retour publié disparaît | `useMyMissions.ts:16-17` et 2 hooks voisins — à recâbler sur le filtre serveur livré en 0.9 | M |
+| 5.1 | ✅ **Corrigé le 12/08/2026.** Bug actif : trois hooks filtraient côté client la même page de 20 de `jobs/transporter/`. Un transporteur ayant 25 missions dont les 20 plus récentes sont terminées voyait **« aucune mission active »** et son retour publié disparaissait | `useMyMissions.ts`, `useCompletedMissions.ts`, `useMyReturnTrips.ts` — recâblés sur `?type=assigned`/`?type=owned` (livré en 0.9) | M |
 | 5.2 | Pagination : 8 hooks de liste plafonnés à 20 (`PAGE_SIZE = 20`, `next` jamais lu, 0 `useInfiniteQuery`, 0 `onEndReached`) — notifications, missions, missions terminées, demandes reçues, mes demandes, conversations, avis, litiges | migration en `useInfiniteQuery` | L |
 | 5.3 | Rendre visibles les troncatures serveur non contournables : recherche de retours plafonnée à **10** (`corridors.py:34`), messages à **100** (`messaging/views.py:135`) | bandeau « affinez votre recherche » plutôt qu'une liste silencieusement coupée | S |
 | 5.4 | `focusManager` sur `AppState` — en React Native l'événement `visibilitychange` n'existe pas, donc React Query se croit **toujours** au premier plan et les 3 sondages tournent en arrière-plan | ~12 lignes dans `app/_layout.tsx` | S |

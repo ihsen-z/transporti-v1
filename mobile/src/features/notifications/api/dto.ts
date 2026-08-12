@@ -24,3 +24,13 @@ export interface NotificationDto {
 export interface UnreadCountResponse {
   unread_count: number;
 }
+
+// Corps de POST notifications/devices/register/ (DeviceTokenRegisterSerializer).
+// `token` est un token Expo (ExponentPushToken[...]) depuis la décision 4.1 —
+// le champ accepte n'importe quelle chaîne côté serveur (cf. 4.3), seul
+// `platform` est contraint.
+export interface DeviceRegisterBody {
+  platform: 'ANDROID' | 'IOS';
+  token: string;
+  device_name?: string;
+}

@@ -6,23 +6,30 @@ ARCHITECTURE:
 - Called after each DB notification is created
 - Checks user's push preferences before sending
 - In SANDBOX mode: logs the push payload (no external API call)
-- In PRODUCTION mode: would use Firebase Admin SDK (future)
+- In PRODUCTION mode: sends via the Expo Push API (Lot 4.1 decision — no
+  google-services.json / firebase-admin needed, works with the project's
+  Continuous Native Generation setup; devices register an Expo push token,
+  not a raw FCM/APNS one, so ANDROID and IOS are sent through the exact same
+  HTTP call).
 
 INTEGRATION POINT:
     Called from notifications/services.py → notify()
 """
 import logging
 
+import requests
 from django.conf import settings
 
 logger = logging.getLogger('transporti')
+
+EXPO_PUSH_URL = 'https://exp.host/--/api/v2/push/send'
 
 
 # =============================================================================
 # PUSH MODE DETECTION
 # =============================================================================
 
-# SANDBOX = log only, PRODUCTION = send via Firebase (future)
+# SANDBOX = log only, PRODUCTION = send via the Expo Push API
 PUSH_MODE = getattr(settings, 'PUSH_NOTIFICATION_MODE', 'SANDBOX')
 
 
@@ -33,20 +40,21 @@ PUSH_MODE = getattr(settings, 'PUSH_NOTIFICATION_MODE', 'SANDBOX')
 def send_push_notification(user, title: str, body: str, data: dict = None):
     """
     Send a push notification to a user's registered mobile devices.
-    
+
     In SANDBOX mode: logs the notification without sending.
-    In PRODUCTION mode: sends via Firebase Cloud Messaging (future).
-    
+    In PRODUCTION mode: sends via the Expo Push API.
+
     Args:
         user: User instance to send push to
         title: Notification title
         body: Notification body text
         data: Optional data payload (e.g., {'job_id': 123})
-    
+
     Returns:
         dict with delivery results:
         {
-            'sent': int,       # number of successful deliveries
+            'sent': int,       # number of REAL deliveries handed to Expo (PRODUCTION only)
+            'logged': int,     # number of deliveries only logged, not sent (SANDBOX only)
             'failed': int,     # number of failed deliveries
             'skipped': int,    # number of skipped (inactive tokens)
             'mode': str,       # 'SANDBOX' or 'PRODUCTION'
@@ -56,6 +64,7 @@ def send_push_notification(user, title: str, body: str, data: dict = None):
 
     result = {
         'sent': 0,
+        'logged': 0,
         'failed': 0,
         'skipped': 0,
         'mode': PUSH_MODE,
@@ -83,11 +92,13 @@ def send_push_notification(user, title: str, body: str, data: dict = None):
     for token_id, platform, token, device_name in tokens:
         try:
             if PUSH_MODE == 'SANDBOX':
+                # Ne compte JAMAIS comme 'sent' : personne n'a reçu quoi que ce
+                # soit, et un tableau de bord de délivrabilité lisant 'sent'
+                # afficherait 100% alors qu'aucun appareil n'a été contacté.
                 _send_sandbox(user.id, platform, token, device_name, title, body, data)
-                result['sent'] += 1
+                result['logged'] += 1
             elif PUSH_MODE == 'PRODUCTION':
-                # Future: Firebase Admin SDK integration
-                _send_firebase(platform, token, title, body, data)
+                _send_expo(token, title, body, data)
                 result['sent'] += 1
             else:
                 logger.warning(f"PUSH_UNKNOWN_MODE: {PUSH_MODE}")
@@ -106,8 +117,8 @@ def send_push_notification(user, title: str, body: str, data: dict = None):
                 )
 
     logger.info(
-        f"PUSH_DELIVERY_COMPLETE: user_id={user.id}, "
-        f"sent={result['sent']}, failed={result['failed']}, mode={PUSH_MODE}"
+        f"PUSH_DELIVERY_COMPLETE: user_id={user.id}, mode={PUSH_MODE}, "
+        f"sent={result['sent']}, logged={result['logged']}, failed={result['failed']}"
     )
 
     return result
@@ -132,31 +143,57 @@ def _send_sandbox(user_id, platform, token, device_name, title, body, data):
 
 
 # =============================================================================
-# PRODUCTION MODE (Firebase — Future)
+# PRODUCTION MODE (Expo Push API)
 # =============================================================================
 
-def _send_firebase(platform, token, title, body, data):
+class ExpoPushError(Exception):
+    """Raised when Expo's relay rejects or fails to queue a push ticket."""
+
+
+def _send_expo(token: str, title: str, body: str, data: dict = None):
     """
-    Send push via Firebase Cloud Messaging.
-    
-    PLACEHOLDER: Will be implemented when Firebase project is configured.
-    Requires: firebase-admin SDK + service account credentials.
-    
-    Expected implementation:
-        import firebase_admin
-        from firebase_admin import messaging
-        
-        message = messaging.Message(
-            notification=messaging.Notification(title=title, body=body),
-            data=data or {},
-            token=token,
-        )
-        messaging.send(message)
+    Send a single push notification through the Expo Push API.
+
+    No API key / service account is required for basic sending — Expo's relay
+    resolves the token to the right platform (FCM/APNs) on its own, which is
+    exactly why 4.1 picked it over Firebase: one HTTP call, no
+    google-services.json, no native credentials to manage.
+
+    Raises ExpoPushError on any failure — including a same-request "ticket"
+    error (Expo returns HTTP 200 with a per-ticket error status for a stale
+    token, it does not raise an HTTP error), so the caller's generic
+    except/deactivate-token logic in send_push_notification() keeps working.
     """
-    raise NotImplementedError(
-        "Firebase push not configured. "
-        "Set PUSH_NOTIFICATION_MODE='SANDBOX' or configure Firebase credentials."
+    payload = {
+        'to': token,
+        'title': title,
+        'body': body,
+        'data': data or {},
+        'sound': 'default',
+    }
+
+    response = requests.post(
+        EXPO_PUSH_URL,
+        json=payload,
+        headers={
+            'Accept': 'application/json',
+            'Accept-encoding': 'gzip, deflate',
+            'Content-Type': 'application/json',
+        },
+        timeout=10,
     )
+    response.raise_for_status()
+    ticket = response.json().get('data', {})
+
+    if ticket.get('status') == 'error':
+        error_code = (ticket.get('details') or {}).get('error', 'unknown')
+        # DeviceNotRegistered is Expo's code for an uninstalled app / stale
+        # token — the message must contain "not registered" verbatim so
+        # _is_token_invalid_error() deactivates it, exactly as a Firebase
+        # UnregisteredError would have.
+        if error_code == 'DeviceNotRegistered':
+            raise ExpoPushError(f"Expo push token not registered: {token[:20]}...")
+        raise ExpoPushError(f"Expo push ticket error: {error_code} — {ticket.get('message', '')}")
 
 
 # =============================================================================
@@ -184,11 +221,9 @@ def _is_push_enabled(user) -> bool:
 def _is_token_invalid_error(error) -> bool:
     """
     Detect if a push delivery error indicates an invalid/expired token.
-    In SANDBOX mode this never triggers (no real errors).
-    
-    Future: check Firebase error codes like:
-    - messaging.UnregisteredError
-    - messaging.InvalidArgumentError
+    In SANDBOX mode this never triggers (no real errors). In PRODUCTION,
+    _send_expo() raises ExpoPushError with 'not registered' verbatim in the
+    message for Expo's DeviceNotRegistered ticket error — matched below.
     """
     error_str = str(error).lower()
     return any(keyword in error_str for keyword in [

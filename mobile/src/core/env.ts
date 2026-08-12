@@ -14,6 +14,10 @@ const extra = Constants.expoConfig?.extra ?? {};
 const asString = (value: unknown): string =>
   typeof value === 'string' ? value : '';
 
+// `eas.projectId` n'existe qu'après `eas init` (Lot 1 : pas encore fait dans
+// cet environnement) — il apparaît alors sous extra.eas.projectId.
+const eas = extra.eas as { projectId?: string } | undefined;
+
 export const env = {
   // Le contrat backend est versionné : le mobile consomme EXCLUSIVEMENT /api/v1
   // (décision du plan §4.1). Toute route absente de v1 = à remonter au backend.
@@ -28,4 +32,8 @@ export const env = {
   // DSN Sentry. Vide = observabilité désactivée : l'app fonctionne
   // normalement, les erreurs partent simplement dans la console.
   sentryDsn: asString(process.env.EXPO_PUBLIC_SENTRY_DSN),
+
+  // Requis par `getExpoPushTokenAsync` (4.8). Vide = enregistrement du push
+  // désactivé : l'app fonctionne normalement, elle ne reçoit simplement rien.
+  easProjectId: asString(eas?.projectId),
 } as const;

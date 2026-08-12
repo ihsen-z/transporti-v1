@@ -18,8 +18,14 @@ interface RoleNav {
 }
 
 const ROLE_NAV: Record<'CLIENT' | 'TRANSPORTER', RoleNav> = {
-  // Client : chercher un retour = l'action première du parcours.
-  CLIENT: { tabs: ['home', 'messages', 'profile'], fab: 'search', fabIcon: 'search' },
+  // Client : chercher un retour = l'action première du parcours. Le suivi des
+  // demandes envoyées (mes-demandes) a désormais son propre onglet — il
+  // n'était auparavant qu'une section noyée en bas de l'Accueil.
+  CLIENT: {
+    tabs: ['home', 'mes-demandes', 'messages', 'profile'],
+    fab: 'search',
+    fabIcon: 'search',
+  },
   // Transporteur : publier un retour à vide. La charte place Gains en 5ᵉ onglet
   // à la place de Profil ; le profil reste atteignable par l'avatar de la barre
   // du haut (c'est déjà son emplacement dans la maquette du tableau de bord).
@@ -49,13 +55,19 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
   const go = (name: string) => {
     const route = state.routes.find((r) => r.name === name);
     if (!route) return;
-    const isFocused = currentName === name;
     const event = navigation.emit({
       type: 'tabPress',
       target: route.key,
       canPreventDefault: true,
     });
-    if (!isFocused && !event.defaultPrevented) {
+    // 4.6 : `navigate` sur un onglet DÉJÀ actif reset sa pile imbriquée
+    // (messages/, requests/) à sa racine — comportement par défaut de
+    // react-navigation sur `tabPress`, que cette barre custom réimplémente
+    // entièrement et court-circuitait en n'appelant `navigate` que si l'on
+    // changeait d'onglet. Sans détail routé (avant 4.5) ça n'avait aucun
+    // effet visible ; avec `[jobId]`, retaper Messages depuis un fil ouvert ne
+    // ramenait nulle part.
+    if (!event.defaultPrevented) {
       navigation.navigate(route.name);
     }
   };

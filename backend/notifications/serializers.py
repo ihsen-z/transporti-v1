@@ -74,7 +74,11 @@ class DeviceTokenRegisterSerializer(serializers.Serializer):
     token = serializers.CharField(
         max_length=500,
         required=True,
-        help_text="FCM or APNS device token",
+        # 4.3 audit finding: no format constraint ever existed here — an
+        # Expo push token ("ExponentPushToken[...]", the only kind the mobile
+        # app registers per the 4.1 decision) was already accepted as-is.
+        # `platform` still matters (device bookkeeping), the token format does not.
+        help_text="Expo push token (ExponentPushToken[...])",
     )
     device_name = serializers.CharField(
         max_length=100,

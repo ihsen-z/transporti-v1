@@ -6,7 +6,7 @@ import { useMyRequests } from '../api/useMyRequests';
 import { MyRequestCard } from './MyRequestCard';
 
 // Liste des demandes envoyées par le client (rendue via .map car imbriquée
-// dans le ScrollView de l'Accueil).
+// dans le ScrollView de l'écran « Mes demandes »).
 export function MyRequestsList() {
   const { t } = useTranslation();
   const requests = useMyRequests();
@@ -14,8 +14,6 @@ export function MyRequestsList() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.title}>{t('my_requests.title')}</Text>
-
       {requests.isLoading ? (
         <ActivityIndicator color={colors.brand[500]} />
       ) : data.length === 0 ? (
@@ -29,6 +27,5 @@ export function MyRequestsList() {
 
 const styles = StyleSheet.create({
   wrap: { gap: spacing.md },
-  title: { fontSize: fontSize.lg, fontWeight: '800', color: colors.brand[600] },
   empty: { fontSize: fontSize.md, color: colors.neutral[500] },
 });

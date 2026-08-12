@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
@@ -9,6 +9,7 @@ import { statusVariant } from '@/shared/ui/statusVariant';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MyRequestDto } from '../api/dto';
 import { useAcceptCounter } from '../api/useAcceptCounter';
+import { useCancelRequest } from '../api/useCancelRequest';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -23,15 +24,32 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
   const { t } = useTranslation();
   const router = useRouter();
   const accept = useAcceptCounter();
+  const cancel = useCancelRequest();
 
   const isCountered = request.status === 'COUNTERED';
   const accepted = request.status === 'ACCEPTED' || accept.isSuccess;
+  // Retirable tant que le transporteur n'a pas encore répondu (ou vient de
+  // contre-proposer) — TripRequestCancelView refuse tout autre état.
+  const withdrawable =
+    (request.status === 'PENDING' || isCountered) && !accept.isSuccess;
 
   const errKey = accept.error
     ? accept.error.kind === 'unknown'
       ? 'state'
       : accept.error.kind
     : null;
+  const cancelErrKey = cancel.error
+    ? cancel.error.kind === 'unknown' || cancel.error.kind === 'network'
+      ? 'network'
+      : 'state'
+    : null;
+
+  const confirmWithdraw = () => {
+    Alert.alert(t('my_requests.withdraw_confirm_title'), t('my_requests.withdraw_confirm_msg'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('my_requests.withdraw'), style: 'destructive', onPress: () => cancel.mutate(request.id) },
+    ]);
+  };
 
   return (
     <Card>
@@ -56,6 +74,20 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
             loading={accept.isPending}
           />
           {errKey ? <Text style={styles.error}>{t(`my_requests.errors.${errKey}`)}</Text> : null}
+        </View>
+      ) : null}
+
+      {withdrawable ? (
+        <View style={styles.block}>
+          <Button
+            label={t('my_requests.withdraw')}
+            onPress={confirmWithdraw}
+            variant="ghost"
+            loading={cancel.isPending}
+          />
+          {cancelErrKey ? (
+            <Text style={styles.error}>{t(`my_requests.errors.${cancelErrKey}`)}</Text>
+          ) : null}
         </View>
       ) : null}
 

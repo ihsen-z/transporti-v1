@@ -9,6 +9,7 @@ import { RouteRow } from '@/shared/ui/RouteRow';
 import { statusVariant } from '@/shared/ui/statusVariant';
 import { formatAmount } from '@/shared/format/money';
 import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
+import { TransporterCancelSheet } from './TransporterCancelSheet';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MissionDto } from '../api/dto';
 import { useConfirmStart } from '../api/useConfirmStart';
@@ -30,9 +31,13 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
   const [disputeOpen, setDisputeOpen] = useState(false);
+  const [cancelOpen, setCancelOpen] = useState(false);
 
   const isMatched = mission.status === 'MATCHED';
   const isInProgress = mission.status === 'IN_PROGRESS';
+  // Le serveur (TransporterCancelView) n'accepte l'annulation que sur ces deux
+  // états ; une fois COMPLETED/CANCELLED le point d'entrée disparaît.
+  const cancellable = isMatched || isInProgress;
   // Ce que la mission rapporte VRAIMENT au transporteur : le net, commission
   // déduite. C'est sa raison d'ouvrir l'application ; le backend le servait
   // déjà, le mobile le jetait.
@@ -125,9 +130,20 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
         </View>
       ) : null}
 
+      {cancellable ? (
+        <Pressable onPress={() => setCancelOpen(true)} accessibilityRole="button">
+          <Text style={styles.cancel}>{t('missions.cancel.link')}</Text>
+        </Pressable>
+      ) : null}
+
       <OpenDisputeSheet
         jobId={disputeOpen ? mission.id : null}
         onClose={() => setDisputeOpen(false)}
+      />
+      <TransporterCancelSheet
+        jobId={cancelOpen ? mission.id : null}
+        onClose={() => setCancelOpen(false)}
+        onCancelled={() => setCancelOpen(false)}
       />
     </Card>
   );
@@ -155,5 +171,12 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     textAlign: 'center',
     marginTop: spacing.xs,
+  },
+  cancel: {
+    color: colors.error,
+    fontSize: fontSize.sm,
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: spacing.sm,
   },
 });

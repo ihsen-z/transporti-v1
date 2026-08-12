@@ -294,7 +294,7 @@ class DeviceToken(models.Model):
     )
     token = models.CharField(
         max_length=500,
-        help_text="FCM registration token or APNS device token",
+        help_text="Expo push token (ExponentPushToken[...])",
     )
     device_name = models.CharField(
         max_length=100,

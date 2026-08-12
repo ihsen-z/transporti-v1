@@ -23,6 +23,13 @@ export interface TripResultDto {
   dropoff_address: string;
   scheduled_time: string;
   owner_name: string;
+  // Signaux de confiance (0.8) : le serveur les servait déjà côté liste,
+  // mais sans owner_id le mobile n'avait aucun moyen d'ouvrir le profil
+  // public derrière un prénom.
+  owner_id: number;
+  owner_rating: number | null;
+  owner_review_count: number;
+  owner_verification_status: string | null;
   price_tnd_min: string;
   price_tnd_max: string;
   instant_booking: boolean;
@@ -50,4 +57,17 @@ export interface SendRequestBody {
 export interface CorridorAlertBody {
   pickup_governorate: string;
   dropoff_governorate: string;
+}
+
+// Alerte active (GET corridor-alerts/, CorridorAlertListCreateView).
+export interface CorridorAlertDto {
+  id: number;
+  pickup_governorate: string;
+  dropoff_governorate: string;
+  created_at: string;
+}
+
+export interface CorridorAlertsResponse {
+  count: number;
+  results: CorridorAlertDto[];
 }

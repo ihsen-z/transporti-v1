@@ -36,6 +36,22 @@ services:
       - key: FRONTEND_URL
         value: https://transporti-frontend.onrender.com
 
+      # Deep links mobiles (mot de passe oublié → transporti://reset-password).
+      # L'écran de réception existe côté mobile depuis le Lot 3 (3.7) : sans
+      # cette déclaration, MOBILE_DEEP_LINK_ENABLED restait à son défaut
+      # 'false' en production et l'e-mail n'aurait jamais porté le lien mobile.
+      - key: MOBILE_APP_SCHEME
+        value: transporti
+      - key: MOBILE_DEEP_LINK_ENABLED
+        value: "true"
+
+      # Push (Lot 4.2, décision 4.1 = Expo Push). Reste en SANDBOX tant
+      # qu'aucun appareil réel n'a pu être testé (pas de compte Expo/EAS dans
+      # cet environnement) — un seul flip de variable ici suffira le jour où
+      # un build EAS existe, aucun redéploiement de code n'est nécessaire.
+      - key: PUSH_NOTIFICATION_MODE
+        value: SANDBOX
+
   # ---------------------------------------------------------
   # SCHEDULER - Tâches périodiques (expiration des offres,
   # auto-release escrow…) via la management command
