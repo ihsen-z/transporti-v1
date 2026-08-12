@@ -13,6 +13,7 @@ import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
+import { useFlatInfiniteList } from '@/core/api/useFlatInfiniteList';
 import { useMyDisputes } from '../api/useMyDisputes';
 import { DisputeRow } from './DisputeRow';
 
@@ -25,6 +26,7 @@ interface Props {
 export function DisputesPanel({ visible, onClose }: Props) {
   const { t } = useTranslation();
   const disputes = useMyDisputes(visible); // fetch seulement à l'ouverture
+  const { items, onEndReached } = useFlatInfiniteList(disputes);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -40,12 +42,19 @@ export function DisputesPanel({ visible, onClose }: Props) {
           <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
         ) : (
           <FlatList
-            data={disputes.data ?? []}
+            data={items}
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
             refreshControl={queryRefreshControl(disputes)}
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.5}
             ListEmptyComponent={
               <EmptyState icon="shield-check" title={t('disputes.empty')} />
+            }
+            ListFooterComponent={
+              disputes.isFetchingNextPage ? (
+                <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
+              ) : null
             }
             renderItem={({ item }) => <DisputeRow dispute={item} />}
           />

@@ -28,6 +28,10 @@ export function ChatView({ jobId }: { jobId: number }) {
 
   const locked = messagesQ.data?.conversation?.is_locked ?? false;
   const messages = messagesQ.data?.messages ?? [];
+  // 5.3 : `limit=100` est une troncature dure côté serveur, pas une
+  // pagination — au-delà, les messages les plus anciens sont invisibles sans
+  // qu'aucun indice ne le signale.
+  const truncated = (messagesQ.data?.total_count ?? 0) > messages.length;
 
   const onSend = () => {
     const content = text.trim();
@@ -49,6 +53,12 @@ export function ChatView({ jobId }: { jobId: number }) {
           keyExtractor={(m: MessageDto) => String(m.id)}
           contentContainerStyle={styles.list}
           ListEmptyComponent={<Text style={styles.empty}>{t('messaging.no_messages')}</Text>}
+          // Les messages arrivent du plus récent au plus ancien (pas de tri
+          // côté mobile) : le dernier élément affiché est donc le plus ancien
+          // chargé, l'endroit naturel pour signaler qu'il y en a d'autres.
+          ListFooterComponent={
+            truncated ? <Text style={styles.truncated}>{t('messaging.truncated')}</Text> : null
+          }
           renderItem={({ item }) => (
             <MessageBubble message={item} mine={item.sender !== null && item.sender === userId} />
           )}
@@ -86,6 +96,13 @@ const styles = StyleSheet.create({
   loader: { marginTop: spacing['2xl'] },
   list: { padding: spacing.lg, flexGrow: 1 },
   empty: { textAlign: 'center', color: colors.neutral[500], marginTop: spacing['2xl'] },
+  truncated: {
+    textAlign: 'center',
+    color: colors.neutral[400],
+    fontSize: fontSize.sm,
+    fontStyle: 'italic',
+    paddingVertical: spacing.md,
+  },
   locked: {
     textAlign: 'center',
     color: colors.neutral[500],

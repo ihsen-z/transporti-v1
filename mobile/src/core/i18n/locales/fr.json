@@ -10,7 +10,8 @@
     "close": "Fermer",
     "coming_soon": "Bientôt disponible",
     "saved": "Modifications enregistrées",
-    "back": "Retour"
+    "back": "Retour",
+    "offline": "Hors ligne — les données affichées peuvent être périmées"
   },
   "auth": {
     "login": {
@@ -295,6 +296,7 @@
     "map_distance": "≈ {{km}} km par la route",
     "create_alert": "Créer une alerte corridor",
     "alert_created": "Alerte créée. Vous serez notifié.",
+    "refine_hint": "Affinez votre recherche (date, gouvernorat) pour voir tous les résultats.",
     "instant": "Réservation immédiate",
     "price_range": "{{min}} – {{max}} TND",
     "request": {
@@ -361,6 +363,7 @@
     "input_ph": "Écrire un message…",
     "no_messages": "Aucun message. Démarrez la conversation.",
     "locked": "Conversation verrouillée (mission terminée).",
+    "truncated": "Messages plus anciens non affichés.",
     "errors": {
       "locked": "Envoi impossible : conversation verrouillée.",
       "forbidden": "Vous ne participez pas à cette conversation.",

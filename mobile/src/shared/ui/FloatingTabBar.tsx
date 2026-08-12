@@ -45,10 +45,12 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
   const nav = role === 'TRANSPORTER' ? ROLE_NAV.TRANSPORTER : ROLE_NAV.CLIENT;
 
   // Nombre de conversations non lues -> pastille sur l'onglet Messages.
+  // `useConversations` est une useInfiniteQuery (5.2) : `.data.pages` porte
+  // une page DRF par entrée chargée, à aplatir avant de filtrer.
   const conversations = useConversations();
-  const unreadMessages = (conversations.data ?? []).filter(
-    (c: ConversationListDto) => c.unread_count > 0,
-  ).length;
+  const unreadMessages = (conversations.data?.pages ?? [])
+    .flatMap((page) => page.results)
+    .filter((c: ConversationListDto) => c.unread_count > 0).length;
 
   const currentName = state.routes[state.index]?.name;
 

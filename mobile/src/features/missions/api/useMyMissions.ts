@@ -1,13 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
-import { apiClient } from '@/core/api/client';
+import { fetchAllPages } from '@/core/api/fetchAllPages';
 import type { MissionDto, MissionStatus } from './dto';
-
-interface Paginated<T> {
-  count: number;
-  next: string | null;
-  previous: string | null;
-  results: T[];
-}
 
 // Missions actives = à démarrer (MATCHED) ou en cours (IN_PROGRESS).
 const ACTIVE: readonly MissionStatus[] = ['MATCHED', 'IN_PROGRESS'];
@@ -19,11 +12,14 @@ const ACTIVE: readonly MissionStatus[] = ['MATCHED', 'IN_PROGRESS'];
 // jobs où ce transporteur a une offre ACCEPTED, donc un ensemble bien plus
 // petit ; le filtre de statut ci-dessous reste nécessaire (assigned couvre
 // aussi COMPLETED).
+//
+// 5.2 : rendue via `.map()` dans le ScrollView de l'Accueil (MissionsList),
+// pas une FlatList — pas de prise pour `onEndReached`. `fetchAllPages`
+// rapatrie tout (borné : les missions d'UN seul transporteur) au lieu de
+// perdre silencieusement tout ce qui dépasse la première page de 20.
 async function fetchMyMissions(): Promise<MissionDto[]> {
-  const res = await apiClient.get<Paginated<MissionDto>>('jobs/transporter/', {
-    params: { type: 'assigned' },
-  });
-  return res.data.results.filter((m) => ACTIVE.includes(m.status));
+  const results = await fetchAllPages<MissionDto>('jobs/transporter/', { type: 'assigned' });
+  return results.filter((m) => ACTIVE.includes(m.status));
 }
 
 export function useMyMissions() {

@@ -63,12 +63,21 @@ qui l'a produit.
 
 ```bash
 cp .env.example .env          # ajuster EXPO_PUBLIC_API_BASE_URL
-npm run start                 # puis 'a' (Android), 'i' (iOS), 'w' (web)
+npm run start                 # puis 'a' (Android), 'i' (iOS)
 ```
 
 - Émulateur Android → `EXPO_PUBLIC_API_BASE_URL=http://10.0.2.2:8000`
-- Simulateur iOS / web → `http://localhost:8000`
+- Simulateur iOS → `http://localhost:8000`
 - Staging → l'URL Render du backend.
+
+> **Web hors périmètre (décision 5.10).** `npm run web` existe encore comme
+> commande mais n'est plus un cible supportée : `react-native-maps` (module
+> natif) casse le bundle Metro dès la résolution des routes — le serveur
+> renvoie une 500 avant même l'écran de connexion. Même s'il bundlait, les JWT
+> n'auraient d'autre repli que `localStorage` en clair, exposé à toute XSS —
+> les chiffrer côté JS n'aurait rien résolu (la clé vivrait dans le même
+> contexte que l'attaque). `tokenService.ts` lève désormais une erreur
+> explicite sur web plutôt que d'y stocker des tokens en silence.
 
 Le client ajoute automatiquement le préfixe **`/api/v1`** (contrat versionné).
 

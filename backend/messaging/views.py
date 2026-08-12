@@ -136,7 +136,11 @@ class JobMessagesView(generics.GenericAPIView):
                 job=job,
                 limit=100
             )
-            
+
+            # 5.3 : `limit=100` est une troncature dure, pas une pagination —
+            # sans le total réel, le mobile ne peut pas savoir qu'il en manque.
+            total_count = conversation.messages.count() if conversation else len(messages)
+
             # Mark as read
             mark_messages_as_read(request.user, job)
             
@@ -169,6 +173,7 @@ class JobMessagesView(generics.GenericAPIView):
                 'conversation': conv_data,
                 'messages': MessageSerializer(messages, many=True).data,
                 'count': len(messages),
+                'total_count': total_count,
                 'job': job_info,
                 'other_party': other_party,
             })

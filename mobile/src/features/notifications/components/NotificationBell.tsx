@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Icon } from '@/shared/ui/icons';
@@ -8,6 +8,7 @@ import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
+import { useFlatInfiniteList } from '@/core/api/useFlatInfiniteList';
 import { useAuthStore } from '@/core/auth/authStore';
 import { resolveNotificationRoute } from '../data/notificationRoute';
 import { useUnreadCount } from '../api/useUnreadCount';
@@ -24,6 +25,7 @@ export function NotificationBell() {
   const [open, setOpen] = useState(false);
   const unread = useUnreadCount();
   const list = useNotifications(open); // fetch seulement à l'ouverture
+  const { items, onEndReached } = useFlatInfiniteList(list);
   const markRead = useMarkRead();
   const markAll = useMarkAllRead();
 
@@ -70,12 +72,19 @@ export function NotificationBell() {
             <SkeletonList />
           ) : (
             <FlatList
-              data={list.data ?? []}
+              data={items}
               keyExtractor={(item) => String(item.id)}
               contentContainerStyle={styles.list}
               refreshControl={queryRefreshControl(list)}
+              onEndReached={onEndReached}
+              onEndReachedThreshold={0.5}
               ListEmptyComponent={
                 <EmptyState icon="bell" title={t('notifications.empty')} />
+              }
+              ListFooterComponent={
+                list.isFetchingNextPage ? (
+                  <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
+                ) : null
               }
               renderItem={({ item }) => (
                 <NotificationRow notif={item} onPress={() => onPressNotif(item)} />

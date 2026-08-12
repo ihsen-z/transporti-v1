@@ -3,7 +3,6 @@ import * as SecureStore from 'expo-secure-store';
 
 // Stockage sécurisé des JWT (Keychain iOS / Keystore Android via expo-secure-store).
 // Les tokens sont des secrets : jamais de stockage non chiffré (règle sécurité).
-// Sur le web, fallback vers localStorage (pas de SecureStore disponible).
 //
 // Les deux jetons sont écrits dans UNE seule entrée. Auparavant ils étaient
 // stockés séparément, en deux écritures successives : si l'OS tuait l'app entre
@@ -21,26 +20,32 @@ const LEGACY_REFRESH_KEY = 'transporti.refresh';
 
 const isWeb = Platform.OS === 'web';
 
+// 5.10 : le web est hors périmètre (voir mobile/README.md). Il n'y a plus de
+// repli silencieux vers `localStorage` — un JWT qui y atterrirait serait en
+// clair et exposé à toute XSS, sans que le chiffrer côté JS ne change quoi
+// que ce soit (la clé vivrait dans le même contexte que l'attaque). Échouer
+// fort et tôt vaut mieux qu'stocker un secret sans protection réelle.
+class UnsupportedPlatformError extends Error {
+  constructor() {
+    super('tokenService: le web ne stocke pas les JWT (cible hors périmètre, voir README.md).');
+    this.name = 'UnsupportedPlatformError';
+  }
+}
+
 type TokenBundle = { access: string; refresh: string };
 
 async function readRaw(key: string): Promise<string | null> {
-  if (isWeb) return localStorage.getItem(key);
+  if (isWeb) throw new UnsupportedPlatformError();
   return SecureStore.getItemAsync(key);
 }
 
 async function writeRaw(key: string, value: string): Promise<void> {
-  if (isWeb) {
-    localStorage.setItem(key, value);
-    return;
-  }
+  if (isWeb) throw new UnsupportedPlatformError();
   await SecureStore.setItemAsync(key, value);
 }
 
 async function removeRaw(key: string): Promise<void> {
-  if (isWeb) {
-    localStorage.removeItem(key);
-    return;
-  }
+  if (isWeb) throw new UnsupportedPlatformError();
   await SecureStore.deleteItemAsync(key);
 }
 

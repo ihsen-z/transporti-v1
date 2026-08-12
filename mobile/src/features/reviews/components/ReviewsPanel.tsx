@@ -13,6 +13,7 @@ import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
+import { useFlatInfiniteList } from '@/core/api/useFlatInfiniteList';
 import { useMyReviews } from '../api/useMyReviews';
 import { ReviewRow } from './ReviewRow';
 
@@ -25,6 +26,7 @@ interface Props {
 export function ReviewsPanel({ visible, onClose }: Props) {
   const { t } = useTranslation();
   const reviews = useMyReviews(visible);
+  const { items, onEndReached } = useFlatInfiniteList(reviews);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -40,11 +42,18 @@ export function ReviewsPanel({ visible, onClose }: Props) {
           <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
         ) : (
           <FlatList
-            data={reviews.data ?? []}
+            data={items}
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
             refreshControl={queryRefreshControl(reviews)}
+            onEndReached={onEndReached}
+            onEndReachedThreshold={0.5}
             ListEmptyComponent={<EmptyState icon="star" title={t('reviews.empty')} />}
+            ListFooterComponent={
+              reviews.isFetchingNextPage ? (
+                <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
+              ) : null
+            }
             renderItem={({ item }) => <ReviewRow review={item} />}
           />
         )}

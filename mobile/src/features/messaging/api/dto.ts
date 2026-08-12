@@ -45,6 +45,10 @@ export interface JobMessagesResponse {
   conversation: { id: number; is_locked: boolean } | null;
   messages: MessageDto[];
   count: number;
+  // 5.3 : total réel de la conversation, distinct de `count` (toujours <= 100,
+  // la troncature dure du serveur) — permet d'afficher un bandeau plutôt que
+  // de laisser les plus anciens messages disparaître sans explication.
+  total_count: number;
   job: {
     id: number;
     pickup_address: string;

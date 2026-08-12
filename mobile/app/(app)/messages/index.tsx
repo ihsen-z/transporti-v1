@@ -1,4 +1,4 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -7,6 +7,7 @@ import { Txt } from '@/shared/ui/Txt';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
+import { useFlatInfiniteList } from '@/core/api/useFlatInfiniteList';
 import { useConversations } from '@/features/messaging/api/useConversations';
 import { ConversationRow } from '@/features/messaging/components/ConversationRow';
 
@@ -18,6 +19,7 @@ export default function MessagesScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const conversations = useConversations();
+  const { items, onEndReached } = useFlatInfiniteList(conversations);
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -29,11 +31,18 @@ export default function MessagesScreen() {
         <SkeletonList />
       ) : (
         <FlatList
-          data={conversations.data ?? []}
+          data={items}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
           refreshControl={queryRefreshControl(conversations)}
+          onEndReached={onEndReached}
+          onEndReachedThreshold={0.5}
           ListEmptyComponent={<EmptyState icon="message-circle" title={t('messaging.empty')} />}
+          ListFooterComponent={
+            conversations.isFetchingNextPage ? (
+              <ActivityIndicator style={styles.loader} color={colors.brand[500]} />
+            ) : null
+          }
           renderItem={({ item }) => (
             <ConversationRow
               conv={item}
@@ -56,4 +65,5 @@ const styles = StyleSheet.create({
   header: { padding: spacing.xl, gap: spacing.sm },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
   list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, gap: spacing.md },
+  loader: { marginTop: spacing.lg },
 });

@@ -68,6 +68,15 @@ export default function SearchScreen() {
                 <Txt style={styles.count}>
                   {t('search.results_count', { count: match.data.count })}
                 </Txt>
+                {/* 5.3 : le serveur plafonne à 10 résultats (MAX_RESULTS,
+                    corridors.py) sans pagination — au-delà, `count` (le vrai
+                    total) dépasse `results.length` sans que rien ne le
+                    signale. Un compteur annonçant plus de résultats qu'il
+                    n'en affiche serait plus trompeur qu'une liste simplement
+                    coupée. */}
+                {match.data.count > results.length ? (
+                  <Txt style={styles.refineHint}>{t('search.refine_hint')}</Txt>
+                ) : null}
               </>
             ) : null}
           </View>
@@ -125,6 +134,7 @@ const styles = StyleSheet.create({
   content: { padding: spacing.xl, gap: spacing.md },
   formWrap: { gap: spacing.md, marginBottom: spacing.xs },
   count: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[600] },
+  refineHint: { fontSize: fontSize.sm, color: colors.neutral[500], fontStyle: 'italic' },
   emptyCard: { gap: spacing.md, marginTop: spacing.lg },
   emptyTitle: {
     fontSize: fontSize.lg,

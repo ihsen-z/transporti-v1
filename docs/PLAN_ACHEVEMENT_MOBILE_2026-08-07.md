@@ -431,6 +431,69 @@ on provisionne un worker.
 > volumes montent. Ce lot contient **un bug fonctionnel déjà présent**, pas seulement de la
 > prévention.
 
+> ### ✅ Livré le 12/08/2026
+>
+> Les 10 tâches sont faites, avec un écart assumé sur 5.2 (détaillé ci-dessous) et une découverte
+> qui réduit son périmètre réel.
+>
+> - **5.1** — voir la ligne du tableau : trois hooks recâblés sur `?type=`.
+> - **5.2 — deux traitements distincts, pas un seul.** Des 8 listes visées, **5** sont de vraies
+>   `FlatList` (notifications, avis, litiges, conversations, demandes reçues sur un trajet) et sont
+>   passées à `useInfiniteQuery` + `onEndReached`, avec un petit hook partagé
+>   (`core/api/useFlatInfiniteList.ts`) pour ne pas répéter 4 fois le même aplatissement de pages.
+>   **3** (missions actives, missions terminées, mes demandes) sont rendues via `.map()` dans le
+>   `ScrollView` de l'Accueil ou de `mes-demandes.tsx` — `onEndReached` n'a pas de prise dessus.
+>   Pour ces trois-là, `core/api/fetchAllPages.ts` rapatrie la totalité (plafond de sécurité :
+>   10 pages) plutôt que de forcer une réécriture en `FlatList` non demandée par la tâche ; ce sont
+>   des jeux de données personnels et bornés par nature (les missions d'UN transporteur), pas des
+>   flux qui peuvent croître sans limite. **Découverte à l'exécution :** `jobs/<id>/requests/`
+>   (demandes reçues sur UN trajet) s'est révélé être une `APIView` nue renvoyant déjà tout, sans
+>   pagination DRF (`next`/`previous` absents) — rien à migrer, le hook est resté un `useQuery`
+>   inchangé.
+> - **5.3** — le total réel existait déjà pour la recherche (`count` du serveur, jamais comparé à
+>   `results.length` côté mobile) ; il n'existait PAS pour les messages, où `count` valait déjà
+>   `len(messages)` (toujours ≤ 100). Ajout d'un champ `total_count` réel côté backend
+>   (`messaging/views.py`), seule façon honnête d'afficher le bandeau.
+> - **5.4, 5.5** — `focusManager`/`onlineManager` branchés dans `app/_layout.tsx` ;
+>   `OfflineBanner.tsx` utilise `@react-native-community/netinfo` directement pour son propre état
+>   (pas besoin de dupliquer une souscription).
+> - **5.6** — décodage JWT écrit à la main (`core/auth/jwt.ts`), sans dépendre d'un `atob` global
+>   dont la disponibilité sur Hermes n'est pas garantie. Le verrou anti-stampede existant
+>   (`refreshing`) est maintenant partagé entre l'anticipation d'expiration et le rejeu sur 401
+>   (`scheduleRefresh()`), au lieu d'être dupliqué.
+> - **5.7** — `client.test.ts` : Bearer, anticipation d'expiration, rejeu sur 401, anti-stampede
+>   (deux 401 concurrents ne déclenchent qu'un seul refresh), 502 (ne déconnecte pas), 400
+>   (déconnecte), refresh token absent. Le mock de `tokenService` simule un vrai aller-retour
+>   lecture/écriture (un `setTokens` doit être relu par le `getAccess` suivant) — la première version
+>   du test, plus naïve, ne l'aurait pas détecté et aurait validé un comportement qu'elle ne
+>   vérifiait pas vraiment.
+> - **5.8** — `authRouting.test.tsx` verrouille la régression `d3bb922` (garde symétrique
+>   `(auth)/_layout` ↔ `(app)/_layout`) ; `FloatingTabBar.test.tsx` couvre la navigation par rôle, le
+>   tabPress (y compris le retap de 4.6) et le calcul du badge non-lus.
+> - **5.9** — `@testing-library/react-native` **v12** (pas la v13/14, qui exigent React 19 — ce
+>   projet est en React 18.3.1 avec Expo SDK 52) + `react-test-renderer@18.3.1` épinglé sur la même
+>   version que `react`. Écart assumé du même type que le pin ESLint 8.57.1 du Lot 1 : la paire
+>   réellement compatible aujourd'hui, pas la dernière version.
+> - **5.10 — décision prise : web hors périmètre.** `react-native-maps` casse déjà le bundle Metro
+>   avant même l'écran de connexion (`npm run web` → 500), ce qui a été découvert cette session en
+>   voulant vérifier visuellement les changements du Lot 3. Chiffrer les JWT côté JS pour le web
+>   n'aurait rien résolu (la clé vivrait dans le même contexte que l'attaque) : `tokenService.ts` ne
+>   fait plus de repli silencieux vers `localStorage`, il lève une erreur explicite. `README.md` mis
+>   à jour en conséquence.
+>
+> **Vérification :** mobile — `typecheck` 0 erreur · `lint` 0 avertissement ·
+> **18 suites / 112 tests** (30 nouveaux : `fetchAllPages`, `jwt`, `client`, `authRouting`,
+> `FloatingTabBar`) · `expo-doctor` 18/18. Couverture globale passée de 10,66 % (fin Lot 1) à
+> **18,69 %** — `client.ts` était explicitement le seuil que `jest.config.js` réservait à ce moment
+> (« le seuil sera posé avec les tests de src/core/api/client.ts »). Backend — `messaging/tests.py`
+> était un scaffold vide ; 2 tests ajoutés pour `total_count`, qui ont fait apparaître au passage un
+> bug préexistant sans rapport (`IndexError` sur `last_name` vide dans 3 serializers) — signalé
+> séparément, pas corrigé ici (hors périmètre du Lot 5).
+>
+> **Non couvert :** comme pour les lots précédents, aucune vérification visuelle device n'a été
+> possible (pas de compte Expo/EAS), et le web — seule cible où une vérification navigateur aurait
+> été possible — est celle que ce lot vient de sortir du périmètre.
+
 | # | Tâche | Détail | Effort |
 |---|---|---|:--:|
 | 5.1 | ✅ **Corrigé le 12/08/2026.** Bug actif : trois hooks filtraient côté client la même page de 20 de `jobs/transporter/`. Un transporteur ayant 25 missions dont les 20 plus récentes sont terminées voyait **« aucune mission active »** et son retour publié disparaissait | `useMyMissions.ts`, `useCompletedMissions.ts`, `useMyReturnTrips.ts` — recâblés sur `?type=assigned`/`?type=owned` (livré en 0.9) | M |
