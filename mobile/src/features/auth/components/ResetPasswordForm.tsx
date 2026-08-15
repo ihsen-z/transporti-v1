@@ -79,6 +79,7 @@ export function ResetPasswordForm({ uid, token }: Props) {
         name="new_password"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="reset-password-new_password"
             label={t('auth.fields.new_password')}
             placeholder={t('auth.fields.password_placeholder')}
             value={value}
@@ -95,6 +96,7 @@ export function ResetPasswordForm({ uid, token }: Props) {
         name="new_password_confirm"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="reset-password-new_password_confirm"
             label={t('auth.fields.new_password_confirm')}
             placeholder={t('auth.fields.password_placeholder')}
             value={value}
@@ -107,9 +109,14 @@ export function ResetPasswordForm({ uid, token }: Props) {
         )}
       />
 
-      {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
+      {serverError ? (
+        <Text testID="reset-password-server-error" style={styles.serverError}>
+          {serverError}
+        </Text>
+      ) : null}
 
       <Button
+        testID="reset-password-submit"
         label={confirm.isPending ? t('auth.reset.submitting') : t('auth.reset.submit')}
         onPress={onSubmit}
         variant="cta"

@@ -55,6 +55,7 @@ export function ForgotPasswordForm() {
         name="email"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="forgot-password-email"
             label={t('auth.fields.email')}
             placeholder={t('auth.fields.email_placeholder')}
             value={value}
@@ -67,9 +68,14 @@ export function ForgotPasswordForm() {
         )}
       />
 
-      {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
+      {serverError ? (
+        <Text testID="forgot-password-server-error" style={styles.serverError}>
+          {serverError}
+        </Text>
+      ) : null}
 
       <Button
+        testID="forgot-password-submit"
         label={reset.isPending ? t('auth.forgot.submitting') : t('auth.forgot.submit')}
         onPress={onSubmit}
         variant="cta"

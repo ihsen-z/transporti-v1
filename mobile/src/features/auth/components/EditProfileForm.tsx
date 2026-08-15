@@ -68,6 +68,7 @@ export function EditProfileForm({ onDone }: Props) {
         name="first_name"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="edit-profile-first_name"
             label={t('auth.fields.first_name')}
             placeholder={t('auth.fields.first_name_placeholder')}
             value={value}
@@ -82,6 +83,7 @@ export function EditProfileForm({ onDone }: Props) {
         name="last_name"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="edit-profile-last_name"
             label={t('auth.fields.last_name')}
             placeholder={t('auth.fields.last_name_placeholder')}
             value={value}
@@ -96,6 +98,7 @@ export function EditProfileForm({ onDone }: Props) {
         name="phone"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="edit-profile-phone"
             label={t('auth.fields.phone')}
             placeholder={t('auth.fields.phone_placeholder')}
             value={value}
@@ -108,9 +111,14 @@ export function EditProfileForm({ onDone }: Props) {
         )}
       />
 
-      {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
+      {serverError ? (
+        <Text testID="edit-profile-server-error" style={styles.serverError}>
+          {serverError}
+        </Text>
+      ) : null}
 
       <Button
+        testID="edit-profile-submit"
         label={update.isPending ? t('profile.saving') : t('profile.save')}
         onPress={onSubmit}
         variant="cta"

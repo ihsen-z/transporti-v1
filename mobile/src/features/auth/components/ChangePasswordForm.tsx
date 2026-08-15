@@ -81,6 +81,7 @@ export function ChangePasswordForm({ onDone }: Props) {
         name="current_password"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="change-password-current_password"
             label={t('auth.fields.current_password')}
             placeholder={t('auth.fields.password_placeholder')}
             value={value}
@@ -97,6 +98,7 @@ export function ChangePasswordForm({ onDone }: Props) {
         name="new_password"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="change-password-new_password"
             label={t('auth.fields.new_password')}
             placeholder={t('auth.fields.password_placeholder')}
             value={value}
@@ -113,6 +115,7 @@ export function ChangePasswordForm({ onDone }: Props) {
         name="new_password_confirm"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="change-password-new_password_confirm"
             label={t('auth.fields.new_password_confirm')}
             placeholder={t('auth.fields.password_placeholder')}
             value={value}
@@ -125,9 +128,14 @@ export function ChangePasswordForm({ onDone }: Props) {
         )}
       />
 
-      {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
+      {serverError ? (
+        <Text testID="change-password-server-error" style={styles.serverError}>
+          {serverError}
+        </Text>
+      ) : null}
 
       <Button
+        testID="change-password-submit"
         label={
           change.isPending
             ? t('profile.change_password_submitting')

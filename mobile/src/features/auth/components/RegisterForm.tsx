@@ -86,6 +86,7 @@ export function RegisterForm() {
                 return (
                   <Pressable
                     key={r}
+                    testID={`register-role-${r}`}
                     onPress={() => onChange(r)}
                     accessibilityRole="button"
                     accessibilityState={{ selected: active }}
@@ -109,6 +110,7 @@ export function RegisterForm() {
           render={({ field: { value, onChange, onBlur } }) => (
             <View style={styles.rowItem}>
               <TextField
+                testID="register-first_name"
                 label={t('auth.fields.first_name')}
                 placeholder={t('auth.fields.first_name_placeholder')}
                 value={value}
@@ -125,6 +127,7 @@ export function RegisterForm() {
           render={({ field: { value, onChange, onBlur } }) => (
             <View style={styles.rowItem}>
               <TextField
+                testID="register-last_name"
                 label={t('auth.fields.last_name')}
                 placeholder={t('auth.fields.last_name_placeholder')}
                 value={value}
@@ -142,6 +145,7 @@ export function RegisterForm() {
         name="phone"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="register-phone"
             label={t('auth.fields.phone')}
             placeholder={t('auth.fields.phone_placeholder')}
             value={value}
@@ -159,6 +163,7 @@ export function RegisterForm() {
         name="email"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="register-email"
             label={t('auth.fields.email')}
             placeholder={t('auth.fields.email_placeholder')}
             value={value}
@@ -176,6 +181,7 @@ export function RegisterForm() {
         name="password"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="register-password"
             label={t('auth.fields.password')}
             placeholder={t('auth.fields.password_placeholder')}
             value={value}
@@ -193,6 +199,7 @@ export function RegisterForm() {
         name="password_confirm"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="register-password_confirm"
             label={t('auth.fields.password_confirm')}
             placeholder={t('auth.fields.password_placeholder')}
             value={value}
@@ -205,9 +212,14 @@ export function RegisterForm() {
         )}
       />
 
-      {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
+      {serverError ? (
+        <Text testID="register-server-error" style={styles.serverError}>
+          {serverError}
+        </Text>
+      ) : null}
 
       <Button
+        testID="register-submit"
         label={register.isPending ? t('auth.register.submitting') : t('auth.register.submit')}
         onPress={onSubmit}
         variant="cta"

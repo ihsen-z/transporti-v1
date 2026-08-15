@@ -56,6 +56,7 @@ export function LoginForm() {
         name="email"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="login-email"
             label={t('auth.fields.email')}
             placeholder={t('auth.fields.email_placeholder')}
             value={value}
@@ -73,6 +74,7 @@ export function LoginForm() {
         name="password"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="login-password"
             label={t('auth.fields.password')}
             placeholder={t('auth.fields.password_placeholder')}
             value={value}
@@ -85,9 +87,14 @@ export function LoginForm() {
         )}
       />
 
-      {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
+      {serverError ? (
+        <Text testID="login-server-error" style={styles.serverError}>
+          {serverError}
+        </Text>
+      ) : null}
 
       <Button
+        testID="login-submit"
         label={login.isPending ? t('auth.login.submitting') : t('auth.login.submit')}
         onPress={onSubmit}
         variant="cta"
