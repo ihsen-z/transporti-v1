@@ -385,5 +385,17 @@
   "383": "expo-status-bar",
   "384": "README.md",
   "385": "react-dom",
-  "386": ".eslintrc.js"
+  "386": ".eslintrc.js",
+  "387": "0006_alter_devicetoken_token.py",
+  "388": ".can_accept_jobs",
+  "389": "@commitlint/config-conventional",
+  "390": "expo-image-picker",
+  "391": "expo-linear-gradient",
+  "392": "expo-localization",
+  "393": "expo-notifications",
+  "394": "react-i18next",
+  "395": "react-native-maps",
+  "396": "react-native-mmkv",
+  "397": "react-native-svg",
+  "398": "zustand"
 }
