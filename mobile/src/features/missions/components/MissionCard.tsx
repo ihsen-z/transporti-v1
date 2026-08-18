@@ -107,6 +107,7 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
       {isInProgress ? (
         <View style={styles.action}>
           <TextField
+            testID={`mission-${mission.id}-pin`}
             label={t('missions.pin_label')}
             placeholder={t('missions.pin_ph')}
             value={pin}
@@ -116,15 +117,22 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
           />
           <Text style={styles.hint}>{t('missions.photo_deferred')}</Text>
           <Button
+            testID={`mission-${mission.id}-complete`}
             label={t('missions.complete')}
             onPress={onComplete}
             variant="cta"
             loading={complete.isPending}
           />
           {completeErrKey ? (
-            <Text style={styles.error}>{t(`missions.errors.${completeErrKey}`)}</Text>
+            <Text testID={`mission-${mission.id}-complete-error`} style={styles.error}>
+              {t(`missions.errors.${completeErrKey}`)}
+            </Text>
           ) : null}
-          <Pressable onPress={() => setDisputeOpen(true)} accessibilityRole="button">
+          <Pressable
+            testID={`mission-${mission.id}-open-dispute`}
+            onPress={() => setDisputeOpen(true)}
+            accessibilityRole="button"
+          >
             <Text style={styles.dispute}>{t('disputes.open')}</Text>
           </Pressable>
         </View>

@@ -54,11 +54,18 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
               <Text style={styles.title}>{t('reviews.rate_title')}</Text>
               <View style={styles.stars}>
                 <Text style={styles.label}>{t('reviews.rate_label')}</Text>
-                <StarRating value={rating || null} onChange={setRating} size={36} />
+                <StarRating
+                  testID="open-review-rating"
+                  value={rating || null}
+                  onChange={setRating}
+                  size={36}
+                />
               </View>
               <View>
                 <Text style={styles.label}>{t('reviews.comment_label')}</Text>
                 <TextInput
+                  testID="open-review-comment"
+                  accessibilityLabel={t('reviews.comment_label')}
                   style={styles.textarea}
                   value={comment}
                   onChangeText={setComment}
@@ -67,8 +74,16 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
                   multiline
                 />
               </View>
-              {formError ? <Text style={styles.error}>{formError}</Text> : null}
-              {serverError ? <Text style={styles.error}>{serverError}</Text> : null}
+              {formError ? (
+                <Text testID="open-review-form-error" style={styles.error}>
+                  {formError}
+                </Text>
+              ) : null}
+              {serverError ? (
+                <Text testID="open-review-server-error" style={styles.error}>
+                  {serverError}
+                </Text>
+              ) : null}
               <Button
                 label={t('reviews.submit')}
                 onPress={submit}

@@ -21,6 +21,7 @@ export function DetailsSection({ control }: Props) {
         name="capacity"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="publish-capacity"
             label={t('trips.capacity')}
             placeholder={t('trips.capacity_ph')}
             value={value}
@@ -35,6 +36,7 @@ export function DetailsSection({ control }: Props) {
         name="description"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="publish-description"
             label={t('trips.description')}
             placeholder={t('trips.description_ph')}
             value={value}

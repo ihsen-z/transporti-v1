@@ -25,6 +25,7 @@ export function RouteSection({ control, errors, jobTypeOptions, govOptions }: Pr
         name="jobType"
         render={({ field: { value, onChange } }) => (
           <Select
+            testID="publish-jobType"
             label={t('trips.job_type')}
             placeholder={t('trips.job_type')}
             value={value}
@@ -41,6 +42,7 @@ export function RouteSection({ control, errors, jobTypeOptions, govOptions }: Pr
         name="pickupGov"
         render={({ field: { value, onChange } }) => (
           <Select
+            testID="publish-pickupGov"
             label={t('trips.governorate')}
             placeholder={t('trips.governorate_ph')}
             value={value || null}
@@ -55,6 +57,7 @@ export function RouteSection({ control, errors, jobTypeOptions, govOptions }: Pr
         name="pickupAddress"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="publish-pickupAddress"
             label={t('trips.address')}
             placeholder={t('trips.address_ph')}
             value={value}
@@ -73,6 +76,7 @@ export function RouteSection({ control, errors, jobTypeOptions, govOptions }: Pr
         name="dropoffGov"
         render={({ field: { value, onChange } }) => (
           <Select
+            testID="publish-dropoffGov"
             label={t('trips.governorate')}
             placeholder={t('trips.governorate_ph')}
             value={value || null}
@@ -87,6 +91,7 @@ export function RouteSection({ control, errors, jobTypeOptions, govOptions }: Pr
         name="dropoffAddress"
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
+            testID="publish-dropoffAddress"
             label={t('trips.address')}
             placeholder={t('trips.address_ph')}
             value={value}

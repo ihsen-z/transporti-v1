@@ -110,6 +110,7 @@ export function RequestCard({ request, jobId }: Props) {
           <Pressable style={styles.sheet} onPress={() => undefined}>
             <Txt style={styles.sheetTitle}>{t('requests.counter.title')}</Txt>
             <TextField
+              testID={`request-${request.id}-counter-price`}
               label={t('requests.counter.placeholder')}
               value={counterPrice}
               onChangeText={setCounterPrice}
@@ -117,6 +118,7 @@ export function RequestCard({ request, jobId }: Props) {
               error={counterError ?? undefined}
             />
             <Button
+              testID={`request-${request.id}-counter-confirm`}
               label={t('requests.counter.confirm')}
               onPress={submitCounter}
               variant="cta"

@@ -17,7 +17,15 @@ export function StarRating({ value, onChange, size = 28, testID }: Props) {
   const rating = value ?? 0;
 
   return (
-    <View style={styles.row}>
+    // Le conteneur porte le testID, et pas seulement les étoiles cliquables :
+    // une note en LECTURE SEULE (ReviewRow) n'a aucun Pressable, donc sans ça
+    // son testID serait accepté par l'appelant puis silencieusement perdu.
+    <View
+      testID={testID}
+      style={styles.row}
+      accessibilityRole={editable ? undefined : 'text'}
+      accessibilityValue={masked ? undefined : { min: 0, max: 5, now: rating }}
+    >
       {[1, 2, 3, 4, 5].map((star) => {
         const filled = star <= rating;
         const color = masked

@@ -73,6 +73,7 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
             <>
               <Text style={styles.title}>{t('disputes.open')}</Text>
               <Select
+                testID="open-dispute-reason"
                 label={t('disputes.reason_label')}
                 placeholder={t('disputes.reason_ph')}
                 value={reason}
@@ -82,6 +83,8 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
               <View>
                 <Text style={styles.label}>{t('disputes.description_label')}</Text>
                 <TextInput
+                  testID="open-dispute-description"
+                  accessibilityLabel={t('disputes.description_label')}
                   style={styles.textarea}
                   value={description}
                   onChangeText={setDescription}
@@ -90,8 +93,16 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
                   multiline
                 />
               </View>
-              {formError ? <Text style={styles.error}>{formError}</Text> : null}
-              {serverError ? <Text style={styles.error}>{serverError}</Text> : null}
+              {formError ? (
+                <Text testID="open-dispute-form-error" style={styles.error}>
+                  {formError}
+                </Text>
+              ) : null}
+              {serverError ? (
+                <Text testID="open-dispute-server-error" style={styles.error}>
+                  {serverError}
+                </Text>
+              ) : null}
               <Button
                 label={t('disputes.submit')}
                 onPress={submit}

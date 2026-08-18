@@ -42,6 +42,7 @@ export function ScheduleSection({
             name="day"
             render={({ field: { value, onChange } }) => (
               <Select
+                testID="publish-day"
                 label={t('trips.day')}
                 placeholder={t('trips.day_ph')}
                 value={value || null}
@@ -58,6 +59,7 @@ export function ScheduleSection({
             name="time"
             render={({ field: { value, onChange } }) => (
               <Select
+                testID="publish-time"
                 label={t('trips.time')}
                 placeholder={t('trips.time_ph')}
                 value={value || null}
@@ -72,12 +74,17 @@ export function ScheduleSection({
 
       {/* Estimation serveur (guidance) */}
       <Button
+        testID="publish-estimate"
         label={t('trips.estimate.button')}
         onPress={onEstimate}
         variant="primary"
         loading={estimatePending}
       />
-      {estimateResult ? <Text style={s.estimate}>{estimateResult}</Text> : null}
+      {estimateResult ? (
+        <Text testID="publish-estimate-result" style={s.estimate}>
+          {estimateResult}
+        </Text>
+      ) : null}
       <Text style={s.hint}>{routeHint ?? t('trips.estimate.hint')}</Text>
 
       {/* Prix */}
@@ -88,6 +95,7 @@ export function ScheduleSection({
             name="priceMin"
             render={({ field: { value, onChange, onBlur } }) => (
               <TextField
+                testID="publish-priceMin"
                 label={t('trips.price_min')}
                 placeholder={t('trips.price_ph')}
                 value={value}
@@ -105,6 +113,7 @@ export function ScheduleSection({
             name="priceMax"
             render={({ field: { value, onChange, onBlur } }) => (
               <TextField
+                testID="publish-priceMax"
                 label={t('trips.price_max')}
                 placeholder={t('trips.price_ph')}
                 value={value}

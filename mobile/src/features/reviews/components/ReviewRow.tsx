@@ -16,7 +16,11 @@ export function ReviewRow({ review }: { review: ReviewDto }) {
       <View style={styles.headerRow}>
         <Avatar name={review.reviewer_name} size={38} />
         <Text style={styles.name} numberOfLines={1}>{review.reviewer_name}</Text>
-        <StarRating value={masked ? null : review.rating} size={18} />
+        <StarRating
+          testID={`review-${review.id}-rating`}
+          value={masked ? null : review.rating}
+          size={18}
+        />
       </View>
       {masked ? (
         <Text style={styles.masked}>{t('reviews.masked')}</Text>

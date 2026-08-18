@@ -75,6 +75,7 @@ export function TrustPanel({ visible, onClose }: Props) {
             {/* Véhicule */}
             <Txt style={styles.section}>{t('trust.vehicle_title')}</Txt>
             <TextField
+              testID="trust-vehicle_type"
               label={t('trust.vehicle_type')}
               placeholder={t('trust.vehicle_type_ph')}
               value={vtype}
@@ -82,6 +83,7 @@ export function TrustPanel({ visible, onClose }: Props) {
               autoCapitalize="sentences"
             />
             <TextField
+              testID="trust-vehicle_capacity"
               label={t('trust.vehicle_capacity')}
               placeholder={t('trust.vehicle_capacity_ph')}
               value={cap}
@@ -89,6 +91,7 @@ export function TrustPanel({ visible, onClose }: Props) {
               keyboardType="numeric"
             />
             <TextField
+              testID="trust-vehicle_plate"
               label={t('trust.vehicle_plate')}
               placeholder={t('trust.vehicle_plate_ph')}
               value={plate}

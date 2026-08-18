@@ -72,6 +72,7 @@ export function SendRequestSheet({ trip, onClose }: Props) {
             <>
               <Text style={styles.title}>{t('search.request.title')}</Text>
               <TextField
+                testID="send-request-price"
                 label={t('search.request.price_label')}
                 placeholder={t('search.request.price_ph')}
                 value={price}
@@ -80,6 +81,7 @@ export function SendRequestSheet({ trip, onClose }: Props) {
                 error={priceError ?? undefined}
               />
               <Select
+                testID="send-request-method"
                 label={t('search.request.method')}
                 placeholder={t('search.request.method')}
                 value={method}
@@ -87,14 +89,20 @@ export function SendRequestSheet({ trip, onClose }: Props) {
                 onChange={setMethod}
               />
               <TextField
+                testID="send-request-description"
                 label={t('search.request.description')}
                 placeholder={t('search.request.description_ph')}
                 value={description}
                 onChangeText={setDescription}
                 autoCapitalize="sentences"
               />
-              {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
+              {errorMsg ? (
+                <Text testID="send-request-error" style={styles.error}>
+                  {errorMsg}
+                </Text>
+              ) : null}
               <Button
+                testID="send-request-submit"
                 label={t('search.request.submit')}
                 onPress={submit}
                 variant="cta"

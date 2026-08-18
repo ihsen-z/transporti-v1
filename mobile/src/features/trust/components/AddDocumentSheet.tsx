@@ -97,6 +97,7 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
             <>
               <Text style={styles.title}>{t('trust.add_doc')}</Text>
               <Select
+                testID="add-document-type"
                 label={t('trust.doc_type')}
                 placeholder={t('trust.doc_type_ph')}
                 value={docType}
@@ -105,6 +106,7 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
               />
               {docType && isExpiringType(docType) ? (
                 <TextField
+                  testID="add-document-expires_at"
                   label={t('trust.expires_at')}
                   placeholder={t('trust.expires_ph')}
                   value={expiresAt}
@@ -112,12 +114,21 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
                 />
               ) : null}
               <Button
+                testID="add-document-pick-image"
                 label={image ? t('trust.image_selected') : t('trust.pick_image')}
                 onPress={pickImage}
                 variant="primary"
               />
-              {formError ? <Text style={styles.error}>{formError}</Text> : null}
-              {serverError ? <Text style={styles.error}>{serverError}</Text> : null}
+              {formError ? (
+                <Text testID="add-document-form-error" style={styles.error}>
+                  {formError}
+                </Text>
+              ) : null}
+              {serverError ? (
+                <Text testID="add-document-server-error" style={styles.error}>
+                  {serverError}
+                </Text>
+              ) : null}
               <Button
                 label={t('trust.upload')}
                 onPress={submit}

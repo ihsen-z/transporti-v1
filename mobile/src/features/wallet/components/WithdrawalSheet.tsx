@@ -73,6 +73,7 @@ export function WithdrawalSheet({ visible, available, onClose }: Props) {
               </Txt>
 
               <TextField
+                testID="withdrawal-amount"
                 label={t('wallet.amount_label')}
                 value={amount}
                 onChangeText={setAmount}
@@ -80,6 +81,7 @@ export function WithdrawalSheet({ visible, available, onClose }: Props) {
                 keyboardType="decimal-pad"
               />
               <TextField
+                testID="withdrawal-bank"
                 label={t('wallet.bank_label')}
                 value={bankDetails}
                 onChangeText={setBankDetails}
@@ -87,8 +89,16 @@ export function WithdrawalSheet({ visible, available, onClose }: Props) {
                 autoCapitalize="characters"
               />
 
-              {formError ? <Txt style={styles.error}>{formError}</Txt> : null}
-              {serverError ? <Txt style={styles.error}>{serverError}</Txt> : null}
+              {formError ? (
+                <Txt testID="withdrawal-form-error" style={styles.error}>
+                  {formError}
+                </Txt>
+              ) : null}
+              {serverError ? (
+                <Txt testID="withdrawal-server-error" style={styles.error}>
+                  {serverError}
+                </Txt>
+              ) : null}
 
               <Txt style={styles.delay}>{t('wallet.withdrawal_delay')}</Txt>
 

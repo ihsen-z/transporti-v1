@@ -47,6 +47,7 @@ export function SearchForm({ onSearch, loading }: Props) {
   return (
     <View style={styles.form}>
       <Select
+        testID="search-from"
         label={t('search.from')}
         placeholder={t('trips.governorate_ph')}
         value={pickup}
@@ -54,6 +55,7 @@ export function SearchForm({ onSearch, loading }: Props) {
         onChange={setPickup}
       />
       <Select
+        testID="search-to"
         label={t('search.to')}
         placeholder={t('trips.governorate_ph')}
         value={dropoff}
@@ -61,14 +63,25 @@ export function SearchForm({ onSearch, loading }: Props) {
         onChange={setDropoff}
       />
       <Select
+        testID="search-date"
         label={t('search.date_optional')}
         placeholder={t('trips.day_ph')}
         value={day}
         options={dayOptions}
         onChange={setDay}
       />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <Button label={t('search.button')} onPress={submit} variant="cta" loading={loading} />
+      {error ? (
+        <Text testID="search-error" style={styles.error}>
+          {error}
+        </Text>
+      ) : null}
+      <Button
+        testID="search-submit"
+        label={t('search.button')}
+        onPress={submit}
+        variant="cta"
+        loading={loading}
+      />
     </View>
   );
 }
