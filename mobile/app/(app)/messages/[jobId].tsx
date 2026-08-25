@@ -23,6 +23,7 @@ export default function ConversationScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable
+          testID="messages-detail-back"
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}

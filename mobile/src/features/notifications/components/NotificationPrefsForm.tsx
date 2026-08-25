@@ -76,6 +76,7 @@ export function NotificationPrefsForm({ onDone }: Props) {
       {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
 
       <Button
+        testID="notification-prefs-submit"
         label={update.isPending ? t('profile.saving') : t('profile.save')}
         onPress={() => update.mutate(local)}
         variant="cta"

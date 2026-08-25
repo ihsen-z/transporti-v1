@@ -44,7 +44,12 @@ export function ProfileAvatar() {
 
   return (
     <View style={styles.wrap}>
-      <Pressable onPress={onPick} accessibilityRole="button" disabled={upload.isPending}>
+      <Pressable
+        testID="profile-avatar-pick"
+        onPress={onPick}
+        accessibilityRole="button"
+        disabled={upload.isPending}
+      >
         <Avatar name={displayName} imageUrl={user?.avatarUrl} size={72} />
         <View style={styles.badge}>
           {upload.isPending ? (
@@ -54,10 +59,19 @@ export function ProfileAvatar() {
           )}
         </View>
       </Pressable>
-      <Pressable onPress={onPick} accessibilityRole="button" disabled={upload.isPending}>
+      <Pressable
+        testID="profile-avatar-pick-link"
+        onPress={onPick}
+        accessibilityRole="button"
+        disabled={upload.isPending}
+      >
         <Txt style={styles.link}>{t('profile.change_photo')}</Txt>
       </Pressable>
-      {errorMsg ? <Txt style={styles.error}>{errorMsg}</Txt> : null}
+      {errorMsg ? (
+        <Txt testID="profile-avatar-error" style={styles.error}>
+          {errorMsg}
+        </Txt>
+      ) : null}
     </View>
   );
 }

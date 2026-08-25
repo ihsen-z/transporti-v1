@@ -38,6 +38,7 @@ export function CompletedMissionsList() {
             </Text>
             <Text style={styles.when}>{formatWhen(m.scheduled_time)}</Text>
             <Button
+              testID={`completed-mission-${m.id}-review`}
               label={t('reviews.open')}
               onPress={() => setReviewJob(m.id)}
               variant="primary"

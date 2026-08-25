@@ -19,7 +19,7 @@ function formatWhen(iso: string): string {
 
 export function NotificationRow({ notif, onPress }: Props) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button">
+    <Pressable testID={`notification-${notif.id}`} onPress={onPress} accessibilityRole="button">
       {/* Non lu : teinte bleue (structure) + pastille orange (CTA d'attention). */}
       <Card style={[styles.row, !notif.is_read && styles.unread]}>
         {!notif.is_read ? <View style={styles.dot} /> : <View style={styles.dotPlaceholder} />}

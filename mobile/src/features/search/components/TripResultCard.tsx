@@ -22,6 +22,7 @@ export function TripResultCard({ trip, onRequest }: Props) {
   return (
     <Card>
       <Pressable
+        testID={`trip-${trip.id}-owner`}
         style={styles.top}
         onPress={() => router.push({ pathname: '/transporteur/[id]', params: { id: String(trip.owner_id) } })}
         accessibilityRole="button"
@@ -54,7 +55,13 @@ export function TripResultCard({ trip, onRequest }: Props) {
         <Text style={styles.price}>
           {t('search.price_range', { min: trip.price_tnd_min, max: trip.price_tnd_max })}
         </Text>
-        <Button label={t('search.request.title')} onPress={onRequest} variant="cta" size="sm" />
+        <Button
+          testID={`trip-${trip.id}-request`}
+          label={t('search.request.title')}
+          onPress={onRequest}
+          variant="cta"
+          size="sm"
+        />
       </View>
     </Card>
   );

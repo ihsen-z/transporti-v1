@@ -48,6 +48,7 @@ export default function HomeScreen() {
         {/* CTA unique de l'écran — le seul orange autorisé ici. */}
         {isTransporter ? (
           <Button
+            testID="home-publish"
             label={t('trips.publish.title')}
             onPress={() => router.push('/publish')}
             variant="cta"
@@ -55,6 +56,7 @@ export default function HomeScreen() {
         ) : null}
         {isClient ? (
           <Button
+            testID="home-search"
             label={t('search.title')}
             onPress={() => router.push('/search')}
             variant="cta"

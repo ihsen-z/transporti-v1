@@ -41,6 +41,7 @@ export default function SearchScreen() {
         <View style={styles.headerRow}>
           <Txt style={styles.title}>{t('search.title')}</Txt>
           <Pressable
+            testID="search-open-alerts"
             onPress={() => setAlertsOpen(true)}
             accessibilityRole="button"
             accessibilityLabel={t('search.alerts.title')}
@@ -90,6 +91,7 @@ export default function SearchScreen() {
                 <Txt style={styles.alertOk}>{t('search.alert_created')}</Txt>
               ) : (
                 <Button
+                  testID="search-create-alert"
                   label={t('search.create_alert')}
                   onPress={() =>
                     lastParams &&

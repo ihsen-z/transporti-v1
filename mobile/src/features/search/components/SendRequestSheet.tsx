@@ -66,7 +66,12 @@ export function SendRequestSheet({ trip, onClose }: Props) {
           {send.isSuccess ? (
             <View style={styles.successBox}>
               <Text style={styles.successText}>{t('search.request.success')}</Text>
-              <Button label={t('common.close')} onPress={close} variant="primary" />
+              <Button
+                testID="send-request-close"
+                label={t('common.close')}
+                onPress={close}
+                variant="primary"
+              />
             </View>
           ) : (
             <>

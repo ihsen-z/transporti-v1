@@ -26,7 +26,7 @@ export function CorridorAlertsPanel({ visible, onClose }: Props) {
       <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
         <View style={styles.header}>
           <Txt style={styles.title}>{t('search.alerts.title')}</Txt>
-          <Pressable onPress={onClose} accessibilityRole="button">
+          <Pressable testID="corridor-alerts-close" onPress={onClose} accessibilityRole="button">
             <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>

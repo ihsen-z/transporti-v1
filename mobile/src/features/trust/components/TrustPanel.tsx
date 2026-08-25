@@ -57,7 +57,7 @@ export function TrustPanel({ visible, onClose }: Props) {
       <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
         <View style={styles.header}>
           <Txt style={styles.title}>{t('trust.title')}</Txt>
-          <Pressable onPress={onClose} accessibilityRole="button">
+          <Pressable testID="trust-panel-close" onPress={onClose} accessibilityRole="button">
             <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>
@@ -99,6 +99,7 @@ export function TrustPanel({ visible, onClose }: Props) {
               autoCapitalize="characters"
             />
             <Button
+              testID="trust-vehicle-save"
               label={t('trust.vehicle_save')}
               onPress={onSave}
               variant="primary"
@@ -116,6 +117,7 @@ export function TrustPanel({ visible, onClose }: Props) {
               docs.map((d: DocumentDto) => <DocumentRow key={d.id} doc={d} />)
             )}
             <Button
+              testID="trust-add-doc"
               label={t('trust.add_doc')}
               onPress={() => setAddOpen(true)}
               variant="cta"

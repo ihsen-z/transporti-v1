@@ -70,6 +70,8 @@ export function ChatView({ jobId }: { jobId: number }) {
       ) : (
         <View style={styles.inputRow}>
           <TextInput
+            testID="chat-message-input"
+            accessibilityLabel={t('messaging.input_ph')}
             style={styles.input}
             value={text}
             onChangeText={setText}
@@ -78,6 +80,7 @@ export function ChatView({ jobId }: { jobId: number }) {
             multiline
           />
           <Pressable
+            testID="chat-send"
             style={styles.sendBtn}
             onPress={onSend}
             disabled={send.isPending}

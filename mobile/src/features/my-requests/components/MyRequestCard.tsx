@@ -68,6 +68,7 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
             {t('my_requests.countered', { price: request.counter_price })}
           </Text>
           <Button
+            testID={`my-request-${request.id}-accept-counter`}
             label={t('my_requests.accept_counter')}
             onPress={() => accept.mutate(request.id)}
             variant="cta"
@@ -80,6 +81,7 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
       {withdrawable ? (
         <View style={styles.block}>
           <Button
+            testID={`my-request-${request.id}-withdraw`}
             label={t('my_requests.withdraw')}
             onPress={confirmWithdraw}
             variant="ghost"
@@ -104,6 +106,7 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
               des boutons Avis/Litige que le serveur refusait avant la fin de
               la course. */}
           <Button
+            testID={`my-request-${request.id}-track`}
             label={t('my_requests.track')}
             onPress={() => router.push(`/mission/${request.job}`)}
             variant="cta"

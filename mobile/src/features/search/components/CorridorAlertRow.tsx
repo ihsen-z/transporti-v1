@@ -26,6 +26,7 @@ export function CorridorAlertRow({ alert }: { alert: CorridorAlertDto }) {
           <RouteRow from={alert.pickup_governorate} to={alert.dropoff_governorate} />
         </View>
         <Pressable
+          testID={`corridor-alert-${alert.id}-delete`}
           onPress={confirmDelete}
           accessibilityRole="button"
           accessibilityLabel={t('search.alerts.delete')}

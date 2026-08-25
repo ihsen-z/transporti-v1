@@ -44,7 +44,12 @@ export function NotificationBell() {
 
   return (
     <>
-      <Pressable onPress={() => setOpen(true)} style={styles.bell} accessibilityRole="button">
+      <Pressable
+        testID="notification-bell"
+        onPress={() => setOpen(true)}
+        style={styles.bell}
+        accessibilityRole="button"
+      >
         <Icon name="bell" size={26} color={colors.brand[600]} />
         {count > 0 ? (
           <View style={styles.badge}>
@@ -57,13 +62,22 @@ export function NotificationBell() {
         <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
           <View style={styles.header}>
             <Text style={styles.title}>{t('notifications.title')}</Text>
-            <Pressable onPress={() => setOpen(false)} accessibilityRole="button">
+            <Pressable
+              testID="notification-bell-close"
+              onPress={() => setOpen(false)}
+              accessibilityRole="button"
+            >
               <Icon name="x" size={26} color={colors.neutral[700]} />
             </Pressable>
           </View>
 
           {count > 0 ? (
-            <Pressable onPress={() => markAll.mutate()} style={styles.markAll}>
+            <Pressable
+              testID="notification-mark-all"
+              onPress={() => markAll.mutate()}
+              style={styles.markAll}
+              accessibilityRole="button"
+            >
               <Text style={styles.markAllText}>{t('notifications.mark_all')}</Text>
             </Pressable>
           ) : null}

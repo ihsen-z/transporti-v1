@@ -67,7 +67,12 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
           {create.isSuccess ? (
             <View style={styles.successBox}>
               <Text style={styles.successText}>{t('disputes.success')}</Text>
-              <Button label={t('common.close')} onPress={close} variant="primary" />
+              <Button
+                testID="open-dispute-close"
+                label={t('common.close')}
+                onPress={close}
+                variant="primary"
+              />
             </View>
           ) : (
             <>
@@ -104,6 +109,7 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
                 </Text>
               ) : null}
               <Button
+                testID="open-dispute-submit"
                 label={t('disputes.submit')}
                 onPress={submit}
                 variant="cta"

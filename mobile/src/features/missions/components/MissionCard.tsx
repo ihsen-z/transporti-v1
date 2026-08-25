@@ -93,13 +93,16 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
         <View style={styles.action}>
           <Text style={styles.hint}>{t('missions.confirm_start_hint')}</Text>
           <Button
+            testID={`mission-${mission.id}-confirm-start`}
             label={t('missions.confirm_start')}
             onPress={() => confirmStart.mutate(mission.id)}
             variant="primary"
             loading={confirmStart.isPending}
           />
           {confirmErrKey ? (
-            <Text style={styles.error}>{t(`missions.errors.${confirmErrKey}`)}</Text>
+            <Text testID={`mission-${mission.id}-confirm-start-error`} style={styles.error}>
+              {t(`missions.errors.${confirmErrKey}`)}
+            </Text>
           ) : null}
         </View>
       ) : null}
@@ -139,7 +142,11 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
       ) : null}
 
       {cancellable ? (
-        <Pressable onPress={() => setCancelOpen(true)} accessibilityRole="button">
+        <Pressable
+          testID={`mission-${mission.id}-cancel`}
+          onPress={() => setCancelOpen(true)}
+          accessibilityRole="button"
+        >
           <Text style={styles.cancel}>{t('missions.cancel.link')}</Text>
         </Pressable>
       ) : null}

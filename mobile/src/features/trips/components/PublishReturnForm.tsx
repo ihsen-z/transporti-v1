@@ -46,6 +46,7 @@ export function PublishReturnForm() {
       {f.publishError ? <Text style={s.error}>{f.publishError}</Text> : null}
 
       <Button
+        testID="publish-submit"
         label={f.publishPending ? t('trips.publish.submitting') : t('trips.publish.submit')}
         onPress={f.onSubmit}
         variant="cta"

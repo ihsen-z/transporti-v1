@@ -51,6 +51,7 @@ export default function GainsScreen() {
                 <Txt style={styles.heroUnit}> TND</Txt>
               </Txt>
               <Button
+                testID="gains-withdraw"
                 label={t('wallet.withdraw')}
                 onPress={() => setWithdrawOpen(true)}
                 variant="cta"

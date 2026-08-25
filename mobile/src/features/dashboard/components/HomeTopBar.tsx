@@ -29,6 +29,7 @@ export function HomeTopBar() {
   return (
     <View style={styles.top}>
       <Pressable
+        testID="home-topbar-profile"
         onPress={() => router.push('/profile')}
         accessibilityRole="button"
         accessibilityLabel={t('tabs.profile')}

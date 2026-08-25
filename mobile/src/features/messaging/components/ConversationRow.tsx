@@ -14,7 +14,7 @@ export function ConversationRow({ conv, onPress }: Props) {
   const hasUnread = conv.unread_count > 0;
 
   return (
-    <Pressable onPress={onPress} accessibilityRole="button">
+    <Pressable testID={`conversation-${conv.id}`} onPress={onPress} accessibilityRole="button">
       <Card style={styles.card}>
         <Avatar name={conv.other_party_name} size={44} />
         <View style={styles.flex}>

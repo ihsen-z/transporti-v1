@@ -56,6 +56,8 @@ export function CancelMissionSheet({ jobId, onClose, onCancelled }: Props) {
           <Txt style={styles.warning}>{t('tracking.cancel_warning')}</Txt>
 
           <TextInput
+            testID="cancel-mission-reason"
+            accessibilityLabel={t('tracking.cancel_reason_placeholder')}
             style={styles.input}
             value={reason}
             onChangeText={setReason}
@@ -65,16 +67,30 @@ export function CancelMissionSheet({ jobId, onClose, onCancelled }: Props) {
             numberOfLines={3}
           />
 
-          {formError ? <Txt style={styles.error}>{formError}</Txt> : null}
-          {serverError ? <Txt style={styles.error}>{serverError}</Txt> : null}
+          {formError ? (
+            <Txt testID="cancel-mission-form-error" style={styles.error}>
+              {formError}
+            </Txt>
+          ) : null}
+          {serverError ? (
+            <Txt testID="cancel-mission-server-error" style={styles.error}>
+              {serverError}
+            </Txt>
+          ) : null}
 
           <Button
+            testID="cancel-mission-submit"
             label={t('tracking.cancel_submit')}
             onPress={submit}
             variant="danger"
             loading={cancel.isPending}
           />
-          <Button label={t('tracking.cancel_keep')} onPress={close} variant="ghost" />
+          <Button
+            testID="cancel-mission-keep"
+            label={t('tracking.cancel_keep')}
+            onPress={close}
+            variant="ghost"
+          />
         </Pressable>
       </Pressable>
     </Modal>

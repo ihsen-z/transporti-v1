@@ -91,7 +91,12 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
           {upload.isSuccess ? (
             <View style={styles.successBox}>
               <Text style={styles.successText}>{t('trust.uploaded')}</Text>
-              <Button label={t('common.close')} onPress={close} variant="primary" />
+              <Button
+                testID="add-document-close"
+                label={t('common.close')}
+                onPress={close}
+                variant="primary"
+              />
             </View>
           ) : (
             <>
@@ -130,6 +135,7 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
                 </Text>
               ) : null}
               <Button
+                testID="add-document-submit"
                 label={t('trust.upload')}
                 onPress={submit}
                 variant="cta"

@@ -63,7 +63,12 @@ export function WithdrawalSheet({ visible, available, onClose }: Props) {
           {create.isSuccess ? (
             <View style={styles.successBox}>
               <Txt style={styles.successText}>{t('wallet.withdrawal_success')}</Txt>
-              <Button label={t('common.close')} onPress={close} variant="primary" />
+              <Button
+                testID="withdrawal-close"
+                label={t('common.close')}
+                onPress={close}
+                variant="primary"
+              />
             </View>
           ) : (
             <>
@@ -103,12 +108,18 @@ export function WithdrawalSheet({ visible, available, onClose }: Props) {
               <Txt style={styles.delay}>{t('wallet.withdrawal_delay')}</Txt>
 
               <Button
+                testID="withdrawal-submit"
                 label={t('wallet.withdraw_submit')}
                 onPress={submit}
                 variant="cta"
                 loading={create.isPending}
               />
-              <Button label={t('common.cancel')} onPress={close} variant="ghost" />
+              <Button
+                testID="withdrawal-cancel"
+                label={t('common.cancel')}
+                onPress={close}
+                variant="ghost"
+              />
             </>
           )}
         </Pressable>

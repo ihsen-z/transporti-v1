@@ -70,6 +70,7 @@ export function RequestCard({ request, jobId }: Props) {
               une liste de demandes en affichait autant que de cartes. */}
           <View style={styles.actionRow}>
             <Button
+              testID={`request-${request.id}-counter`}
               label={t('requests.action.counter')}
               onPress={() => setCounterOpen(true)}
               variant="ghost"
@@ -78,6 +79,7 @@ export function RequestCard({ request, jobId }: Props) {
               style={styles.actionBtn}
             />
             <Button
+              testID={`request-${request.id}-accept`}
               label={t('requests.action.accept')}
               onPress={() => act('accept')}
               variant="primary"
@@ -87,6 +89,7 @@ export function RequestCard({ request, jobId }: Props) {
             />
           </View>
           <Pressable
+            testID={`request-${request.id}-reject`}
             onPress={() => act('reject')}
             disabled={respond.isPending}
             style={styles.rejectBtn}

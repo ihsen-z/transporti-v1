@@ -33,6 +33,7 @@ export default function JobRequestsScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable
+          testID="requests-detail-back"
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}

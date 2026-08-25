@@ -22,7 +22,7 @@ interface Props {
 
 export function TripSummaryCard({ trip, onPress }: Props) {
   return (
-    <Pressable onPress={onPress} accessibilityRole="button">
+    <Pressable testID={`trip-summary-${trip.id}`} onPress={onPress} accessibilityRole="button">
       <Card style={styles.card}>
         <View style={styles.flex}>
           <RouteRow from={trip.pickup_governorate} to={trip.dropoff_governorate} />

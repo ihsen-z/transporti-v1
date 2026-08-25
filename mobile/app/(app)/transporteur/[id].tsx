@@ -41,6 +41,7 @@ export default function TransporterProfileScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable
+          testID="transporter-detail-back"
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
@@ -77,7 +78,11 @@ export default function TransporterProfileScreen() {
                 </View>
                 {hasRating ? (
                   <View style={styles.ratingRow}>
-                    <StarRating value={Math.round(p.rating)} size={20} />
+                    <StarRating
+                      testID="transporter-detail-rating"
+                      value={Math.round(p.rating)}
+                      size={20}
+                    />
                     <Txt style={styles.ratingCount}>
                       {t('profiles.review_count', { count: p.review_count })}
                     </Txt>

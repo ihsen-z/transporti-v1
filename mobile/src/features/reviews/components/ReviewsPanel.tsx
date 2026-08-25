@@ -33,7 +33,7 @@ export function ReviewsPanel({ visible, onClose }: Props) {
       <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
         <View style={styles.header}>
           <Txt style={styles.title}>{t('reviews.my_title')}</Txt>
-          <Pressable onPress={onClose} accessibilityRole="button">
+          <Pressable testID="reviews-panel-close" onPress={onClose} accessibilityRole="button">
             <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>

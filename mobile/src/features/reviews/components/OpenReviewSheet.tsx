@@ -47,7 +47,12 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
           {create.isSuccess ? (
             <View style={styles.successBox}>
               <Text style={styles.successText}>{t('reviews.success')}</Text>
-              <Button label={t('common.close')} onPress={close} variant="primary" />
+              <Button
+                testID="open-review-close"
+                label={t('common.close')}
+                onPress={close}
+                variant="primary"
+              />
             </View>
           ) : (
             <>
@@ -85,6 +90,7 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
                 </Text>
               ) : null}
               <Button
+                testID="open-review-submit"
                 label={t('reviews.submit')}
                 onPress={submit}
                 variant="cta"

@@ -84,6 +84,7 @@ export default function MissionScreen() {
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
         <Pressable
+          testID="mission-detail-back"
           onPress={() => router.back()}
           accessibilityRole="button"
           accessibilityLabel={t('common.back')}
@@ -147,6 +148,7 @@ export default function MissionScreen() {
                 <Txt style={styles.sectionTitle}>{t('tracking.pay_title')}</Txt>
                 <Txt style={styles.hint}>{t('tracking.pay_hint')}</Txt>
                 <Button
+                  testID="mission-detail-pay"
                   label={t('tracking.pay_cta')}
                   onPress={onPay}
                   variant="cta"
@@ -160,6 +162,7 @@ export default function MissionScreen() {
                 <Txt style={styles.sectionTitle}>{t('tracking.confirm_title')}</Txt>
                 <Txt style={styles.hint}>{t('tracking.confirm_hint')}</Txt>
                 <Button
+                  testID="mission-detail-confirm"
                   label={t('tracking.confirm_cta')}
                   onPress={onConfirm}
                   variant="accent"
@@ -198,19 +201,28 @@ export default function MissionScreen() {
               <View style={styles.endActions}>
                 {!d.has_reviewed ? (
                   <Button
+                    testID="mission-detail-review"
                     label={t('reviews.open')}
                     onPress={() => setReviewOpen(true)}
                     variant="primary"
                   />
                 ) : null}
-                <Pressable onPress={() => setDisputeOpen(true)} accessibilityRole="button">
+                <Pressable
+                  testID="mission-detail-open-dispute"
+                  onPress={() => setDisputeOpen(true)}
+                  accessibilityRole="button"
+                >
                   <Txt style={styles.dispute}>{t('disputes.open')}</Txt>
                 </Pressable>
               </View>
             ) : null}
 
             {cancellable ? (
-              <Pressable onPress={() => setCancelOpen(true)} accessibilityRole="button">
+              <Pressable
+                testID="mission-detail-cancel"
+                onPress={() => setCancelOpen(true)}
+                accessibilityRole="button"
+              >
                 <Txt style={styles.cancel}>{t('tracking.cancel_link')}</Txt>
               </Pressable>
             ) : null}

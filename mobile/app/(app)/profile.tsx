@@ -67,6 +67,7 @@ export default function ProfileScreen() {
           </View>
 
           <Pressable
+            testID="profile-edit"
             style={styles.link}
             onPress={() => setEditOpen(true)}
             accessibilityRole="button"
@@ -77,6 +78,7 @@ export default function ProfileScreen() {
           </Pressable>
 
           <Pressable
+            testID="profile-password"
             style={styles.link}
             onPress={() => setPasswordOpen(true)}
             accessibilityRole="button"
@@ -87,6 +89,7 @@ export default function ProfileScreen() {
           </Pressable>
 
           <Pressable
+            testID="profile-notifications"
             style={styles.link}
             onPress={() => setNotifOpen(true)}
             accessibilityRole="button"
@@ -97,6 +100,7 @@ export default function ProfileScreen() {
           </Pressable>
 
           <Pressable
+            testID="profile-reviews"
             style={styles.link}
             onPress={() => setReviewsOpen(true)}
             accessibilityRole="button"
@@ -107,6 +111,7 @@ export default function ProfileScreen() {
           </Pressable>
 
           <Pressable
+            testID="profile-disputes"
             style={styles.link}
             onPress={() => setDisputesOpen(true)}
             accessibilityRole="button"
@@ -118,6 +123,7 @@ export default function ProfileScreen() {
 
           {isTransporter ? (
             <Pressable
+              testID="profile-trust"
               style={styles.link}
               onPress={() => setTrustOpen(true)}
               accessibilityRole="button"
@@ -129,6 +135,7 @@ export default function ProfileScreen() {
           ) : null}
 
           <Pressable
+            testID="profile-about"
             style={styles.link}
             onPress={() => setAboutOpen(true)}
             accessibilityRole="button"
@@ -141,7 +148,7 @@ export default function ProfileScreen() {
       </View>
 
       <View style={styles.footer}>
-        <Button label={t('profile.logout')} onPress={confirmLogout} />
+        <Button testID="profile-logout" label={t('profile.logout')} onPress={confirmLogout} />
       </View>
 
       <EditProfilePanel visible={editOpen} onClose={() => setEditOpen(false)} />

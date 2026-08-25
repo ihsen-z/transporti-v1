@@ -58,6 +58,8 @@ export function TransporterCancelSheet({ jobId, onClose, onCancelled }: Props) {
           <Txt style={styles.warning}>{t('missions.cancel.warning')}</Txt>
 
           <TextInput
+            testID="transporter-cancel-reason"
+            accessibilityLabel={t('missions.cancel.reason_placeholder')}
             style={styles.input}
             value={reason}
             onChangeText={setReason}
@@ -67,16 +69,30 @@ export function TransporterCancelSheet({ jobId, onClose, onCancelled }: Props) {
             numberOfLines={3}
           />
 
-          {formError ? <Txt style={styles.error}>{formError}</Txt> : null}
-          {serverError ? <Txt style={styles.error}>{serverError}</Txt> : null}
+          {formError ? (
+            <Txt testID="transporter-cancel-form-error" style={styles.error}>
+              {formError}
+            </Txt>
+          ) : null}
+          {serverError ? (
+            <Txt testID="transporter-cancel-server-error" style={styles.error}>
+              {serverError}
+            </Txt>
+          ) : null}
 
           <Button
+            testID="transporter-cancel-submit"
             label={t('missions.cancel.submit')}
             onPress={submit}
             variant="danger"
             loading={cancel.isPending}
           />
-          <Button label={t('missions.cancel.keep')} onPress={close} variant="ghost" />
+          <Button
+            testID="transporter-cancel-keep"
+            label={t('missions.cancel.keep')}
+            onPress={close}
+            variant="ghost"
+          />
         </Pressable>
       </Pressable>
     </Modal>
