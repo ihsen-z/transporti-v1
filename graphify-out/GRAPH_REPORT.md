@@ -1,16 +1,16 @@
-# Graph Report - transporti_v1  (2026-08-15)
+# Graph Report - transporti_v1  (2026-08-25)
 
 ## Corpus Check
-- 678 files · ~381,322 words
+- 680 files · ~382,312 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 5284 nodes · 10792 edges · 399 communities (278 shown, 121 thin omitted)
+- 5287 nodes · 10798 edges · 397 communities (275 shown, 122 thin omitted)
 - Extraction: 88% EXTRACTED · 12% INFERRED · 0% AMBIGUOUS · INFERRED: 1326 edges (avg confidence: 0.55)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `0e67141b`
+- Built from commit: `56df277a`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -342,14 +342,12 @@
 - .save
 - tests.py
 - .get_cache_key
-- expo
 - expo-location
 - expo-secure-store
 - expo-status-bar
 - README.md
 - react-dom
 - 0006_alter_devicetoken_token.py
-- .can_accept_jobs
 - @commitlint/config-conventional
 - expo-image-picker
 - expo-linear-gradient
@@ -378,11 +376,11 @@
   backend/admin_audit/views.py → backend/users/permissions.py
 - `sync_trust_score()` --calls--> `get_user_trust_score()`  [INFERRED]
   backend/trust/services.py → backend/analytics/services.py
+- `ClientProfileSerializer` --uses--> `TransportJob`  [INFERRED]
+  backend/logistics/serializers.py → backend/logistics/models.py
 - `OfferDetailSerializer` --uses--> `TransportJob`  [INFERRED]
   backend/logistics/serializers.py → backend/logistics/models.py
 - `OfferListSerializer` --uses--> `TransportJob`  [INFERRED]
-  backend/logistics/serializers.py → backend/logistics/models.py
-- `TransporterMissionSerializer` --uses--> `TransportJob`  [INFERRED]
   backend/logistics/serializers.py → backend/logistics/models.py
 
 ## Import Cycles
@@ -392,35 +390,35 @@
 - **Role-Based Access Control Flow** — readme_auth_guard, readme_route_access, readme_route_groups, readme_deny_by_default [EXTRACTED 0.90]
 - **API/Mock Dual-Mode Data Flow** — readme_api_dual_mode, readme_config, readme_data_services, readme_api_client [INFERRED 0.85]
 
-## Communities (399 total, 121 thin omitted)
+## Communities (397 total, 122 thin omitted)
 
 ### Community 0 - "Components + Admin UI"
-Cohesion: 0.04
-Nodes (71): _fix_orientation(), PhotoUploadView, APIView, Photo Upload API — POST /api/upload/photo/ Handles multipart file uploads with, Fix image orientation based on EXIF data.     Many camera/phone images are rota, POST /api/upload/photo/     Accepts a single image file, validates, compresses,, Logistics views package.  Split from the former single-file logistics/views.py, ClientBookingCancelView (+63 more)
+Cohesion: 0.03
+Nodes (80): CorridorAlertDeleteView, CorridorAlertListCreateView, APIView, GET  /api/corridor-alerts/ — the client's active alerts     POST /api/corridor-, DELETE /api/corridor-alerts/{id}/ — unsubscribe., GET /api/return-trips/match/?pickup_governorate=&dropoff_governorate=&date=&wind, ReturnTripMatchView, Logistics views package.  Split from the former single-file logistics/views.py (+72 more)
 
 ### Community 1 - "Components + UI Components"
-Cohesion: 0.04
-Nodes (55): log_admin_action(), Log an admin action to the audit trail.          Args:         request: DRF requ, OfferDetailSerializer, Detailed offer view with transporter info and trust status., AdminJobSerializer, AdminUserSerializer, Meta, Admin Serializers — Transporti V1 Sprint 2: Dedicated serializers for admin pane (+47 more)
+Cohesion: 0.03
+Nodes (67): Action, AdminAuditLog, Meta, Admin Audit Trail Models — Transporti V1 Sprint 2 R8: Persistent logging of all, Immutable audit log for admin actions.     Each row represents a single action t, get_client_ip(), log_admin_action(), Admin Audit Trail Service — Transporti V1 Sprint 2 R8: Utility function to log a (+59 more)
 
 ### Community 2 - "Lib/Utils + API Layer"
-Cohesion: 0.04
-Nodes (57): OfferAdmin, PricingGridAdmin, Admin for configurable pricing grids (L5)., TransportJobAdmin, EventType, JobEvent, JobType, Meta (+49 more)
+Cohesion: 0.03
+Nodes (75): OfferAdmin, PricingGridAdmin, Admin for configurable pricing grids (L5)., TransportJobAdmin, EventType, JobEvent, JobType, Meta (+67 more)
 
 ### Community 3 - "Components + App Router"
-Cohesion: 0.05
-Nodes (46): AppLayout(), styles, tabIcon(), ProfileScreen(), styles, AuthLayout(), Index(), styles (+38 more)
+Cohesion: 0.08
+Nodes (32): AppLayout(), styles, tabIcon(), ProfileScreen(), styles, AuthLayout(), Index(), styles (+24 more)
 
 ### Community 4 - "Components + Lib/Utils"
-Cohesion: 0.06
-Nodes (43): notify_verification_status(), Notify transporter about verification result., DocumentType, Secure storage reference for verification docs., True si la date d'expiration du document est passée., True si le document expire dans les 30 prochains jours (pas encore expiré)., Verification request submitted by transporter.     Only one PENDING request per, TrustVerificationRequest (+35 more)
+Cohesion: 0.07
+Nodes (41): notify_verification_status(), Notify transporter about verification result., DocumentType, Secure storage reference for verification docs., True si la date d'expiration du document est passée., True si le document expire dans les 30 prochains jours (pas encore expiré)., Verification request submitted by transporter.     Only one PENDING request per, TrustVerificationRequest (+33 more)
 
 ### Community 5 - "Components + App Router"
-Cohesion: 0.13
-Nodes (51): AnonRateThrottle, AdminLoginThrottle, Strict throttle for admin login endpoint.     5 attempts per 10 minutes to prev, Gatekeeper profile for Transporters.     OWNS the verification state and cached, Single source of truth for trust thresholds.          RULES:     - Only one a, Immutable audit log for admin trust control actions.     NO UPDATE OR DELETE AL, TrustActionLog, TrustPolicy (+43 more)
+Cohesion: 0.10
+Nodes (53): AnonRateThrottle, AdminLoginThrottle, Strict throttle for admin login endpoint.     5 attempts per 10 minutes to prev, Single source of truth for trust thresholds.          RULES:     - Only one a, Immutable audit log for admin trust control actions.     NO UPDATE OR DELETE AL, TrustActionLog, TrustPolicy, Meta (+45 more)
 
 ### Community 6 - "Components + Lib/Utils"
-Cohesion: 0.07
-Nodes (35): SearchScreen(), styles, CorridorAlertBody, CorridorAlertDto, CorridorAlertsResponse, MatchParams, MatchResponse, PaymentMethod (+27 more)
+Cohesion: 0.06
+Nodes (47): SearchScreen(), styles, CorridorAlertBody, CorridorAlertDto, CorridorAlertsResponse, MatchParams, MatchResponse, PaymentMethod (+39 more)
 
 ### Community 7 - "Components + App Router"
 Cohesion: 0.12
@@ -428,91 +426,91 @@ Nodes (48): Booking, CommissionLedger, EscrowTransaction, Booking contract creat
 
 ### Community 8 - "Components + App Router"
 Cohesion: 0.06
-Nodes (41): check_trust_for_visibility(), Check if transporter meets visibility threshold.     Uses TrustPolicy for thres, Meta, OverrideScope, PolicyCategory, Trust Models - Transporti V1 Trust profiles and verification workflow for trans, Categories for trust policies., Admin trust control actions. (+33 more)
+Nodes (40): check_trust_for_visibility(), Check if transporter meets visibility threshold.     Uses TrustPolicy for thres, Meta, OverrideScope, PolicyCategory, Trust Models - Transporti V1 Trust profiles and verification workflow for trans, Get current active policy for category, falls back to DEFAULT., Ensure DEFAULT policy exists (can be called at startup). (+32 more)
 
 ### Community 9 - "Components + App Router"
-Cohesion: 0.05
-Nodes (22): Check if the requesting user is the profile owner., Full email for owner, masked for others., Full phone for owner, masked for others., Public profile for transporters (Trust Signals).     Used by clients to vetting, Check if the requesting user is the profile owner., K6/K7 from the canonical formulas — cached per serialization., Full email for owner, masked for others (SEC-T2)., Full phone for owner, masked for others (SEC-T2). (+14 more)
+Cohesion: 0.04
+Nodes (26): ClientProfileSerializer, Check if the requesting user is the profile owner., Full email for owner, masked for others., Full phone for owner, masked for others., Public profile for transporters (Trust Signals).     Used by clients to vetting, Check if the requesting user is the profile owner., K6/K7 from the canonical formulas — cached per serialization., Full email for owner, masked for others (SEC-T2). (+18 more)
 
 ### Community 10 - "Community 10"
-Cohesion: 0.08
-Nodes (40): JobDetailsPage(), GOVERNORATES, WalletData, WalletHistoryItem, WalletPage(), PostDeliveryPanel(), PostDeliveryPanelProps, MyOffer (+32 more)
+Cohesion: 0.06
+Nodes (58): JobDetailsPage(), GOVERNORATES, GOVERNORATES, NotificationPrefsResponse, ProfileApiResponse, ProfileUpdateResponse, SettingsPage(), SettingsTab (+50 more)
 
 ### Community 11 - "Lib/Utils + API Services"
-Cohesion: 0.12
-Nodes (26): AuthGuard(), AuthGuardProps, NotificationBell(), NotificationBellProps, LanguageSwitcher(), AuthApiResponse, AuthContext, AuthContextType (+18 more)
+Cohesion: 0.10
+Nodes (29): AppLayout(), AuthGuard(), AuthGuardProps, DocumentTitle(), TrustFooter(), NotificationBell(), NotificationBellProps, LanguageSwitcher() (+21 more)
 
 ### Community 12 - "App Router + Lib/Utils"
-Cohesion: 0.07
-Nodes (38): BookingPage(), BookingStep, JobData, OfferData, ConversationCard, ConversationItem, LastMessage, MessagesInboxPage() (+30 more)
+Cohesion: 0.09
+Nodes (24): BookingPage(), BookingStep, JobData, OfferData, BookingSummary(), JobInfo, OfferInfo, Props (+16 more)
 
 ### Community 13 - "Lib/Utils + App Router"
-Cohesion: 0.06
-Nodes (34): AppError(), JobBrowsePage(), AppLayout(), MOCK_PROFILE, MOCK_REVIEWS, TransporterProfilePage(), ForgotPasswordPage(), ResetPasswordPage() (+26 more)
+Cohesion: 0.05
+Nodes (38): ClientDashboard(), ClientStats, DashboardPage(), RecentJob, TransporterDashboard(), TransporterStats, AppError(), JobBrowsePage() (+30 more)
 
 ### Community 14 - "App Router + Lib/Utils"
-Cohesion: 0.10
-Nodes (35): MissionScreen(), styles, DisputeRow(), styles, OpenDisputeSheet(), formatWhen(), MissionCard(), styles (+27 more)
+Cohesion: 0.06
+Nodes (54): MissionScreen(), styles, DisputeRow(), styles, OpenDisputeSheet(), Props, REASONS, styles (+46 more)
 
 ### Community 15 - "Community 15"
 Cohesion: 0.06
 Nodes (35): DeriveNetFromTotalTests, Contre-offre / book-return — dérivation inverse cohérente., calculate_from_net puis derive_net_from_total redonnent le net saisi., get_payment_gateway(), Factory function to get the configured payment gateway.     Reads from settings., calculate_commission(), calculate_from_net(), create_escrow_on_booking() (+27 more)
 
 ### Community 16 - "Community 16"
-Cohesion: 0.07
-Nodes (48): MessagesScreen(), styles, RequestsScreen(), styles, JobRequestsScreen(), styles, InfiniteListLike, useFlatInfiniteList() (+40 more)
+Cohesion: 0.08
+Nodes (43): MessagesScreen(), styles, styles, RequestsScreen(), styles, JobRequestsScreen(), styles, styles (+35 more)
 
 ### Community 17 - "Components + App Router"
-Cohesion: 0.08
-Nodes (43): AdminDisputesPage(), DisputeStatus, FilterTab, reasonLabels, statusColors, statusLabels, AdminVerificationsPage(), MainView (+35 more)
+Cohesion: 0.13
+Nodes (28): AdminDisputesPage(), DisputeStatus, FilterTab, reasonLabels, statusColors, statusLabels, emptyStats, useActivityLogs() (+20 more)
 
 ### Community 18 - "App Router + Admin UI"
-Cohesion: 0.13
-Nodes (14): typedRoutes, expo, experiments, icon, ios, name, newArchEnabled, orientation (+6 more)
+Cohesion: 0.07
+Nodes (26): backgroundColor, foregroundImage, adaptiveIcon, package, typedRoutes, expo, android, experiments (+18 more)
 
 ### Community 19 - "Community 19"
 Cohesion: 0.06
 Nodes (29): JobAPITestBase, JobCreateAPITests, JobDetailAPITests, JobMyListAPITests, JobPublicListAPITests, OfferModelTests, APITestCase, TestCase (+21 more)
 
 ### Community 20 - "Admin UI + Lib/Utils"
-Cohesion: 0.06
-Nodes (26): AuditLogTests, DisputeConstraintTests, DisputeInvalidTransitionTests, DisputeLifecycleTests, TestCase, Full lifecycle: OPEN → INVESTIGATING → RESOLVED., Tests for invalid state transitions (should raise ValidationError)., OPEN → RESOLVED is NOT allowed (must go through INVESTIGATING). (+18 more)
+Cohesion: 0.07
+Nodes (23): DisputeConstraintTests, DisputeInvalidTransitionTests, DisputeLifecycleTests, TestCase, Support Module Tests — Sprint D Fondamentaux Model-level tests for Dispute life, Full lifecycle: OPEN → INVESTIGATING → RESOLVED., Tests for invalid state transitions (should raise ValidationError)., OPEN → RESOLVED is NOT allowed (must go through INVESTIGATING). (+15 more)
 
 ### Community 21 - "Components + Admin UI"
 Cohesion: 0.07
 Nodes (20): AnimatedSection(), Home(), AdminSidebar(), AdminSidebarLogo(), COLORS, CONTEXT_CONFIGS, ContextConfig, FooterLogo() (+12 more)
 
 ### Community 22 - "Admin UI + App Router"
-Cohesion: 0.06
-Nodes (40): MesDemandesScreen(), styles, styles, styles, styles, styles, styles, styles (+32 more)
+Cohesion: 0.07
+Nodes (33): MesDemandesScreen(), styles, styles, styles, styles, styles, setStoredLang(), reloadApp() (+25 more)
 
 ### Community 23 - "Admin UI + App Router"
-Cohesion: 0.05
-Nodes (30): Command, BaseCommand, Management command: expire_stale_offers Auto-expire offers whose valid_until < n, CounterOffer, P2-05: Structured counter-offer from client to transporter.     Client proposes, Sprint 6 (D2') — mission timeline, visible to both parties., PUBLISHED job whose pickup date is past (return-trip lifecycle)., D5 — the current client's latest request on this return trip. (+22 more)
+Cohesion: 0.12
+Nodes (12): Command, BaseCommand, Management command: expire_stale_offers Auto-expire offers whose valid_until < n, CounterOffer, P2-05: Structured counter-offer from client to transporter.     Client proposes, PATCH  /api/jobs/{job_id}/return-trip/  — owner edits a PUBLISHED return trip, ReturnTripManageView, create_notification() (+4 more)
 
 ### Community 24 - "Components + App Router"
-Cohesion: 0.16
-Nodes (21): DisputeActionSerializer, DisputeCreateSerializer, DisputeListSerializer, Client/Transporter: Create a new dispute., Read-only serializer for dispute listings., Moderator: Action on dispute (investigate/resolve/reject)., AdminDisputeDetailView, AdminDisputeInvestigateView (+13 more)
+Cohesion: 0.12
+Nodes (29): Dispute, Dispute model with strict lifecycle enforcement.          ALLOWED STATE TRANSI, DisputeActionSerializer, DisputeCreateSerializer, DisputeDetailSerializer, DisputeListSerializer, Meta, Dispute Serializers - Transporti V1 Explicit serializers per action for clean A (+21 more)
 
 ### Community 25 - "App Router + Components"
 Cohesion: 0.07
-Nodes (35): ReturnTripPage(), ClientData, ClientProfilePage(), ReviewData, GOVERNORATES, TransporterData, TransporterProfilePage(), VEHICLE_TYPES (+27 more)
+Nodes (29): ACTION_COLORS, ACTION_ICONS, AdminAuditLogPage(), AuditEntry, AuditResponse, formatDateTime(), formatTimeAgo(), TARGET_ICONS (+21 more)
 
 ### Community 26 - "Admin UI + App Router"
-Cohesion: 0.12
-Nodes (12): Command, BaseCommand, Create all 6 test personas., Create test jobs in various states., Return trips published by the verified transporter (REC-F*)., Create offers linked to jobs.          All amounts follow the D1 net-guarantee, Create escrow and commission ledger entries., Create dispute and audit log entries. (+4 more)
+Cohesion: 0.11
+Nodes (13): Command, BaseCommand, Seed command for Transporti V1 test data. Creates all approved test personas an, Create all 6 test personas., Create test jobs in various states., Return trips published by the verified transporter (REC-F*)., Create offers linked to jobs.          All amounts follow the D1 net-guarantee, Create escrow and commission ledger entries. (+5 more)
 
 ### Community 27 - "App Router + Components"
-Cohesion: 0.09
-Nodes (31): MapPreviewCard(), MapPreviewCardProps, RouteMap, JobTimeline(), JobTimelineProps, statusToIndex, TimelineStep, emptyProfile (+23 more)
+Cohesion: 0.15
+Nodes (19): useAdminUsers(), emptyProfile, emptyStats, useDashboardStats(), useUserProfile(), UseDataResult, useDataService(), useJobById() (+11 more)
 
 ### Community 28 - "Components + Admin UI"
 Cohesion: 0.05
 Nodes (36): 10. BUGS CRITIQUES (P0), 11. BUGS MAJEURS (P1), 12. BUGS MINEURS (P2/P3), 13. FONCTIONNALITÉS MANQUANTES, 14. INCOHÉRENCES MÉTIER (récapitulatif), 15. COMPARAISON AVEC LES LEADERS, 16. SCORE GLOBAL : **48/100**, 17. AVIS D'EXPERT — DÉCISION DE DÉPLOIEMENT (+28 more)
 
 ### Community 29 - "App Router + Admin UI"
-Cohesion: 0.07
-Nodes (21): ClientDashboard(), ClientStats, DashboardPage(), RecentJob, TransporterDashboard(), TransporterStats, JobCard(), JobCardProps (+13 more)
+Cohesion: 0.08
+Nodes (20): cairo, inter, metadata, JobCard(), categoryIcons, NotificationDropdown(), NotificationDropdownProps, ToastProvider() (+12 more)
 
 ### Community 30 - "App Router + Hooks"
 Cohesion: 0.09
@@ -544,7 +542,7 @@ Nodes (34): AuthRateThrottle, Throttle for authentication endpoints (login, regi
 
 ### Community 37 - "Community 37"
 Cohesion: 0.07
-Nodes (31): AbstractUser, close_all_user_sessions(), get_user_completion_rate(), get_user_dispute_ratio(), get_user_segments(), get_user_trust_metrics(), is_at_risk_churn(), is_high_value_transporter() (+23 more)
+Nodes (33): AbstractUser, apply_engagement_decay(), close_all_user_sessions(), get_total_time_spent(), get_user_completion_rate(), get_user_dispute_ratio(), get_user_segments(), get_user_trust_metrics() (+25 more)
 
 ### Community 38 - "App Router + Admin UI"
 Cohesion: 0.14
@@ -571,16 +569,16 @@ Cohesion: 0.08
 Nodes (27): CODLedgerError, detect_financial_inconsistencies(), detect_overdue_cod_entries(), detect_stuck_escrows(), DuplicateFinancialActionError, enforce_cod_settlement_idempotency(), enforce_escrow_idempotency(), EscrowStateError (+19 more)
 
 ### Community 44 - "Scripts"
-Cohesion: 0.16
-Nodes (20): DashboardContent(), RevenueChart, AdminPaymentsPage(), DashboardConfigContext, DashboardConfigContextType, DashboardConfigPanel(), DashboardConfigProvider(), DashboardPreferences (+12 more)
+Cohesion: 0.11
+Nodes (24): DashboardContent(), RevenueChart, AdminLayoutInner(), AdminHeader(), AdminHeaderProps, DashboardConfigContext, DashboardConfigContextType, DashboardConfigPanel() (+16 more)
 
 ### Community 45 - "Components + Lib/Utils"
-Cohesion: 0.11
-Nodes (15): AdminJobsPage(), SortDir, SortKey, StatusFilter, PaymentStatusFilter, Column, DataTableProps, Pagination() (+7 more)
+Cohesion: 0.10
+Nodes (21): AdminJobDetailPage(), AdminJobsPage(), SortDir, SortKey, StatusFilter, AdminPaymentsPage(), PaymentStatusFilter, Pagination() (+13 more)
 
 ### Community 46 - "Community 46"
-Cohesion: 0.14
-Nodes (12): Action, AdminAuditLog, Meta, Admin Audit Trail Models — Transporti V1 Sprint 2 R8: Persistent logging of all, Immutable audit log for admin actions.     Each row represents a single action t, get_client_ip(), Admin Audit Trail Service — Transporti V1 Sprint 2 R8: Utility function to log a, Extract client IP, handling proxied requests. (+4 more)
+Cohesion: 0.15
+Nodes (14): queryClient, clearPersistedQueries(), isPersistableQueryKey(), persister, persistOptions, stripFailureReasons(), VOLATILE_QUERY_KEYS, AuthState (+6 more)
 
 ### Community 47 - "Types"
 Cohesion: 0.16
@@ -592,7 +590,7 @@ Nodes (19): Serializer for creating a review., A review is revealed if:         
 
 ### Community 49 - "Components"
 Cohesion: 0.09
-Nodes (26): AdminJobDetailPage(), ConversationData, DisputeData, EscrowData, JobDetail, OfferData, offerStatusColors, offerStatusLabels (+18 more)
+Nodes (25): ConversationData, DisputeData, EscrowData, JobDetail, OfferData, offerStatusColors, offerStatusLabels, ActionModalProps (+17 more)
 
 ### Community 50 - "Components + Lib/Utils"
 Cohesion: 0.10
@@ -615,16 +613,16 @@ Cohesion: 0.07
 Nodes (27): 0. ALIGNEMENT SUR LE DOCUMENT FONDATEUR (révision 1.1), 10. RECOMMANDATION FINALE, 1. RÉSUMÉ EXÉCUTIF, 2. ANALYSE D'IMPACT PAR DIMENSION, 3.1 Forces — ce qui existe et fonctionne, 3.2 Manques — ce qui bloque le pivot (par gravité), 3.3 Opportunités, 3. REVUE DU MODULE TRAJETS RETOUR (état réel vérifié dans le code) (+19 more)
 
 ### Community 55 - "App Router"
-Cohesion: 0.05
-Nodes (53): useLogin(), useRegister(), FormValues, LoginForm(), schema, styles, FormValues, RegisterForm() (+45 more)
+Cohesion: 0.10
+Nodes (29): styles, usePasswordResetConfirm(), FormValues, schema, styles, FormValues, Props, ResetPasswordForm() (+21 more)
 
 ### Community 56 - "App Router + Admin UI"
-Cohesion: 0.12
-Nodes (16): get_analytics_summary(), get_avg_session_duration(), get_dau(), get_mau(), get_online_users_by_role(), get_online_users_count(), get_sessions_per_user(), get_wau() (+8 more)
+Cohesion: 0.10
+Nodes (27): get_analytics_summary(), get_avg_session_duration(), get_cohort_retention_d30(), get_cohort_retention_d7(), get_dau(), get_mau(), get_online_users_by_role(), get_online_users_count() (+19 more)
 
 ### Community 57 - "App Router"
-Cohesion: 0.21
-Nodes (12): JobMessagesResponse, LastMessageDto, MessageDto, Paginated, SendMessageBody, fetchJobMessages(), useJobMessages(), ChatView() (+4 more)
+Cohesion: 0.07
+Nodes (32): ConversationListDto, JobMessagesResponse, LastMessageDto, MessageDto, Paginated, SendMessageBody, fetchConversationsPage(), useConversations() (+24 more)
 
 ### Community 58 - "App Router"
 Cohesion: 0.08
@@ -639,16 +637,16 @@ Cohesion: 0.09
 Nodes (13): Validate policy values., Validate and save, ensuring DEFAULT policy integrity., Mark profile as verified., Mark profile as rejected with reason., Mark profile as pending review., Admin approves the request., Admin rejects the request., Prevent updates to existing records. (+5 more)
 
 ### Community 61 - "App Router"
-Cohesion: 0.07
-Nodes (31): AuthUser, UserRole, AvatarUploadArgs, AvatarUploadResponseDto, PasswordResetConfirmRequestDto, PasswordResetConfirmResponseDto, ProfileResponseDto, RegisterRequestDto (+23 more)
+Cohesion: 0.05
+Nodes (44): AuthUser, UserRole, AvatarUploadArgs, AvatarUploadResponseDto, LoginRequestDto, LoginResponseDto, PasswordResetConfirmRequestDto, PasswordResetConfirmResponseDto (+36 more)
 
 ### Community 62 - "App Router"
 Cohesion: 0.10
 Nodes (22): DocumentDto, TrustStatusDto, UploadDocumentArgs, VehicleSubmitBody, VerificationStatus, patchVehicle(), SubmitVehicleError, SubmitVehicleErrorKind (+14 more)
 
 ### Community 63 - "Community 63"
-Cohesion: 0.17
-Nodes (10): available_missions_queryset(), get_transporter_stats(), K1 — EXACTLY the default browse queryset for a transporter.      PUBLISHED, pi, All transporter KPIs (K1–K11) in one call., CancellationTraceTests, DeliveryPinTests, ExecutionTestBase, APITestCase (+2 more)
+Cohesion: 0.22
+Nodes (6): CancellationTraceTests, DeliveryPinTests, ExecutionTestBase, APITestCase, Sprint 6 — exécution pro : timeline (D2'/D6), preuve de livraison PIN (D3'/D7),, TimelineTests
 
 ### Community 64 - "Community 64"
 Cohesion: 0.08
@@ -660,7 +658,7 @@ Nodes (20): ClientJobsView(), JOB_TYPE_CONFIG, JobsListPage(), MISSION_TABS, Mis
 
 ### Community 66 - "Community 66"
 Cohesion: 0.06
-Nodes (31): expo, expo-asset, expo-font, @expo-google-fonts/cairo, expo-linking, @expo/metro-runtime, expo-router, expo-splash-screen (+23 more)
+Nodes (31): axios, expo, expo-asset, expo-font, @expo-google-fonts/cairo, expo-linking, @expo/metro-runtime, expo-splash-screen (+23 more)
 
 ### Community 67 - ".Husky"
 Cohesion: 0.16
@@ -671,15 +669,15 @@ Cohesion: 0.11
 Nodes (19): ConfirmCompletionError, ConfirmCompletionErrorKind, postConfirmCompletion(), useConfirmCompletion(), postVerify(), useVerifyPayment(), AcceptedTransporterDto, JobDetailDto (+11 more)
 
 ### Community 69 - ".Husky"
-Cohesion: 0.07
-Nodes (28): RootLayout(), DeepLinkRouter(), DeepLinkAction, firstParam(), normalizeRoute(), ParsedUrl, resolveDeepLinkAction(), useDeepLinkRouting() (+20 more)
+Cohesion: 0.16
+Nodes (12): RootLayout(), eas, env, parsedTimeout, ErrorContext, initObservability(), Reporter, reportError() (+4 more)
 
 ### Community 70 - "Community 70"
 Cohesion: 0.26
 Nodes (9): Meta, Reviews Models - Transporti V1 Review system for trust perception and feedback., Who is leaving the review., Immutable log of detected review abuse patterns., ReviewAbuseLog, ReviewRole, AdminReviewAbuseLogSerializer, Meta (+1 more)
 
 ### Community 71 - "Community 71"
-Cohesion: 0.16
+Cohesion: 0.19
 Nodes (14): get_active_disputes(), get_dispute_by_id(), get_user_disputes(), Dispute Services - Transporti V1 Business logic for dispute lifecycle managemen, Move dispute from OPEN to INVESTIGATING.          Args:         dispute: The, Reject a dispute (INVESTIGATING → REJECTED).          Args:         dispute:, Get dispute by ID. Raises DoesNotExist if not found., Get all active disputes (OPEN or INVESTIGATING).     For moderator dashboard. (+6 more)
 
 ### Community 72 - "Community 72"
@@ -691,20 +689,20 @@ Cohesion: 0.08
 Nodes (24): ClientAccessAfterAcceptanceTests, ClientCancellationTests, CodJourneyTests, DigitalJourneyTests, APITestCase, Lot 0 — le parcours CLIENT d'un trajet retour, de bout en bout.  Ces tests exist, Le client engagé doit pouvoir voir et suivre SA mission., Sans le PIN, la mission ne peut jamais être terminée. (+16 more)
 
 ### Community 74 - "Community 74"
-Cohesion: 0.15
-Nodes (16): ConversationSerializer, MessageCreateSerializer, MessageSerializer, Create a new message., Conversation with latest messages., Read-only message serializer., JobConversationView, JobMessagesView (+8 more)
+Cohesion: 0.04
+Nodes (59): Conversation, Message, Meta, Messaging Models - Transporti V1 Job-bound secure messaging between participant, Mark message as read., Conversation linked to a specific job.     Participants are auto-set to job own, Get the most recent message., Count total messages. (+51 more)
 
 ### Community 75 - "Community 75"
 Cohesion: 0.13
 Nodes (15): Command, BaseCommand, validate_database — Database Integrity Check Production Hardening — Sprint H3, AuthAuditAdmin, CustomUserAdmin, ProfileAdmin, Action, AuthAudit (+7 more)
 
 ### Community 76 - "Language"
-Cohesion: 0.12
-Nodes (18): CreateDisputeModal(), Dispute, DisputesPage(), DisputesT, getJobTypeLabels(), getReasonLabels(), getStatusConfig(), UserJob (+10 more)
+Cohesion: 0.06
+Nodes (42): CreateDisputeModal(), Dispute, DisputesPage(), DisputesT, getJobTypeLabels(), getReasonLabels(), getStatusConfig(), UserJob (+34 more)
 
 ### Community 77 - "AI/ML Workflow Bundle"
-Cohesion: 0.09
-Nodes (28): makeInitialFormData(), NewJobPage(), STEPS, toLocalDatetimeValue(), JobPreview(), JobPreviewData, JobPreviewProps, JobTypeSelector() (+20 more)
+Cohesion: 0.11
+Nodes (24): makeInitialFormData(), NewJobPage(), STEPS, toLocalDatetimeValue(), JobTypeSelector(), JobTypeSelectorProps, GOVERNORATES, GpsState (+16 more)
 
 ### Community 78 - "Cloud/DevOps Workflow Bundle"
 Cohesion: 0.07
@@ -719,12 +717,12 @@ Cohesion: 0.12
 Nodes (10): Trust Admin - Transporti V1 Admin interface for TrustProfile and TrustVerificat, TrustProfileAdmin, TrustVerificationRequestAdmin, VerificationDocumentAdmin, approve_verification_request(), Raise PermissionDenied if user is not admin., Admin approves a verification request.          Args:         request_id: Tru, Admin rejects a verification request.          Args:         request_id: Trus (+2 more)
 
 ### Community 81 - ".get_cache_key"
-Cohesion: 0.12
-Nodes (20): ConversationInfo, dateSeparatorLabel(), isDifferentDay(), JobInfo, MessageItem, MessagesResponse, MessagingPage(), OtherParty (+12 more)
+Cohesion: 0.14
+Nodes (17): ConversationInfo, dateSeparatorLabel(), isDifferentDay(), JobInfo, MessageItem, MessagesResponse, MessagingPage(), OtherParty (+9 more)
 
 ### Community 82 - "0010_verificationdocument_expires_at.py"
-Cohesion: 0.09
-Nodes (28): HomeScreen(), styles, HomeTopBar(), styles, Props, styles, TransporterHero(), MissionDto (+20 more)
+Cohesion: 0.08
+Nodes (30): HomeScreen(), styles, HomeTopBar(), Props, styles, TransporterHero(), fetchCompletedMissions(), useCompletedMissions() (+22 more)
 
 ### Community 83 - "security_logs.py"
 Cohesion: 0.06
@@ -747,20 +745,20 @@ Cohesion: 0.11
 Nodes (19): date-fns, dependencies, date-fns, leaflet, lucide-react, next, react, react-dom (+11 more)
 
 ### Community 88 - "useAppI18n.tsx"
-Cohesion: 0.10
-Nodes (25): styles, TransporterProfileScreen(), fetchTransporterReviews(), useTransporterReviews(), CreateReviewBody, Paginated, ReviewDto, asText() (+17 more)
+Cohesion: 0.18
+Nodes (12): fetchTransporterReviews(), useTransporterReviews(), CreateReviewBody, Paginated, ReviewDto, asText(), CreateReviewError, CreateReviewErrorKind (+4 more)
 
 ### Community 89 - "eslint-config-next"
 Cohesion: 0.13
 Nodes (19): API Client (lib/api, fetch + JWT, tokenManager), API Dual-Mode Pattern, App Router Pages (app/), AuthContext, AuthGuard, Runtime Config (lib/config.ts), Custom Hooks (useAuth, useDashboard, useJobs, useAdminData), Data Services (lib/services) (+11 more)
 
 ### Community 90 - "expo-constants"
-Cohesion: 0.11
-Nodes (29): apply_engagement_decay(), generate_daily_snapshot(), generate_daily_snapshots(), get_avg_revenue_per_transporter(), get_monthly_revenue_contribution(), get_platform_revenue_summary(), get_top_engaged_users(), get_total_time_spent() (+21 more)
+Cohesion: 0.14
+Nodes (20): generate_daily_snapshot(), generate_daily_snapshots(), get_avg_revenue_per_transporter(), get_monthly_revenue_contribution(), get_platform_revenue_summary(), get_transporter_commission_generated(), get_user_engagement_score(), is_power_user() (+12 more)
 
 ### Community 91 - "expo-system-ui"
-Cohesion: 0.12
-Nodes (12): Conversation, Conversation linked to a specific job.     Participants are auto-set to job own, Get the most recent message., Count total messages., Lock the conversation (prevents new messages)., Unlock the conversation., get_or_create_conversation(), lock_conversation() (+4 more)
+Cohesion: 0.15
+Nodes (16): AdminVerificationsPage(), MainView, ProfileFilterTab, profileStatusLabels, statusColors, statusLabels, VerifFilterTab, VerificationStatus (+8 more)
 
 ### Community 92 - "react"
 Cohesion: 0.16
@@ -779,8 +777,8 @@ Cohesion: 0.12
 Nodes (12): get_paying_client(), Alias of :func:`get_job_client`, used by the payment views where the intent, D7 — the POD code is revealed to the PAYING CLIENT only.          Classic miss, activate_job_on_payment(), get_wallet_summary(), D3 (escrow strict): once the escrow is HELD, move the job MATCHED → IN_PROGRESS., Transporter wallet figures (DICTIONNAIRE_KPI K10/K11) — single source of truth., _get_client_ip() (+4 more)
 
 ### Community 96 - ".transition_to"
-Cohesion: 0.12
-Nodes (11): Dispute, Validate state transitions and constraints., Safely transition dispute to a new status.                  Args:, Move dispute from OPEN to INVESTIGATING., Resolve the dispute (INVESTIGATING → RESOLVED)., Reject the dispute (INVESTIGATING → REJECTED)., Check if dispute is still active (not resolved/rejected)., Check if dispute is in a terminal state. (+3 more)
+Cohesion: 0.25
+Nodes (4): Safely transition dispute to a new status.                  Args:, Move dispute from OPEN to INVESTIGATING., Resolve the dispute (INVESTIGATING → RESOLVED)., Reject the dispute (INVESTIGATING → REJECTED).
 
 ### Community 97 - "RegisterAPITests"
 Cohesion: 0.16
@@ -791,12 +789,12 @@ Cohesion: 0.11
 Nodes (25): useChangePassword(), ChangePasswordForm(), FormValues, Props, schema, styles, NotificationPrefKey, NotificationPrefsDto (+17 more)
 
 ### Community 99 - "ReviewListSerializer"
-Cohesion: 0.08
-Nodes (20): CorridorAlert, Sprint 4 (pivot, D14 — clients) : abonnement d'un client à un corridor.     À l, CorridorAlertDeleteView, CorridorAlertListCreateView, APIView, Sprint 4 (pivot) — matching v1 & corridor alerts.  - GET /api/return-trips/mat, GET  /api/corridor-alerts/ — the client's active alerts     POST /api/corridor-, DELETE /api/corridor-alerts/{id}/ — unsubscribe. (+12 more)
+Cohesion: 0.33
+Nodes (4): DRF Permission class for object-level ownership verification.     Requires view, Factory method to specify owner field name., RequireOwner, BasePermission
 
 ### Community 100 - "PlaceholderScreen"
-Cohesion: 0.12
-Nodes (17): _contains_bypass_attempt(), get_conversation_messages(), _is_job_participant(), _is_moderator(), mark_messages_as_read(), Messaging Services - Transporti V1 Secure job-bound messaging with anti-bypass, Send a message in a job conversation.          Args:         user: The sender, Get messages from a job conversation.     Validates user is participant or mode (+9 more)
+Cohesion: 0.23
+Nodes (5): fetch_route(), Interroge le routeur pour un trajet en voiture. Retourne None sur toute     anom, FakeResponse, FetchRouteTests, Reponse HTTP minimale : juste ce que fetch_route consomme.
 
 ### Community 101 - "services.py"
 Cohesion: 0.17
@@ -804,7 +802,7 @@ Nodes (6): ExpiryHelpersTests, TestCase, Tests WS-H — expiration des documents
 
 ### Community 102 - "JobAPITestBase"
 Cohesion: 0.09
-Nodes (24): _create_action_log(), get_users_with_trust_data(), grant_override(), _handle_trust_downgrade(), Admin rejects a transporter's verification.          Args:         admin: Adm, Admin suspends a transporter.          Args:         admin: Admin/moderator u, Admin restores a suspended/rejected transporter.          Args:         admin, Raise PermissionDenied if user is not ADMIN or MODERATOR. (+16 more)
+Nodes (32): Gatekeeper profile for Transporters.     OWNS the verification state and cached, Transporter can accept jobs only if verified., TrustProfile, _create_action_log(), get_active_override(), get_trust_profile_detail(), get_user_overrides(), get_user_trust_history() (+24 more)
 
 ### Community 103 - "User"
 Cohesion: 0.12
@@ -815,8 +813,8 @@ Cohesion: 0.12
 Nodes (15): AUDIT L4 — ZONES NON COUVERTES, I1 — `username` dérivé de l'email → collision → 500 (P1), I2 — Pas de vérification email/téléphone (P2), K1 — `refund_escrow` ne rembourse pas réellement (P1), K2 — Aucun suivi back-office du remboursement manuel (P1), K3 — Konnect réel non configuré + `check_status` à valider (P2), L1 — Résolution sans issue financière structurée (P1), L2 — Après résolution, libération par défaut vers le transporteur (P1) (+7 more)
 
 ### Community 105 - "OpenDisputeSheet.tsx"
-Cohesion: 0.15
-Nodes (14): CreateDisputeBody, DisputeReason, DisputeStatus, MyDisputeDto, Paginated, CreateDisputeError, CreateDisputeErrorKind, postDispute() (+6 more)
+Cohesion: 0.18
+Nodes (11): CreateDisputeBody, DisputeReason, DisputeStatus, MyDisputeDto, Paginated, CreateDisputeError, CreateDisputeErrorKind, postDispute() (+3 more)
 
 ### Community 106 - "fontSize"
 Cohesion: 0.17
@@ -827,8 +825,8 @@ Cohesion: 0.16
 Nodes (12): PresenceMiddleware, Analytics Middleware - Transporti V1 (Production Hardened) Automatically tracks, Updates user presence and session on every authenticated request.     Productio, _get_action_count_today(), get_or_create_session(), Get active session or create new one.     ENFORCES: One active session per user, Get how many times an action was recorded today (for capping)., Record an engagement action with DAILY CAPS.     Returns None if action was cap (+4 more)
 
 ### Community 108 - "@types/node"
-Cohesion: 0.06
-Nodes (32): Command, BaseCommand, Management command to backfill route geometry on jobs created before routing exi, estimate_distance_for_job(), estimate_price(), estimate_road_distance_km(), get_pricing_grid(), haversine_distance() (+24 more)
+Cohesion: 0.15
+Nodes (10): Command, BaseCommand, Management command to backfill route geometry on jobs created before routing exi, Routage : géométrie et distance réelles d'un trajet.  Pourquoi côté serveur et p, Route un trajet à partir des coordonnées précises, avec repli sur les     centro, Polyligne encodée (précision 5) et distance routière en kilomètres., resolve_route_for_job(), RouteResult (+2 more)
 
 ### Community 109 - "BACKLOG VIVANT — TRANSPORTI V1"
 Cohesion: 0.13
@@ -839,20 +837,20 @@ Cohesion: 0.13
 Nodes (14): Anti-patterns interdits (constatés dans l'audit, à ne jamais réintroduire), Business, Convention monétaire, DICTIONNAIRE DES KPI — TRANSPORTI, Définitions, Impact, KPI STRATÉGIQUES (v2 — vision fondatrice v1.0), Liquidité (+6 more)
 
 ### Community 111 - "queryPersister.ts"
-Cohesion: 0.11
-Nodes (18): CounterOfferCreateView, CounterOfferRespondView, JobOffersView, OfferAcceptView, OfferCreateView, OfferMyListView, OfferWithdrawView, APIView (+10 more)
+Cohesion: 0.19
+Nodes (6): annotate_distance_and_route(), Renseigne `distance_km` et `route_polyline` sur les données de création.      La, AnnotateDistanceAndRouteTests, Routage : geometrie et distance reelles (logistics/routing.py).  Aucun de ces te, RoutingDisabledTests, SimpleTestCase
 
 ### Community 112 - "usePublishTripForm.ts"
 Cohesion: 0.09
-Nodes (26): buildCorridors(), Corridor, LatLng, MapRegion, parseDistance(), TUNISIA_REGION, decodePolyline(), EstimatePriceRequest (+18 more)
+Nodes (27): buildCorridors(), Corridor, LatLng, MapRegion, parseDistance(), TUNISIA_REGION, decodePolyline(), EstimatePriceRequest (+19 more)
 
 ### Community 113 - "Audit technique — Application mobile Transporti V1"
 Cohesion: 0.05
 Nodes (38): 1. Résumé exécutif, 2.1 Métriques vérifiées, 2.2 Architecture, 2.3 Couverture fonctionnelle réelle, 2. État des lieux — ce qui existe, 3.1 P0 — Bloquants de mise en production, 3.2 P1 — Majeurs, 3.3 P2 — Modérés (+30 more)
 
 ### Community 114 - "services.py"
-Cohesion: 0.14
-Nodes (14): apiClient, fetchAllPages(), Paginated, mock, AcceptCounterResponse, MyRequestDto, MyRequestStatus, Paginated (+6 more)
+Cohesion: 0.15
+Nodes (13): apiClient, fetchAllPages(), Paginated, mock, AcceptCounterResponse, MyRequestStatus, Paginated, PaymentMethod (+5 more)
 
 ### Community 115 - "views_admin_export.py"
 Cohesion: 0.18
@@ -863,8 +861,8 @@ Cohesion: 0.14
 Nodes (8): Model-level tests for the User model., Creating a CLIENT user sets correct defaults., Creating a TRANSPORTER user sets role correctly., Default role should be CLIENT., Duplicate emails raise IntegrityError., New user has no last_seen_at, so is_online is False., User __str__ returns email., UserModelTests
 
 ### Community 117 - "DocumentReviewDrawer.tsx"
-Cohesion: 0.21
-Nodes (13): DOC_PAIR_MAP, DocGroup, docStatusConfig, DocumentReviewDrawer(), DocumentReviewDrawerProps, getDocStatus(), groupDocuments(), isImageFile() (+5 more)
+Cohesion: 0.22
+Nodes (10): _accept_request(), JobTripRequestsView, _notify(), APIView, Shared acceptance path (transporter accepts / client accepts counter).     Runs, POST /api/trip-requests/{id}/respond/     Body: { "action": "accept" | "reject", POST /api/trip-requests/{id}/accept-counter/     Client accepts the transporter', POST /api/jobs/{job_id}/requests/  — client sends a structured request     GET (+2 more)
 
 ### Community 118 - "views.py"
 Cohesion: 0.15
@@ -899,8 +897,8 @@ Cohesion: 0.17
 Nodes (11): 1. Constat de départ (pourquoi ce guide existe), 2. Décision d'environnement (à valider — recommandation), 3.1 Démarrage, 3.2 Seed de recette, 3.3 Reset complet (< 10 min), 3.4 Hygiène anti-divergence, 3. Procédures (Option A), 4. Écarts du seed à combler (backlog Sprint 1 — tâche « seed d'audit ») (+3 more)
 
 ### Community 126 - "page.tsx"
-Cohesion: 0.24
-Nodes (9): AdminReviewsPage(), FilterTab, severityColors, useAdminReviews(), BackendReview, BackendReviewAbuseLog, getAdminReviews(), toggleReviewVisibility() (+1 more)
+Cohesion: 0.16
+Nodes (11): AdminReviewsPage(), FilterTab, severityColors, Column, DataTableProps, useAdminReviews(), BackendReview, BackendReviewAbuseLog (+3 more)
 
 ### Community 127 - "include"
 Cohesion: 0.17
@@ -935,8 +933,8 @@ Cohesion: 0.10
 Nodes (19): 1. Ce qui change par rapport à ce que l'on croyait, 2. État actuel face aux attentes du BO, 3. Principe de séquencement, 4. Dépendances hors du code mobile, 5. Ce que nous ne faisons pas, et pourquoi, 6. Traçabilité — chaque lot sert un KPI, 7. Risques, 8. Ordre d'exécution recommandé (+11 more)
 
 ### Community 135 - "ConversationListSerializer"
-Cohesion: 0.18
-Nodes (5): ConversationListSerializer, Conversation serializer for the inbox listing.     Uses annotation-based fields, Build last_message dict from annotations (no extra query)., Read from annotation (no extra query)., Read from annotation (no extra query).
+Cohesion: 0.19
+Nodes (11): JobCardProps, MapPreviewCard(), MapPreviewCardProps, RouteMap, JobTimeline(), JobTimelineProps, statusToIndex, TimelineStep (+3 more)
 
 ### Community 136 - "models.py"
 Cohesion: 0.20
@@ -951,8 +949,8 @@ Cohesion: 0.20
 Nodes (9): API Dual-Mode, Authentication, Directory Structure, Environment, Key Patterns, Route Groups, Running, Stack (+1 more)
 
 ### Community 139 - "StatusTransitionTestCase"
-Cohesion: 0.18
-Nodes (17): DeviceRegisterBody, NotificationDto, Paginated, UnreadCountResponse, invalidateNotifications(), useMarkAllRead(), useMarkRead(), fetchNotificationsPage() (+9 more)
+Cohesion: 0.19
+Nodes (12): DeviceRegisterBody, NotificationDto, Paginated, UnreadCountResponse, fetchNotificationsPage(), useNotifications(), fetchUnreadCount(), useUnreadCount() (+4 more)
 
 ### Community 140 - "Server Startup Guide - Transporti V1"
 Cohesion: 0.20
@@ -971,16 +969,16 @@ Cohesion: 0.22
 Nodes (8): BLOC I — MESSAGERIE (WS-I), CAHIER DE RECETTE — PARCOURS TRANSPORTEUR, Conventions, REC-I1 — Contexte conservé, REC-I2 — Pièces jointes, REC-I3 — Localisation du chat, Registre d'exécution, Transporti V1 (plateforme web)
 
 ### Community 145 - "PhotoUploadView"
-Cohesion: 0.20
-Nodes (12): cairo, inter, metadata, NotificationDropdownProps, ToastProvider(), NotificationContext, NotificationContextType, NotificationProvider() (+4 more)
+Cohesion: 0.23
+Nodes (11): estimate_distance_for_job(), estimate_price(), estimate_road_distance_km(), get_pricing_grid(), haversine_distance(), Pricing Service - Transporti V1 Automatic price estimation based on distance and, Get pricing parameters from DB, fallback to defaults.          Returns:, Estimate a price range for a job based on distance and type.          Args: (+3 more)
 
 ### Community 146 - "AdminJWTAuthentication"
 Cohesion: 0.24
 Nodes (11): GainsScreen(), styles, WalletHistoryEntry, useCreateWithdrawal(), formatDay(), styles, WalletHistoryRow(), Props (+3 more)
 
 ### Community 147 - "UserRegistrationSerializer"
-Cohesion: 0.13
-Nodes (12): ChangePasswordRequestDto, ChangePasswordResponseDto, PasswordResetRequestDto, PasswordResetResponseDto, ChangePasswordError, ChangePasswordErrorKind, mapValidation(), postChangePassword() (+4 more)
+Cohesion: 0.29
+Nodes (6): ChangePasswordRequestDto, ChangePasswordResponseDto, ChangePasswordError, ChangePasswordErrorKind, mapValidation(), postChangePassword()
 
 ### Community 148 - "ClaudeMemo — Source de vérité du projet"
 Cohesion: 0.25
@@ -1003,16 +1001,16 @@ Cohesion: 0.29
 Nodes (3): DataListView, APIView, Read‑only endpoint returning real-time data for monitoring.     For simplicity,
 
 ### Community 153 - "langStorage.ts"
-Cohesion: 0.60
-Nodes (4): AppLang, getStoredLang(), migrateLegacyLang(), toAppLang()
+Cohesion: 0.17
+Nodes (12): plugins, AppLang, getStoredLang(), migrateLegacyLang(), toAppLang(), mockUseConversations, TAB_NAMES, expo-asset (+4 more)
 
 ### Community 154 - "DevNavMenu.tsx"
 Cohesion: 0.33
 Nodes (4): DevNavMenu(), ROUTE_MAP, RouteGroup, RouteItem
 
 ### Community 155 - "Button.tsx"
-Cohesion: 0.18
-Nodes (12): EscrowDetailDto, EscrowStatus, InitiatePaymentResponse, VerifyPaymentResponse, fetchJobEscrow(), useJobEscrow(), PayError, PayErrorKind (+4 more)
+Cohesion: 0.19
+Nodes (11): EscrowDetailDto, EscrowStatus, InitiatePaymentResponse, VerifyPaymentResponse, fetchJobEscrow(), useJobEscrow(), PayError, PayErrorKind (+3 more)
 
 ### Community 156 - "scripts"
 Cohesion: 0.29
@@ -1063,16 +1061,16 @@ Cohesion: 0.33
 Nodes (3): Command, BaseCommand, Management command: reveal_stale_reviews Auto-reveal reviews older than 7 days t
 
 ### Community 168 - "create_admin_session"
-Cohesion: 0.18
-Nodes (8): Message, Meta, Messaging Models - Transporti V1 Job-bound secure messaging between participant, Mark message as read., Individual message in a conversation.     Can be from a user or system-generate, Meta, Messaging Serializers - Transporti V1, Seed command for Transporti V1 test data. Creates all approved test personas an
+Cohesion: 0.33
+Nodes (7): DeepLinkRouter(), DeepLinkAction, firstParam(), normalizeRoute(), ParsedUrl, resolveDeepLinkAction(), useDeepLinkRouting()
 
 ### Community 169 - "revoke_admin_session"
-Cohesion: 0.23
-Nodes (8): AdminLayoutInner(), AdminHeader(), AdminHeaderProps, Theme, ThemeContext, ThemeContextType, ThemeProvider(), useTheme()
+Cohesion: 0.22
+Nodes (4): ErrorBoundary, Props, State, ErrorScreen()
 
 ### Community 170 - "WS-B — COHÉRENCE DES DONNÉES ET COMPTEURS (P0)"
-Cohesion: 0.33
-Nodes (6): 3. LOTS DE TRAVAIL (WORKSTREAMS), B1. Dictionnaire des KPI (D9) — est. 3 j/h (produit), B2. Endpoint unique de statistiques transporteur — est. 8 j/h, B3. Bannière d'onboarding conditionnelle (M2) — est. 3 j/h, WS-B — COHÉRENCE DES DONNÉES ET COMPTEURS (P0), WS-L — QUALITÉ, RECETTE & NON-RÉGRESSION (transverse)
+Cohesion: 0.50
+Nodes (4): B1. Dictionnaire des KPI (D9) — est. 3 j/h (produit), B2. Endpoint unique de statistiques transporteur — est. 8 j/h, B3. Bannière d'onboarding conditionnelle (M2) — est. 3 j/h, WS-B — COHÉRENCE DES DONNÉES ET COMPTEURS (P0)
 
 ### Community 171 - "4. SÉQUENCEMENT ET CALENDRIER INDICATIF"
 Cohesion: 0.33
@@ -1116,15 +1114,15 @@ Nodes (8): Backend en vis-à-vis de l'émulateur, Builds (EAS), ⚠️ Developme
 
 ### Community 181 - "validate_database.py"
 Cohesion: 0.29
-Nodes (7): LoginRequestDto, LoginResponseDto, classifyLoginError(), isCredentialFieldError(), LoginError, LoginErrorKind, postLogin()
+Nodes (6): _fix_orientation(), PhotoUploadView, APIView, Photo Upload API — POST /api/upload/photo/ Handles multipart file uploads with, Fix image orientation based on EXIF data.     Many camera/phone images are rota, POST /api/upload/photo/     Accepts a single image file, validates, compresses,
 
 ### Community 182 - "mark_all_read"
 Cohesion: 0.20
 Nodes (9): 1. Résumé exécutif, 2. Le tableau, tâche par tâche, 3. Lot 5.2 — pourquoi deux mécanismes, pas un, 4. Lot 5.3 — le total existait déjà à moitié, 5. Lot 5.10 — décision : le web est hors périmètre, 6. Vérification effectuée, 7. Fichiers touchés, 8. Prochaine étape recommandée (+1 more)
 
 ### Community 183 - "get_trust_profile_detail"
-Cohesion: 0.31
-Nodes (6): isExpiringSoon(), refreshAccessToken(), RefreshOutcome, scheduleRefresh(), base64UrlDecode(), jwtExpiryMs()
+Cohesion: 0.20
+Nodes (9): isExpiringSoon(), refreshAccessToken(), RefreshOutcome, scheduleRefresh(), base64UrlDecode(), jwtExpiryMs(), TransporterProfileDto, fetchTransporterProfile() (+1 more)
 
 ### Community 184 - "WS-C — FEEDBACK UTILISATEUR & CYCLE DE VIE DES OFFRES (P0)"
 Cohesion: 0.40
@@ -1186,6 +1184,10 @@ Nodes (7): notify_escrow_released(), Notify transporter that escrow was released
 Cohesion: 0.33
 Nodes (4): Compute client trust score (visible by both owner and visitors)., compute_client_trust_score(), Client Trust Score — Transporti V1 Calculates a trust/reputation score for CLIEN, Compute trust score for a client user.      Args:         user: User instance (p
 
+### Community 200 - "User"
+Cohesion: 0.36
+Nodes (5): AppRole, CLIENT_MES_DEMANDES_EVENTS, CLIENT_MISSION_EVENTS, ResolvedRoute, resolveNotificationRoute()
+
 ### Community 202 - "integrity.py"
 Cohesion: 0.50
 Nodes (4): 1.1 Équipe type recommandée, 1.2 Cadence, 1.3 Prérequis d'environnement (Sprint 0), 1. GOUVERNANCE, ÉQUIPE ET CADENCE
@@ -1199,8 +1201,8 @@ Cohesion: 0.50
 Nodes (4): F1. Modèle produit du trajet retour (D5) — est. 4 j/h (produit + UX), F2. Édition / suppression / expiration (C9) — est. 8 j/h, F3. Visibilité côté client (validation du concept) — est. 3 j/h (test produit), WS-F — TRAJETS RETOUR : CYCLE DE VIE COMPLET (P0/P1)
 
 ### Community 205 - "WS-H — PROFIL, VÉRIFICATION & DOCUMENTS (P1)"
-Cohesion: 0.50
-Nodes (4): H1. Page Vérification complète — est. 8 j/h, H2. Profil véhicule structuré — est. 6 j/h, H3. Ancienneté et statistiques exactes du profil — est. 2 j/h, WS-H — PROFIL, VÉRIFICATION & DOCUMENTS (P1)
+Cohesion: 0.33
+Nodes (6): 3. LOTS DE TRAVAIL (WORKSTREAMS), H1. Page Vérification complète — est. 8 j/h, H2. Profil véhicule structuré — est. 6 j/h, H3. Ancienneté et statistiques exactes du profil — est. 2 j/h, WS-H — PROFIL, VÉRIFICATION & DOCUMENTS (P1), WS-L — QUALITÉ, RECETTE & NON-RÉGRESSION (transverse)
 
 ### Community 206 - "WS-I — MESSAGERIE (P1/P2)"
 Cohesion: 0.50
@@ -1223,28 +1225,24 @@ Cohesion: 0.83
 Nodes (3): dump_tree(), parse_tree(), mobile-ui.sh script
 
 ### Community 286 - "expo-asset"
-Cohesion: 0.28
-Nodes (8): ACTION_COLORS, ACTION_ICONS, AdminAuditLogPage(), AuditEntry, AuditResponse, formatDateTime(), formatTimeAgo(), TARGET_ICONS
+Cohesion: 0.29
+Nodes (6): Button, ButtonProps, ButtonSize, ButtonVariant, SIZE_CLASSES, VARIANT_CLASSES
 
 ### Community 288 - "UserProfileSerializer"
-Cohesion: 0.32
-Nodes (8): get_cohort_retention_d30(), get_cohort_retention_d7(), get_retention_report(), get_signup_cohort(), Get users who signed up in a specific week.     Returns list of user IDs., Calculate D7 retention for a signup cohort.     Returns percentage (0-100) of u, Calculate D30 retention for a signup cohort.     Returns percentage (0-100) of, Generate retention report for recent cohorts.     Returns list of cohort data w
+Cohesion: 0.33
+Nodes (4): AuditLogTests, Tests for the AuditLog model., Can create an audit log entry., AuditLog __str__ includes actor and action.
 
 ### Community 289 - "@expo-google-fonts/cairo"
-Cohesion: 0.29
-Nodes (4): DisputeDetailSerializer, Detailed view with resolution info., AdminDisputeResolveView, POST /api/admin/disputes/{id}/resolve/     Moderator resolves a dispute.
+Cohesion: 0.33
+Nodes (5): CAIRO, fontsToLoad, INTER, normalizeWeight(), Weight
 
 ### Community 291 - "TransporterMissionSerializer"
 Cohesion: 0.36
 Nodes (3): Serializer for a transporter's assigned missions.     Shows the job + the trans, Get the accepted offer cached on the instance., TransporterMissionSerializer
 
 ### Community 292 - "expo-linking"
-Cohesion: 0.32
-Nodes (6): CompleteRequest, CompleteArgs, CompleteError, CompleteErrorKind, postComplete(), useCompleteJob()
-
-### Community 293 - "@expo/metro-runtime"
-Cohesion: 0.32
-Nodes (6): SendRequestBody, postRequest(), SendArgs, SendRequestError, SendRequestErrorKind, useSendTripRequest()
+Cohesion: 0.18
+Nodes (13): CompleteRequest, MissionDto, MissionStatus, CompleteArgs, CompleteError, CompleteErrorKind, postComplete(), useCompleteJob() (+5 more)
 
 ### Community 294 - "appStorage.ts"
 Cohesion: 0.18
@@ -1259,16 +1257,16 @@ Cohesion: 0.33
 Nodes (5): Args, postTransporterCancel(), TransporterCancelError, TransporterCancelErrorKind, useTransporterCancel()
 
 ### Community 313 - "@types/react-dom"
-Cohesion: 0.33
-Nodes (6): plugins, expo-asset, expo-font, expo-localization, expo-notifications, expo-secure-store
+Cohesion: 0.50
+Nodes (4): available_missions_queryset(), get_transporter_stats(), K1 — EXACTLY the default browse queryset for a transporter.      PUBLISHED, pi, All transporter KPIs (K1–K11) in one call.
 
 ### Community 316 - "@hookform/resolvers"
 Cohesion: 0.40
 Nodes (4): ConfirmStartError, ConfirmStartErrorKind, postConfirmStart(), useConfirmStart()
 
 ### Community 319 - "useI18n"
-Cohesion: 0.40
-Nodes (5): backgroundColor, foregroundImage, adaptiveIcon, package, android
+Cohesion: 0.67
+Nodes (3): ErrorInfo, extractValidationMessage(), handleApiError()
 
 ### Community 320 - "react-native"
 Cohesion: 0.40
@@ -1278,37 +1276,25 @@ Nodes (4): CancelRequestError, CancelRequestErrorKind, postCancelRequest(), useC
 Cohesion: 0.40
 Nodes (4): main, name, private, version
 
-### Community 324 - "get_unread_count"
-Cohesion: 0.60
-Nodes (3): TransporterProfileDto, fetchTransporterProfile(), useTransporterProfile()
-
-### Community 327 - "@tanstack/react-query"
-Cohesion: 0.50
-Nodes (4): web, bundler, favicon, output
-
-### Community 350 - "tests.py"
-Cohesion: 0.67
-Nodes (3): extra, router, origin
-
 ## Knowledge Gaps
-- **1217 isolated node(s):** `npx`, `@mobilenext/mobile-mcp`, `ANDROID_HOME`, `Migration`, `Action` (+1212 more)
+- **1218 isolated node(s):** `npx`, `@mobilenext/mobile-mcp`, `ANDROID_HOME`, `Migration`, `Action` (+1213 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **121 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **122 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `RequireRole` connect `Components + Admin UI` to `@expo-google-fonts/cairo`, `Components + UI Components`, `ReviewListSerializer`, `Components + Lib/Utils`, `Components + App Router`, `Components + App Router`, `User`, `Community 46`, `queryPersister.ts`, `App Router`, `views_admin_export.py`, `Admin UI + App Router`, `Components + App Router`?**
+- **Why does `RequireRole` connect `Components + Admin UI` to `Components + UI Components`, `Lib/Utils + API Layer`, `ReviewListSerializer`, `Components + Lib/Utils`, `Components + App Router`, `Components + App Router`, `User`, `App Router`, `views_admin_export.py`, `DocumentReviewDrawer.tsx`, `Admin UI + App Router`, `Components + App Router`?**
   _High betweenness centrality (0.027) - this node is a cross-community bridge._
-- **Why does `TransportJob` connect `Lib/Utils + API Layer` to `Components + Admin UI`, `Components + UI Components`, `Admin UI + App Router`, `TransporterMissionSerializer`, `ReviewListSerializer`, `PlaceholderScreen`, `release_escrow_on_completion`, `Components + App Router`, `Components + App Router`, `Community 74`, `Cloud/DevOps Workflow Bundle`, `queryPersister.ts`, `Community 15`, `@types/react-dom`, `Admin UI + App Router`, `notify`, `expo-system-ui`, `.is_expired`?**
+- **Why does `TransportJob` connect `Lib/Utils + API Layer` to `Components + Admin UI`, `Components + UI Components`, `Admin UI + App Router`, `TransporterMissionSerializer`, `release_escrow_on_completion`, `Components + App Router`, `Components + App Router`, `Community 74`, `Cloud/DevOps Workflow Bundle`, `Community 15`, `@types/react-dom`, `DocumentReviewDrawer.tsx`, `Admin UI + App Router`, `notify`, `.is_expired`?**
   _High betweenness centrality (0.015) - this node is a cross-community bridge._
 - **Are the 102 inferred relationships involving `RequireRole` (e.g. with `AdminAuditLogView` and `CorridorAlertDeleteView`) actually correct?**
   _`RequireRole` has 102 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 47 inferred relationships involving `TransportJob` (e.g. with `OfferAdmin` and `PricingGridAdmin`) actually correct?**
   _`TransportJob` has 47 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `npx`, `@mobilenext/mobile-mcp`, `ANDROID_HOME` to the rest of the system?**
-  _1217 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _1218 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Components + Admin UI` be split into smaller, more focused modules?**
-  _Cohesion score 0.038081211866189776 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.03488943488943489 - nodes in this community are weakly interconnected._
 - **Should `Components + UI Components` be split into smaller, more focused modules?**
-  _Cohesion score 0.041008771929824564 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.033185840707964605 - nodes in this community are weakly interconnected._
