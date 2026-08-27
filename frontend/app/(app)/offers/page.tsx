@@ -311,7 +311,7 @@ export default function MyOffersPage() {
           {t.offers.emptyStateDesc}
         </p>
         <Link
-          href="/jobs/browse"
+          href="/demandes"
           className="inline-flex items-center gap-2 bg-brand-600 text-white px-6 py-3 rounded-xl font-medium hover:bg-brand-700 transition-colors shadow-sm"
         >
           <Search className="w-5 h-5" />
@@ -487,7 +487,7 @@ export default function MyOffersPage() {
               {t.offers.emptyStateDesc}
             </p>
             <Link
-              href="/jobs/browse"
+              href="/demandes"
               className="inline-flex items-center gap-2 mt-5 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
               {t.offers.emptyStateFind}

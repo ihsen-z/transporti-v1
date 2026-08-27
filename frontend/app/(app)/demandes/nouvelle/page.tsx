@@ -640,7 +640,7 @@ export default function NewJobPage() {
                 </p>
               </div>
               <Link
-                href={`/jobs/return-trips?pickup_governorate=${encodeURIComponent(formData.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(formData.dropoff_governorate)}`}
+                href={`/recherche?pickup_governorate=${encodeURIComponent(formData.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(formData.dropoff_governorate)}`}
                 className="flex-shrink-0 px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 transition-colors"
               >
                 {t.newJob.matchBannerCta}

@@ -22,7 +22,6 @@ import { RETURN_TRIPS_FIRST } from "@/lib/flags";
 import NavItem from "./NavItem";
 import { SidebarLogo } from "@/components/brand/TransportiLogo";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
-import ThemeToggle from "@/components/ui/ThemeToggle";
 import type { LucideIcon } from "lucide-react";
 
 export default function AppSidebar() {
@@ -53,23 +52,31 @@ export default function AppSidebar() {
   // client action; publishing a classic request is the fallback.
   const clientItems: NavItemDef[] = RETURN_TRIPS_FIRST
     ? [
-        { href: "/jobs/return-trips", icon: Search, label: t.nav.findTrip },
-        { href: "/jobs/new", icon: PlusCircle, label: t.nav.publishAd },
+        { href: "/recherche", icon: Search, label: t.nav.findTrip },
+        {
+          href: "/demandes/nouvelle",
+          icon: PlusCircle,
+          label: t.nav.publishAd,
+        },
       ]
     : [
-        { href: "/jobs/new", icon: PlusCircle, label: t.nav.publishAd },
         {
-          href: "/jobs/return-trips",
+          href: "/demandes/nouvelle",
+          icon: PlusCircle,
+          label: t.nav.publishAd,
+        },
+        {
+          href: "/recherche",
           icon: RotateCcw,
           label: t.nav.returnTrips,
         },
       ];
 
   const transporterItems: NavItemDef[] = [
-    { href: "/jobs/browse", icon: Search, label: t.nav.findMission },
+    { href: "/demandes", icon: Search, label: t.nav.findMission },
     { href: "/offers", icon: FileText, label: t.nav.myOffers },
     { href: "/wallet", icon: Wallet, label: t.nav.wallet },
-    { href: "/jobs/return-trip", icon: RotateCcw, label: t.nav.returnTrip },
+    { href: "/retours/nouveau", icon: RotateCcw, label: t.nav.returnTrip },
     { href: "/verification", icon: ShieldCheck, label: t.nav.verification },
   ];
 
@@ -108,10 +115,12 @@ export default function AppSidebar() {
         {bottomItems.map((item) => (
           <NavItem key={item.href} {...item} />
         ))}
-        <div className="flex items-center justify-between px-3 py-2">
-          <span className="text-xs text-neutral-400">Thème</span>
-          <ThemeToggle />
-        </div>
+        {/* Le sélecteur de thème a été retiré des écrans métier le 26/08/2026 :
+            app/(app) et app/(marketing) ne portent aucun style `dark:`, donc
+            activer le thème sombre y produisait une interface hybride (barre
+            latérale sombre, contenu clair). Le mode sombre reste actif et
+            réellement stylé en zone d'administration. Voir
+            docs/PLAN_ACTION_MISE_A_NIVEAU_WEB_2026-08-26.md, lot 0.3. */}
       </div>
 
       {/* Footer */}

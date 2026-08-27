@@ -1009,7 +1009,7 @@ export const fr = {
     offerAccepted: "Offre acceptée",
   },
 
-  // New Job page (/jobs/new)
+  // New Job page (/demandes/nouvelle)
   newJob: {
     pageTitle: "Publier une demande de transport",
     pageSubtitle:
@@ -1068,7 +1068,7 @@ export const fr = {
       "Les adresses de départ et d'arrivée doivent être différentes.",
     invalidWeight: "Poids invalide.",
     invalidVolume: "Volume invalide.",
-    // Validation par étape & messages (page /jobs/new)
+    // Validation par étape & messages (page /demandes/nouvelle)
     chooseServiceType: "Veuillez choisir un type de service.",
     fillFields: "Veuillez renseigner {fields}.",
     fieldPickupAddress: "l'adresse de départ",

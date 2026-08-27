@@ -461,7 +461,7 @@ function TransporterMissionsView() {
         </div>
         <div className="flex gap-2">
           <Link
-            href="/jobs/return-trip"
+            href="/retours/nouveau"
             className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
           >
             <RotateCcw className="w-4 h-4" />
@@ -599,7 +599,7 @@ function TransporterMissionsView() {
             </p>
             <div className="flex gap-3 justify-center mt-5">
               <Link
-                href="/jobs/browse"
+                href="/demandes"
                 className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
               >
                 {t.jobsList.findMission}
@@ -607,7 +607,7 @@ function TransporterMissionsView() {
               </Link>
               {activeTab === "RETURN_TRIP" && (
                 <Link
-                  href="/jobs/new?return_trip=true"
+                  href="/demandes/nouvelle?return_trip=true"
                   className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 px-5 py-2.5 rounded-xl transition-all border border-purple-200"
                 >
                   <RotateCcw className="w-4 h-4" />
@@ -669,7 +669,7 @@ function ClientJobsView() {
           <p className="text-neutral-600">{t.jobsList.clientSubtitle}</p>
         </div>
         <Link
-          href="/jobs/new"
+          href="/demandes/nouvelle"
           className="bg-brand-700 hover:bg-brand-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
@@ -722,7 +722,7 @@ function ClientJobsView() {
           </h3>
           <p className="text-neutral-600 mb-4">{t.jobsList.clientEmptyDesc}</p>
           <Link
-            href="/jobs/new"
+            href="/demandes/nouvelle"
             className="bg-brand-700 hover:bg-brand-800 text-white font-medium px-6 py-2 rounded-lg transition-colors inline-block"
           >
             {t.jobsList.clientEmptyCta}

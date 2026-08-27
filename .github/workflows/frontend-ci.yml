@@ -47,8 +47,15 @@ jobs:
       run: npx prettier --check .
       continue-on-error: true
 
+    # Le tube `| head -100` masquait le code de sortie d'ESLint (le statut d'un
+    # pipeline est celui de sa derniere commande, donc toujours 0). Retire le
+    # 26/08/2026 pour que les erreurs remontent reellement.
+    # `continue-on-error` reste actif le temps de resorber la dette de lint
+    # existante ; a retirer ensuite, en alignant next.config.mjs
+    # (eslint.ignoreDuringBuilds -> false). Voir le lot 0.1 du plan
+    # docs/PLAN_ACTION_MISE_A_NIVEAU_WEB_2026-08-26.md
     - name: Run Linter (ESLint)
-      run: npm run lint 2>&1 | head -100
+      run: npm run lint
       continue-on-error: true
 
     # BLOQUANT — le typecheck strict doit passer (gate de merge)

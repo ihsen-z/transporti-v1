@@ -124,8 +124,6 @@ function TrustBadge({
   );
 }
 
-
-
 /* -------------------------------------------------------------------------- */
 /*  Public Profile Page — Matching reference design                           */
 /* -------------------------------------------------------------------------- */
@@ -176,7 +174,11 @@ const VEHICLE_TYPES = [
 /*  Transporter Profile Page — extracted from page.tsx (god-file split)      */
 /* -------------------------------------------------------------------------- */
 
-export default function TransporterProfilePage({ userId }: { userId: string | null }) {
+export default function TransporterProfilePage({
+  userId,
+}: {
+  userId: string | null;
+}) {
   const router = useRouter();
   const { user } = useAuth();
   const { t: t_i18n } = useAppI18n();
@@ -241,7 +243,11 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
   }, [transporter]);
 
   const cancelEditing = () => {
-    if (editFirstName !== transporter?.first_name || editLastName !== transporter?.last_name || editPhone !== (transporter?.phone || '')) {
+    if (
+      editFirstName !== transporter?.first_name ||
+      editLastName !== transporter?.last_name ||
+      editPhone !== (transporter?.phone || "")
+    ) {
       if (!window.confirm(t_i18n.profile.unsavedChanges)) return;
     }
     setEditing(false);
@@ -254,9 +260,11 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
   // Warn on page leave with unsaved changes (UX-T3)
   useEffect(() => {
     if (!editing) return;
-    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
-    window.addEventListener('beforeunload', handler);
-    return () => window.removeEventListener('beforeunload', handler);
+    const handler = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
   }, [editing]);
 
   /* --- Avatar upload flow --- */
@@ -326,14 +334,17 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
   /* --- Form validation (UX-T1) --- */
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-    if (editFirstName.trim().length < 2) errors.first_name = t_i18n.profile.min2Chars;
-    if (editLastName.trim().length < 2) errors.last_name = t_i18n.profile.min2Chars;
+    if (editFirstName.trim().length < 2)
+      errors.first_name = t_i18n.profile.min2Chars;
+    if (editLastName.trim().length < 2)
+      errors.last_name = t_i18n.profile.min2Chars;
     if (editPhone.trim() && !/^\+?216?\d{8}$/.test(editPhone.trim())) {
       errors.phone = t_i18n.profile.invalidPhone;
     }
     if (editCapacity.trim()) {
       const cap = parseFloat(editCapacity);
-      if (isNaN(cap) || cap <= 0) errors.capacity = t_i18n.profile.positiveCapacity;
+      if (isNaN(cap) || cap <= 0)
+        errors.capacity = t_i18n.profile.positiveCapacity;
     }
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
@@ -398,7 +409,7 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
       setTransporter(profileData);
       const reviewsList = Array.isArray(reviewsData)
         ? reviewsData
-        : reviewsData.results ?? [];
+        : (reviewsData.results ?? []);
       setReviews(reviewsList);
     } catch (e: unknown) {
       console.error("Error fetching profile:", e);
@@ -423,9 +434,11 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
     return (
       <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || t_i18n.profile.profileNotFound}</p>
+          <p className="text-red-500 mb-4">
+            {error || t_i18n.profile.profileNotFound}
+          </p>
           <Link
-            href="/jobs/browse"
+            href="/demandes"
             className="text-brand-600 hover:underline text-sm font-medium"
           >
             ← {t_i18n.profile.backToMissions}
@@ -505,7 +518,11 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
       {/* Back + Edit buttons */}
       <div className="flex items-center justify-between mb-6">
         <button
-          onClick={() => window.history.length > 1 ? router.back() : router.push('/dashboard')}
+          onClick={() =>
+            window.history.length > 1
+              ? router.back()
+              : router.push("/dashboard")
+          }
           className="inline-flex items-center gap-2 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
@@ -576,7 +593,9 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                   >
                     {(editing ? editAvatarUrl : t.avatar_url) ? (
                       <Image
-                        src={getMediaUrl((editing ? editAvatarUrl : t.avatar_url) || "")}
+                        src={getMediaUrl(
+                          (editing ? editAvatarUrl : t.avatar_url) || "",
+                        )}
                         alt={fullName}
                         width={80}
                         height={80}
@@ -614,20 +633,34 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                         <div className="flex flex-col">
                           <input
                             value={editFirstName}
-                            onChange={(e) => { setEditFirstName(e.target.value); setFormErrors((p) => ({...p, first_name: ''})); }}
-                            className={`px-2 py-1 rounded-lg bg-white/20 border text-white text-sm font-bold w-28 placeholder:text-white/40 ${formErrors.first_name ? 'border-red-400' : 'border-white/30'}`}
+                            onChange={(e) => {
+                              setEditFirstName(e.target.value);
+                              setFormErrors((p) => ({ ...p, first_name: "" }));
+                            }}
+                            className={`px-2 py-1 rounded-lg bg-white/20 border text-white text-sm font-bold w-28 placeholder:text-white/40 ${formErrors.first_name ? "border-red-400" : "border-white/30"}`}
                             placeholder={t_i18n.profile.firstName}
                           />
-                          {formErrors.first_name && <span className="text-red-300 text-[10px] mt-0.5">{formErrors.first_name}</span>}
+                          {formErrors.first_name && (
+                            <span className="text-red-300 text-[10px] mt-0.5">
+                              {formErrors.first_name}
+                            </span>
+                          )}
                         </div>
                         <div className="flex flex-col">
                           <input
                             value={editLastName}
-                            onChange={(e) => { setEditLastName(e.target.value); setFormErrors((p) => ({...p, last_name: ''})); }}
-                            className={`px-2 py-1 rounded-lg bg-white/20 border text-white text-sm font-bold w-28 placeholder:text-white/40 ${formErrors.last_name ? 'border-red-400' : 'border-white/30'}`}
+                            onChange={(e) => {
+                              setEditLastName(e.target.value);
+                              setFormErrors((p) => ({ ...p, last_name: "" }));
+                            }}
+                            className={`px-2 py-1 rounded-lg bg-white/20 border text-white text-sm font-bold w-28 placeholder:text-white/40 ${formErrors.last_name ? "border-red-400" : "border-white/30"}`}
                             placeholder={t_i18n.profile.lastName}
                           />
-                          {formErrors.last_name && <span className="text-red-300 text-[10px] mt-0.5">{formErrors.last_name}</span>}
+                          {formErrors.last_name && (
+                            <span className="text-red-300 text-[10px] mt-0.5">
+                              {formErrors.last_name}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -645,20 +678,29 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                         <span className="px-2 py-1 rounded-lg bg-white/10 text-white/60 text-xs italic">
                           {t.email || "—"}
                         </span>
-                        <span className="text-[9px] text-white/30 font-medium">{t_i18n.profile.unmodifiable}</span>
+                        <span className="text-[9px] text-white/30 font-medium">
+                          {t_i18n.profile.unmodifiable}
+                        </span>
                       </div>
                       <div className="flex flex-col">
                         <div className="flex items-center gap-1.5">
                           <Phone className="w-3.5 h-3.5 text-white/50" />
                           <input
                             value={editPhone}
-                            onChange={(e) => { setEditPhone(e.target.value); setFormErrors((p) => ({...p, phone: ''})); }}
+                            onChange={(e) => {
+                              setEditPhone(e.target.value);
+                              setFormErrors((p) => ({ ...p, phone: "" }));
+                            }}
                             type="tel"
-                            className={`px-2 py-1 rounded-lg bg-white/15 border text-white text-xs w-36 placeholder:text-white/30 ${formErrors.phone ? 'border-red-400' : 'border-white/20'}`}
+                            className={`px-2 py-1 rounded-lg bg-white/15 border text-white text-xs w-36 placeholder:text-white/30 ${formErrors.phone ? "border-red-400" : "border-white/20"}`}
                             placeholder="+216 XX XXX XXX"
                           />
                         </div>
-                        {formErrors.phone && <span className="text-red-300 text-[10px] mt-0.5 ms-5">{formErrors.phone}</span>}
+                        {formErrors.phone && (
+                          <span className="text-red-300 text-[10px] mt-0.5 ms-5">
+                            {formErrors.phone}
+                          </span>
+                        )}
                       </div>
                     </div>
                   )}
@@ -723,10 +765,13 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                     <div className="flex items-center gap-1">
                       <Calendar className="w-3.5 h-3.5" />
                       {t_i18n.profile.memberSince}{" "}
-                      {new Date(t.joined_at).toLocaleDateString(t_i18n.locale === 'ar' ? "ar-TN" : "fr-TN", {
-                        month: "long",
-                        year: "numeric",
-                      })}
+                      {new Date(t.joined_at).toLocaleDateString(
+                        t_i18n.locale === "ar" ? "ar-TN" : "fr-TN",
+                        {
+                          month: "long",
+                          year: "numeric",
+                        },
+                      )}
                     </div>
                     {editing ? (
                       <div className="flex items-center gap-1 text-accent-300">
@@ -889,11 +934,17 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                     className="w-full px-3 py-2 rounded-xl border border-neutral-200 text-sm text-neutral-800 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 resize-none"
                     placeholder={t_i18n.profile.aboutPlaceholder}
                   />
-                  <p className="text-end text-[10px] text-neutral-400">{editBio.length}/500</p>
+                  <p className="text-end text-[10px] text-neutral-400">
+                    {editBio.length}/500
+                  </p>
                 </div>
               ) : (
                 <p className="text-sm text-neutral-600 leading-relaxed">
-                  {t.bio || <span className="italic text-neutral-400">{t_i18n.profile.noInfo}</span>}
+                  {t.bio || (
+                    <span className="italic text-neutral-400">
+                      {t_i18n.profile.noInfo}
+                    </span>
+                  )}
                 </p>
               )}
             </div>
@@ -942,53 +993,100 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
         {/* ─────────── RIGHT COLUMN (1/3) ─────────── */}
         <div className="lg:col-span-1 space-y-5">
           {/* ── COMPLÉTUDE PROFIL (owner only, UX-T4) ── */}
-          {isOwner && (() => {
-            const checks = [
-              { label: t_i18n.profile.profilePhotoCheck, done: !!t.avatar_url, weight: 15 },
-              { label: t_i18n.profile.vehiclePhotoCheck, done: !!(t.vehicle_photos && t.vehicle_photos.length > 0), weight: 15 },
-              { label: t_i18n.profile.vehicleType, done: !!t.vehicle_type, weight: 10 },
-              { label: t_i18n.profile.capacity, done: !!t.vehicle_capacity_kg, weight: 10 },
-              { label: t_i18n.profile.serviceZones, done: t.service_areas.length > 0, weight: 15 },
-              { label: t_i18n.profile.specializations, done: t.specializations.length > 0, weight: 10 },
-              { label: t_i18n.profile.jobCompletedCheck, done: (t.total_jobs_completed || 0) > 0, weight: 15 },
-              { label: t_i18n.profile.reviewReceivedCheck, done: visibleReviews.length > 0, weight: 10 },
-            ];
-            const pct = checks.reduce((sum, c) => sum + (c.done ? c.weight : 0), 0);
-            const missing = checks.filter(c => !c.done).slice(0, 3);
-            if (pct >= 100) return null;
-            return (
-              <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
-                <div className="px-5 py-3 bg-gradient-to-r from-brand-600/5 to-accent-500/5 border-b border-neutral-100 flex items-center justify-between">
-                  <h3 className="text-sm font-bold text-neutral-700">{t_i18n.profile.completenessTitle}</h3>
-                  <span className="text-xs font-bold text-brand-600">{pct}%</span>
-                </div>
-                <div className="p-5 space-y-3">
-                  <div className="w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
-                    <div
-                      className="h-2 rounded-full transition-all duration-700 bg-gradient-to-r from-brand-600 to-accent-500"
-                      style={{ width: `${pct}%` }}
-                    />
+          {isOwner &&
+            (() => {
+              const checks = [
+                {
+                  label: t_i18n.profile.profilePhotoCheck,
+                  done: !!t.avatar_url,
+                  weight: 15,
+                },
+                {
+                  label: t_i18n.profile.vehiclePhotoCheck,
+                  done: !!(t.vehicle_photos && t.vehicle_photos.length > 0),
+                  weight: 15,
+                },
+                {
+                  label: t_i18n.profile.vehicleType,
+                  done: !!t.vehicle_type,
+                  weight: 10,
+                },
+                {
+                  label: t_i18n.profile.capacity,
+                  done: !!t.vehicle_capacity_kg,
+                  weight: 10,
+                },
+                {
+                  label: t_i18n.profile.serviceZones,
+                  done: t.service_areas.length > 0,
+                  weight: 15,
+                },
+                {
+                  label: t_i18n.profile.specializations,
+                  done: t.specializations.length > 0,
+                  weight: 10,
+                },
+                {
+                  label: t_i18n.profile.jobCompletedCheck,
+                  done: (t.total_jobs_completed || 0) > 0,
+                  weight: 15,
+                },
+                {
+                  label: t_i18n.profile.reviewReceivedCheck,
+                  done: visibleReviews.length > 0,
+                  weight: 10,
+                },
+              ];
+              const pct = checks.reduce(
+                (sum, c) => sum + (c.done ? c.weight : 0),
+                0,
+              );
+              const missing = checks.filter((c) => !c.done).slice(0, 3);
+              if (pct >= 100) return null;
+              return (
+                <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+                  <div className="px-5 py-3 bg-gradient-to-r from-brand-600/5 to-accent-500/5 border-b border-neutral-100 flex items-center justify-between">
+                    <h3 className="text-sm font-bold text-neutral-700">
+                      {t_i18n.profile.completenessTitle}
+                    </h3>
+                    <span className="text-xs font-bold text-brand-600">
+                      {pct}%
+                    </span>
                   </div>
-                  {missing.length > 0 && (
-                    <div className="space-y-1.5">
-                      {missing.map((m, i) => (
-                        <li key={i} className="flex items-center gap-2 text-[11px] text-neutral-500">
-                          <span className="w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0" />
-                          <span>{t_i18n.profile.addCheck} {m.label}</span>
-                        </li>
-                      ))}
+                  <div className="p-5 space-y-3">
+                    <div className="w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="h-2 rounded-full transition-all duration-700 bg-gradient-to-r from-brand-600 to-accent-500"
+                        style={{ width: `${pct}%` }}
+                      />
                     </div>
-                  )}
+                    {missing.length > 0 && (
+                      <div className="space-y-1.5">
+                        {missing.map((m, i) => (
+                          <li
+                            key={i}
+                            className="flex items-center gap-2 text-[11px] text-neutral-500"
+                          >
+                            <span className="w-1.5 h-1.5 rounded-full bg-brand-400 shrink-0" />
+                            <span>
+                              {t_i18n.profile.addCheck} {m.label}
+                            </span>
+                          </li>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })()}
+              );
+            })()}
 
           {/* ── STATISTIQUES CARD ── */}
           <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
             <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-100 flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-neutral-400" />
-              <h3 className="text-sm font-bold text-neutral-700">{t_i18n.profile.statistics}</h3>
+              <h3 className="text-sm font-bold text-neutral-700">
+                {t_i18n.profile.statistics}
+              </h3>
             </div>
             <div className="p-5">
               <div className="grid grid-cols-2 gap-5">
@@ -1053,17 +1151,24 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                   {editing && (
                     <label className="absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer">
                       <Camera className="w-4 h-4 text-neutral-50 group-hover:text-neutral-200" />
-                      <span className="text-xs font-medium text-neutral-50 mt-1">{t_i18n.profile.changePhoto}</span>
+                      <span className="text-xs font-medium text-neutral-50 mt-1">
+                        {t_i18n.profile.changePhoto}
+                      </span>
                     </label>
                   )}
                 </div>
               ) : (
-                <div className="w-full h-full flex flex-col items-center justify-center p-6 text-center group cursor-pointer hover:bg-neutral-50 transition-colors" onClick={() => editing && vehicleInputRef.current?.click()}>
+                <div
+                  className="w-full h-full flex flex-col items-center justify-center p-6 text-center group cursor-pointer hover:bg-neutral-50 transition-colors"
+                  onClick={() => editing && vehicleInputRef.current?.click()}
+                >
                   <Camera className="w-8 h-8 text-neutral-300 mb-2 group-hover:text-brand-500 transition-colors" />
                   <p className="text-sm font-medium text-neutral-500 group-hover:text-brand-600">
                     {t_i18n.profile.clickToAddPhoto}
                   </p>
-                  <p className="text-xs text-neutral-400 mt-1">JPEG, PNG (Max 5MB)</p>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    JPEG, PNG (Max 5MB)
+                  </p>
                 </div>
               );
             })()}
@@ -1154,9 +1259,12 @@ export default function TransporterProfilePage({ userId }: { userId: string | nu
                     <p
                       className={`text-sm font-semibold ${isInsured ? "text-accent-600" : "text-red-600"}`}
                     >
-                      {isInsured ? t_i18n.profile.insuranceValid : t_i18n.profile.insuranceExpired} — {t_i18n.profile.insuranceUntil}{" "}
+                      {isInsured
+                        ? t_i18n.profile.insuranceValid
+                        : t_i18n.profile.insuranceExpired}{" "}
+                      — {t_i18n.profile.insuranceUntil}{" "}
                       {new Date(t.insurance_valid_until).toLocaleDateString(
-                        t_i18n.locale === 'ar' ? 'ar-TN' : 'fr-TN',
+                        t_i18n.locale === "ar" ? "ar-TN" : "fr-TN",
                         {
                           day: "numeric",
                           month: "long",

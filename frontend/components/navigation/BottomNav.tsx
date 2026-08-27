@@ -32,7 +32,7 @@ export default function BottomNav() {
             label: "Accueil",
             badge: 0,
           },
-          { href: "/jobs/browse", icon: Search, label: "Missions", badge: 0 },
+          { href: "/demandes", icon: Search, label: "Missions", badge: 0 },
           { href: "/offers", icon: FileText, label: "Offres", badge: 0 },
           {
             href: "/notifications",
@@ -46,7 +46,12 @@ export default function BottomNav() {
             label: "Messages",
             badge: 0,
           },
-          { href: `/profile/${user?.id || ""}`, icon: UserCircle, label: "Profil", badge: 0 },
+          {
+            href: `/profile/${user?.id || ""}`,
+            icon: UserCircle,
+            label: "Profil",
+            badge: 0,
+          },
         ]
       : [
           {
@@ -68,7 +73,12 @@ export default function BottomNav() {
             label: "Notifs",
             badge: unreadCount,
           },
-          { href: `/profile/${user?.id || ""}`, icon: UserCircle, label: "Profil", badge: 0 },
+          {
+            href: `/profile/${user?.id || ""}`,
+            icon: UserCircle,
+            label: "Profil",
+            badge: 0,
+          },
         ];
 
   return (

@@ -86,16 +86,20 @@ const ROUTE_MAP: RouteGroup[] = [
     routes: [
       { path: "/dashboard", label: "Tableau de bord", icon: LayoutDashboard },
       { path: "/jobs", label: "Mes Transports", icon: Truck },
-      { path: "/jobs/browse", label: "Parcourir les offres", icon: Search },
-      { path: "/jobs/new", label: "Nouvelle annonce", icon: PlusCircle },
+      { path: "/demandes", label: "Parcourir les offres", icon: Search },
+      {
+        path: "/demandes/nouvelle",
+        label: "Nouvelle annonce",
+        icon: PlusCircle,
+      },
       { path: "/jobs/1", label: "Détail Job #1", icon: Eye, dynamic: true },
       {
-        path: "/jobs/return-trip",
+        path: "/retours/nouveau",
         label: "Proposer trajet retour",
         icon: RotateCcw,
       },
       {
-        path: "/jobs/return-trips",
+        path: "/recherche",
         label: "Trajets retour disponibles",
         icon: Search,
       },

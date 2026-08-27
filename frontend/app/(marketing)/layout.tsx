@@ -1,18 +1,18 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import ForceLightTheme from "@/components/layout/ForceLightTheme";
 
 export default function MarketingLayout({
-    children,
+  children,
 }: {
-    children: React.ReactNode;
+  children: React.ReactNode;
 }) {
-    return (
-        <div className="min-h-screen flex flex-col">
-            <Header />
-            <main className="flex-1 pt-16">
-                {children}
-            </main>
-            <Footer />
-        </div>
-    );
+  return (
+    <div className="min-h-screen flex flex-col">
+      <ForceLightTheme />
+      <Header />
+      <main className="flex-1 pt-16">{children}</main>
+      <Footer />
+    </div>
+  );
 }

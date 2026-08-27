@@ -39,7 +39,7 @@ const CLIENT_STEPS: OnboardingStep[] = [
     description:
       "Décrivez votre besoin de transport et recevez des offres de professionnels vérifiés.",
     cta: "Publier une annonce",
-    href: "/jobs/new",
+    href: "/demandes/nouvelle",
     color: "from-brand-600 to-brand-800",
   },
   {

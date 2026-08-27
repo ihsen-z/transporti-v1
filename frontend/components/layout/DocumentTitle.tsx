@@ -21,10 +21,10 @@ export default function DocumentTitle() {
     // Préfixes du plus spécifique au plus général (le premier qui matche gagne).
     const routes: [string, string][] = [
       ["/dashboard", n.dashboard],
-      ["/jobs/return-trips", n.findTrip],
-      ["/jobs/return-trip", n.returnTrip],
-      ["/jobs/browse", n.findMission],
-      ["/jobs/new", n.publishAd],
+      ["/recherche", n.findTrip],
+      ["/retours/nouveau", n.returnTrip],
+      ["/demandes", n.findMission],
+      ["/demandes/nouvelle", n.publishAd],
       ["/jobs", n.myMissions], // liste + détail d'une mission
       ["/offers", n.myOffers],
       ["/messages", n.messages],

@@ -423,7 +423,7 @@ export default function ReturnTripsPage() {
                 {/* Funnel fallback (pivot §5.2, cas B) : jamais de cul-de-sac */}
                 <div className="flex flex-wrap justify-center gap-3">
                   <Link
-                    href={`/jobs/new?pickup_governorate=${encodeURIComponent(filters.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(filters.dropoff_governorate)}`}
+                    href={`/demandes/nouvelle?pickup_governorate=${encodeURIComponent(filters.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(filters.dropoff_governorate)}`}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors"
                   >
                     <PlusCircle className="w-4 h-4" />

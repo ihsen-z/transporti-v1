@@ -447,7 +447,7 @@ export default function MessagesInboxPage() {
           </p>
           {!searchQuery && (
             <Link
-              href={role === "TRANSPORTER" ? "/jobs/browse" : "/jobs/new"}
+              href={role === "TRANSPORTER" ? "/demandes" : "/demandes/nouvelle"}
               className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
               {role === "TRANSPORTER"

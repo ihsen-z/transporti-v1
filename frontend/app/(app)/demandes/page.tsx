@@ -98,15 +98,16 @@ export default function JobBrowsePage() {
     }
   };
 
-  if (authLoading) return <div className="p-8 text-center">{t.common.loading}</div>;
+  if (authLoading)
+    return <div className="p-8 text-center">{t.common.loading}</div>;
 
   if (user?.role?.toUpperCase() !== "TRANSPORTER") {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-xl font-bold text-red-600">{t.browse.accessDenied}</h2>
-        <p className="text-neutral-600">
-          {t.browse.transportersOnly}
-        </p>
+        <h2 className="text-xl font-bold text-red-600">
+          {t.browse.accessDenied}
+        </h2>
+        <p className="text-neutral-600">{t.browse.transportersOnly}</p>
       </div>
     );
   }
@@ -130,7 +131,8 @@ export default function JobBrowsePage() {
                   {t.browse.title}
                 </h1>
                 <span className="text-sm text-neutral-500">
-                  {totalCount} {totalCount > 1 ? t.browse.resultsPlural : t.browse.results}
+                  {totalCount}{" "}
+                  {totalCount > 1 ? t.browse.resultsPlural : t.browse.results}
                 </span>
               </div>
               {/* Sort Dropdown */}
@@ -138,7 +140,11 @@ export default function JobBrowsePage() {
                 <SortAsc className="w-4 h-4 text-neutral-400" />
                 <select
                   value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as "newest" | "price_asc" | "price_desc")}
+                  onChange={(e) =>
+                    setSortBy(
+                      e.target.value as "newest" | "price_asc" | "price_desc",
+                    )
+                  }
                   className="text-sm border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700 focus:ring-2 focus:ring-brand-500 outline-none"
                 >
                   <option value="newest">{t.browse.sortNewest}</option>

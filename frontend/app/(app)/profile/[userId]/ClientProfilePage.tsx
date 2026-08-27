@@ -136,19 +136,17 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
     setError(null);
     try {
       const [data, reviewsData] = await Promise.all([
-        apiClient.get<ClientData>(
-          `/api/client/profile/${userId}/`,
-        ),
+        apiClient.get<ClientData>(`/api/client/profile/${userId}/`),
         apiClient
-          .get<ReviewData[] | { results?: ReviewData[] }>(
-            `/api/reviews/user/${userId}/`,
-          )
+          .get<
+            ReviewData[] | { results?: ReviewData[] }
+          >(`/api/reviews/user/${userId}/`)
           .catch(() => [] as ReviewData[]),
       ]);
       setClient(data);
       const reviewsList = Array.isArray(reviewsData)
         ? reviewsData
-        : reviewsData.results ?? [];
+        : (reviewsData.results ?? []);
       setReviews(reviewsList);
     } catch (e: unknown) {
       console.error("Error fetching client profile:", e);
@@ -217,12 +215,15 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
   /* --- Validation --- */
   const validateForm = (): boolean => {
     const errors: Record<string, string> = {};
-    if (editFirstName.trim().length < 2) errors.first_name = "Le prénom doit contenir au moins 2 caractères.";
-    if (editLastName.trim().length < 2) errors.last_name = "Le nom doit contenir au moins 2 caractères.";
+    if (editFirstName.trim().length < 2)
+      errors.first_name = "Le prénom doit contenir au moins 2 caractères.";
+    if (editLastName.trim().length < 2)
+      errors.last_name = "Le nom doit contenir au moins 2 caractères.";
     if (editPhone.trim() && !/^\+?216?\d{8}$/.test(editPhone.trim())) {
       errors.phone = "Format invalide. Exemple: +21612345678";
     }
-    if (editBio.trim().length > 500) errors.bio = "La bio ne doit pas dépasser 500 caractères.";
+    if (editBio.trim().length > 500)
+      errors.bio = "La bio ne doit pas dépasser 500 caractères.";
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -252,7 +253,10 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
       const errBody = err instanceof ApiError ? err.body : undefined;
       if (errBody?.errors) {
         const msgs = Object.values(errBody.errors).flat();
-        setSaveMsg({ type: "err", text: String(msgs[0] || "Erreur de validation.") });
+        setSaveMsg({
+          type: "err",
+          text: String(msgs[0] || "Erreur de validation."),
+        });
       } else {
         const msg = getErrorMessage(err) || "Erreur lors de la sauvegarde.";
         setSaveMsg({ type: "err", text: msg });
@@ -465,8 +469,12 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                       <>
                         <div className="flex items-center gap-1.5">
                           <Mail className="w-4 h-4 flex-shrink-0" />
-                          <span className="text-sm text-white/70">{c.email}</span>
-                          <span className="text-[10px] bg-white/15 px-1.5 py-0.5 rounded text-white/50">Non modifiable</span>
+                          <span className="text-sm text-white/70">
+                            {c.email}
+                          </span>
+                          <span className="text-[10px] bg-white/15 px-1.5 py-0.5 rounded text-white/50">
+                            Non modifiable
+                          </span>
                         </div>
                         <div className="flex items-center gap-1.5">
                           <Phone className="w-4 h-4 flex-shrink-0" />
@@ -475,10 +483,14 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                             value={editPhone}
                             onChange={(e) => setEditPhone(e.target.value)}
                             placeholder="+21612345678"
-                            className={`bg-white/20 backdrop-blur-sm px-2 py-1 rounded border text-white placeholder-white/60 text-sm focus:outline-none focus:ring-1 focus:ring-white/50 ${formErrors.phone ? 'border-red-300' : 'border-white/30'}`}
+                            className={`bg-white/20 backdrop-blur-sm px-2 py-1 rounded border text-white placeholder-white/60 text-sm focus:outline-none focus:ring-1 focus:ring-white/50 ${formErrors.phone ? "border-red-300" : "border-white/30"}`}
                           />
                         </div>
-                        {formErrors.phone && <p className="text-xs text-red-200 mt-1">{formErrors.phone}</p>}
+                        {formErrors.phone && (
+                          <p className="text-xs text-red-200 mt-1">
+                            {formErrors.phone}
+                          </p>
+                        )}
                       </>
                     ) : (
                       <>
@@ -641,14 +653,19 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                     }
                   })();
                   return (
-                    <div key={r.id} className="border border-neutral-100 rounded-xl p-4 hover:shadow-sm transition-shadow">
+                    <div
+                      key={r.id}
+                      className="border border-neutral-100 rounded-xl p-4 hover:shadow-sm transition-shadow"
+                    >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-3">
                           <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                             {initials}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-neutral-800">{r.reviewer_name}</p>
+                            <p className="text-sm font-semibold text-neutral-800">
+                              {r.reviewer_name}
+                            </p>
                             <div className="flex items-center gap-0.5 mt-0.5">
                               {[1, 2, 3, 4, 5].map((star) => (
                                 <Star
@@ -663,7 +680,9 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                             </div>
                           </div>
                         </div>
-                        <span className="text-xs text-neutral-400">{dateLabel}</span>
+                        <span className="text-xs text-neutral-400">
+                          {dateLabel}
+                        </span>
                       </div>
                       {r.comment && (
                         <p className="text-sm text-neutral-600 leading-relaxed ms-12">
@@ -677,11 +696,12 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
             ) : (
               <div className="text-center py-8">
                 <MessageCircle className="w-8 h-8 text-neutral-200 mx-auto mb-2" />
-                <p className="text-sm text-neutral-400">Aucun avis pour le moment.</p>
+                <p className="text-sm text-neutral-400">
+                  Aucun avis pour le moment.
+                </p>
               </div>
             )}
           </div>
-
         </div>
 
         {/* ===== RIGHT COLUMN — Stats ===== */}
@@ -760,36 +780,55 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                 Score de confiance
               </h3>
               <div className="flex items-center gap-4">
-                <div className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold border-4 ${
-                  c.client_trust_score.score >= 80 ? 'border-emerald-400 text-emerald-600 bg-emerald-50' :
-                  c.client_trust_score.score >= 60 ? 'border-amber-400 text-amber-600 bg-amber-50' :
-                  c.client_trust_score.score >= 40 ? 'border-orange-400 text-orange-600 bg-orange-50' :
-                  'border-neutral-300 text-neutral-500 bg-neutral-50'
-                }`}>
+                <div
+                  className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold border-4 ${
+                    c.client_trust_score.score >= 80
+                      ? "border-emerald-400 text-emerald-600 bg-emerald-50"
+                      : c.client_trust_score.score >= 60
+                        ? "border-amber-400 text-amber-600 bg-amber-50"
+                        : c.client_trust_score.score >= 40
+                          ? "border-orange-400 text-orange-600 bg-orange-50"
+                          : "border-neutral-300 text-neutral-500 bg-neutral-50"
+                  }`}
+                >
                   {c.client_trust_score.score}
                 </div>
                 <div>
-                  <span className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
-                    c.client_trust_score.label === 'excellent' ? 'bg-emerald-100 text-emerald-700' :
-                    c.client_trust_score.label === 'good' ? 'bg-amber-100 text-amber-700' :
-                    c.client_trust_score.label === 'average' ? 'bg-orange-100 text-orange-700' :
-                    'bg-neutral-100 text-neutral-600'
-                  }`}>
-                    {c.client_trust_score.label === 'excellent' ? 'Excellent' :
-                     c.client_trust_score.label === 'good' ? 'Bon' :
-                     c.client_trust_score.label === 'average' ? 'Moyen' : 'Nouveau'}
+                  <span
+                    className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
+                      c.client_trust_score.label === "excellent"
+                        ? "bg-emerald-100 text-emerald-700"
+                        : c.client_trust_score.label === "good"
+                          ? "bg-amber-100 text-amber-700"
+                          : c.client_trust_score.label === "average"
+                            ? "bg-orange-100 text-orange-700"
+                            : "bg-neutral-100 text-neutral-600"
+                    }`}
+                  >
+                    {c.client_trust_score.label === "excellent"
+                      ? "Excellent"
+                      : c.client_trust_score.label === "good"
+                        ? "Bon"
+                        : c.client_trust_score.label === "average"
+                          ? "Moyen"
+                          : "Nouveau"}
                   </span>
-                  <p className="text-xs text-neutral-400 mt-1">sur 100 points</p>
+                  <p className="text-xs text-neutral-400 mt-1">
+                    sur 100 points
+                  </p>
                 </div>
               </div>
               {/* Mini progress bar */}
               <div className="mt-3 h-1.5 bg-neutral-100 rounded-full overflow-hidden">
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
-                    c.client_trust_score.score >= 80 ? 'bg-emerald-500' :
-                    c.client_trust_score.score >= 60 ? 'bg-amber-500' :
-                    c.client_trust_score.score >= 40 ? 'bg-orange-500' :
-                    'bg-neutral-400'
+                    c.client_trust_score.score >= 80
+                      ? "bg-emerald-500"
+                      : c.client_trust_score.score >= 60
+                        ? "bg-amber-500"
+                        : c.client_trust_score.score >= 40
+                          ? "bg-orange-500"
+                          : "bg-neutral-400"
                   }`}
                   style={{ width: `${c.client_trust_score.score}%` }}
                 />
@@ -798,47 +837,71 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
           )}
 
           {/* Profile Completeness (owner only, hidden at 100%) */}
-          {isOwner && !editing && (() => {
-            const checks = [
-              { label: "Photo de profil", done: !!c.avatar_url, weight: 20 },
-              { label: "Bio renseignée", done: !!(c.bio && c.bio.length > 10), weight: 20 },
-              { label: "Adresse renseignée", done: !!c.address_summary, weight: 15 },
-              { label: "Téléphone renseigné", done: !!c.phone, weight: 15 },
-              { label: "Un transport complété", done: c.completed_jobs > 0, weight: 15 },
-              { label: "Un avis reçu", done: c.review_count > 0, weight: 15 },
-            ];
-            const pct = checks.reduce((sum, ch) => sum + (ch.done ? ch.weight : 0), 0);
-            if (pct >= 100) return null;
-            const missing = checks.filter((ch) => !ch.done);
-            return (
-              <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
-                <h3 className="text-base font-semibold text-neutral-900 mb-3 flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-amber-500" />
-                  Complétude du profil
-                </h3>
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="flex-1 h-2.5 bg-neutral-100 rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-500"
-                      style={{ width: `${pct}%` }}
-                    />
+          {isOwner &&
+            !editing &&
+            (() => {
+              const checks = [
+                { label: "Photo de profil", done: !!c.avatar_url, weight: 20 },
+                {
+                  label: "Bio renseignée",
+                  done: !!(c.bio && c.bio.length > 10),
+                  weight: 20,
+                },
+                {
+                  label: "Adresse renseignée",
+                  done: !!c.address_summary,
+                  weight: 15,
+                },
+                { label: "Téléphone renseigné", done: !!c.phone, weight: 15 },
+                {
+                  label: "Un transport complété",
+                  done: c.completed_jobs > 0,
+                  weight: 15,
+                },
+                { label: "Un avis reçu", done: c.review_count > 0, weight: 15 },
+              ];
+              const pct = checks.reduce(
+                (sum, ch) => sum + (ch.done ? ch.weight : 0),
+                0,
+              );
+              if (pct >= 100) return null;
+              const missing = checks.filter((ch) => !ch.done);
+              return (
+                <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
+                  <h3 className="text-base font-semibold text-neutral-900 mb-3 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                    Complétude du profil
+                  </h3>
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="flex-1 h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-500"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                    <span className="text-sm font-bold text-amber-600">
+                      {pct}%
+                    </span>
                   </div>
-                  <span className="text-sm font-bold text-amber-600">{pct}%</span>
-                </div>
-                {missing.length > 0 && (
-                  <div className="space-y-1.5">
-                    <p className="text-xs text-neutral-400 mb-1">Suggestions :</p>
-                    {missing.slice(0, 3).map((m) => (
-                      <p key={m.label} className="text-xs text-neutral-600 flex items-center gap-1.5">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
-                        {m.label}
+                  {missing.length > 0 && (
+                    <div className="space-y-1.5">
+                      <p className="text-xs text-neutral-400 mb-1">
+                        Suggestions :
                       </p>
-                    ))}
-                  </div>
-                )}
-              </div>
-            );
-          })()}
+                      {missing.slice(0, 3).map((m) => (
+                        <p
+                          key={m.label}
+                          className="text-xs text-neutral-600 flex items-center gap-1.5"
+                        >
+                          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 flex-shrink-0" />
+                          {m.label}
+                        </p>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
           {/* Quick Actions for Owner */}
           {isOwner && !editing && (
@@ -848,7 +911,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
               </h3>
               <div className="space-y-2">
                 <Link
-                  href="/jobs/new"
+                  href="/demandes/nouvelle"
                   className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl text-sm font-medium text-neutral-700 hover:bg-amber-50 hover:text-amber-700 transition-colors border border-neutral-100"
                 >
                   <Package className="w-4 h-4" />

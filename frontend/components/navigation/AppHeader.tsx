@@ -39,10 +39,10 @@ export default function AppHeader() {
     const titles: Record<string, string> = {
       "/dashboard": t.header.pageTitles.dashboard,
       "/jobs": t.header.pageTitles.jobs,
-      "/jobs/new": t.header.pageTitles.jobsNew,
-      "/jobs/browse": t.header.pageTitles.jobsBrowse,
-      "/jobs/return-trip": t.header.pageTitles.jobsReturnTrip,
-      "/jobs/return-trips": t.header.pageTitles.jobsReturnTrips,
+      "/demandes/nouvelle": t.header.pageTitles.jobsNew,
+      "/demandes": t.header.pageTitles.jobsBrowse,
+      "/retours/nouveau": t.header.pageTitles.jobsReturnTrip,
+      "/recherche": t.header.pageTitles.jobsReturnTrips,
       "/offers": t.header.pageTitles.offers,
       "/messages": t.header.pageTitles.messages,
       "/notifications": t.header.pageTitles.notifications,
@@ -95,7 +95,9 @@ export default function AppHeader() {
   }, []);
 
   return (
-    <header className={`fixed top-0 left-0 right-0 ${isRTL ? 'lg:right-64' : 'lg:left-64'} bg-white border-b border-neutral-200 z-fixed h-16`}>
+    <header
+      className={`fixed top-0 left-0 right-0 ${isRTL ? "lg:right-64" : "lg:left-64"} bg-white border-b border-neutral-200 z-fixed h-16`}
+    >
       <div className="h-full px-4 sm:px-6 lg:px-8 flex items-center justify-between">
         {/* Mobile: Logo */}
         <div className="flex items-center gap-3 lg:hidden">

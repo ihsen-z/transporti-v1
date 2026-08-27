@@ -147,14 +147,14 @@ function ClientDashboard({
           {RETURN_TRIPS_FIRST ? (
             <div className="flex flex-wrap gap-3">
               <Link
-                href="/jobs/return-trips"
+                href="/recherche"
                 className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
               >
                 <Search className="w-5 h-5" />
                 {t.dashboard.findTripCTA}
               </Link>
               <Link
-                href="/jobs/new"
+                href="/demandes/nouvelle"
                 className="inline-flex items-center gap-2 border-2 border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/10 transition-all"
               >
                 <PlusCircle className="w-5 h-5" />
@@ -163,7 +163,7 @@ function ClientDashboard({
             </div>
           ) : (
             <Link
-              href="/jobs/new"
+              href="/demandes/nouvelle"
               className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
             >
               <PlusCircle className="w-5 h-5" />
@@ -220,7 +220,10 @@ function ClientDashboard({
           {recentJobs.length === 0 ? (
             <div className="px-6 py-8 text-center text-neutral-400 text-sm">
               {t.dashboard.noAdsYet}{" "}
-              <Link href="/jobs/new" className="text-brand-600 font-medium">
+              <Link
+                href="/demandes/nouvelle"
+                className="text-brand-600 font-medium"
+              >
                 {t.dashboard.publishAdLink}
               </Link>
             </div>
@@ -318,14 +321,14 @@ function TransporterDashboard({
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <Link
-              href="/jobs/browse"
+              href="/demandes"
               className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
             >
               <Search className="w-5 h-5" />
               {t.dashboard.browseMissions}
             </Link>
             <Link
-              href="/jobs/return-trip"
+              href="/retours/nouveau"
               className="inline-flex items-center gap-2 text-white px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-lg"
               style={{
                 background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
@@ -480,10 +483,7 @@ function TransporterDashboard({
             {recentJobs.length === 0 ? (
               <div className="px-6 py-8 text-center text-neutral-400 text-sm">
                 {t.dashboard.noRecentMissions}{" "}
-                <Link
-                  href="/jobs/browse"
-                  className="text-brand-600 font-medium"
-                >
+                <Link href="/demandes" className="text-brand-600 font-medium">
                   {t.dashboard.browseMissionsLink}
                 </Link>
               </div>

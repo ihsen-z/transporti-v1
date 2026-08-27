@@ -6,6 +6,7 @@ import BottomNav from "@/components/navigation/BottomNav";
 import TrustFooter from "@/components/layout/TrustFooter";
 import AuthGuard from "@/components/auth/AuthGuard";
 import DocumentTitle from "@/components/layout/DocumentTitle";
+import ForceLightTheme from "@/components/layout/ForceLightTheme";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +15,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <AuthGuard allowedRoles={["client", "transporter", "admin"]}>
+      <ForceLightTheme />
       <DocumentTitle />
       <div className="min-h-screen bg-neutral-50 flex flex-col">
         {/* Desktop Sidebar */}

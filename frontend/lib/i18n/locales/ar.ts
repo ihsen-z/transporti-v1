@@ -978,7 +978,7 @@ export const ar = {
     sameAddresses: "العنوانين لازم يكونو مختلفين.",
     invalidWeight: "وزن غلط.",
     invalidVolume: "حجم غلط.",
-    // Validation par étape & messages (page /jobs/new)
+    // Validation par étape & messages (page /demandes/nouvelle)
     chooseServiceType: "من فضلك اختار نوع الخدمة.",
     fillFields: "من فضلك عمّر {fields}.",
     fieldPickupAddress: "عنوان البداية",
