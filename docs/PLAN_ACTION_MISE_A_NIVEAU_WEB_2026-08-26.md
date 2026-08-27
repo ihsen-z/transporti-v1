@@ -21,7 +21,8 @@
 | 0.2 Renommer les routes — **vague B** (7 routes restantes) | ✅ **fait** | `cb0d6d0` | 11 redirections vérifiées en `308`, 11 nouvelles routes en `200`, `next build` vert |
 | 0.3 Annuler le mode sombre métier | ✅ **fait** | `cb66d5b` | `ThemeToggle` retiré d'`AppSidebar` + `ForceLightTheme` dans les deux layouts |
 | 0.4 Socle Playwright — projet **`routage`** | ✅ **fait, actif en CI** | `731bc29` | **34 tests, 1,6 s**, sans binaire de navigateur ni backend |
-| 0.4 Socle Playwright — projet **`parcours`** | 🟡 **écrit, en attente du binaire** | `731bc29` | Les 3 parcours sont écrits et s'ignorent proprement (12 ignorés vérifiés) |
+| 0.4 Socle Playwright — projet **`parcours`** | ✅ **exécutable** | `731bc29`, `05109e6` | Décision 5 tranchée voie A : Chromium installé, étape de CI avec cache. Reste non bloquant tant qu'aucun backend de recette n'est joignable |
+| 0.4 Socle Playwright — projet **`selecteurs`** | ✅ **fait, bloquant en CI** | `05109e6` | **3 tests verts dans Chromium.** Garde-fou des `data-testid`, sans backend |
 | 0.5 Recette visuelle en arabe | ⏳ à faire | — | Demande un œil humain, non automatisable |
 
 #### Comment 0.4 a été livré à moitié, sans trancher la décision 5
@@ -98,11 +99,40 @@ publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2
 | **B-3b** Revenu par corridor | ✅ **fait** | `24425cd` | `logistics/stats_corridors.py`, réconciliation avec K4 sous test |
 | T4.4 Amorce de fin de mission — web | ⏳ à faire | — | Test `fixme` déjà écrit |
 | T4.4 Amorce de fin de mission — mobile | ⏳ à faire | — | Décision 6 : livraison simultanée |
-| T1.2 Publier un retour en 4 saisies — web + mobile | ⏳ à faire | — | Test écrit, non `fixme` |
+| T1.2 Publier un retour — **web** | ✅ **fait** | `05109e6` | Capacité structurée envoyée, 2 saisies rendues tactiles, `data-testid` posés |
+| T1.2 Publier un retour — **mobile** | ⏳ à faire | — | Décision 6 : livraison simultanée. `PublishReturnForm.tsx` à aligner |
 | T1.3 Inventaire des trajets publiés — web + mobile | ⏳ à faire | — | Test `fixme` déjà écrit |
 | T1.1 Hub « Mes retours » — web + mobile | ⏳ à faire | — | — |
 
-**173 tests backend passent**, dont 13 nouveaux. Aucune régression.
+**173 tests backend passent**, dont 13 nouveaux. Aucune régression. Côté web : 34 tests de routage,
+3 tests de sélecteurs, `tsc --noEmit` propre.
+
+#### Deuxième correction du même constat — le « risque n° 1 » était faux deux fois
+
+Le plan initial classait en risque **élevé** l'absence de pré-remplissage du véhicule, dont dépend
+la promesse des 30 secondes. Ce risque a été démenti en deux temps :
+
+1. L'analyse backend a montré que les champs existaient (`trust/models.py:226-237`).
+2. L'implémentation a montré que **le frontend les consommait déjà** — un bloc `Sprint 5 (H2)`
+   dans `retours/nouveau/page.tsx` allait chercher `vehicle_type` et `vehicle_capacity_kg`.
+
+Le vrai défaut était ailleurs, et plus subtil : le pré-remplissage était **lossy**. Le poids était
+concaténé dans le libellé texte (`"800 kg"`) et **jamais transmis comme donnée structurée**. Le
+matching quantitatif restait donc impossible malgré des données présentes de bout en bout.
+
+**Leçon pour les lots suivants** : sur ce projet, un besoin déclaré manquant est souvent implémenté
+à 80 %. Vérifier l'existant avant d'estimer — deux fois de suite, l'estimation initiale portait sur
+du travail déjà fait.
+
+#### Ce que T1.2 a réellement livré côté web
+
+- `hooks/useVehiclePrefill.ts` — extraction hors d'une page de 562 lignes (CLAUDE.md §4), lecture du volume en plus du poids, et **aucune déduction de l'un vers l'autre**
+- `available_capacity_kg` / `_m3` transmis au backend, en plus du libellé texte qui reste la description lisible
+- Saisie 3 (date) et saisie 4 (capacité) rendues **tactiles** ; une saisie libre reprend la main et annule la déduction structurée, faute de pouvoir lire un texte arbitraire
+- `data-testid` posés sur l'écran de publication et sur la connexion
+
+**Reste ouvert sur T1.2** : après publication, la redirection va vers `/jobs` — elle devra pointer
+vers `/retours`, l'inventaire, dès que T1.3 existera.
 
 #### Correction d'un constat de l'audit — B-3a n'était pas manquant
 
@@ -728,7 +758,7 @@ Trois décisions bloquent des lots. À trancher dans cet ordre.
 | 3 | Base de calcul de l'économie estimée | Lot 3 | ✅ **Tranché le 26/08.** `estimate_price()` de `logistics/pricing.py` avec `PricingGrid`, et **affichage de la base de comparaison** à côté du chiffre. Jamais un montant nu |
 | 4 | Publication d'un retour avant vérification complète ? | Lot 6 | ✅ **Tranché le 26/08 — autorisée**, avec mention explicite du statut « en cours de vérification » sur le trajet publié. Bloquer tarirait l'inventaire, donc la promesse client |
 
-| 5 | **Voie retenue pour le socle de tests (lot 0.4)** | **Lot 4** | ⏳ **Ouvert, bloquant.** Le binaire Chromium (~150 Mo) a été refusé le 26/08. Voies A, B ou C — voir le journal d'avancement. **Recommandation : A** |
+| 5 | **Voie retenue pour le socle de tests (lot 0.4)** | Lot 4 | ✅ **Tranchée le 26/08 — voie A, Playwright complet.** Décision déléguée puis prise : c'est le seul filet possible pour le lot 4, et le code de test était déjà écrit. Chromium installé, étape de CI avec cache sur `package-lock.json`. Le lot 4 a désormais sa parade |
 | 6 | **Portée mobile : un lot 7 de rattrapage, ou chaque écran livré sur les deux plateformes ?** | Lot 1 | ✅ **Tranché le 26/08 — chaque écran est livré sur les deux plateformes, au sein de son lot.** La divergence est le risque réel ; on paie pour l'éliminer à la source plutôt que de la rattraper. Ce plan cesse donc d'être un plan web : il devient bi-plateforme |
 
 #### Conséquence de la décision 6 sur le calendrier — à assumer
