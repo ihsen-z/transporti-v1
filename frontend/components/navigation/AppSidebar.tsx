@@ -45,7 +45,7 @@ export default function AppSidebar() {
     },
     { href: "/messages", icon: MessageSquare, label: t.nav.messages },
     { href: "/notifications", icon: Bell, label: t.nav.notifications },
-    { href: "/disputes", icon: AlertTriangle, label: t.nav.disputes },
+    { href: "/litiges", icon: AlertTriangle, label: t.nav.disputes },
   ];
 
   // RETURN_TRIPS_FIRST (pivot): searching an existing trip is the primary
@@ -74,15 +74,15 @@ export default function AppSidebar() {
 
   const transporterItems: NavItemDef[] = [
     { href: "/demandes", icon: Search, label: t.nav.findMission },
-    { href: "/offers", icon: FileText, label: t.nav.myOffers },
-    { href: "/wallet", icon: Wallet, label: t.nav.wallet },
+    { href: "/mes-offres", icon: FileText, label: t.nav.myOffers },
+    { href: "/portefeuille", icon: Wallet, label: t.nav.wallet },
     { href: "/retours/nouveau", icon: RotateCcw, label: t.nav.returnTrip },
-    { href: "/verification", icon: ShieldCheck, label: t.nav.verification },
+    { href: "/documents", icon: ShieldCheck, label: t.nav.verification },
   ];
 
   const bottomItems: NavItemDef[] = [
     { href: "/help", icon: HelpCircle, label: t.nav.helpCenter },
-    { href: "/settings", icon: Settings, label: t.nav.settings },
+    { href: "/compte", icon: Settings, label: t.nav.settings },
   ];
 
   let mainItems = [...commonItems];
@@ -125,7 +125,7 @@ export default function AppSidebar() {
 
       {/* Footer */}
       <div className="px-4 py-4 border-t border-neutral-100">
-        <Link href="/settings">
+        <Link href="/compte">
           <div className="px-4 py-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer">
             <p className="text-xs text-neutral-500 mb-1">{t.nav.connectedAs}</p>
             <p className="text-sm font-bold text-neutral-900 truncate">

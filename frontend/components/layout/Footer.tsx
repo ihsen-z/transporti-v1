@@ -96,7 +96,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/disputes"
+                  href="/litiges"
                   className="hover:text-white transition-colors"
                 >
                   Résolution de litiges

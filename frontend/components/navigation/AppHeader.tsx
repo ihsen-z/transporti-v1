@@ -43,13 +43,13 @@ export default function AppHeader() {
       "/demandes": t.header.pageTitles.jobsBrowse,
       "/retours/nouveau": t.header.pageTitles.jobsReturnTrip,
       "/recherche": t.header.pageTitles.jobsReturnTrips,
-      "/offers": t.header.pageTitles.offers,
+      "/mes-offres": t.header.pageTitles.offers,
       "/messages": t.header.pageTitles.messages,
       "/notifications": t.header.pageTitles.notifications,
-      "/settings": t.header.pageTitles.settings,
-      "/verification": t.header.pageTitles.verification,
+      "/compte": t.header.pageTitles.settings,
+      "/documents": t.header.pageTitles.verification,
       "/profile": t.header.pageTitles.profile,
-      "/disputes": t.header.pageTitles.disputes,
+      "/litiges": t.header.pageTitles.disputes,
       "/help": t.header.pageTitles.help,
       "/admin/dashboard": t.header.pageTitles.admin,
     };
@@ -187,7 +187,7 @@ export default function AppHeader() {
                     {t.header.myProfile}
                   </Link>
                   <Link
-                    href="/settings"
+                    href="/compte"
                     className="w-full flex items-center gap-2 px-3 py-2 text-sm text-neutral-700 hover:bg-neutral-50 rounded-lg transition-colors"
                   >
                     <User className="w-4 h-4" />

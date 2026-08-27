@@ -602,7 +602,7 @@ export default function JobDetailsPage() {
                   {t.jobDetail.verifRequiredDesc}
                 </p>
                 <Link
-                  href="/verification"
+                  href="/documents"
                   className="inline-flex items-center gap-2 px-4 py-2 bg-amber-600 text-white rounded-lg text-sm font-medium hover:bg-amber-700 transition-colors"
                 >
                   <ShieldAlert className="w-4 h-4" />
@@ -1159,7 +1159,7 @@ export default function JobDetailsPage() {
                     {t.jobDetail.openMessaging}
                   </button>
                   <Link
-                    href={`/booking/${job.id}`}
+                    href={`/reservation/${job.id}`}
                     className="w-full py-2 border border-amber-300 text-amber-800 rounded-lg font-medium hover:bg-amber-100 flex items-center justify-center gap-2"
                   >
                     <FileText className="w-4 h-4" />
@@ -1277,7 +1277,7 @@ export default function JobDetailsPage() {
                     {t.jobDetail.openMessaging}
                   </button>
                   <Link
-                    href={`/booking/${job.id}`}
+                    href={`/reservation/${job.id}`}
                     className="w-full py-2 border border-brand-600/30 text-brand-700 rounded-lg font-medium hover:bg-brand-600/5 flex items-center justify-center gap-2"
                   >
                     <FileText className="w-4 h-4" />
@@ -1336,7 +1336,7 @@ export default function JobDetailsPage() {
             {/* Dispute Button — visible on IN_PROGRESS or COMPLETED */}
             {showDisputeButton && (
               <Link
-                href={`/disputes?job=${job.id}`}
+                href={`/litiges?job=${job.id}`}
                 className="flex items-center justify-center gap-2 w-full py-3 border border-red-200 bg-red-50 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors"
               >
                 <AlertTriangle className="w-4 h-4" />

@@ -299,7 +299,7 @@ function TransporterDashboard({
               {t.dashboard.verificationRequiredDesc}
             </p>
             <Link
-              href="/verification"
+              href="/documents"
               className="inline-flex items-center gap-1 text-sm font-semibold text-amber-800 mt-3 hover:text-amber-900"
             >
               {t.dashboard.completeVerification}{" "}

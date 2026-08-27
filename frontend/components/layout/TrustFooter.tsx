@@ -96,7 +96,7 @@ export default function TrustFooter() {
               </li>
               <li>
                 <Link
-                  href="/disputes"
+                  href="/litiges"
                   className="text-sm text-neutral-500 hover:text-brand-600 transition-colors"
                 >
                   Processus de résolution de litiges

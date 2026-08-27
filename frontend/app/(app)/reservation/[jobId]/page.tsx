@@ -300,7 +300,9 @@ export default function BookingPage() {
                   <MapPin className="w-4 h-4 text-orange-500" />
                 </div>
                 <div>
-                  <p className="text-xs text-neutral-400 font-medium">{t.booking.departure}</p>
+                  <p className="text-xs text-neutral-400 font-medium">
+                    {t.booking.departure}
+                  </p>
                   <p className="text-sm text-neutral-900">
                     {job.pickup_address || job.pickup_governorate}
                   </p>
@@ -371,7 +373,9 @@ export default function BookingPage() {
 
             <div className="space-y-3">
               <div className="flex justify-between text-sm">
-                <span className="text-neutral-600">{t.booking.transportPrice}</span>
+                <span className="text-neutral-600">
+                  {t.booking.transportPrice}
+                </span>
                 <span className="font-medium text-neutral-900">
                   {formatTND(price)}
                 </span>
@@ -476,9 +480,11 @@ export default function BookingPage() {
                     </span>
                   </div>
                   <p className="text-xs text-neutral-500 mt-2 mb-4">
-                    {interpolate(t.booking.escrowAmount, { amount: escrow.amount })}
+                    {interpolate(t.booking.escrowAmount, {
+                      amount: escrow.amount,
+                    })}
                   </p>
-                  
+
                   {/* Timeline */}
                   <div className="space-y-3 relative before:absolute before:inset-0 before:ms-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-neutral-200 before:to-transparent">
                     {/* Booking Created */}
@@ -487,8 +493,12 @@ export default function BookingPage() {
                         <div className="flex items-center justify-center w-4 h-4 rounded-full border-2 border-white bg-neutral-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2" />
                         <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
                           <div className="flex items-center justify-between mb-1">
-                            <div className="font-medium text-xs text-neutral-900">{t.booking.timelineBookingCreated}</div>
-                            <time className="text-[10px] font-medium text-neutral-500">{formatDate(booking.created_at)}</time>
+                            <div className="font-medium text-xs text-neutral-900">
+                              {t.booking.timelineBookingCreated}
+                            </div>
+                            <time className="text-[10px] font-medium text-neutral-500">
+                              {formatDate(booking.created_at)}
+                            </time>
                           </div>
                         </div>
                       </div>
@@ -496,21 +506,31 @@ export default function BookingPage() {
                     {/* Escrow Initiated/Held */}
                     {escrow?.created_at && (
                       <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                        <div className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "HELD" || escrow.status === "RELEASED" ? "bg-green-500" : "bg-neutral-300"}`} />
+                        <div
+                          className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "HELD" || escrow.status === "RELEASED" ? "bg-green-500" : "bg-neutral-300"}`}
+                        />
                         <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
                           <div className="flex items-center justify-between mb-1">
-                            <div className="font-medium text-xs text-neutral-900">{t.booking.timelineFundsSecured}</div>
-                            <time className="text-[10px] font-medium text-neutral-500">{formatDate(escrow.created_at)}</time>
+                            <div className="font-medium text-xs text-neutral-900">
+                              {t.booking.timelineFundsSecured}
+                            </div>
+                            <time className="text-[10px] font-medium text-neutral-500">
+                              {formatDate(escrow.created_at)}
+                            </time>
                           </div>
                         </div>
                       </div>
                     )}
                     {/* Escrow Released */}
                     <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                      <div className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "RELEASED" ? "bg-blue-500" : "bg-neutral-300"}`} />
+                      <div
+                        className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "RELEASED" ? "bg-blue-500" : "bg-neutral-300"}`}
+                      />
                       <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
                         <div className="flex items-center justify-between mb-1">
-                          <div className="font-medium text-xs text-neutral-900">{t.booking.timelineFundsReleased}</div>
+                          <div className="font-medium text-xs text-neutral-900">
+                            {t.booking.timelineFundsReleased}
+                          </div>
                         </div>
                       </div>
                     </div>

@@ -26,14 +26,14 @@ export default function DocumentTitle() {
       ["/demandes", n.findMission],
       ["/demandes/nouvelle", n.publishAd],
       ["/jobs", n.myMissions], // liste + détail d'une mission
-      ["/offers", n.myOffers],
+      ["/mes-offres", n.myOffers],
       ["/messages", n.messages],
       ["/notifications", n.notifications],
-      ["/disputes", n.disputes],
-      ["/wallet", n.wallet],
-      ["/verification", n.verification],
+      ["/litiges", n.disputes],
+      ["/portefeuille", n.wallet],
+      ["/documents", n.verification],
       ["/help", n.helpCenter],
-      ["/settings", n.settings],
+      ["/compte", n.settings],
       ["/profile", n.myProfile],
     ];
 

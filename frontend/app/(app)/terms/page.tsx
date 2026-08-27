@@ -82,7 +82,7 @@ export default function TermsPage() {
           <h2 className="text-lg font-semibold text-neutral-900">5. Litiges</h2>
           <p className="text-sm text-neutral-600 leading-relaxed">
             En cas de litige, les utilisateurs sont invités à utiliser le{" "}
-            <Link href="/disputes" className="text-brand-600 hover:underline">
+            <Link href="/litiges" className="text-brand-600 hover:underline">
               processus de résolution des litiges
             </Link>{" "}
             de la plateforme avant tout recours judiciaire.

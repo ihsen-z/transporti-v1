@@ -343,9 +343,7 @@ export default function SettingsPage() {
     <div className="p-6 lg:p-8 max-w-4xl mx-auto">
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-neutral-900">Paramètres</h1>
-        <p className="text-neutral-500 mt-1">
-          {t.settings.title}
-        </p>
+        <p className="text-neutral-500 mt-1">{t.settings.title}</p>
       </div>
 
       <div className="flex flex-col lg:flex-row gap-6">
@@ -363,7 +361,9 @@ export default function SettingsPage() {
                 }`}
               >
                 <tab.icon className="w-4 h-4" />
-                {(t.settings as unknown as Record<string, string>)[tab.labelKey] || tab.labelKey}
+                {(t.settings as unknown as Record<string, string>)[
+                  tab.labelKey
+                ] || tab.labelKey}
               </button>
             ))}
           </div>
@@ -421,17 +421,26 @@ export default function SettingsPage() {
                   {/* Info Grid */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-100">
                     <div>
-                      <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Téléphone</p>
-                      <p className="text-sm text-neutral-800">{phone || "Non renseigné"}</p>
+                      <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">
+                        Téléphone
+                      </p>
+                      <p className="text-sm text-neutral-800">
+                        {phone || "Non renseigné"}
+                      </p>
                     </div>
                     <div>
-                      <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">Gouvernorat</p>
-                      <p className="text-sm text-neutral-800">{governorate || "Non renseigné"}</p>
+                      <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">
+                        Gouvernorat
+                      </p>
+                      <p className="text-sm text-neutral-800">
+                        {governorate || "Non renseigné"}
+                      </p>
                     </div>
                   </div>
 
                   <p className="text-xs text-neutral-400 mt-4">
-                    Pour modifier vos informations, cliquez sur &quot;Modifier mon profil&quot; ci-dessus.
+                    Pour modifier vos informations, cliquez sur &quot;Modifier
+                    mon profil&quot; ci-dessus.
                   </p>
                 </div>
               )}

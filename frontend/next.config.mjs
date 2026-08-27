@@ -7,10 +7,24 @@ const nextConfig = {
     // Voir docs/PLAN_ACTION_MISE_A_NIVEAU_WEB_2026-08-26.md
     async redirects() {
         return [
+            // Vague A - les quatre routes du pivot
             { source: '/jobs/return-trips', destination: '/recherche', permanent: true },
             { source: '/jobs/return-trip', destination: '/retours/nouveau', permanent: true },
             { source: '/jobs/browse', destination: '/demandes', permanent: true },
             { source: '/jobs/new', destination: '/demandes/nouvelle', permanent: true },
+
+            // Vague B - le reste de l arborescence metier
+            { source: '/offers', destination: '/mes-offres', permanent: true },
+            { source: '/wallet', destination: '/portefeuille', permanent: true },
+            { source: '/settings', destination: '/compte', permanent: true },
+            { source: '/disputes', destination: '/litiges', permanent: true },
+            { source: '/verification', destination: '/documents', permanent: true },
+            { source: '/transporter/:id', destination: '/transporteur/:id', permanent: true },
+            { source: '/booking/:jobId', destination: '/reservation/:jobId', permanent: true },
+
+            // /jobs et /jobs/[id] ne sont volontairement pas renommes : ils
+            // portent deux roles (detail de trajet vu par un client, detail de
+            // mission vu par un transporteur). Leur separation releve du lot 4.
         ];
     },
 

@@ -67,8 +67,11 @@ interface UserJob {
 /* -------------------------------------------------------------------------- */
 
 function getStatusConfig(
-  t: DisputesT
-): Record<string, { label: string; color: string; bgColor: string; icon: React.ElementType }> {
+  t: DisputesT,
+): Record<
+  string,
+  { label: string; color: string; bgColor: string; icon: React.ElementType }
+> {
   return {
     OPEN: {
       label: t.statusOpen,
@@ -217,9 +220,7 @@ function CreateDisputeModal({
             </div>
             <div>
               <h2 className="text-lg font-bold">{t.openDisputeTitle}</h2>
-              <p className="text-white/70 text-xs">
-                {t.openDisputeSubtitle}
-              </p>
+              <p className="text-white/70 text-xs">{t.openDisputeSubtitle}</p>
             </div>
           </div>
           <button
@@ -245,9 +246,7 @@ function CreateDisputeModal({
             ) : userJobs.length === 0 ? (
               <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
                 <p className="font-medium">{t.noEligibleMissions}</p>
-                <p className="text-xs mt-1">
-                  {t.noEligibleMissionsDesc}
-                </p>
+                <p className="text-xs mt-1">{t.noEligibleMissionsDesc}</p>
               </div>
             ) : (
               <select
@@ -259,7 +258,8 @@ function CreateDisputeModal({
                 <option value="">{t.selectMission}</option>
                 {userJobs.map((job) => (
                   <option key={job.id} value={job.id}>
-                    #{job.id} · {getJobTypeLabels(t)[job.job_type] || job.job_type} ·{" "}
+                    #{job.id} ·{" "}
+                    {getJobTypeLabels(t)[job.job_type] || job.job_type} ·{" "}
                     {job.pickup_governorate ||
                       job.pickup_address?.split(",")[0]}{" "}
                     →{" "}
@@ -448,9 +448,7 @@ export default function DisputesPage() {
       <div className="flex items-center justify-between mb-8">
         <div>
           <h1 className="text-2xl font-bold text-neutral-900">{t.pageTitle}</h1>
-          <p className="text-neutral-500 mt-1 text-sm">
-            {t.pageSubtitle}
-          </p>
+          <p className="text-neutral-500 mt-1 text-sm">{t.pageSubtitle}</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
@@ -505,14 +503,10 @@ export default function DisputesPage() {
             <Scale className="w-8 h-8 text-neutral-300" />
           </div>
           <h3 className="text-lg font-semibold text-neutral-900 mb-2">
-            {statusFilter === "ALL"
-              ? t.noDisputes
-              : t.noDisputesInCategory}
+            {statusFilter === "ALL" ? t.noDisputes : t.noDisputesInCategory}
           </h3>
           <p className="text-neutral-500 text-sm mb-6">
-            {statusFilter === "ALL"
-              ? t.noDisputesDesc
-              : t.tryChangeFilter}
+            {statusFilter === "ALL" ? t.noDisputesDesc : t.tryChangeFilter}
           </p>
           {statusFilter === "ALL" && (
             <button

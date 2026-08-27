@@ -5,6 +5,45 @@
 
 ---
 
+## Journal d'avancement
+
+> **Ce document est mis à jour à chaque échange.** Il doit pouvoir être lu seul
+> pour savoir où en est le chantier.
+
+**Dernière mise à jour** : 26/08/2026 · **Branche de travail** : `feature/lot0-fondations-retour-first`
+
+### Lot 0 — Fondations et filet de sécurité · **en cours, 4 tâches sur 6**
+
+| Tâche | État | Commit | Preuve |
+|---|---|---|---|
+| 0.1 Durcir la porte de merge | ✅ **fait** | `cb66d5b` | Tube `\| head -100` retiré ; le code de sortie d'ESLint remonte |
+| 0.2 Renommer les routes — **vague A** (4 routes du pivot) | ✅ **fait** | `cb66d5b` | 4 redirections en `308` vers la bonne cible, 4 nouvelles routes en `200` |
+| 0.2 Renommer les routes — **vague B** (7 routes restantes) | ✅ **fait** | `2d1a4f7` | 11 redirections au total vérifiées, `next build` vert |
+| 0.3 Annuler le mode sombre métier | ✅ **fait** | `cb66d5b` | `ThemeToggle` retiré d'`AppSidebar` + `ForceLightTheme` dans les deux layouts |
+| 0.4 Socle Playwright, 3 parcours | 🔨 **en cours** | — | Prérequis dur du lot 4 |
+| 0.5 Recette visuelle en arabe | ⏳ à faire | — | Demande un œil humain, non automatisable |
+
+**Décidé en chemin, hors plan initial** — la classe `dark` posée sur `<html>` par la zone
+d'administration survivait à une navigation côté client vers les écrans métier. D'où la création de
+`components/layout/ForceLightTheme.tsx`, monté dans les layouts `(app)` et `(marketing)`. Non prévu,
+nécessaire.
+
+**Volontairement laissé de côté au lot 0.2** — `/jobs` et `/jobs/[id]` ne sont pas renommés : ils
+portent deux rôles (détail de trajet vu par un client, détail de mission vu par un transporteur), et
+leur séparation relève du lot 4. Documenté comme dépendance.
+
+**Incident de parcours à retenir** — la réécriture des références par `sed` a cassé trois chemins
+**API** (`/api/jobs/return-trip/` transformé en `/api/retours/nouveau/`), repérés et restaurés avant
+tout commit. Leçon pour la vague B et les lots suivants : **ne jamais réécrire un motif de route sans
+exclure les chemins commençant par `/api/`.**
+
+### Lots 1 à 6 · **non démarrés**
+
+Les décisions bloquantes du §4 sont désormais toutes tranchées : le lot 1 peut démarrer dès que le
+lot 0.4 est livré.
+
+---
+
 ## 0. Cadrage
 
 ### 0.1 Paramètres retenus
@@ -516,9 +555,12 @@ Trois décisions bloquent des lots. À trancher dans cet ordre.
 | # | Décision | Bloque | État |
 |---|---|---|---|
 | 1 | Mode sombre : confiner ou brancher ? | Lot 0.3 | ✅ **Tranché le 26/08 — chantier annulé.** Seul le retrait du `ThemeToggle` métier subsiste |
-| 2 | **Unité de capacité : kilogrammes ou mètres cubes ?** | **Lot 1** | ⏳ **Ouvert, bloquant.** Le backend ne connaît que `vehicle_capacity_kg`. Trois options : (a) tout en kg — aligné backend, coût nul, mais « rentre-t-il dans le camion ? » se pose en volume ; (b) ajouter `vehicle_capacity_m3` et raisonner en volume — plus juste métier, une migration ; (c) les deux, avec le volume optionnel. **Recommandation : (c)** — le poids reste la contrainte réglementaire, le volume est ce que l'utilisateur se représente |
-| 3 | Base de calcul de l'économie estimée | Lot 3 | ⏳ Ouvert. **Recommandation confirmée par l'analyse backend** : `estimate_price()` de `logistics/pricing.py` avec `PricingGrid`, en affichant la base de comparaison |
-| 4 | Publication d'un retour avant vérification complète ? | Lot 6 | ⏳ Ouvert. **Autoriser**, avec mention explicite du statut |
+| 2 | **Unité de capacité : kilogrammes ou mètres cubes ?** | Lot 1 | ✅ **Tranché le 26/08 — option (c), les deux.** `vehicle_capacity_kg` reste la contrainte réglementaire et la source de vérité ; un `vehicle_capacity_m3` **optionnel** est ajouté, parce que le volume est ce que l'utilisateur se représente (« mon frigo rentre-t-il ? »). Conséquences : migration sur `TrustProfile`, et l'interface n'affiche des m³ **que** si la donnée existe — jamais de conversion inventée depuis le poids |
+| 3 | Base de calcul de l'économie estimée | Lot 3 | ✅ **Tranché le 26/08.** `estimate_price()` de `logistics/pricing.py` avec `PricingGrid`, et **affichage de la base de comparaison** à côté du chiffre. Jamais un montant nu |
+| 4 | Publication d'un retour avant vérification complète ? | Lot 6 | ✅ **Tranché le 26/08 — autorisée**, avec mention explicite du statut « en cours de vérification » sur le trajet publié. Bloquer tarirait l'inventaire, donc la promesse client |
+
+**Toutes les décisions bloquantes sont tranchées.** Les lots 1 à 6 peuvent s'enchaîner sans nouvel
+arbitrage produit.
 
 ## 5. À revalider avec Context7 avant implémentation
 

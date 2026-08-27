@@ -75,7 +75,10 @@ export default function TransporterProfilePage() {
   const reviews = MOCK_REVIEWS;
 
   return (
-    <div className={`p-6 lg:p-8 max-w-5xl mx-auto ${isRTL ? "text-end" : ""}`} dir={isRTL ? "rtl" : "ltr"}>
+    <div
+      className={`p-6 lg:p-8 max-w-5xl mx-auto ${isRTL ? "text-end" : ""}`}
+      dir={isRTL ? "rtl" : "ltr"}
+    >
       {/* Header Actions */}
       <div className="flex items-center justify-between mb-6">
         <button
@@ -85,7 +88,7 @@ export default function TransporterProfilePage() {
           <ArrowLeft className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
           {t.common.back}
         </button>
-        
+
         {/* Language Toggle Demo */}
         <button
           onClick={() => setLocale(locale === "fr" ? "ar" : "fr")}
@@ -133,7 +136,10 @@ export default function TransporterProfilePage() {
           />
 
           <VehicleGallery
-            vehicleType={t.profile[profile.vehicle_type as keyof typeof t.profile] || profile.vehicle_type}
+            vehicleType={
+              t.profile[profile.vehicle_type as keyof typeof t.profile] ||
+              profile.vehicle_type
+            }
             vehicleCapacityKg={profile.vehicle_capacity_kg}
             vehiclePhotos={profile.vehicle_photos}
             insuranceValidUntil={profile.insurance_valid_until}

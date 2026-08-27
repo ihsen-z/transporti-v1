@@ -33,7 +33,7 @@ export default function BottomNav() {
             badge: 0,
           },
           { href: "/demandes", icon: Search, label: "Missions", badge: 0 },
-          { href: "/offers", icon: FileText, label: "Offres", badge: 0 },
+          { href: "/mes-offres", icon: FileText, label: "Offres", badge: 0 },
           {
             href: "/notifications",
             icon: Bell,

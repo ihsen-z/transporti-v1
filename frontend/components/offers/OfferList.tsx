@@ -48,12 +48,12 @@ export function OfferList({
     setLoading(true);
     setFetchError(false);
     try {
-      const response = await apiClient.get<JobOffer[] | { results?: JobOffer[] }>(
-        `/api/jobs/${jobId}/offers/`,
-      );
+      const response = await apiClient.get<
+        JobOffer[] | { results?: JobOffer[] }
+      >(`/api/jobs/${jobId}/offers/`);
       const offersData = Array.isArray(response)
         ? response
-        : response.results ?? [];
+        : (response.results ?? []);
       setOffers(offersData);
     } catch (error) {
       console.error("Error fetching offers:", error);
@@ -87,11 +87,10 @@ export function OfferList({
       fetchOffers();
       onOfferAccepted?.();
       // Redirect to booking page
-      router.push(`/booking/${jobId}`);
+      router.push(`/reservation/${jobId}`);
     } catch (error) {
       if (error instanceof ApiError && error.body) {
-        const msg =
-          error.body.error || Object.values(error.body).flat()[0];
+        const msg = error.body.error || Object.values(error.body).flat()[0];
         showToast("error", String(msg) || t.offersComponents.acceptError);
       } else {
         console.error("Error accepting offer:", error);
@@ -119,9 +118,7 @@ export function OfferList({
           <AlertCircle className="w-5 h-5" />
           <p>{t.offersComponents.loadErrorTitle}</p>
         </div>
-        <p className="text-sm text-neutral-500 mt-1">
-          {t.browse.errorDesc}
-        </p>
+        <p className="text-sm text-neutral-500 mt-1">{t.browse.errorDesc}</p>
         <button
           onClick={fetchOffers}
           className="mt-3 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors"

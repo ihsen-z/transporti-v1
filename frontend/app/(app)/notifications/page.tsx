@@ -88,7 +88,10 @@ function relativeTime(dateStr: string, t: NotificationsT): string {
     if (diffH < 24) return `Il y a ${diffH}${t.hourAgo}`;
     if (diffD === 1) return t.yesterday;
     if (diffD < 7) return `Il y a ${diffD}${t.daysAgo}`;
-    return formatDate(d.toISOString(), undefined, { day: "numeric", month: "short" });
+    return formatDate(d.toISOString(), undefined, {
+      day: "numeric",
+      month: "short",
+    });
   } catch {
     return "";
   }
@@ -141,7 +144,7 @@ function getActionLink(
   }
   if (m.dispute_id) {
     return {
-      href: `/disputes`,
+      href: `/litiges`,
       label: t.actionSeeDisputes,
     };
   }
@@ -301,10 +304,7 @@ export default function NotificationsPage() {
         : (data as { results: Notification[] }).results;
       setNotifications(items);
     } catch (err: unknown) {
-      const message =
-        err instanceof Error
-          ? err.message
-          : t.loading;
+      const message = err instanceof Error ? err.message : t.loading;
       if (!silent) setError(message);
     } finally {
       setLoading(false);
@@ -412,9 +412,7 @@ export default function NotificationsPage() {
             <h1 className="text-3xl font-bold text-neutral-900 mb-2">
               {t.pageTitle}
             </h1>
-            <p className="text-neutral-600">
-              {t.pageSubtitle}
-            </p>
+            <p className="text-neutral-600">{t.pageSubtitle}</p>
           </div>
           <button
             onClick={() => fetchNotifications()}
@@ -474,9 +472,7 @@ export default function NotificationsPage() {
                   className="flex items-center gap-2 px-4 py-2 text-brand-600 hover:text-brand-700 hover:bg-brand-50 rounded-lg font-medium transition-colors text-sm"
                 >
                   <CheckCheck className="w-4 h-4" />
-                  <span className="hidden sm:inline">
-                    {t.markAllRead}
-                  </span>
+                  <span className="hidden sm:inline">{t.markAllRead}</span>
                 </button>
               )}
             </div>
@@ -543,9 +539,7 @@ export default function NotificationsPage() {
                   : t.noNotifications}
             </h3>
             <p className="text-neutral-600 max-w-md">
-              {filter === "unread"
-                ? t.successDesc
-                : t.noNotificationsDesc}
+              {filter === "unread" ? t.successDesc : t.noNotificationsDesc}
             </p>
           </div>
         </div>

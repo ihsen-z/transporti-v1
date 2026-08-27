@@ -59,7 +59,7 @@ const CLIENT_STEPS: OnboardingStep[] = [
     description:
       "Un profil complet inspire confiance et aide les transporteurs à mieux vous servir.",
     cta: "Mon profil",
-    href: "/settings",
+    href: "/compte",
     color: "from-accent-600 to-accent-800",
   },
 ];
@@ -72,7 +72,7 @@ const TRANSPORTER_STEPS: OnboardingStep[] = [
     description:
       "La vérification augmente votre score de confiance de +20 points et débloque les paiements digitaux.",
     cta: "Lancer la vérification",
-    href: "/verification",
+    href: "/documents",
     color: "from-brand-600 to-brand-800",
   },
   {
@@ -92,7 +92,7 @@ const TRANSPORTER_STEPS: OnboardingStep[] = [
     description:
       "Ajoutez vos spécialisations, zones de service et photos de véhicule pour attirer plus de clients.",
     cta: "Mon profil",
-    href: "/settings",
+    href: "/compte",
     color: "from-accent-600 to-accent-800",
   },
 ];

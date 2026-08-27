@@ -49,13 +49,13 @@ export const routeAccess: Record<string, UserRole[]> = {
   "/demandes/nouvelle": ["client", "admin"],
   "/demandes": ["client", "transporter", "admin"],
   "/retours/nouveau": ["transporter"],
-  "/offers": ["transporter"],
+  "/mes-offres": ["transporter"],
   "/messages": ["client", "transporter", "admin"],
   "/notifications": ["client", "transporter", "admin"],
-  "/settings": ["client", "transporter", "admin"],
+  "/compte": ["client", "transporter", "admin"],
   "/profile": ["client", "transporter", "admin"],
-  "/verification": ["client", "transporter", "admin"],
-  "/disputes": ["client", "transporter", "admin"],
+  "/documents": ["client", "transporter", "admin"],
+  "/litiges": ["client", "transporter", "admin"],
   "/transporter": ["client", "transporter", "admin"],
 
   // Admin routes
