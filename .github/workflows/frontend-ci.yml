@@ -68,6 +68,22 @@ jobs:
         NEXT_PUBLIC_API_URL: http://localhost:8000
         NEXT_PUBLIC_API_TIMEOUT: 5000
 
+    # BLOQUANT — integrite de l arborescence (lot 0.4, projet `routage`).
+    # N utilise que la fixture `request` de Playwright : aucun binaire de
+    # navigateur a telecharger, aucun backend requis. Protege les 11
+    # redirections et les 11 destinations du renommage du lot 0.2, et interdit
+    # qu une route de page francisee fuite dans un chemin /api/.
+    #
+    # Le projet `parcours` (les 3 parcours critiques) n est PAS branche ici :
+    # il exige `npx playwright install --with-deps chromium` et un backend
+    # joignable. A activer quand le lot 0.4 passe en voie A.
+    # Voir docs/PLAN_ACTION_MISE_A_NIVEAU_WEB_2026-08-26.md
+    - name: Route integrity tests (Playwright, sans navigateur)
+      run: npm run test:routage
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_API_TIMEOUT: 5000
+
     - name: Check bundle size
       if: success()
       run: |

@@ -18,10 +18,37 @@
 |---|---|---|---|
 | 0.1 Durcir la porte de merge | ✅ **fait** | `cb66d5b` | Tube `\| head -100` retiré ; le code de sortie d'ESLint remonte |
 | 0.2 Renommer les routes — **vague A** (4 routes du pivot) | ✅ **fait** | `cb66d5b` | 4 redirections en `308` vers la bonne cible, 4 nouvelles routes en `200` |
-| 0.2 Renommer les routes — **vague B** (7 routes restantes) | ✅ **fait** | `2d1a4f7` | 11 redirections au total vérifiées, `next build` vert |
+| 0.2 Renommer les routes — **vague B** (7 routes restantes) | ✅ **fait** | `cb0d6d0` | 11 redirections vérifiées en `308`, 11 nouvelles routes en `200`, `next build` vert |
 | 0.3 Annuler le mode sombre métier | ✅ **fait** | `cb66d5b` | `ThemeToggle` retiré d'`AppSidebar` + `ForceLightTheme` dans les deux layouts |
-| 0.4 Socle Playwright, 3 parcours | 🔨 **en cours** | — | Prérequis dur du lot 4 |
+| 0.4 Socle Playwright, 3 parcours | ⛔ **bloqué** | — | `@playwright/test` installé en dépendance de développement, **non commité**. Le téléchargement du binaire Chromium a été refusé — décision à prendre, voir ci-dessous |
 | 0.5 Recette visuelle en arabe | ⏳ à faire | — | Demande un œil humain, non automatisable |
+
+#### Point de blocage sur 0.4 — à trancher
+
+Playwright exige le téléchargement d'un binaire de navigateur (Chromium, environ 150 Mo) sur la
+machine de développement **et** sur le runner de CI. L'installation a été interrompue le 26/08.
+
+Trois voies possibles :
+
+| Voie | Coût | Ce qu'on obtient |
+|---|---|---|
+| **A — Playwright complet** | ~150 Mo local + une étape de CI (`npx playwright install --with-deps chromium`, mise en cache) | Les 3 parcours réellement couverts de bout en bout. C'est ce qui autorise le lot 4 |
+| **B — Tests d'intégrité de routage seuls, sans navigateur** | quasi nul — de simples requêtes HTTP contre le serveur de développement | Protège le travail du lot 0.2 (les 11 redirections et les 11 routes) et détecte toute régression d'arborescence. Ne couvre **aucun** parcours métier, donc **n'autorise pas le lot 4** |
+| **C — Reporter 0.4** | nul | Le lot 4 devient un refactor sans filet sur un fichier de 1 470 lignes portant 12 gestionnaires d'API. À n'envisager que si le lot 4 est lui aussi reporté |
+
+**Recommandation : voie A.** C'est le seul choix qui tient la promesse du plan. La voie B est un lot
+de consolation utile mais qui ne remplit pas la fonction attendue de 0.4 ; la voie C revient à
+accepter le risque le plus élevé du plan sans parade.
+
+**Conséquence si A est refusée** : le lot 4 doit être explicitement retiré du périmètre ou assorti
+d'une recette manuelle documentée, écran par écran, sur les 12 gestionnaires extraits.
+
+#### Convention de sélecteurs retenue pour les tests web
+
+Reprise de celle du mobile (lots L6.5 et L6.7) plutôt que d'en inventer une seconde :
+`data-testid="<ecran>-<element>"` en kebab-case — par exemple `recherche-depart`,
+`retours-nouveau-submit`, `demandes-recues-accepter`. Le mobile utilise déjà
+`testID="change-password-submit"`, `testID="edit-profile-phone"`.
 
 **Décidé en chemin, hors plan initial** — la classe `dark` posée sur `<html>` par la zone
 d'administration survivait à une navigation côté client vers les écrans métier. D'où la création de
@@ -522,6 +549,75 @@ technique.
 
 ---
 
+## 1bis. Et l'application mobile ?
+
+**Question posée le 26/08. Réponse : ce plan ne couvre que le web.** Ce n'était pas un choix
+raisonné — le périmètre a été fixé à `frontend/` dès l'audit initial, et personne ne l'a
+rouvert depuis. C'est une omission, et voici ce qu'elle implique.
+
+### Ce qui n'est pas un problème
+
+**Le renommage des routes du lot 0.2 n'a aucun impact sur le mobile.** Vérifié : le mobile consomme
+**exclusivement `/api/v1/`** (28 endpoints relevés dans `mobile/src`), et le lot 0.2 n'a renommé que
+des routes de **pages web**, jamais un chemin d'API. Le mobile ne référence aucune URL de page web.
+
+**La contrainte de double surface API est déjà dans ce plan** (§0.4) : tout nouvel endpoint doit être
+exposé dans `/api/` **et** `/api/v1/`. Elle protège précisément le mobile.
+
+### Ce qui est un vrai problème — trois points
+
+**M-1 — Les quatre tâches backend servent les deux applications, mais le plan n'ordonnance qu'un
+seul consommateur.** B-1 (véhicule et unités), B-2 (capacité structurée), B-3 (KPI du pivot) et B-4
+(favoris à l'envers) sont des tâches backend uniques dont le mobile a exactement le même besoin. Les
+faire au titre du web est efficace ; ne planifier que l'écran web qui les consomme laisse le mobile
+en attente sans que ce soit écrit nulle part.
+
+**M-2 — Cinq écrans du pivot manquent sur les deux applications.** Mesuré sur `mobile/app` et
+`mobile/src` :
+
+| Écran du delta | Web | Mobile |
+|---|---|---|
+| T4.4 Fin de mission → amorce de retour | ❌ | ❌ *(0 occurrence de l'amorce)* |
+| T1.3 Mes trajets publiés (inventaire) | ❌ | ❌ |
+| T5.4 Performance retours | ❌ | ❌ *(0 occurrence de `metrics`)* |
+| C1.2 Économie estimée | ❌ | ❌ *(0 occurrence d'économie ou de gain)* |
+| T5.5 / C5.3 Favoris et clients fidèles | ❌ | ❌ *(0 occurrence de `favorite`)* |
+
+Le risque n'est pas le retard, c'est la **divergence** : deux implémentations séparées du même écran
+d'amorce, avec deux règles de non-répétition différentes et deux calculs d'économie différents.
+
+**M-3 — Le mobile est en avance sur deux écrans, et le plan web prévoit de les réinventer.**
+
+| Écran | Mobile | Web |
+|---|---|---|
+| Alertes corridor (C1.7) | ✅ **complet** — `CorridorAlertsPanel.tsx`, `CorridorAlertRow.tsx`, `useCorridorAlerts.ts`, `useCreateCorridorAlert.ts`, `useDeleteCorridorAlert.ts` | ❌ à créer, priorité 6 du delta |
+| Demandes reçues consolidées (T2.1) | ✅ **complet** — `app/(app)/requests/index.tsx` + `[jobId].tsx` | ❌ à créer, priorité 3 du delta |
+
+Le mobile a donc déjà résolu deux problèmes que le plan web traite comme neufs. **Les lots 2 et 3
+doivent transposer ces implémentations, pas en écrire d'autres.**
+
+### Ajustement retenu
+
+Ce plan **reste un plan web** — l'élargir maintenant à un plan bi-plateforme le rendrait illisible,
+et un plan mobile existe déjà (`docs/PLAN_ACHEVEMENT_MOBILE_2026-08-07.md`, lots L0 à L5 et L6.5
+livrés au 25/08, reste de L6 bloqué sur des comptes externes). Trois règles suffisent à supprimer le
+risque de divergence :
+
+1. **Toute tâche backend de ce plan (B-1 à B-4) est livrée pour les deux surfaces API et marquée
+   comme servant aussi le mobile.** Déjà la règle, désormais explicite.
+2. **Tout écran du delta absent des deux applications est spécifié une seule fois** — dans le brief
+   de design — avec ses deux déclinaisons. Le calcul de l'économie estimée et la règle de
+   non-répétition de l'amorce sont définis côté backend ou dans un module partagé, jamais deux fois.
+3. **Les lots 2 et 3 commencent par lire l'implémentation mobile existante** (`CorridorAlertsPanel`,
+   `requests/index`) et la transposer. Ajouté à la définition de fini de ces lots.
+
+**Reste à décider** — faut-il un lot 7 « rattrapage mobile » qui porte les cinq écrans manquants sur
+le mobile après le lot 6, ou bien chaque écran est-il livré sur les deux plateformes au sein de son
+lot ? La seconde option évite la divergence mais allonge chaque lot d'environ 40 %. **Question
+ouverte, à trancher avant le lot 1.**
+
+---
+
 ## 2. Ce qui reste hors périmètre, et pourquoi
 
 | Élément | Raison |
@@ -559,8 +655,11 @@ Trois décisions bloquent des lots. À trancher dans cet ordre.
 | 3 | Base de calcul de l'économie estimée | Lot 3 | ✅ **Tranché le 26/08.** `estimate_price()` de `logistics/pricing.py` avec `PricingGrid`, et **affichage de la base de comparaison** à côté du chiffre. Jamais un montant nu |
 | 4 | Publication d'un retour avant vérification complète ? | Lot 6 | ✅ **Tranché le 26/08 — autorisée**, avec mention explicite du statut « en cours de vérification » sur le trajet publié. Bloquer tarirait l'inventaire, donc la promesse client |
 
-**Toutes les décisions bloquantes sont tranchées.** Les lots 1 à 6 peuvent s'enchaîner sans nouvel
-arbitrage produit.
+| 5 | **Voie retenue pour le socle de tests (lot 0.4)** | **Lot 4** | ⏳ **Ouvert, bloquant.** Le binaire Chromium (~150 Mo) a été refusé le 26/08. Voies A, B ou C — voir le journal d'avancement. **Recommandation : A** |
+| 6 | **Portée mobile : un lot 7 de rattrapage, ou chaque écran livré sur les deux plateformes ?** | Lot 1 | ⏳ **Ouvert.** Voir §1bis. La livraison simultanée évite la divergence mais allonge chaque lot d'environ 40 % |
+
+Les décisions **produit** sont toutes tranchées. Deux décisions **de méthode** restent ouvertes (5 et 6)
+et conditionnent respectivement le lot 4 et le lot 1.
 
 ## 5. À revalider avec Context7 avant implémentation
 
