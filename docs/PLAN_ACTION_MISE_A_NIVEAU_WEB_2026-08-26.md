@@ -20,28 +20,42 @@
 | 0.2 Renommer les routes — **vague A** (4 routes du pivot) | ✅ **fait** | `cb66d5b` | 4 redirections en `308` vers la bonne cible, 4 nouvelles routes en `200` |
 | 0.2 Renommer les routes — **vague B** (7 routes restantes) | ✅ **fait** | `cb0d6d0` | 11 redirections vérifiées en `308`, 11 nouvelles routes en `200`, `next build` vert |
 | 0.3 Annuler le mode sombre métier | ✅ **fait** | `cb66d5b` | `ThemeToggle` retiré d'`AppSidebar` + `ForceLightTheme` dans les deux layouts |
-| 0.4 Socle Playwright, 3 parcours | ⛔ **bloqué** | — | `@playwright/test` installé en dépendance de développement, **non commité**. Le téléchargement du binaire Chromium a été refusé — décision à prendre, voir ci-dessous |
+| 0.4 Socle Playwright — projet **`routage`** | ✅ **fait, actif en CI** | `731bc29` | **34 tests, 1,6 s**, sans binaire de navigateur ni backend |
+| 0.4 Socle Playwright — projet **`parcours`** | 🟡 **écrit, en attente du binaire** | `731bc29` | Les 3 parcours sont écrits et s'ignorent proprement (12 ignorés vérifiés) |
 | 0.5 Recette visuelle en arabe | ⏳ à faire | — | Demande un œil humain, non automatisable |
 
-#### Point de blocage sur 0.4 — à trancher
+#### Comment 0.4 a été livré à moitié, sans trancher la décision 5
 
-Playwright exige le téléchargement d'un binaire de navigateur (Chromium, environ 150 Mo) sur la
-machine de développement **et** sur le runner de CI. L'installation a été interrompue le 26/08.
+Le téléchargement du binaire Chromium (~150 Mo) ayant été refusé le 26/08, le socle a été **scindé en
+deux projets Playwright séparés par ce qu'ils exigent pour tourner**. Cela permet d'encaisser la
+moitié de la valeur immédiatement, sans préjuger de la décision.
 
-Trois voies possibles :
+**Projet `routage` — actif, bloquant en CI.** N'utilise que la fixture `request` de Playwright, donc
+la pile HTTP de Node : **aucun navigateur, aucun backend**. Il vérifie les 11 redirections en `308`
+vers la bonne cible, les 11 destinations, l'absence de survivance des anciennes routes, et — garde-fou
+issu de l'incident du 26/08 — **qu'aucune route de page francisée n'a fuité dans un chemin `/api/`**.
+Branché dans `frontend-ci.yml` comme étape bloquante.
 
-| Voie | Coût | Ce qu'on obtient |
-|---|---|---|
-| **A — Playwright complet** | ~150 Mo local + une étape de CI (`npx playwright install --with-deps chromium`, mise en cache) | Les 3 parcours réellement couverts de bout en bout. C'est ce qui autorise le lot 4 |
-| **B — Tests d'intégrité de routage seuls, sans navigateur** | quasi nul — de simples requêtes HTTP contre le serveur de développement | Protège le travail du lot 0.2 (les 11 redirections et les 11 routes) et détecte toute régression d'arborescence. Ne couvre **aucun** parcours métier, donc **n'autorise pas le lot 4** |
-| **C — Reporter 0.4** | nul | Le lot 4 devient un refactor sans filet sur un fichier de 1 470 lignes portant 12 gestionnaires d'API. À n'envisager que si le lot 4 est lui aussi reporté |
+**Projet `parcours` — écrit, en attente.** Les 3 parcours critiques. Les tests visant des écrans
+encore inexistants sont marqués `fixme` et **deviennent la définition de fini des lots 1 à 3** : un
+lot est terminé quand ses tests passent sans modification. Les tests s'auto-ignorent avec un message
+explicite quand le backend est absent, plutôt que d'échouer pour une mauvaise raison.
 
-**Recommandation : voie A.** C'est le seul choix qui tient la promesse du plan. La voie B est un lot
-de consolation utile mais qui ne remplit pas la fonction attendue de 0.4 ; la voie C revient à
-accepter le risque le plus élevé du plan sans parade.
+**Ce que cela ne règle pas.** Le projet `parcours` ne s'exécute pas sans le binaire. Le lot 4 reste
+donc **sans filet réel** : l'intégrité de routage ne couvre aucun gestionnaire d'API. La décision 5
+demeure ouverte, mais son coût a baissé — il ne reste plus qu'à installer le binaire et lever les
+`fixme`, tout le code de test est écrit.
 
-**Conséquence si A est refusée** : le lot 4 doit être explicitement retiré du périmètre ou assorti
-d'une recette manuelle documentée, écran par écran, sur les 12 gestionnaires extraits.
+#### Convention de sélecteurs retenue pour les tests web
+
+Reprise de celle du mobile (lots L6.5 et L6.7) plutôt que d'en inventer une seconde :
+`data-testid="<ecran>-<element>"` en kebab-case — par exemple `recherche-depart`,
+`retours-nouveau-submit`, `demandes-recues-accepter`. Le mobile utilise déjà
+`testID="change-password-submit"`, `testID="edit-profile-phone"`.
+
+**Dette créée par 0.4, à payer dans les lots 1 à 3** : les écrans existants ne portent pas encore ces
+attributs. Chaque lot doit les poser sur les écrans qu'il touche, sans quoi les tests `parcours`
+échoueront sur des sélecteurs absents et non sur de vrais défauts.
 
 #### Convention de sélecteurs retenue pour les tests web
 
@@ -64,10 +78,20 @@ leur séparation relève du lot 4. Documenté comme dépendance.
 tout commit. Leçon pour la vague B et les lots suivants : **ne jamais réécrire un motif de route sans
 exclure les chemins commençant par `/api/`.**
 
+### Lot 0 · **terminé, à une réserve près**
+
+Cinq tâches sur six sont livrées. Il reste **0.5**, la recette visuelle en arabe, qui demande un œil
+humain, et la moitié « navigateur » de 0.4, suspendue à la décision 5.
+
+**Le lot 1 peut démarrer.** Sa définition de fini est déjà écrite, sous forme de tests `fixme` dans
+`e2e/parcours-a-retour-capte.spec.ts` : l'amorce de fin de mission (T4.4) et l'inventaire des trajets
+publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2 et B-3a, puisque les
+écrans en dépendent.
+
 ### Lots 1 à 6 · **non démarrés**
 
-Les décisions bloquantes du §4 sont désormais toutes tranchées : le lot 1 peut démarrer dès que le
-lot 0.4 est livré.
+Les décisions **produit** sont toutes tranchées. Deux décisions de **méthode** restent ouvertes :
+la 5 (voie du socle de tests, conditionne le lot 4) et la 6 (portée mobile, conditionne le lot 1).
 
 ---
 
