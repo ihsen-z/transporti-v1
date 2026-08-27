@@ -44,6 +44,14 @@ export default defineConfig({
       testMatch: /routage\.spec\.ts/,
     },
     {
+      // Garde-fou des `data-testid` dont dependent les parcours. Exige un
+      // navigateur (pages client) mais aucun backend, donc executable en CI de
+      // facon bloquante des maintenant.
+      name: "selecteurs",
+      testMatch: /selecteurs\.spec\.ts/,
+      use: { ...devices["Desktop Chrome"] },
+    },
+    {
       name: "parcours",
       testMatch: /parcours-.*\.spec\.ts/,
       use: { ...devices["Desktop Chrome"] },

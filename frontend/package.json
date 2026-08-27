@@ -11,7 +11,8 @@
     "prepare": "husky",
     "test:routage": "playwright test --project=routage",
     "test:parcours": "playwright test --project=parcours",
-    "test:e2e": "playwright test"
+    "test:e2e": "playwright test",
+    "test:selecteurs": "playwright test --project=selecteurs"
   },
   "engines": {
     "node": ">=18.0.0"

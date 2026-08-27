@@ -20,6 +20,7 @@ import {
   Banknote,
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useVehiclePrefill, libelleCapacite } from "@/hooks/useVehiclePrefill";
 
 /* ------------------------------------------------------------------ */
 /*  24 Gouvernorats de Tunisie                                         */
@@ -91,39 +92,51 @@ export default function ReturnTripPage() {
   // D11 — instant booking opt-in (off by default)
   const [instantBooking, setInstantBooking] = useState(false);
 
-  // Sprint 5 (H2) — prefill vehicle from the transporter's structured profile
+  // T1.2 (lot 1) — pré-remplissage depuis le profil, extrait dans un hook.
+  // Le véhicule et la capacité ne sont jamais ressaisis : c'est ce qui ramène
+  // la publication à 4 saisies et rend tenable la promesse des 30 secondes.
+  const { vehicule } = useVehiclePrefill();
+
+  // Part de capacité choisie de façon tactile plutôt que saisie. `null` = le
+  // transporteur préfère préciser lui-même.
+  const [partCapacite, setPartCapacite] = useState<"tout" | "moitie" | null>(
+    null,
+  );
+
   useEffect(() => {
-    let cancelled = false;
-    apiClient
-      .get<{ vehicle_type?: string; vehicle_capacity_kg?: string | number }>(
-        "/api/transporter/profile/me/",
-      )
-      .then((p) => {
-        if (cancelled || !p) return;
-        setForm((prev) => {
-          const next = { ...prev };
-          if (!prev.vehicle_type && p.vehicle_type) {
-            const match = [
-              "camion",
-              "camionnette",
-              "fourgon",
-              "pickup",
-              "remorque",
-            ].find((v) => p.vehicle_type!.toLowerCase().includes(v));
-            if (match) next.vehicle_type = match;
-          }
-          if (!prev.available_capacity && p.vehicle_capacity_kg) {
-            next.available_capacity = `${p.vehicle_capacity_kg} kg`;
-          }
-          return next;
-        });
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
+    if (!vehicule.disponible) return;
+    setForm((prev) => {
+      const next = { ...prev };
+      if (!prev.vehicle_type && vehicule.type)
+        next.vehicle_type = vehicule.type;
+      if (!prev.available_capacity) {
+        next.available_capacity = libelleCapacite(vehicule);
+      }
+      return next;
+    });
+  }, [vehicule]);
+
+  // Capacité structurée envoyée au backend (B-2). Dérivée de la part choisie
+  // appliquée à la capacité du véhicule. Reste `null` quand le profil ne porte
+  // pas la donnée — on n'invente jamais un chiffre, et le volume n'est jamais
+  // déduit du poids.
+  const capaciteStructuree = (): {
+    kg: number | null;
+    m3: number | null;
+  } => {
+    if (partCapacite === null) return { kg: null, m3: null };
+    const facteur = partCapacite === "tout" ? 1 : 0.5;
+    return {
+      kg:
+        vehicule.capaciteKg !== null
+          ? Math.round(vehicule.capaciteKg * facteur * 10) / 10
+          : null,
+      m3:
+        vehicule.capaciteM3 !== null
+          ? Math.round(vehicule.capaciteM3 * facteur * 100) / 100
+          : null,
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  };
 
   // Sprint 5 — reverse matching: open classic requests on the corridor,
   // returned by the creation endpoint and shown on the success screen.
@@ -175,6 +188,13 @@ export default function ReturnTripPage() {
         instant_booking: instantBooking,
       };
 
+      // B-2 (lot 1) — capacité structurée, en plus du libellé texte ci-dessus
+      // qui reste la description lisible. Envoyée seulement quand elle est
+      // réellement connue : un 0 rendrait le trajet invisible au matching.
+      const { kg, m3 } = capaciteStructuree();
+      if (kg !== null) payload.available_capacity_kg = kg;
+      if (m3 !== null) payload.available_capacity_m3 = m3;
+
       if (form.price_tnd_min)
         payload.price_tnd_min = parseFloat(form.price_tnd_min);
 
@@ -215,7 +235,10 @@ export default function ReturnTripPage() {
   /* ------------------------------------------------------------------ */
   if (success) {
     return (
-      <div className="min-h-[80vh] flex items-center justify-center p-6">
+      <div
+        data-testid="retours-nouveau-confirmation"
+        className="min-h-[80vh] flex items-center justify-center p-6"
+      >
         <div className="text-center max-w-md animate-fade-in">
           <div className="relative mx-auto w-20 h-20 mb-6">
             <div className="absolute inset-0 bg-gradient-to-br from-purple-200 to-purple-100 rounded-full animate-ping opacity-20" />
@@ -313,6 +336,21 @@ export default function ReturnTripPage() {
 
       {/* ============ FORM CARD ============ */}
       <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+        {/* T1.2 — le véhicule vient du profil et n'est pas ressaisi. Présenté
+            comme un fait acquis, pas comme un champ à remplir. */}
+        {vehicule.disponible && (
+          <div
+            data-testid="retours-nouveau-vehicule-prerempli"
+            className="mx-6 mt-6 px-4 py-3 rounded-xl bg-brand-50 border border-brand-600/20 flex items-center gap-3"
+          >
+            <Truck className="w-4 h-4 text-brand-600 shrink-0" />
+            <p className="text-sm text-brand-700">
+              <span className="font-semibold">{libelleCapacite(vehicule)}</span>
+              <span className="text-brand-600/70"> · depuis votre profil</span>
+            </p>
+          </div>
+        )}
+
         {/* ---------- Section 1: Itinéraire ---------- */}
         <div className="p-6 border-b border-neutral-100">
           <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
@@ -327,6 +365,7 @@ export default function ReturnTripPage() {
                 {t.pickupGov}
               </label>
               <select
+                data-testid="retours-nouveau-depart"
                 value={form.pickup_governorate}
                 onChange={(e) => update("pickup_governorate", e.target.value)}
                 className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm font-medium bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all appearance-none cursor-pointer"
@@ -357,6 +396,7 @@ export default function ReturnTripPage() {
                 {t.dropoffGov}
               </label>
               <select
+                data-testid="retours-nouveau-arrivee"
                 value={form.dropoff_governorate}
                 onChange={(e) => update("dropoff_governorate", e.target.value)}
                 className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm font-medium bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all appearance-none cursor-pointer"
@@ -409,8 +449,39 @@ export default function ReturnTripPage() {
             <Calendar className="w-4 h-4 text-purple-500" />
             {t.sectionWhen}
           </h3>
+          {/* T1.2 — saisie 3 : choix tactile plutôt que calendrier. Un
+              calendrier pour « je rentre aujourd'hui » est une friction pure. */}
+          <div className="flex gap-2 mb-3">
+            {(
+              [
+                { cle: "aujourdhui", label: "Aujourd'hui", jours: 0 },
+                { cle: "demain", label: "Demain", jours: 1 },
+              ] as const
+            ).map((choix) => (
+              <button
+                key={choix.cle}
+                type="button"
+                data-testid={`retours-nouveau-date-${choix.cle}`}
+                onClick={() => {
+                  const d = new Date();
+                  d.setDate(d.getDate() + choix.jours);
+                  d.setHours(8, 0, 0, 0);
+                  // Format attendu par l'input datetime-local, en heure locale.
+                  const pad = (n: number) => String(n).padStart(2, "0");
+                  update(
+                    "scheduled_time",
+                    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`,
+                  );
+                }}
+                className="flex-1 px-3 py-2.5 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-700 hover:border-purple-400 hover:bg-purple-50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+              >
+                {choix.label}
+              </button>
+            ))}
+          </div>
           <input
             type="datetime-local"
+            data-testid="retours-nouveau-date-autre"
             value={form.scheduled_time}
             min={minDate}
             onChange={(e) => update("scheduled_time", e.target.value)}
@@ -463,10 +534,62 @@ export default function ReturnTripPage() {
               <label className="block text-xs font-medium text-neutral-500 mb-1.5">
                 {t.capacityLabel}
               </label>
+              {/* T1.2 — saisie 4 : la place restante par choix tactile. Les
+                  parts sont appliquées à la capacité du profil, ce qui évite au
+                  transporteur de calculer un tonnage restant de tête. Le champ
+                  texte reste disponible pour préciser librement. */}
+              {vehicule.disponible && (
+                <div className="flex gap-2 mb-2">
+                  {(
+                    [
+                      { cle: "tout", label: "Tout le camion" },
+                      { cle: "moitie", label: "La moitié" },
+                    ] as const
+                  ).map((choix) => (
+                    <button
+                      key={choix.cle}
+                      type="button"
+                      data-testid={`retours-nouveau-capacite-${choix.cle}`}
+                      onClick={() => {
+                        setPartCapacite(choix.cle);
+                        const facteur = choix.cle === "tout" ? 1 : 0.5;
+                        const morceaux: string[] = [];
+                        if (vehicule.capaciteKg !== null) {
+                          morceaux.push(
+                            `${Math.round(vehicule.capaciteKg * facteur * 10) / 10} kg`,
+                          );
+                        }
+                        if (vehicule.capaciteM3 !== null) {
+                          morceaux.push(
+                            `${Math.round(vehicule.capaciteM3 * facteur * 100) / 100} m³`,
+                          );
+                        }
+                        update(
+                          "available_capacity",
+                          morceaux.join(" · ") || choix.label,
+                        );
+                      }}
+                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all focus:ring-2 focus:ring-purple-500/20 outline-none ${
+                        partCapacite === choix.cle
+                          ? "border-purple-400 bg-purple-50 text-purple-700"
+                          : "border-neutral-200 text-neutral-700 hover:border-purple-400 hover:bg-purple-50"
+                      }`}
+                    >
+                      {choix.label}
+                    </button>
+                  ))}
+                </div>
+              )}
               <input
                 type="text"
+                data-testid="retours-nouveau-capacite-preciser"
                 value={form.available_capacity}
-                onChange={(e) => update("available_capacity", e.target.value)}
+                onChange={(e) => {
+                  // Une saisie libre reprend la main : on cesse de déduire la
+                  // capacité structurée d'une part, faute de savoir la lire.
+                  setPartCapacite(null);
+                  update("available_capacity", e.target.value);
+                }}
                 placeholder={t.capacityPlaceholder}
                 className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
               />
@@ -531,6 +654,7 @@ export default function ReturnTripPage() {
         </Link>
 
         <button
+          data-testid="retours-nouveau-submit"
           onClick={handleSubmit}
           disabled={!canSubmit || submitting}
           className="relative inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-purple-200 hover:shadow-lg hover:shadow-purple-300 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"

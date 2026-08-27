@@ -74,12 +74,54 @@ jobs:
     # redirections et les 11 destinations du renommage du lot 0.2, et interdit
     # qu une route de page francisee fuite dans un chemin /api/.
     #
-    # Le projet `parcours` (les 3 parcours critiques) n est PAS branche ici :
-    # il exige `npx playwright install --with-deps chromium` et un backend
-    # joignable. A activer quand le lot 0.4 passe en voie A.
     # Voir docs/PLAN_ACTION_MISE_A_NIVEAU_WEB_2026-08-26.md
     - name: Route integrity tests (Playwright, sans navigateur)
       run: npm run test:routage
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_API_TIMEOUT: 5000
+
+    # Decision 5 du plan, tranchee voie A le 26/08 : le binaire Chromium est
+    # installe en CI pour rendre les 3 parcours critiques executables. C est la
+    # seule parade au risque du lot 4 (decoupage de jobs/[id]/page.tsx, 1 470
+    # lignes et 12 gestionnaires d API).
+    #
+    # Mis en cache sur la version de Playwright pour eviter un telechargement a
+    # chaque execution : la cle change quand package-lock.json change.
+    - name: Cache Playwright browsers
+      id: playwright-cache
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/ms-playwright
+        key: playwright-${{ runner.os }}-${{ hashFiles('frontend/package-lock.json') }}
+
+    - name: Install Playwright Chromium
+      if: steps.playwright-cache.outputs.cache-hit != 'true'
+      run: npx playwright install --with-deps chromium
+
+    # Les dependances systeme sont necessaires meme quand le binaire vient du
+    # cache : elles ne sont pas dans ~/.cache/ms-playwright.
+    - name: Install Playwright system deps (cache hit)
+      if: steps.playwright-cache.outputs.cache-hit == 'true'
+      run: npx playwright install-deps chromium
+
+    # BLOQUANT — garde-fou des data-testid dont dependent les parcours. Exige un
+    # navigateur (les ecrans concernes sont des composants client qui ne rendent
+    # rien cote serveur) mais aucun backend. Sans lui, la disparition d un
+    # selecteur lors d un refactor se manifesterait plus tard comme un faux
+    # echec fonctionnel dans les parcours - le pire des diagnostics.
+    - name: Selector guard tests (Playwright, Chromium)
+      run: npm run test:selecteurs
+      env:
+        NEXT_PUBLIC_API_URL: http://localhost:8000
+        NEXT_PUBLIC_API_TIMEOUT: 5000
+
+    # NON BLOQUANT pour l instant : les parcours s auto-ignorent sans backend
+    # joignable, et les ecrans a creer sont marques `fixme`. A rendre bloquant
+    # quand le lot 1 livre ses ecrans et qu un backend de recette est dispo.
+    - name: Critical journey tests (Playwright, Chromium)
+      run: npm run test:parcours
+      continue-on-error: true
       env:
         NEXT_PUBLIC_API_URL: http://localhost:8000
         NEXT_PUBLIC_API_TIMEOUT: 5000

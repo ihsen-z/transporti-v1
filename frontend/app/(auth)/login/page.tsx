@@ -30,10 +30,7 @@ export default function LoginPage() {
   // Show session expired toast when redirected from session guard
   useEffect(() => {
     if (searchParams.get("expired") === "true") {
-      showToast(
-        "warning",
-        t.auth.sessionExpired,
-      );
+      showToast("warning", t.auth.sessionExpired);
     }
   }, [searchParams, showToast]);
 
@@ -118,9 +115,7 @@ export default function LoginPage() {
         <h1 className="text-2xl font-bold text-white mb-2">
           {t.auth.loginTitle}
         </h1>
-        <p className="text-blue-200 text-sm">
-          {t.auth.loginSubtitle}
-        </p>
+        <p className="text-blue-200 text-sm">{t.auth.loginSubtitle}</p>
       </div>
 
       <>
@@ -142,6 +137,7 @@ export default function LoginPage() {
             <div className="relative">
               <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
+                data-testid="login-email"
                 id="email"
                 type="email"
                 value={email}
@@ -173,6 +169,7 @@ export default function LoginPage() {
             <div className="relative">
               <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
               <input
+                data-testid="login-password"
                 id="password"
                 type={showPassword ? "text" : "password"}
                 value={password}
@@ -199,6 +196,7 @@ export default function LoginPage() {
 
           <button
             type="submit"
+            data-testid="login-submit"
             disabled={isAnyLoading}
             className="w-full flex items-center justify-center gap-2 bg-accent-500 text-white py-3 px-6 rounded-xl font-semibold hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
