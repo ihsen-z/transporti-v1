@@ -173,7 +173,8 @@ class TrustProfileSubmissionSerializer(serializers.ModelSerializer):
     class Meta:
         model = TrustProfile
         fields = [
-            'vehicle_type', 'vehicle_capacity_kg', 'vehicle_plate', 
+            'vehicle_type', 'vehicle_capacity_kg', 'vehicle_capacity_m3',
+            'vehicle_plate',
             'vehicle_photos', 'service_areas', 'specializations',
             'verification_status'
         ]

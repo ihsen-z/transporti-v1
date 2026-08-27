@@ -231,6 +231,19 @@ class TrustProfile(models.Model):
         max_digits=8, decimal_places=1, null=True, blank=True,
         help_text="Max load capacity in kg"
     )
+    # B-1 (lot 1, plan de mise a niveau du 26/08/2026) : le poids reste la
+    # contrainte reglementaire et fait foi ; le volume est ce que l'utilisateur
+    # se represente (« mon frigo rentre-t-il ? »). Les deux coexistent, le
+    # volume est optionnel, et l'un n'est jamais deduit de l'autre — la densite
+    # d'un chargement n'est pas connue de la plateforme.
+    #
+    # Ces champs alimentent le pre-remplissage de l'ecran de publication d'un
+    # retour, qui conditionne la promesse des 30 secondes.
+    vehicle_capacity_m3 = models.DecimalField(
+        max_digits=7, decimal_places=2, null=True, blank=True,
+        help_text="Vehicle load volume in m3. Optional — displayed only when "
+                  "set, never derived from the weight."
+    )
     vehicle_plate = models.CharField(max_length=20, blank=True)
     vehicle_photos = models.JSONField(
         default=list, blank=True,

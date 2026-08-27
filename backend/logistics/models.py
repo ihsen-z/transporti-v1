@@ -66,6 +66,27 @@ class TransportJob(models.Model):
         help_text="True if created by a transporter indicating return trip availability")
     available_capacity = models.CharField(max_length=255, blank=True,
         help_text="Available capacity description for return trips (e.g. '2 tonnes, camion bâché')")
+
+    # B-2 (lot 1, plan de mise a niveau du 26/08/2026) : capacite structuree.
+    #
+    # `available_capacity` ci-dessus reste le libelle lisible par un humain, et
+    # la seule source pour les trajets crees avant cette migration. Les deux
+    # champs ci-dessous le complementent sans le remplacer : ils rendent
+    # possible le matching quantitatif (« mon frigo de 120 kg rentre-t-il ? »),
+    # impossible sur du texte libre.
+    #
+    # Le poids est la contrainte reglementaire et fait foi. Le volume est
+    # optionnel parce que c'est ce que l'utilisateur se represente — decision
+    # produit du 26/08. Ne JAMAIS deduire l'un de l'autre : la densite d'un
+    # chargement n'est pas connue de la plateforme.
+    available_capacity_kg = models.DecimalField(
+        max_digits=8, decimal_places=1, null=True, blank=True,
+        help_text="Remaining load capacity in kg. Authoritative when set; "
+                  "None means only the free-text description is available.")
+    available_capacity_m3 = models.DecimalField(
+        max_digits=7, decimal_places=2, null=True, blank=True,
+        help_text="Remaining volume in m3. Optional — displayed only when set, "
+                  "never derived from the weight.")
     instant_booking = models.BooleanField(default=False,
         help_text="D11: return trips only — allow direct booking without a structured request (off by default)")
 

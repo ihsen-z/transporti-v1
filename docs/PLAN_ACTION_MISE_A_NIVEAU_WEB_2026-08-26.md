@@ -680,7 +680,30 @@ Trois décisions bloquent des lots. À trancher dans cet ordre.
 | 4 | Publication d'un retour avant vérification complète ? | Lot 6 | ✅ **Tranché le 26/08 — autorisée**, avec mention explicite du statut « en cours de vérification » sur le trajet publié. Bloquer tarirait l'inventaire, donc la promesse client |
 
 | 5 | **Voie retenue pour le socle de tests (lot 0.4)** | **Lot 4** | ⏳ **Ouvert, bloquant.** Le binaire Chromium (~150 Mo) a été refusé le 26/08. Voies A, B ou C — voir le journal d'avancement. **Recommandation : A** |
-| 6 | **Portée mobile : un lot 7 de rattrapage, ou chaque écran livré sur les deux plateformes ?** | Lot 1 | ⏳ **Ouvert.** Voir §1bis. La livraison simultanée évite la divergence mais allonge chaque lot d'environ 40 % |
+| 6 | **Portée mobile : un lot 7 de rattrapage, ou chaque écran livré sur les deux plateformes ?** | Lot 1 | ✅ **Tranché le 26/08 — chaque écran est livré sur les deux plateformes, au sein de son lot.** La divergence est le risque réel ; on paie pour l'éliminer à la source plutôt que de la rattraper. Ce plan cesse donc d'être un plan web : il devient bi-plateforme |
+
+#### Conséquence de la décision 6 sur le calendrier — à assumer
+
+La livraison simultanée allonge chaque lot fonctionnel d'environ 40 %. Avec un développeur à temps
+plein, l'horizon passe de **12 à environ 16 semaines** — au-delà des 3 mois initialement évoqués.
+
+**Ce n'est pas une dérive, c'est le prix d'une décision prise en connaissance de cause.** Trois
+options si les 3 mois redeviennent contraignants : réduire le nombre d'écrans du delta plutôt que la
+qualité de chacun ; livrer les lots 5 et 6 en web seul et rattraper le mobile après ; ou renforcer la
+capacité. À rouvrir seulement si une date externe l'impose.
+
+| Lot | Durée initiale (web seul) | Durée révisée (deux plateformes) |
+|---|---|---|
+| 1 — Le retour à vide capté | 3 semaines | **4 semaines** |
+| 2 — Boîte de réception transporteur | 1 semaine | **1 semaine** *(le mobile a déjà l'écran, simple transposition inverse)* |
+| 3 — Conversion client | 2 semaines | **3 semaines** |
+| 4 — Dette architecturale | 2 semaines | 2 semaines *(web uniquement, le mobile n'a pas cette dette)* |
+| 5 — Argent et réputation | 2 semaines | **3 semaines** |
+| 6 — Rétention et acquisition | 1 semaine | **2 semaines** |
+| **Total** | 12 semaines | **16 semaines** |
+
+Le lot 2 ne s'allonge pas : le mobile porte déjà la boîte de réception consolidée, c'est le web qui
+rattrape. Le lot 4 non plus : la dette de `jobs/[id]/page.tsx` est purement web.
 
 Les décisions **produit** sont toutes tranchées. Deux décisions **de méthode** restent ouvertes (5 et 6)
 et conditionnent respectivement le lot 4 et le lot 1.

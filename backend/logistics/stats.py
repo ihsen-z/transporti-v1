@@ -11,6 +11,7 @@ from django.db.models import Sum, Avg
 from django.utils import timezone
 
 from .models import TransportJob, Offer
+from .stats_corridors import revenue_by_corridor, underserved_corridors
 
 
 def available_missions_queryset(user):
@@ -150,4 +151,10 @@ def get_transporter_stats(user) -> dict:
         'return_trips_filled': return_trips_filled,
         'fill_rate': fill_rate,                             # None → « — »
         'km_transformed': float(km_transformed),
+        # B-3b (lot 1) — ventilation par corridor, pour l'écran « Performance
+        # retours ». `revenue_by_corridor` est rétrospectif et se réconcilie
+        # avec K4 au dinar près ; `underserved_corridors` est prospectif et
+        # indique où publier ensuite. Voir logistics/stats_corridors.py.
+        'revenue_by_corridor': revenue_by_corridor(user),
+        'underserved_corridors': underserved_corridors(user),
     }

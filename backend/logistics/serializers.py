@@ -57,6 +57,7 @@ class TransportJobListSerializer(serializers.ModelSerializer):
             'owner_verification_status',
             'price_tnd_min', 'price_tnd_max',
             'is_return_trip', 'available_capacity', 'instant_booking',
+            'available_capacity_kg', 'available_capacity_m3',
             'distance_km', 'route_polyline',
             'created_at'
         ]
@@ -119,6 +120,7 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
             'price_tnd_min', 'price_tnd_max', 'owner',
             'pickup_hint', 'dropoff_hint',
             'is_return_trip', 'available_capacity', 'instant_booking',
+            'available_capacity_kg', 'available_capacity_m3',
             'distance_km', 'is_expired',
             'accepted_transporter', 'has_reviewed', 'client_confirmed',
             'commission_rate', 'my_offer', 'booking_payment_method',
@@ -595,6 +597,9 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
     trust_score = serializers.SerializerMethodField()
     vehicle_type = serializers.CharField(read_only=True)
     vehicle_capacity_kg = serializers.DecimalField(max_digits=8, decimal_places=1, read_only=True)
+    # B-1 : volume optionnel. Reste None quand le transporteur ne l'a pas
+    # renseigne — l'interface n'affiche alors que le poids, sans conversion.
+    vehicle_capacity_m3 = serializers.DecimalField(max_digits=7, decimal_places=2, read_only=True)
     vehicle_photos = serializers.JSONField(read_only=True)
     service_areas = serializers.JSONField(read_only=True)
     specializations = serializers.JSONField(read_only=True)
@@ -620,7 +625,8 @@ class TransporterProfileSerializer(serializers.ModelSerializer):
             'first_name', 'last_name', 'email', 'phone',
             'avatar_url', 'bio', 'joined_at',
             'is_verified', 'trust_score', 
-            'vehicle_type', 'vehicle_capacity_kg', 'vehicle_photos',
+            'vehicle_type', 'vehicle_capacity_kg', 'vehicle_capacity_m3',
+            'vehicle_photos',
             'service_areas', 'specializations',
             'completion_rate', 'total_jobs_completed',
             'avg_response_time_min', 'insurance_valid_until',
@@ -772,6 +778,9 @@ class TransporterProfileEditSerializer(serializers.Serializer):
     vehicle_capacity_kg = serializers.DecimalField(
         max_digits=8, decimal_places=1, required=False, allow_null=True
     )
+    vehicle_capacity_m3 = serializers.DecimalField(
+        max_digits=7, decimal_places=2, required=False, allow_null=True
+    )
     service_areas = serializers.ListField(
         child=serializers.CharField(max_length=50),
         required=False,
@@ -808,6 +817,13 @@ class TransporterProfileEditSerializer(serializers.Serializer):
             raise serializers.ValidationError("La capacité doit être positive.")
         return value
 
+    def validate_vehicle_capacity_m3(self, value):
+        # Meme regle que le poids : une capacite nulle ou negative n'a pas de
+        # sens, et laisser passer un 0 ferait croire a un vehicule plein.
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("Le volume doit être positif.")
+        return value
+
 # =============================================================================
 # TRANSPORTER MISSION SERIALIZERS
 # =============================================================================
@@ -831,6 +847,7 @@ class TransporterMissionSerializer(serializers.ModelSerializer):
             'scheduled_time', 'description',
             'client_name', 'offer_price', 'offer_price_net', 'offer_commission',
             'is_return_trip', 'available_capacity',
+            'available_capacity_kg', 'available_capacity_m3',
             'created_at', 'updated_at',
         ]
         read_only_fields = fields
@@ -865,7 +882,37 @@ class TransporterMissionSerializer(serializers.ModelSerializer):
         return float(offer.commission_amount) if offer else 0
 
 
-class ReturnTripCreateSerializer(serializers.ModelSerializer):
+class StructuredCapacityValidationMixin:
+    """
+    B-2 (lot 1) — valide la capacite structuree des trajets retour.
+
+    Partage entre creation et edition : une capacite negative ou nulle n'a pas
+    de sens, et laisser passer un 0 afficherait « 0 kg disponible » sur un
+    trajet publie, ce qui le rendrait invisible au matching sans que le
+    transporteur comprenne pourquoi.
+
+    Le champ texte `available_capacity` reste libre et non valide : il porte des
+    descriptions comme « 2 tonnes, camion bâché » que l'on ne veut pas
+    contraindre.
+    """
+
+    def validate_available_capacity_kg(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError(
+                "La capacité restante doit être positive."
+            )
+        return value
+
+    def validate_available_capacity_m3(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError(
+                "Le volume restant doit être positif."
+            )
+        return value
+
+
+class ReturnTripCreateSerializer(StructuredCapacityValidationMixin,
+                                 serializers.ModelSerializer):
     """
     Serializer for transporters creating return trip availability.
     Similar to TransportJobCreateSerializer but with is_return_trip flag.
@@ -878,6 +925,7 @@ class ReturnTripCreateSerializer(serializers.ModelSerializer):
             'scheduled_time', 'specifications', 'description',
             'price_tnd_min', 'price_tnd_max',
             'available_capacity', 'instant_booking',
+            'available_capacity_kg', 'available_capacity_m3',
         ]
 
     def validate_scheduled_time(self, value):
@@ -894,7 +942,8 @@ class ReturnTripCreateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class ReturnTripUpdateSerializer(serializers.ModelSerializer):
+class ReturnTripUpdateSerializer(StructuredCapacityValidationMixin,
+                                 serializers.ModelSerializer):
     """
     C9 (audit) / WS-F F2 — owner edits their PUBLISHED return trip.
     """
@@ -906,6 +955,7 @@ class ReturnTripUpdateSerializer(serializers.ModelSerializer):
             'scheduled_time', 'description',
             'price_tnd_min', 'price_tnd_max',
             'available_capacity', 'instant_booking',
+            'available_capacity_kg', 'available_capacity_m3',
         ]
         extra_kwargs = {f: {'required': False} for f in fields}
 
