@@ -1,0 +1,1075 @@
+<title>Cartographie Retour First</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Cairo:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+<style>
+  :root {
+    --ground: #F6F7FA;
+    --surface: #FFFFFF;
+    --surface-2: #EEF0F5;
+    --ink: #0E1526;
+    --ink-2: #414B60;
+    --ink-3: #737E94;
+    --line: #D7DBE4;
+    --line-soft: #E6E9F0;
+    --brand: #1E3A8A;
+    --brand-soft: #E3E8F6;
+    --good: #0B7D57;
+    --good-soft: #DCF0E7;
+    --cta: #C2500A;
+    --cta-soft: #FBE7D6;
+    --wire: #B4BBC9;
+    --wire-fill: #E9ECF2;
+
+    --f-display: "Archivo", "Segoe UI", system-ui, sans-serif;
+    --f-body: "Cairo", "Segoe UI", system-ui, sans-serif;
+    --f-mono: "IBM Plex Mono", ui-monospace, "Consolas", monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground: #0B0F18;
+      --surface: #131926;
+      --surface-2: #1B2130;
+      --ink: #EDF0F6;
+      --ink-2: #B4BCCC;
+      --ink-3: #808B9F;
+      --line: #2A3243;
+      --line-soft: #212936;
+      --brand: #8DA6E8;
+      --brand-soft: #1B2440;
+      --good: #4CC38F;
+      --good-soft: #12291F;
+      --cta: #F09056;
+      --cta-soft: #2E1B0D;
+      --wire: #414B60;
+      --wire-fill: #1B2130;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground: #0B0F18;
+    --surface: #131926;
+    --surface-2: #1B2130;
+    --ink: #EDF0F6;
+    --ink-2: #B4BCCC;
+    --ink-3: #808B9F;
+    --line: #2A3243;
+    --line-soft: #212936;
+    --brand: #8DA6E8;
+    --brand-soft: #1B2440;
+    --good: #4CC38F;
+    --good-soft: #12291F;
+    --cta: #F09056;
+    --cta-soft: #2E1B0D;
+    --wire: #414B60;
+    --wire-fill: #1B2130;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--f-body);
+    font-size: 15px;
+    line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 40px 24px 96px;
+    display: flex;
+    flex-direction: column;
+    gap: 52px;
+  }
+
+  .masthead {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    padding-bottom: 30px;
+    border-bottom: 2px solid var(--ink);
+  }
+
+  .eyebrow {
+    font-family: var(--f-mono);
+    font-size: 11.5px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+  }
+
+  h1 {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: clamp(30px, 5.2vw, 52px);
+    line-height: 1.04;
+    letter-spacing: -0.021em;
+    margin: 0;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+
+  .standfirst {
+    margin: 0;
+    max-width: 64ch;
+    color: var(--ink-2);
+    font-size: 16.5px;
+  }
+
+  .meta-strip {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0;
+    border: 1px solid var(--line);
+    background: var(--surface);
+  }
+
+  .meta-cell {
+    flex: 1 1 130px;
+    padding: 12px 16px;
+    border-right: 1px solid var(--line-soft);
+  }
+  .meta-cell:last-child { border-right: 0; }
+
+  .meta-cell .n {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 26px;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    display: block;
+  }
+  .meta-cell .l {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  section { display: flex; flex-direction: column; gap: 22px; }
+
+  .sec-head { display: flex; flex-direction: column; gap: 6px; }
+
+  .sec-num {
+    font-family: var(--f-mono);
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    color: var(--brand);
+    text-transform: uppercase;
+  }
+
+  h2 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: clamp(21px, 2.7vw, 29px);
+    letter-spacing: -0.014em;
+    margin: 0;
+    text-wrap: balance;
+  }
+
+  h3 {
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 17px;
+    letter-spacing: -0.008em;
+    margin: 0;
+  }
+
+  .lede { margin: 0; max-width: 68ch; color: var(--ink-2); }
+
+  .principles { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+  .principle { background: var(--surface); padding: 18px 18px 20px; display: flex; flex-direction: column; gap: 7px; }
+
+  .principle .tag {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.1em;
+    color: var(--brand);
+  }
+  .principle b { font-family: var(--f-display); font-weight: 600; font-size: 15.5px; }
+  .principle p { margin: 0; font-size: 13.8px; color: var(--ink-2); line-height: 1.55; }
+
+  .navmodel { display: grid; gap: 20px; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+
+  .navcard { border: 1px solid var(--line); background: var(--surface); }
+
+  .navcard > header {
+    padding: 13px 16px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .navcard > header .role {
+    font-family: var(--f-display);
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: 0.01em;
+  }
+  .navcard > header .hint {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    color: var(--ink-3);
+    letter-spacing: 0.06em;
+  }
+
+  .navcard .body { padding: 15px 16px 18px; display: flex; flex-direction: column; gap: 14px; }
+
+  .navgroup { display: flex; flex-direction: column; gap: 7px; }
+  .navgroup .gl {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; }
+
+  .pill {
+    font-size: 13px;
+    padding: 4px 10px;
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    color: var(--ink-2);
+  }
+  .pill.primary { border-color: var(--brand); color: var(--brand); background: var(--brand-soft); font-weight: 600; }
+  .pill.action { border-color: var(--cta); color: var(--cta); background: var(--cta-soft); font-weight: 700; }
+
+  .tree { border: 1px solid var(--line); background: var(--surface); overflow-x: auto; }
+
+  .tree table { width: 100%; border-collapse: collapse; min-width: 660px; }
+
+  .tree th {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    text-align: left;
+    font-weight: 400;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--surface-2);
+  }
+
+  .tree td {
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+    font-size: 14px;
+  }
+  .tree tr:last-child td { border-bottom: 0; }
+
+  .tree tr.block td {
+    background: var(--surface-2);
+    font-family: var(--f-display);
+    font-weight: 600;
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--ink);
+    padding-top: 11px;
+    padding-bottom: 11px;
+  }
+
+  td.id { font-family: var(--f-mono); font-size: 12px; color: var(--ink-3); white-space: nowrap; width: 1%; }
+  td.route { font-family: var(--f-mono); font-size: 12.5px; color: var(--brand); white-space: nowrap; }
+  td.st { width: 1%; white-space: nowrap; }
+  td.note { color: var(--ink-2); font-size: 13.2px; }
+
+  .chip {
+    font-family: var(--f-mono);
+    font-size: 10.5px;
+    letter-spacing: 0.05em;
+    padding: 2px 7px;
+    border: 1px solid;
+    display: inline-block;
+    white-space: nowrap;
+  }
+  .chip.ok { color: var(--good); border-color: var(--good); background: var(--good-soft); }
+  .chip.mod { color: var(--brand); border-color: var(--brand); background: var(--brand-soft); }
+  .chip.new { color: var(--cta); border-color: var(--cta); background: var(--cta-soft); }
+
+  .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 13.2px; color: var(--ink-2); align-items: center; }
+
+  .wf-grid { display: grid; gap: 24px; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+  .wf {
+    border: 1px solid var(--line);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .wf > header {
+    padding: 11px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    align-items: baseline;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .wf > header .wid { font-family: var(--f-mono); font-size: 11px; color: var(--ink-3); }
+  .wf > header .wname { font-family: var(--f-display); font-weight: 600; font-size: 14.5px; }
+
+  .screen {
+    margin: 14px;
+    border: 1.5px solid var(--wire);
+    background-color: var(--surface);
+    display: flex;
+    flex-direction: column;
+    min-height: 250px;
+  }
+
+  .sbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 9px;
+    border-bottom: 1.5px solid var(--wire);
+    background: var(--wire-fill);
+  }
+  .sbar .dot { width: 7px; height: 7px; border: 1.5px solid var(--wire); }
+  .sbar .t {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+  }
+
+  .sbody { padding: 10px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+  .box {
+    border: 1.5px solid var(--wire);
+    background: var(--surface);
+    padding: 7px 9px;
+    font-size: 12.4px;
+    color: var(--ink-2);
+    line-height: 1.4;
+  }
+  .box.fill { background: var(--wire-fill); }
+  .box.tall { min-height: 54px; }
+  .box.lab {
+    font-family: var(--f-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-3);
+    padding: 5px 8px;
+    border-style: dashed;
+    background: transparent;
+  }
+  .box strong { color: var(--ink); font-weight: 600; }
+
+  .box.hero { border-color: var(--cta); background: var(--cta-soft); color: var(--cta); font-weight: 600; }
+  .box.hero strong { color: var(--cta); }
+  .box.pivot { border-color: var(--brand); background: var(--brand-soft); color: var(--brand); }
+  .box.pivot strong { color: var(--brand); }
+  .box.value { border-color: var(--good); background: var(--good-soft); color: var(--good); font-weight: 600; }
+  .box.value strong { color: var(--good); }
+
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; min-width: 0; }
+
+  .btn {
+    border: 1.5px solid var(--wire);
+    background: var(--wire-fill);
+    padding: 6px 9px;
+    font-size: 12px;
+    text-align: center;
+    color: var(--ink-2);
+  }
+  .btn.cta { border-color: var(--cta); background: var(--cta-soft); color: var(--cta); font-weight: 700; }
+  .btn.ghost { background: transparent; }
+
+  .stat { border: 1.5px solid var(--wire); padding: 6px 8px; display: flex; flex-direction: column; }
+  .stat .v { font-family: var(--f-display); font-weight: 700; font-size: 17px; font-variant-numeric: tabular-nums; line-height: 1.15; }
+  .stat .k { font-family: var(--f-mono); font-size: 9.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); }
+  .stat.good .v { color: var(--good); }
+
+  .wf > footer {
+    padding: 10px 14px 14px;
+    font-size: 13px;
+    color: var(--ink-2);
+    border-top: 1px dashed var(--line);
+    line-height: 1.5;
+  }
+  .wf > footer b { font-family: var(--f-display); font-weight: 600; color: var(--ink); }
+
+  .flow { border: 1px solid var(--line); background: var(--surface); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+  .flow h3 { display: flex; gap: 9px; align-items: baseline; flex-wrap: wrap; }
+  .flow h3 .kpi { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.06em; color: var(--good); border: 1px solid var(--good); background: var(--good-soft); padding: 2px 7px; text-transform: uppercase; }
+  .steps { display: flex; flex-wrap: wrap; gap: 7px; align-items: stretch; }
+  .step {
+    border: 1px solid var(--line);
+    background: var(--surface-2);
+    padding: 6px 10px;
+    font-size: 12.8px;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    color: var(--ink-2);
+  }
+  .step .sid { font-family: var(--f-mono); font-size: 10px; color: var(--ink-3); letter-spacing: 0.06em; }
+  .step.new { border-color: var(--cta); background: var(--cta-soft); color: var(--cta); }
+  .step.new .sid { color: var(--cta); }
+  .arrow { align-self: center; font-family: var(--f-mono); color: var(--ink-3); font-size: 13px; }
+
+  .prio { border: 1px solid var(--line); background: var(--surface); overflow-x: auto; }
+  .prio table { width: 100%; border-collapse: collapse; min-width: 560px; }
+  .prio th { font-family: var(--f-mono); font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-3); text-align: left; font-weight: 400; padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--surface-2); }
+  .prio td { padding: 9px 14px; border-bottom: 1px solid var(--line-soft); font-size: 13.8px; vertical-align: top; }
+  .prio tr:last-child td { border-bottom: 0; }
+  .prio td.rank { font-family: var(--f-display); font-weight: 700; font-size: 15px; color: var(--brand); font-variant-numeric: tabular-nums; width: 1%; }
+  .prio td.who { font-family: var(--f-mono); font-size: 11.5px; color: var(--ink-3); white-space: nowrap; }
+  .prio td.why { color: var(--ink-2); }
+
+  .decisions { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .dec { background: var(--surface); padding: 14px 16px; display: flex; flex-direction: column; gap: 5px; }
+  .dec .q { font-family: var(--f-display); font-weight: 600; font-size: 14.8px; }
+  .dec .a { font-size: 13.8px; color: var(--ink-2); }
+  .dec .a b { color: var(--ink); font-weight: 700; }
+  .dec .qid { font-family: var(--f-mono); font-size: 10.5px; letter-spacing: 0.1em; color: var(--brand); }
+
+  .closing {
+    border-top: 2px solid var(--ink);
+    padding-top: 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .closing p { margin: 0; max-width: 70ch; color: var(--ink-2); }
+  .closing p b { color: var(--ink); }
+
+  a { color: var(--brand); }
+  a:focus-visible { outline: 2px solid var(--cta); outline-offset: 2px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+  <header class="masthead">
+    <div class="eyebrow">
+      <span>Transporti V1</span>
+      <span>Architecture de l'information</span>
+      <span>26 / 08 / 2026</span>
+    </div>
+    <h1>Cartographie applicative Retour First</h1>
+    <p class="standfirst">
+      Les interfaces nécessaires pour le client expéditeur et pour le transporteur, si la promesse
+      est bien « transformer chaque retour à vide en revenu ». Cartographie, fils de fer, et
+      la liste des écrans qui manquent — dans l'ordre où ils comptent.
+    </p>
+    <div class="meta-strip">
+      <div class="meta-cell"><span class="n">24</span><span class="l">écrans conformes</span></div>
+      <div class="meta-cell"><span class="n">17</span><span class="l">à faire évoluer</span></div>
+      <div class="meta-cell"><span class="n">14</span><span class="l">à créer</span></div>
+      <div class="meta-cell"><span class="n">3</span><span class="l">parcours à prototyper</span></div>
+      <div class="meta-cell"><span class="n">0</span><span class="l">écran à jeter</span></div>
+    </div>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">01 — Fondations</span>
+      <h2>Cinq principes qui tranchent tous les arbitrages</h2>
+      <p class="lede">
+        Dérivés de la signature stratégique et de la North Star Metric : les kilomètres de retour
+        à vide transformés en kilomètres chargés. Chaque décision de la cartographie renvoie à l'un d'eux.
+      </p>
+    </div>
+    <div class="principles">
+      <div class="principle">
+        <span class="tag">IA-1</span>
+        <b>L'inventaire précède l'annonce</b>
+        <p>Le client cherche dans un stock existant avant d'en créer. « Trouver un trajet » est la racine du parcours client, pas une rubrique. Publier une demande est un repli.</p>
+      </div>
+      <div class="principle">
+        <span class="tag">IA-2</span>
+        <b>30 secondes, depuis là où l'on est</b>
+        <p>Publier son retour doit s'atteindre en un geste depuis n'importe quel écran, et surtout depuis la fin de mission. C'est une action globale, pas une page de menu.</p>
+      </div>
+      <div class="principle">
+        <span class="tag">IA-3</span>
+        <b>Jamais de cul-de-sac</b>
+        <p>Tout écran vide propose deux sorties nommées. Zéro résultat n'est pas une erreur, c'est une bifurcation : demande pré-remplie, ou alerte corridor.</p>
+      </div>
+      <div class="principle">
+        <span class="tag">IA-4</span>
+        <b>Une boîte de réception par rôle</b>
+        <p>Demandes, offres, messages et notifications convergent vers un hub d'attente d'action unique. Personne ne visite trois écrans pour savoir ce qui l'attend.</p>
+      </div>
+      <div class="principle">
+        <span class="tag">IA-5</span>
+        <b>La valeur se chiffre à l'écran</b>
+        <p>Économie estimée pour le client, revenu et km à vide valorisés pour le transporteur. La promesse est lisible en chiffres sur les écrans de décision.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">02 — Modèle de navigation</span>
+      <h2>Deux racines, un socle partagé</h2>
+      <p class="lede">
+        Les deux métiers n'ont pas la même racine : le client part d'une recherche, le transporteur
+        d'un inventaire. Quatre entrées primaires maximum par rôle ; le reste passe en secondaire.
+      </p>
+    </div>
+    <div class="navmodel">
+      <div class="navcard">
+        <header><span class="role">Client expéditeur</span><span class="hint">persona secondaire · usage ponctuel</span></header>
+        <div class="body">
+          <div class="navgroup">
+            <span class="gl">Primaire</span>
+            <div class="pills">
+              <span class="pill primary">Trouver un trajet</span>
+              <span class="pill primary">Mes expéditions</span>
+              <span class="pill primary">Messages</span>
+              <span class="pill primary">Compte</span>
+            </div>
+          </div>
+          <div class="navgroup">
+            <span class="gl">Secondaire</span>
+            <div class="pills">
+              <span class="pill">Alertes corridor</span>
+              <span class="pill">Portefeuille</span>
+              <span class="pill">Mes avis</span>
+              <span class="pill">Favoris</span>
+              <span class="pill">Litiges</span>
+              <span class="pill">Aide</span>
+            </div>
+          </div>
+          <div class="navgroup">
+            <span class="gl">Pas de tableau de bord</span>
+            <div class="pills"><span class="pill">Un expéditeur occasionnel n'a rien à piloter — sa racine est la recherche</span></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="navcard">
+        <header><span class="role">Transporteur</span><span class="hint">persona principal · usage quotidien</span></header>
+        <div class="body">
+          <div class="navgroup">
+            <span class="gl">Action globale, présente partout</span>
+            <div class="pills"><span class="pill action">Publier un retour</span></div>
+          </div>
+          <div class="navgroup">
+            <span class="gl">Primaire</span>
+            <div class="pills">
+              <span class="pill primary">Mes retours</span>
+              <span class="pill primary">Demandes reçues</span>
+              <span class="pill primary">Missions</span>
+              <span class="pill primary">Portefeuille</span>
+            </div>
+          </div>
+          <div class="navgroup">
+            <span class="gl">Secondaire</span>
+            <div class="pills">
+              <span class="pill">Compléter mon aller</span>
+              <span class="pill">Réputation</span>
+              <span class="pill">Performance retours</span>
+              <span class="pill">Clients fidèles</span>
+              <span class="pill">Documents</span>
+              <span class="pill">Litiges</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <p class="lede">
+      <b>Écart avec l'existant</b> — la barre latérale actuelle expose 8 à 10 entrées de rang égal
+      côté transporteur, sans action globale, et « publier un retour » y figure comme une ligne de
+      liste parmi d'autres. C'est contraire à IA-2.
+    </p>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">03 — Cartographie</span>
+      <h2>Client expéditeur</h2>
+      <div class="legend">
+        <span><span class="chip ok">conforme</span> existe et répond au besoin</span>
+        <span><span class="chip mod">à faire évoluer</span> existe, contenu ou position à revoir</span>
+        <span><span class="chip new">à créer</span> écran absent</span>
+      </div>
+    </div>
+    <div class="tree">
+      <table>
+        <thead>
+          <tr><th>Réf.</th><th>Écran</th><th>Route cible</th><th>Statut</th><th>Point clé</th></tr>
+        </thead>
+        <tbody>
+          <tr class="block"><td colspan="5">Bloc 1 — Trouver un trajet · racine du parcours (IA-1)</td></tr>
+          <tr><td class="id">C1.1</td><td>Recherche de trajet</td><td class="route">/recherche</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Aujourd'hui /jobs/return-trips. L'URL doit dire la promesse</td></tr>
+          <tr><td class="id">C1.2</td><td>Résultats — trajets compatibles</td><td class="route">/recherche</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Économie estimée par trajet : absente de l'UI aujourd'hui</td></tr>
+          <tr><td class="id">C1.3</td><td>Repli — aucun trajet sur ce corridor</td><td class="route">/recherche</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">Deux sorties nommées. Modèle à généraliser</td></tr>
+          <tr><td class="id">C1.4</td><td>Détail d'un trajet retour</td><td class="route">/trajets/[id]</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">À extraire du fichier de 1 470 lignes</td></tr>
+          <tr><td class="id">C1.5</td><td>Envoyer une demande structurée</td><td class="route">/trajets/[id]/demande</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Marchandise, photos, créneau, prix proposé</td></tr>
+          <tr><td class="id">C1.6</td><td>Publier une demande classique</td><td class="route">/demandes/nouvelle</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Pré-rempli depuis la recherche qui a échoué</td></tr>
+          <tr><td class="id">C1.7</td><td>Mes alertes corridor</td><td class="route">/alertes</td><td class="st"><span class="chip new">à créer</span></td><td class="note">Alertes créables mais non gérables</td></tr>
+
+          <tr class="block"><td colspan="5">Bloc 2 — Mes expéditions · boîte de réception (IA-4)</td></tr>
+          <tr><td class="id">C2.1</td><td>Mes expéditions, par attente d'action</td><td class="route">/expeditions</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Tri primaire « qui doit agir », pas la date</td></tr>
+          <tr><td class="id">C2.2</td><td>Détail d'une expédition</td><td class="route">/expeditions/[id]</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Fil d'événements, documents, actions contextuelles</td></tr>
+          <tr><td class="id">C2.3</td><td>Négociation, contre-offre reçue</td><td class="route">/expeditions/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">C2.4</td><td>Annuler mon expédition</td><td class="route">/expeditions/[id]</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Conséquences chiffrées avant confirmation</td></tr>
+
+          <tr class="block"><td colspan="5">Bloc 3 — Réserver, payer, suivre</td></tr>
+          <tr><td class="id">C3.1</td><td>Récapitulatif, moyen de paiement, escrow</td><td class="route">/reservation/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">C3.2</td><td>Confirmation et prochaines étapes</td><td class="route">/reservation/[id]/confirmation</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Doit annoncer explicitement la suite</td></tr>
+          <tr><td class="id">C4.1</td><td>Suivi de mission, jalons et carte</td><td class="route">/expeditions/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">C4.2</td><td>Confirmer la réception, libérer l'escrow</td><td class="route">/expeditions/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">C4.3</td><td>Noter le transporteur</td><td class="route">/expeditions/[id]/avis</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">Double-aveugle</td></tr>
+
+          <tr class="block"><td colspan="5">Bloc 4 — Argent, confiance, support</td></tr>
+          <tr><td class="id">C5.1</td><td>Portefeuille client, remboursements, reçus</td><td class="route">/portefeuille</td><td class="st"><span class="chip new">à créer</span></td><td class="note">Remboursements livrés mais invisibles au client</td></tr>
+          <tr><td class="id">C5.2</td><td>Mes avis donnés</td><td class="route">/avis</td><td class="st"><span class="chip new">à créer</span></td><td class="note">API livrée, aucun écran</td></tr>
+          <tr><td class="id">C5.3</td><td>Transporteurs favoris</td><td class="route">/favoris</td><td class="st"><span class="chip new">à créer</span></td><td class="note">API livrée, aucun écran</td></tr>
+          <tr><td class="id">C5.4</td><td>Litiges, messages, notifications</td><td class="route">/litiges · /messages</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">Socle partagé avec le transporteur</td></tr>
+          <tr><td class="id">C5.5</td><td>Compte : profil, sécurité, langue, notifications</td><td class="route">/compte</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">706 lignes à scinder en onglets</td></tr>
+          <tr><td class="id">C5.6</td><td>Carnet d'adresses fréquentes</td><td class="route">/compte/adresses</td><td class="st"><span class="chip new">à créer</span></td><td class="note">Réduit la friction de la recherche répétée</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">04 — Cartographie</span>
+      <h2>Transporteur</h2>
+      <p class="lede">
+        Persona principal. Sa racine n'est pas une recherche mais un inventaire : ses retours publiés,
+        et ce qui attend sa décision.
+      </p>
+    </div>
+    <div class="tree">
+      <table>
+        <thead>
+          <tr><th>Réf.</th><th>Écran</th><th>Route cible</th><th>Statut</th><th>Point clé</th></tr>
+        </thead>
+        <tbody>
+          <tr class="block"><td colspan="5">Bloc 0 — Onboarding, vérification progressive</td></tr>
+          <tr><td class="id">T0.1</td><td>Identité et zone d'activité</td><td class="route">/inscription-transporteur/identite</td><td class="st"><span class="chip new">à créer</span></td><td class="note">La vérification actuelle est un écran unique atteint après coup</td></tr>
+          <tr><td class="id">T0.2</td><td>Véhicule et capacité structurée</td><td class="route">/inscription-transporteur/vehicule</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Conditionne le pré-remplissage et le matching quantitatif</td></tr>
+          <tr><td class="id">T0.3</td><td>Documents : permis, carte grise, assurance</td><td class="route">/inscription-transporteur/documents</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">T0.4</td><td>Corridors habituels</td><td class="route">/inscription-transporteur/corridors</td><td class="st"><span class="chip new">à créer</span></td><td class="note">Alimente le matching inversé et le démarchage admin</td></tr>
+
+          <tr class="block"><td colspan="5">Bloc 1 — Mes retours · hub transporteur (IA-2)</td></tr>
+          <tr><td class="id">T1.1</td><td>Tableau de bord « Mes retours »</td><td class="route">/dashboard</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Aujourd'hui orienté missions, pas retours</td></tr>
+          <tr><td class="id">T1.2</td><td>Publier un retour, formulaire court</td><td class="route">/retours/nouveau</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Véhicule et capacité pré-remplis : condition des 30 secondes</td></tr>
+          <tr><td class="id">T1.3</td><td>Mes trajets publiés, inventaire</td><td class="route">/retours</td><td class="st"><span class="chip new">à créer</span></td><td class="note">Éditer, prolonger, dupliquer, dépublier, expiration visible</td></tr>
+          <tr><td class="id">T1.4</td><td>Détail d'un retour et ses demandes</td><td class="route">/retours/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+
+          <tr class="block"><td colspan="5">Bloc 2 — Demandes reçues · boîte de réception (IA-4)</td></tr>
+          <tr><td class="id">T2.1</td><td>Demandes reçues, tous trajets confondus</td><td class="route">/demandes-recues</td><td class="st"><span class="chip new">à créer</span></td><td class="note">Aujourd'hui visibles trajet par trajet seulement</td></tr>
+          <tr><td class="id">T2.2</td><td>Détail d'une demande</td><td class="route">/demandes-recues/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">Marchandise, photos, prix proposé, profil client</td></tr>
+          <tr><td class="id">T2.3</td><td>Accepter, refuser, contre-proposer</td><td class="route">/demandes-recues/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+
+          <tr class="block"><td colspan="5">Bloc 3 — Compléter mon aller · flux classique, secondaire</td></tr>
+          <tr><td class="id">T3.1</td><td>Parcourir les demandes publiées</td><td class="route">/demandes</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">À repositionner en secondaire</td></tr>
+          <tr><td class="id">T3.2</td><td>Faire une offre</td><td class="route">/demandes/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">T3.3</td><td>Mes offres envoyées</td><td class="route">/mes-offres</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+
+          <tr class="block"><td colspan="5">Bloc 4 — Missions</td></tr>
+          <tr><td class="id">T4.1</td><td>Mes missions : à venir, en cours, terminées</td><td class="route">/missions</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">Aujourd'hui mélangé dans /jobs</td></tr>
+          <tr><td class="id">T4.2</td><td>Exécution : jalons et preuve de livraison</td><td class="route">/missions/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">T4.3</td><td>Annuler une mission, motif obligatoire</td><td class="route">/missions/[id]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">T4.4</td><td>Fin de mission → amorce de retour</td><td class="route">/missions/[id]</td><td class="st"><span class="chip new">à créer</span></td><td class="note">L'écran pivot. Sans lui, l'inventaire ne s'alimente pas</td></tr>
+
+          <tr class="block"><td colspan="5">Bloc 5 — Argent et réputation</td></tr>
+          <tr><td class="id">T5.1</td><td>Portefeuille : solde, escrow, retraits</td><td class="route">/portefeuille</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+          <tr><td class="id">T5.2</td><td>Historique paiements et commissions</td><td class="route">/portefeuille/historique</td><td class="st"><span class="chip mod">évoluer</span></td><td class="note">À distinguer du solde</td></tr>
+          <tr><td class="id">T5.3</td><td>Réputation : avis reçus, badges, taux de réponse</td><td class="route">/reputation</td><td class="st"><span class="chip new">à créer</span></td><td class="note">Promesse explicite de la vision, API livrée</td></tr>
+          <tr><td class="id">T5.4</td><td>Performance retours</td><td class="route">/performance</td><td class="st"><span class="chip new">à créer</span></td><td class="note">Remplissage, km à vide valorisés, revenu par corridor</td></tr>
+          <tr><td class="id">T5.5</td><td>Clients fidèles</td><td class="route">/clients</td><td class="st"><span class="chip new">à créer</span></td><td class="note">« Fidéliser sa clientèle » : besoin persona explicite</td></tr>
+          <tr><td class="id">T5.6</td><td>Mon profil public, vue client</td><td class="route">/transporteur/[moi]</td><td class="st"><span class="chip ok">conforme</span></td><td class="note">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">05 — Maquettage basse fidélité</span>
+      <h2>Huit fils de fer, sans couleur de marque</h2>
+      <p class="lede">
+        Volontairement gris : à ce stade on valide la hiérarchie de l'information et l'emplacement
+        des actions, pas l'esthétique. Un seul accent par écran marque l'action qui porte le pivot ;
+        le vert marque une valeur chiffrée exigée par IA-5.
+      </p>
+    </div>
+
+    <div class="wf-grid">
+
+      <div class="wf">
+        <header><span class="wid">C1.1 · C1.2</span><span class="wname">Recherche et résultats</span></header>
+        <div class="screen">
+          <div class="sbar"><span class="dot"></span><span class="t">Client · racine du parcours</span></div>
+          <div class="sbody">
+            <div class="row">
+              <div class="box fill">Départ · Sfax</div>
+              <div class="box fill">Arrivée · Tunis</div>
+            </div>
+            <div class="row">
+              <div class="box fill">Du 28 au 30 août</div>
+              <div class="box fill">Frigo · 120 kg</div>
+              <div class="btn cta">Chercher</div>
+            </div>
+            <div class="box lab">4 trajets retour sur ce corridor · triés par départ</div>
+            <div class="box">
+              <strong>Mehdi B.</strong> · 4,8 ★ · camionnette 2 T<br>
+              Sfax → Tunis · 29 août · 1,4 m³ libres · 85 DT
+            </div>
+            <div class="box value">Vous économisez 40 DT — trajet déjà prévu</div>
+            <div class="box tall">Trajet suivant · Trajet suivant · Trajet suivant</div>
+            <div class="box lab">Carte du corridor, repliable</div>
+          </div>
+        </div>
+        <footer>
+          <b>Ce qui change</b> — l'économie estimée devient une ligne à part entière de la carte de
+          trajet, pas une mention. C'est l'argument de conversion du funnel, aujourd'hui absent.
+        </footer>
+      </div>
+
+      <div class="wf">
+        <header><span class="wid">C1.3</span><span class="wname">Repli · aucun trajet</span></header>
+        <div class="screen">
+          <div class="sbar"><span class="dot"></span><span class="t">Client · état vide (IA-3)</span></div>
+          <div class="sbody">
+            <div class="box fill">Sfax → Tozeur · 28 au 30 août</div>
+            <div class="box lab">Aucun trajet retour sur ce corridor pour ces dates</div>
+            <div class="box pivot">
+              <strong>Publier ma demande</strong><br>
+              Les transporteurs du corridor la verront. Formulaire déjà rempli avec votre recherche.
+            </div>
+            <div class="btn cta">Publier ma demande</div>
+            <div class="box pivot">
+              <strong>Créer une alerte</strong><br>
+              Prévenez-moi dès qu'un trajet Sfax → Tozeur est publié.
+            </div>
+            <div class="btn">Créer l'alerte</div>
+            <div class="box lab">Élargir : dates ± 3 jours · gouvernorats voisins</div>
+          </div>
+        </div>
+        <footer>
+          <b>Déjà conforme.</b> Le seul écran vide du produit qui traite correctement l'impasse.
+          C'est le modèle à répliquer sur les trente autres écrans.
+        </footer>
+      </div>
+
+      <div class="wf">
+        <header><span class="wid">C1.5</span><span class="wname">Demande structurée</span></header>
+        <div class="screen">
+          <div class="sbar"><span class="dot"></span><span class="t">Client · la transaction du pivot</span></div>
+          <div class="sbody">
+            <div class="box fill">Trajet de Mehdi B. · Sfax → Tunis · 29 août</div>
+            <div class="box lab">1 — Ce que vous envoyez</div>
+            <div class="row">
+              <div class="box fill">Frigo</div>
+              <div class="box fill">120 kg</div>
+            </div>
+            <div class="box tall">Photos · dimensions · fragilité</div>
+            <div class="box lab">2 — Où et quand</div>
+            <div class="row">
+              <div class="box fill">Enlèvement</div>
+              <div class="box fill">Livraison</div>
+            </div>
+            <div class="box lab">3 — Votre prix</div>
+            <div class="row">
+              <div class="box fill">85 DT proposés</div>
+              <div class="btn cta">Envoyer</div>
+            </div>
+            <div class="box">Le transporteur répond, accepte ou contre-propose. Vous ne payez qu'après son accord.</div>
+          </div>
+        </div>
+        <footer>
+          <b>Ce qui change</b> — écran autonome, extrait du fichier de 1 470 lignes qui porte
+          aujourd'hui détail, demande, annulation, contre-offre, démarrage et complétion.
+        </footer>
+      </div>
+
+      <div class="wf">
+        <header><span class="wid">T1.1</span><span class="wname">Hub « Mes retours »</span></header>
+        <div class="screen">
+          <div class="sbar"><span class="dot"></span><span class="t">Transporteur · racine</span></div>
+          <div class="sbody">
+            <div class="box hero">Vous venez de livrer à Sfax. Vous rentrez à vide ? → Publier mon retour</div>
+            <div class="row">
+              <div class="stat"><span class="v">2</span><span class="k">retours en ligne</span></div>
+              <div class="stat"><span class="v">5</span><span class="k">demandes en attente</span></div>
+              <div class="stat good"><span class="v">340</span><span class="k">DT ce mois</span></div>
+            </div>
+            <div class="box value">610 km de retour à vide valorisés ce mois</div>
+            <div class="box lab">Mes retours en ligne</div>
+            <div class="box"><strong>Sfax → Tunis</strong> · 29 août · 1,4 m³ libres · <strong>3 demandes</strong></div>
+            <div class="box"><strong>Tunis → Sousse</strong> · 2 sept. · 3 m³ libres · aucune demande</div>
+            <div class="box lab">Compléter mon aller · 12 demandes sur mes corridors</div>
+          </div>
+        </div>
+        <footer>
+          <b>Ce qui change</b> — le tableau de bord passe de « mes missions » à « mes retours ».
+          Le bandeau d'amorce occupe la première ligne, et les km valorisés rendent la North Star
+          visible par celui qui la produit.
+        </footer>
+      </div>
+
+      <div class="wf">
+        <header><span class="wid">T4.4</span><span class="wname">Fin de mission → amorce</span></header>
+        <div class="screen">
+          <div class="sbar"><span class="dot"></span><span class="t">Transporteur · écran pivot à créer</span></div>
+          <div class="sbody">
+            <div class="box value">Mission livrée · 120 DT versés à votre portefeuille</div>
+            <div class="box lab">Vous êtes à Sfax</div>
+            <div class="box hero">
+              <strong>Vous rentrez à Tunis à vide ?</strong><br>
+              Publiez votre retour en 30 secondes. Camionnette 2 T et capacité déjà renseignées.
+            </div>
+            <div class="row">
+              <div class="box fill">Sfax → Tunis</div>
+              <div class="box fill">Aujourd'hui</div>
+            </div>
+            <div class="btn cta">Publier mon retour</div>
+            <div class="btn ghost">Plus tard</div>
+            <div class="box lab">Puis : noter le client · voir mon portefeuille</div>
+          </div>
+        </div>
+        <footer>
+          <b>Priorité 1.</b> Sans cet écran, l'inventaire de retours ne s'alimente que volontairement.
+          C'est le seul écran manquant du parcours transporteur décrit par le pivot, et le moteur
+          direct de la North Star Metric.
+        </footer>
+      </div>
+
+      <div class="wf">
+        <header><span class="wid">T1.2</span><span class="wname">Publier un retour · 30 s</span></header>
+        <div class="screen">
+          <div class="sbar"><span class="dot"></span><span class="t">Transporteur · 4 saisies maximum</span></div>
+          <div class="sbody">
+            <div class="box pivot">Camionnette 2 T · 8 m³ · depuis votre profil</div>
+            <div class="box lab">Saisies 1 et 2 — le trajet</div>
+            <div class="row">
+              <div class="box fill">Sfax</div>
+              <div class="box fill">Tunis</div>
+            </div>
+            <div class="box lab">Saisie 3 — quand</div>
+            <div class="row">
+              <div class="box fill">Aujourd'hui</div>
+              <div class="box fill">Demain</div>
+              <div class="box fill">Autre</div>
+            </div>
+            <div class="box lab">Saisie 4 — place disponible</div>
+            <div class="row">
+              <div class="box fill">Tout</div>
+              <div class="box fill">Moitié</div>
+              <div class="box fill">m³</div>
+            </div>
+            <div class="box">Prix indicatif · 85 DT <em>suggéré pour ce corridor</em></div>
+            <div class="btn cta">Mettre en ligne</div>
+          </div>
+        </div>
+        <footer>
+          <b>Critère de sortie du prototype</b> — moins de 30 secondes, moins de 4 saisies manuelles,
+          sans aide. Le pré-remplissage depuis le profil n'est pas un confort : c'est la condition
+          de la promesse.
+        </footer>
+      </div>
+
+      <div class="wf">
+        <header><span class="wid">T2.1</span><span class="wname">Demandes reçues, consolidées</span></header>
+        <div class="screen">
+          <div class="sbar"><span class="dot"></span><span class="t">Transporteur · boîte unique (IA-4)</span></div>
+          <div class="sbody">
+            <div class="row">
+              <div class="box fill">À décider · 5</div>
+              <div class="box">En négociation · 2</div>
+              <div class="box">Archivées</div>
+            </div>
+            <div class="box">
+              <strong>Ahmed K.</strong> · frigo 120 kg · <strong>85 DT</strong><br>
+              sur Sfax → Tunis du 29 août · reçue il y a 2 h
+            </div>
+            <div class="row">
+              <div class="btn cta">Accepter</div>
+              <div class="btn">Contre-proposer</div>
+              <div class="btn ghost">Refuser</div>
+            </div>
+            <div class="box tall">Demande suivante · Demande suivante</div>
+            <div class="box lab">Répondre sous 4 h protège votre taux de réponse</div>
+          </div>
+        </div>
+        <footer>
+          <b>Ce qui change</b> — les demandes ne sont aujourd'hui visibles que trajet par trajet.
+          Un transporteur avec trois retours en ligne ne peut pas savoir d'un coup d'œil ce qui
+          attend sa décision.
+        </footer>
+      </div>
+
+      <div class="wf">
+        <header><span class="wid">T5.4</span><span class="wname">Performance retours</span></header>
+        <div class="screen">
+          <div class="sbar"><span class="dot"></span><span class="t">Transporteur · IA-5</span></div>
+          <div class="sbody">
+            <div class="row">
+              <div class="stat good"><span class="v">610</span><span class="k">km à vide valorisés</span></div>
+              <div class="stat"><span class="v">68 %</span><span class="k">taux de remplissage</span></div>
+            </div>
+            <div class="row">
+              <div class="stat"><span class="v">340</span><span class="k">DT · revenu retours</span></div>
+              <div class="stat"><span class="v">7</span><span class="k">retours publiés</span></div>
+            </div>
+            <div class="box lab">Revenu par corridor · 6 derniers mois</div>
+            <div class="box tall">Histogramme : Sfax → Tunis · Tunis → Sousse · Sousse → Sfax</div>
+            <div class="box pivot">Sur Tunis → Sousse, 9 demandes attendent un transporteur cette semaine</div>
+            <div class="btn cta">Publier un retour sur ce corridor</div>
+          </div>
+        </div>
+        <footer>
+          <b>Double usage</b> — l'écran montre au transporteur ce que la plateforme lui rapporte,
+          et lui indique où publier ensuite. L'API existe et n'est jamais appelée.
+        </footer>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">06 — Prototypage</span>
+      <h2>Trois parcours à rendre cliquables avant développement</h2>
+      <p class="lede">
+        Ce sont eux qui portent le pivot. En orange : les écrans à créer. Testés sur cinq
+        transporteurs et cinq clients du corridor A1.
+      </p>
+    </div>
+
+    <div class="flow">
+      <h3>Parcours A — Le retour à vide capté <span class="kpi">critère : moins de 30 s</span></h3>
+      <div class="steps">
+        <div class="step"><span class="sid">T4.2</span>Mission livrée</div><span class="arrow">→</span>
+        <div class="step new"><span class="sid">T4.4</span>Amorce « vous rentrez à vide ? »</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">T1.2</span>Publier un retour, pré-rempli</div><span class="arrow">→</span>
+        <div class="step new"><span class="sid">T1.3</span>Mon retour est en ligne</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <h3>Parcours B — La recherche qui ne finit jamais dans le vide <span class="kpi">critère : aucune impasse</span></h3>
+      <div class="steps">
+        <div class="step"><span class="sid">C1.1</span>Recherche</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">C1.2</span>Résultats · économie estimée</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">C1.4</span>Détail du trajet</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">C1.5</span>Demande structurée</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">C3.1</span>Paiement</div>
+      </div>
+      <div class="steps">
+        <span class="arrow">branche vide →</span>
+        <div class="step"><span class="sid">C1.3</span>Repli</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">C1.6</span>Demande pré-remplie</div>
+        <span class="arrow">ou</span>
+        <div class="step new"><span class="sid">C1.7</span>Alerte corridor</div>
+      </div>
+    </div>
+
+    <div class="flow">
+      <h3>Parcours C — La négociation qui converge <span class="kpi">critère : chacun sait qu'il doit agir</span></h3>
+      <div class="steps">
+        <div class="step"><span class="sid">C1.5</span>Demande envoyée</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">—</span>Notification</div><span class="arrow">→</span>
+        <div class="step new"><span class="sid">T2.1</span>Demandes reçues</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">T2.3</span>Contre-proposition</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">C2.3</span>Acceptation client</div><span class="arrow">→</span>
+        <div class="step"><span class="sid">C3.1</span>Paiement</div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">07 — Delta</span>
+      <h2>Les quatorze écrans à créer, dans l'ordre</h2>
+    </div>
+    <div class="prio">
+      <table>
+        <thead><tr><th>#</th><th>Écran</th><th>Profil</th><th>Pourquoi maintenant</th></tr></thead>
+        <tbody>
+          <tr><td class="rank">1</td><td>T4.4 · Fin de mission → amorce de retour</td><td class="who">Transporteur</td><td class="why">Moteur direct de la North Star. Seul écran manquant du parcours pivot</td></tr>
+          <tr><td class="rank">2</td><td>T1.3 · Mes trajets publiés</td><td class="who">Transporteur</td><td class="why">Classé Core : un inventaire ingérable pollue la recherche client</td></tr>
+          <tr><td class="rank">3</td><td>T2.1 · Demandes reçues, tous trajets</td><td class="who">Transporteur</td><td class="why">IA-4 : aucune vue consolidée de ce qui attend une décision</td></tr>
+          <tr><td class="rank">4</td><td>C1.2 · Économie estimée dans les résultats</td><td class="who">Client</td><td class="why">IA-5 : argument de conversion du funnel, absent de l'UI</td></tr>
+          <tr><td class="rank">5</td><td>T5.4 · Performance retours</td><td class="who">Transporteur</td><td class="why">Rend visible le gain, et oriente la publication suivante</td></tr>
+          <tr><td class="rank">6</td><td>C1.7 · Mes alertes corridor</td><td class="who">Client</td><td class="why">Alertes créables, non gérables</td></tr>
+          <tr><td class="rank">7</td><td>C5.1 · Portefeuille client</td><td class="who">Client</td><td class="why">Remboursements livrés mais invisibles</td></tr>
+          <tr><td class="rank">8</td><td>Devenir transporteur · Confiance et sécurité</td><td class="who">Public</td><td class="why">Acquisition transporteur, levée de l'objection client</td></tr>
+          <tr><td class="rank">9</td><td>T5.3 · Réputation · C5.2 · Mes avis</td><td class="who">Les deux</td><td class="why">Promesse explicite de la vision, API livrée</td></tr>
+          <tr><td class="rank">10</td><td>T5.5 · Clients fidèles · C5.3 · Favoris</td><td class="who">Les deux</td><td class="why">« Fidéliser sa clientèle » : besoin persona, API livrée</td></tr>
+          <tr><td class="rank">11</td><td>T0.1 · T0.4 · Onboarding par étapes</td><td class="who">Transporteur</td><td class="why">Améliore la conversion d'inscription, non bloquant</td></tr>
+          <tr><td class="rank">12</td><td>Comment ça marche · Carnet d'adresses</td><td class="who">Les deux</td><td class="why">Confort</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <span class="sec-num">08 — À valider</span>
+      <h2>Cinq arbitrages qui attendent une décision</h2>
+    </div>
+    <div class="decisions">
+      <div class="dec">
+        <span class="qid">Q1</span>
+        <span class="q">Le client garde-t-il un tableau de bord ?</span>
+        <span class="a"><b>Non.</b> Sa racine est la recherche. Un expéditeur occasionnel n'a rien à piloter — il a un besoin ponctuel.</span>
+      </div>
+      <div class="dec">
+        <span class="qid">Q2</span>
+        <span class="q">Publier un retour exige-t-il une vérification complète ?</span>
+        <span class="a"><b>Non.</b> Publication autorisée avec la mention « en cours de vérification ». Bloquer derrière la vérification tue l'amorçage de l'inventaire, donc la promesse client.</span>
+      </div>
+      <div class="dec">
+        <span class="qid">Q3</span>
+        <span class="q">Faut-il renommer les routes ?</span>
+        <span class="a"><b>Oui</b>, en une passe unique avec redirections. L'URL fait partie de l'architecture de l'information, et « jobs » ne dit rien à personne.</span>
+      </div>
+      <div class="dec">
+        <span class="qid">Q4</span>
+        <span class="q">« Compléter mon aller » reste-t-il en navigation primaire ?</span>
+        <span class="a"><b>Non</b>, secondaire. Le primaire porte le retour. Le flux classique reste intégralement accessible.</span>
+      </div>
+      <div class="dec">
+        <span class="qid">Q5</span>
+        <span class="q">Une navigation unifiée, ou deux par rôle ?</span>
+        <span class="a"><b>Deux</b>, avec un socle partagé : messages, notifications, compte, aide. Les deux métiers n'ont pas la même racine.</span>
+      </div>
+    </div>
+  </section>
+
+  <div class="closing">
+    <p>
+      <b>Séquence de maquettage.</b> Fils de fer ci-dessus, puis prototype cliquable sur les trois
+      parcours, puis haute fidélité — mais seulement après résolution de l'écart P0 de l'audit du
+      26 août : le branchement des tokens de design, qui conditionne le mode sombre. Le RTL arabe,
+      lui, est déjà en place ; chaque nouvel écran doit simplement être maquetté dans ses deux directions.
+    </p>
+    <p>
+      <b>Trois composants</b> sont à créer et à verser au design system : bandeau d'amorce de retour,
+      carte de trajet avec économie estimée, carte de demande reçue actionnable.
+    </p>
+  </div>
+
+</div>
