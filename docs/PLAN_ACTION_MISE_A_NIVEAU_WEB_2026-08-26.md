@@ -88,10 +88,51 @@ humain, et la moitié « navigateur » de 0.4, suspendue à la décision 5.
 publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2 et B-3a, puisque les
 écrans en dépendent.
 
-### Lots 1 à 6 · **non démarrés**
+### Lot 1 — Le retour à vide capté · **en cours, le backend est fait**
 
-Les décisions **produit** sont toutes tranchées. Deux décisions de **méthode** restent ouvertes :
-la 5 (voie du socle de tests, conditionne le lot 4) et la 6 (portée mobile, conditionne le lot 1).
+| Tâche | État | Commit | Preuve |
+|---|---|---|---|
+| **B-1** Volume de véhicule optionnel | ✅ **fait** | `24425cd` | `TrustProfile.vehicle_capacity_m3`, migration `trust/0011` |
+| **B-2** Capacité disponible structurée | ✅ **fait** | `24425cd` | `available_capacity_kg` + `_m3`, migration `logistics/0015`, 6 sérialiseurs |
+| **B-3a** Km à vide valorisés, taux de remplissage | ✅ **déjà en place** | — | **Constat corrigé, voir ci-dessous** |
+| **B-3b** Revenu par corridor | ✅ **fait** | `24425cd` | `logistics/stats_corridors.py`, réconciliation avec K4 sous test |
+| T4.4 Amorce de fin de mission — web | ⏳ à faire | — | Test `fixme` déjà écrit |
+| T4.4 Amorce de fin de mission — mobile | ⏳ à faire | — | Décision 6 : livraison simultanée |
+| T1.2 Publier un retour en 4 saisies — web + mobile | ⏳ à faire | — | Test écrit, non `fixme` |
+| T1.3 Inventaire des trajets publiés — web + mobile | ⏳ à faire | — | Test `fixme` déjà écrit |
+| T1.1 Hub « Mes retours » — web + mobile | ⏳ à faire | — | — |
+
+**173 tests backend passent**, dont 13 nouveaux. Aucune régression.
+
+#### Correction d'un constat de l'audit — B-3a n'était pas manquant
+
+L'analyse backend du 26/08 annonçait que les KPI du pivot étaient absents. **C'était faux pour deux
+d'entre eux.** `logistics/stats.py` expose déjà `km_transformed` (somme de `distance_km` sur les
+retours `COMPLETED`) et `fill_rate`, servis par `transporter/stats/` et `auth/dashboard/`.
+
+L'erreur : j'avais examiné `CrossMetricsView` (`metrics/dashboard/`), qui est un tableau de bord
+**générique par rôle** et ne porte effectivement pas ces indicateurs — sans vérifier l'autre endpoint
+de statistiques. Seule la **ventilation par corridor** manquait réellement.
+
+Conséquence : B-3 était surestimé d'environ 1,5 jour. Le gain est réinvesti dans la partie
+prospective de T5.4 (`underserved_corridors`), qui n'était pas prévue au plan initial et qui
+transforme un écran rétrospectif en invitation à publier.
+
+#### Découverte à retenir — `stats.py` porte un contrat explicite
+
+> *« Every figure shown to a transporter anywhere in the product MUST come from
+> `get_transporter_stats()` … Frontends must never recompute these. »*
+
+Ce contrat, adossé à `docs/DICTIONNAIRE_KPI.md`, est plus strict que ce que le plan supposait. Deux
+conséquences pour les lots suivants : **aucun chiffre affiché à un transporteur ne peut être calculé
+côté frontend**, et tout nouvel indicateur doit passer par `get_transporter_stats()` et être ajouté
+au dictionnaire. C'est pourquoi `stats_corridors.py` est un module séparé mais **appelé depuis**
+`get_transporter_stats`, et non exposé directement.
+
+### Lots 2 à 6 · **non démarrés**
+
+Toutes les décisions **produit** et la décision de portée mobile sont tranchées. Une seule décision
+de **méthode** reste ouverte : la 5 (voie du socle de tests), qui conditionne le lot 4.
 
 ---
 
@@ -184,7 +225,15 @@ Mais l'unité est le **kilogramme**, alors que la cartographie et le brief de de
 reste-t-il ? ») n'a pas de champ typé où atterrir.
 → Migration à prévoir au lot 1.
 
-**B-3 — `metrics/dashboard/` ne renvoie pas les KPI du pivot.** `CrossMetricsView`
+**B-3 — les KPI du pivot sont partiellement exposés.**
+
+> **Constat corrigé le 26/08, après implémentation.** La version initiale de ce paragraphe concluait
+> que les KPI du pivot étaient tous absents. C'était faux : `logistics/stats.py` expose déjà
+> `km_transformed` et `fill_rate` via `transporter/stats/`. Seule la ventilation par corridor
+> manquait. L'erreur venait d'avoir examiné un seul des deux endpoints de statistiques. Le texte
+> ci-dessous reste valable **pour `CrossMetricsView` uniquement**.
+
+`CrossMetricsView`
 (`views/misc.py:137`) est un tableau de bord **générique par rôle** : côté transporteur
 `total_offers`, `accepted_offers`, `completed_missions`, `acceptance_rate`, `total_earned` ; côté
 client `total_jobs`, `total_spent`, `avg_rating_given`, `favorite_transporters`.
