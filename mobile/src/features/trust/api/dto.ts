@@ -16,6 +16,11 @@ export interface TrustStatusDto {
   verification_status: VerificationStatus;
   vehicle_type: string;
   vehicle_capacity_kg: string | null;
+  // B-1 (lot 1) — volume optionnel. Le poids reste la contrainte
+  // réglementaire et fait foi ; le volume est ce que l'utilisateur se
+  // représente. L'un n'est jamais déduit de l'autre : la densité d'un
+  // chargement n'est pas connue de la plateforme.
+  vehicle_capacity_m3: string | null;
   vehicle_plate: string;
   vehicle_photos: unknown[];
   service_areas: unknown[];

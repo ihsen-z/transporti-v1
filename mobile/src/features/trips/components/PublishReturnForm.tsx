@@ -41,7 +41,13 @@ export function PublishReturnForm() {
         estimateResult={f.estimateResult}
         routeHint={f.routeHint}
       />
-      <DetailsSection control={f.control} />
+      <DetailsSection
+        control={f.control}
+        vehicule={f.vehicule}
+        partCapacite={f.partCapacite}
+        onChoisirPart={f.onChoisirPart}
+        onCapaciteLibre={f.onCapaciteLibre}
+      />
 
       {f.publishError ? <Text style={s.error}>{f.publishError}</Text> : null}
 

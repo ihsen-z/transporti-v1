@@ -7,6 +7,12 @@ import { nextDays, TIME_SLOTS, toScheduledTime } from '../../data/schedule';
 import { useEstimatePrice } from '../../api/useEstimatePrice';
 import { usePublishReturnTrip } from '../../api/usePublishReturnTrip';
 import { publishSchema, type FormOption, type PublishFormValues } from './publishSchema';
+import {
+  useVehiclePrefill,
+  capaciteStructuree,
+  libelleCapacite,
+  type PartCapacite,
+} from './useVehiclePrefill';
 
 // Logique du formulaire de publication : orchestration RHF, options localisées,
 // estimation serveur (D1 : affichage seulement) et soumission. Séparée de la
@@ -17,10 +23,15 @@ export function usePublishTripForm() {
   const publish = usePublishReturnTrip();
   const [routeHint, setRouteHint] = useState<string | null>(null);
 
+  // T1.2 — le véhicule vient du profil et n'est jamais ressaisi.
+  const { vehicule } = useVehiclePrefill();
+  const [partCapacite, setPartCapacite] = useState<PartCapacite>(null);
+
   const {
     control,
     handleSubmit,
     getValues,
+    setValue,
     formState: { errors },
   } = useForm<PublishFormValues>({
     resolver: zodResolver(publishSchema),
@@ -97,9 +108,24 @@ export function usePublishTripForm() {
       price_tnd_min: Number(values.priceMin),
       price_tnd_max: Number(values.priceMax),
       available_capacity: values.capacity,
+      // B-2 — capacité structurée, en plus du libellé texte. Omise quand elle
+      // n'est pas réellement connue : on n'invente jamais un chiffre.
+      ...capaciteStructuree(vehicule, partCapacite),
       instant_booking: values.instantBooking,
     });
   });
+
+  // Choix tactile de la part de capacité : évite au transporteur de calculer un
+  // tonnage restant de tête. Une saisie libre reprend la main (voir
+  // `onCapaciteLibre`), faute de savoir lire un texte arbitraire.
+  const onChoisirPart = (part: Exclude<PartCapacite, null>) => {
+    setPartCapacite(part);
+    setValue('capacity', libelleCapacite(vehicule, part), {
+      shouldValidate: true,
+    });
+  };
+
+  const onCapaciteLibre = () => setPartCapacite(null);
 
   // Bandeau de résultat d'estimation (fourchette serveur).
   const estimateResult =
@@ -131,5 +157,10 @@ export function usePublishTripForm() {
     publishError,
     isSuccess: publish.isSuccess,
     successCount: publish.data?.matching_requests_count ?? 0,
+    // T1.2 — pré-remplissage et choix tactile de la capacité.
+    vehicule,
+    partCapacite,
+    onChoisirPart,
+    onCapaciteLibre,
   };
 }

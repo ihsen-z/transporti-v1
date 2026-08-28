@@ -204,7 +204,10 @@
       "validation": "تثبّت من خانات الاستمارة.",
       "forbidden": "مخصّص للناقلين.",
       "network": "تعذّر الاتصال بالخادم. عاود المحاولة."
-    }
+    },
+    "prefill_from_profile": "من ملفك الشخصي",
+    "capacity_share_tout": "الشاحنة كاملة",
+    "capacity_share_moitie": "النصف"
   },
   "requests": {
     "title": "الطلبات الواردة",

@@ -1,21 +1,73 @@
-import { Switch, Text, View } from 'react-native';
+import { Pressable, Switch, Text, View } from 'react-native';
 import { Controller, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { colors } from '@/shared/theme';
 import { publishStyles as s } from './publishStyles';
 import type { PublishFormValues } from './publishSchema';
+import {
+  libelleCapacite,
+  type PartCapacite,
+  type VehiculeProfil,
+} from './useVehiclePrefill';
 
 interface Props {
   control: Control<PublishFormValues>;
+  // T1.2 — pré-remplissage du véhicule et choix tactile de la part de capacité.
+  vehicule: VehiculeProfil;
+  partCapacite: PartCapacite;
+  onChoisirPart: (part: Exclude<PartCapacite, null>) => void;
+  onCapaciteLibre: () => void;
 }
 
 // Capacité, description libre et réservation immédiate (D11 : off par défaut).
-export function DetailsSection({ control }: Props) {
+export function DetailsSection({
+  control,
+  vehicule,
+  partCapacite,
+  onChoisirPart,
+  onCapaciteLibre,
+}: Props) {
   const { t } = useTranslation();
 
   return (
     <>
+      {/* T1.2 — le véhicule vient du profil : présenté comme un fait acquis,
+          pas comme un champ à remplir. */}
+      {vehicule.disponible && (
+        <View style={s.prefillBanner} testID="publish-vehicule-prerempli">
+          <Text style={s.prefillText}>{libelleCapacite(vehicule)}</Text>
+          <Text style={s.hint}>{t('trips.prefill_from_profile')}</Text>
+        </View>
+      )}
+
+      {/* Saisie tactile de la part restante : évite de calculer un tonnage de
+          tête. Le champ libre ci-dessous reste disponible pour préciser. */}
+      {vehicule.disponible && (
+        <View style={s.partRow}>
+          {(['tout', 'moitie'] as const).map((part) => (
+            <Pressable
+              key={part}
+              testID={`publish-capacite-${part}`}
+              onPress={() => onChoisirPart(part)}
+              style={[
+                s.partChoice,
+                partCapacite === part && s.partChoiceActive,
+              ]}
+            >
+              <Text
+                style={[
+                  s.partLabel,
+                  partCapacite === part && s.partLabelActive,
+                ]}
+              >
+                {t(`trips.capacity_share_${part}`)}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      )}
+
       <Controller
         control={control}
         name="capacity"
@@ -25,7 +77,12 @@ export function DetailsSection({ control }: Props) {
             label={t('trips.capacity')}
             placeholder={t('trips.capacity_ph')}
             value={value}
-            onChangeText={onChange}
+            onChangeText={(texte) => {
+              // Une saisie libre annule la déduction structurée : on ne sait
+              // pas lire un texte arbitraire.
+              onCapaciteLibre();
+              onChange(texte);
+            }}
             onBlur={onBlur}
             autoCapitalize="sentences"
           />

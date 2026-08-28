@@ -30,6 +30,39 @@ export const publishStyles = StyleSheet.create({
     fontWeight: '600',
     color: colors.neutral[700],
   },
+  // T1.2 — bandeau de véhicule pré-rempli et choix tactile de la part.
+  prefillBanner: {
+    backgroundColor: colors.brand[50],
+    borderRadius: radii.md,
+    padding: spacing.md,
+    gap: spacing.xs,
+  },
+  prefillText: {
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.brand[600],
+  },
+  partRow: { flexDirection: 'row', gap: spacing.sm },
+  partChoice: {
+    flex: 1,
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.sm,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.neutral[200],
+    alignItems: 'center',
+  },
+  partChoiceActive: {
+    borderColor: colors.brand[500],
+    backgroundColor: colors.brand[50],
+  },
+  partLabel: {
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.neutral[700],
+  },
+  partLabelActive: { color: colors.brand[600] },
+
   error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
   submit: { marginTop: spacing.sm },
   successBox: {

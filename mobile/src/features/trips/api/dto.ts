@@ -38,6 +38,11 @@ export interface ReturnTripCreateRequest {
   price_tnd_min: number;
   price_tnd_max: number;
   available_capacity: string;
+  // B-2 (lot 1) — capacité structurée, en plus du libellé texte ci-dessus qui
+  // reste la description lisible. Omise quand elle n'est pas réellement
+  // connue : un 0 rendrait le trajet invisible au matching quantitatif.
+  available_capacity_kg?: number;
+  available_capacity_m3?: number;
   instant_booking: boolean;
 }
 

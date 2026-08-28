@@ -200,7 +200,10 @@
       "validation": "Vérifiez les champs du formulaire.",
       "forbidden": "Réservé aux transporteurs.",
       "network": "Connexion au serveur impossible. Réessayez."
-    }
+    },
+    "prefill_from_profile": "depuis votre profil",
+    "capacity_share_tout": "Tout le camion",
+    "capacity_share_moitie": "La moitié"
   },
   "requests": {
     "title": "Demandes reçues",
