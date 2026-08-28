@@ -257,14 +257,58 @@ développeur ne refasse pas la même recherche.
 **Le parcours A est complet de bout en bout** : mission livrée → amorce → publication en 4 saisies →
 inventaire. C'est le parcours qui porte la métrique unique.
 
-**Réserve à ne pas oublier** : les tests du parcours A sont écrits et exigibles, mais **aucun n'a
-encore été exécuté** — il n'existe pas de backend de recette joignable. Ils valident aujourd'hui les
-sélecteurs, pas le comportement réel bout en bout. Monter cet environnement est le prérequis pour
-que le filet du lot 4 soit réel et non théorique.
+**Réserve levée le 27/08** : les tests du parcours A ont été exécutés contre un backend réel.
+**4 sur 4 passent.** Le détail et les défauts trouvés sont en §Recette ci-dessous.
 
 **Trois estimations sur quatre étaient trop hautes** (B-3a déjà fait, pré-remplissage déjà fait,
 T1.3 pur frontend). La règle inscrite au plan — vérifier l'existant avant d'estimer — vaut pour les
 lots suivants, dont les durées sont probablement surévaluées de la même façon.
+
+#### Recette du 27/08 — première exécution contre un backend réel
+
+Backend démarré, migrations du lot 1 appliquées, base peuplée. **Parcours A : 4 tests sur 4.**
+
+| Suite | Résultat |
+|---|---|
+| Backend (logistics, trust, payments, users) | **194 passent** |
+| Playwright `routage` | **34 passent** |
+| Playwright `selecteurs` | **4 passent** |
+| Playwright `parcours` A — le retour capté | **4 passent** |
+| Playwright `parcours` B et C | 6 échouent, 3 ignorés — écrans des lots 2 et 3 |
+
+Les 6 échecs visent `recherche-depart`, `expeditions-onglet-negociation` et
+`dashboard-demandes-en-attente` : des sélecteurs sur des écrans non construits. **Aucune régression
+sur le lot 1.**
+
+**Trois défauts trouvés, dont deux invisibles à la relecture.**
+
+**1. La fixture E2E n'aurait jamais rien testé.** Elle sondait `/api/health/`, qui répond 404 —
+`/health/` est monté à la racine. Les parcours se seraient **ignorés en silence** même avec un
+backend disponible, et le socle aurait paru vert sans rien vérifier. Les comptes de test étaient de
+même inventés plutôt que repris de `seed_test_data`.
+
+*C'est le défaut le plus instructif du lot* : un test qui s'auto-ignore proprement ressemble
+exactement à un test qui n'a rien à signaler. Un socle de tests doit être vérifié en conditions
+réelles avant qu'on lui fasse confiance.
+
+**2. « Aujourd'hui » posait une heure déjà passée.** Le bouton de choix rapide posait 8 h 00 ;
+passé le petit matin, le champ refusait la valeur et la publication échouait **sans message**. Or
+c'est précisément le cas d'usage visé — un transporteur qui vient de livrer et rentre maintenant,
+souvent en fin de journée. Les deux chemins divergeaient de surcroît : le bouton posait 8 h, le
+paramètre d'URL +3 h.
+
+**3. L'amorce affichait une adresse au lieu d'un gouvernorat.** Le repli sur l'adresse produisait
+« Vous rentrez à Rue de Marseille, La Marsa à vide ? » et menait à un **formulaire vide**. Une
+amorce qui n'économise aucune saisie est pire qu'une absence d'amorce : elle promet 30 secondes et
+n'en tient rien.
+
+**Le jeu de test était aussi en cause** : une seule mission terminée sur 516 jobs, et sans
+gouvernorats — le cœur du pivot était donc intestable. Corrigé à la source dans `seed_test_data`.
+
+**Conséquence pour le lot 4** : le filet est désormais réel sur le parcours A, mais **le parcours C
+reste sans couverture** — or c'est lui qui traverse les 12 gestionnaires de `jobs/[id]/page.tsx`. Le
+lot 2 doit donc précéder le lot 4, ce que l'ordre du plan prévoit déjà, mais pour une raison
+supplémentaire : sans T2.1, le refactor du lot 4 se ferait toujours partiellement à l'aveugle.
 
 #### Enseignement de méthode — la parité i18n est un coût récurrent
 
