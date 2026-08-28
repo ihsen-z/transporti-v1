@@ -97,8 +97,8 @@ publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2
 | **B-2** Capacité disponible structurée | ✅ **fait** | `24425cd` | `available_capacity_kg` + `_m3`, migration `logistics/0015`, 6 sérialiseurs |
 | **B-3a** Km à vide valorisés, taux de remplissage | ✅ **déjà en place** | — | **Constat corrigé, voir ci-dessous** |
 | **B-3b** Revenu par corridor | ✅ **fait** | `24425cd` | `logistics/stats_corridors.py`, réconciliation avec K4 sous test |
-| T4.4 Amorce de fin de mission — web | ⏳ à faire | — | Test `fixme` déjà écrit |
-| T4.4 Amorce de fin de mission — mobile | ⏳ à faire | — | Décision 6 : livraison simultanée |
+| T4.4 Amorce de fin de mission — **web** | ✅ **fait** | `0cc0682` | Composant autonome, deux garde-fous, correspondance de gouvernorat tolérante |
+| T4.4 Amorce de fin de mission — **mobile** | ✅ **fait** | `95fa62a` | Sur l'Accueil : le transporteur n'a pas de détail de mission sur mobile |
 | T1.2 Publier un retour — **web** | ✅ **fait** | `05109e6` | Capacité structurée envoyée, 2 saisies rendues tactiles, `data-testid` posés |
 | T1.2 Publier un retour — **mobile** | ✅ **fait** | `5590520` | Hook jumeau du web, 125 tests mobile verts, lint propre |
 | T1.3 Inventaire des trajets publiés — **web** | ✅ **fait** | `8acce1a` | Pur frontend. Test `fixme` levé, l'inventaire devient exigible |
@@ -199,6 +199,32 @@ rencontré sur ce projet**, pas à une précaution théorique.
 `secondary` inexistant (c'est `ghost`), `colors.white` inexistant (c'est `neutral[0]`), `spacing.3xl`
 et `neutral[600]` inexistants. Rappel que les deux plateformes ne partagent pas leur design system —
 relever les valeurs réelles avant d'écrire, ne pas transposer celles du web.
+
+#### T4.4 — l'écran de priorité 1, livré des deux côtés
+
+**Une différence structurelle découverte en implémentant.** Sur mobile,
+`mission/[id]` est un écran **client** — payer, confirmer la réception, noter — atteint depuis
+`MyRequestCard`. Le transporteur n'a **aucun détail de mission**. L'amorce ne pouvait donc pas vivre
+au même endroit qu'au web ; l'Accueil est son seul point de passage après une livraison, et
+`CompletedMissionsList` y établissait déjà le contexte.
+
+Deuxième fois qu'une contrainte de plateforme déplace un point d'entrée sans changer le
+comportement, après l'inventaire. La règle se confirme : **ce qui doit rester identique entre
+plateformes, c'est le comportement, pas l'emplacement.**
+
+**Un défaut silencieux évité de justesse.** Le backend stocke `pickup_governorate` en texte libre.
+Une comparaison stricte avec la liste des gouvernorats aurait échoué sur « Gabes » sans accent — et
+échoué **sans aucune erreur visible** : le formulaire se serait ouvert vide, l'amorce aurait
+simplement déplacé la saisie au lieu de la supprimer, et T4.4 aurait été vidé de son sens sans que
+rien ne le signale. Résolu des deux côtés par une correspondance insensible à la casse et aux
+accents (`localeCompare` avec `sensitivity: "base"`), et couvert par 4 tests côté mobile.
+
+C'est le type de défaut que ni le typecheck ni un test de parcours ne rattrapent : il faut l'avoir
+anticipé.
+
+**Le typecheck a rattrapé deux nouvelles transpositions du web** (`appStorage.set` au lieu de
+`setString`, nuance `cta[700]` inexistante), après les trois de T1.3. Le constat est désormais
+systématique et vaut consigne pour les lots suivants.
 
 #### Enseignement de méthode — la parité i18n est un coût récurrent
 
