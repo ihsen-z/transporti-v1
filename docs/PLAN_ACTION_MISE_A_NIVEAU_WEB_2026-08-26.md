@@ -89,7 +89,7 @@ humain, et la moitié « navigateur » de 0.4, suspendue à la décision 5.
 publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2 et B-3a, puisque les
 écrans en dépendent.
 
-### Lot 1 — Le retour à vide capté · **en cours, le backend est fait**
+### Lot 1 — Le retour à vide capté · ✅ **TERMINÉ**
 
 | Tâche | État | Commit | Preuve |
 |---|---|---|---|
@@ -103,7 +103,7 @@ publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2
 | T1.2 Publier un retour — **mobile** | ✅ **fait** | `5590520` | Hook jumeau du web, 125 tests mobile verts, lint propre |
 | T1.3 Inventaire des trajets publiés — **web** | ✅ **fait** | `8acce1a` | Pur frontend. Test `fixme` levé, l'inventaire devient exigible |
 | T1.3 Inventaire des trajets publiés — **mobile** | ✅ **fait** | `cc7c8b2` | 125 tests mobile verts, lint propre. Écran hors barre d'onglets, choix assumé |
-| T1.1 Hub « Mes retours » — web + mobile | ⏳ à faire | — | — |
+| T1.1 Hub « Mes retours » — **web + mobile** | ✅ **fait** | `5255baa` | Section extraite des deux côtés, km valorisés, retours en ligne |
 
 **173 tests backend passent**, dont 13 nouveaux. Aucune régression. Côté web : 34 tests de routage,
 3 tests de sélecteurs, `tsc --noEmit` propre.
@@ -226,6 +226,46 @@ anticipé.
 `setString`, nuance `cta[700]` inexistante), après les trois de T1.3. Le constat est désormais
 systématique et vaut consigne pour les lots suivants.
 
+#### T1.1 — le lot 1 est clos
+
+Le hub passe de « mes missions » à « mes retours », des deux côtés. Trois blocs, dans l'ordre de ce
+qui rapporte : l'amorce conditionnelle, les kilomètres valorisés, les retours en ligne.
+
+**Point de cohérence important** : l'amorce du hub réutilise le **même composant et la même clé de
+refus** que celle de l'écran de mission (T4.4). Refuser à un endroit masque aux deux. Sans cela, un
+transporteur ayant écarté l'amorce sur sa mission la retrouverait sur son accueil — et elle
+deviendrait exactement la relance que les deux garde-fous cherchent à éviter.
+
+**Une cause racine enfin identifiée.** Le symptôme `implicit any` sur `.filter` revenait depuis
+T1.3. Ce n'était ni la clé de requête ni l'inférence du hook — les deux écartés par élimination —
+mais `data ?? []`, qui produit une union `T[] | never[]` : TypeScript ne résout pas la signature de
+`.filter` sur une union de types tableau. Corrigé et documenté sur place, pour que le prochain
+développeur ne refasse pas la même recherche.
+
+#### Bilan du lot 1
+
+| Livrable | Web | Mobile |
+|---|---|---|
+| B-1 Volume de véhicule optionnel | ✅ backend commun | ✅ |
+| B-2 Capacité structurée | ✅ backend commun | ✅ |
+| B-3b Ventilation par corridor | ✅ backend commun | — *(consommé au lot 5)* |
+| T1.2 Publier un retour | ✅ | ✅ |
+| T1.3 Inventaire | ✅ | ✅ |
+| T4.4 Amorce de fin de mission | ✅ | ✅ |
+| T1.1 Hub « Mes retours » | ✅ | ✅ |
+
+**Le parcours A est complet de bout en bout** : mission livrée → amorce → publication en 4 saisies →
+inventaire. C'est le parcours qui porte la métrique unique.
+
+**Réserve à ne pas oublier** : les tests du parcours A sont écrits et exigibles, mais **aucun n'a
+encore été exécuté** — il n'existe pas de backend de recette joignable. Ils valident aujourd'hui les
+sélecteurs, pas le comportement réel bout en bout. Monter cet environnement est le prérequis pour
+que le filet du lot 4 soit réel et non théorique.
+
+**Trois estimations sur quatre étaient trop hautes** (B-3a déjà fait, pré-remplissage déjà fait,
+T1.3 pur frontend). La règle inscrite au plan — vérifier l'existant avant d'estimer — vaut pour les
+lots suivants, dont les durées sont probablement surévaluées de la même façon.
+
 #### Enseignement de méthode — la parité i18n est un coût récurrent
 
 Trois clés ajoutées côté mobile, en français **et** en arabe. Le projet maintient une parité stricte
@@ -259,8 +299,16 @@ au dictionnaire. C'est pourquoi `stats_corridors.py` est un module séparé mais
 
 ### Lots 2 à 6 · **non démarrés**
 
-Toutes les décisions **produit** et la décision de portée mobile sont tranchées. Une seule décision
-de **méthode** reste ouverte : la 5 (voie du socle de tests), qui conditionne le lot 4.
+**Toutes les décisions du plan sont tranchées**, produit comme méthode. Les lots 2 à 6 peuvent
+s'enchaîner sans nouvel arbitrage.
+
+**Prochain lot** : le 2, la boîte de réception transporteur. Rappel du §1bis — le mobile porte
+**déjà** cet écran (`app/(app)/requests/index.tsx` et `[jobId].tsx`). Le lot 2 est donc une
+**transposition vers le web**, pas une création, et c'est le seul lot que la décision 6 n'allonge
+pas.
+
+**Prérequis non technique à traiter en parallèle** : monter un backend de recette joignable, sans
+quoi les tests du parcours A resteront non exécutés et le filet du lot 4 restera théorique.
 
 ---
 
