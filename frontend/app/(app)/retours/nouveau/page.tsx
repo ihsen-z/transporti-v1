@@ -79,6 +79,32 @@ function resoudreGouvernorat(valeur: string | null): string | null {
   );
 }
 
+/**
+ * Date de départ pour un choix rapide, au format de `<input datetime-local>`.
+ *
+ * `joursApres = 0` signifie « aujourd'hui », et vaut **maintenant + 3 heures**,
+ * pas 8 h du matin.
+ *
+ * Défaut trouvé en recette le 27/08 : la première version posait 8 h 00, une
+ * heure déjà passée pour quiconque publie après le petit matin. Le champ la
+ * refusait (son `min` est maintenant + 2 h) et la publication échouait en
+ * silence. Or c'est précisément le cas d'usage visé — un transporteur qui vient
+ * de livrer et rentre maintenant, souvent en fin de journée.
+ *
+ * Les jours suivants partent à 8 h : là, le matin est bien à venir.
+ */
+function dateDepartRapide(joursApres: number): string {
+  const d = new Date();
+  if (joursApres === 0) {
+    d.setHours(d.getHours() + 3, 0, 0, 0);
+  } else {
+    d.setDate(d.getDate() + joursApres);
+    d.setHours(8, 0, 0, 0);
+  }
+  const pad = (n: number) => String(n).padStart(2, "0");
+  return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 /* ------------------------------------------------------------------ */
 /*  Types de véhicules tunisiens                                       */
 /* ------------------------------------------------------------------ */
@@ -163,10 +189,7 @@ export default function ReturnTripPage() {
       if (gouvernoratDepuis) next.pickup_governorate = gouvernoratDepuis;
       if (gouvernoratVers) next.dropoff_governorate = gouvernoratVers;
       if (quand === "aujourdhui" && !prev.scheduled_time) {
-        const d = new Date();
-        d.setHours(d.getHours() + 3, 0, 0, 0);
-        const pad = (n: number) => String(n).padStart(2, "0");
-        next.scheduled_time = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+        next.scheduled_time = dateDepartRapide(0);
       }
       return next;
     });
@@ -521,17 +544,9 @@ export default function ReturnTripPage() {
                 key={choix.cle}
                 type="button"
                 data-testid={`retours-nouveau-date-${choix.cle}`}
-                onClick={() => {
-                  const d = new Date();
-                  d.setDate(d.getDate() + choix.jours);
-                  d.setHours(8, 0, 0, 0);
-                  // Format attendu par l'input datetime-local, en heure locale.
-                  const pad = (n: number) => String(n).padStart(2, "0");
-                  update(
-                    "scheduled_time",
-                    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`,
-                  );
-                }}
+                onClick={() =>
+                  update("scheduled_time", dateDepartRapide(choix.jours))
+                }
                 className="flex-1 px-3 py-2.5 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-700 hover:border-purple-400 hover:bg-purple-50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
               >
                 {choix.label}

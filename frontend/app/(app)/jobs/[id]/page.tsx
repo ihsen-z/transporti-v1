@@ -1311,8 +1311,8 @@ export default function JobDetailsPage() {
             {isCompleted && isAssignedTransporter && (
               <ReturnPromptBanner
                 missionId={job.id}
-                depuis={job.dropoff_governorate || job.dropoff_address}
-                vers={job.pickup_governorate || job.pickup_address}
+                depuis={job.dropoff_governorate ?? ""}
+                vers={job.pickup_governorate ?? ""}
               />
             )}
 

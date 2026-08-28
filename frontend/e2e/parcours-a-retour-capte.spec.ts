@@ -33,9 +33,14 @@ test.describe("Parcours A — le retour a vide capte", () => {
       "le vehicule doit etre pre-rempli depuis le profil",
     ).toBeVisible();
 
-    // Saisies 1 et 2 — le trajet.
-    await page.getByTestId("retours-nouveau-depart").fill(CORRIDOR.depart);
-    await page.getByTestId("retours-nouveau-arrivee").fill(CORRIDOR.arrivee);
+    // Saisies 1 et 2 — le trajet. Ce sont des <select> de gouvernorats, pas
+    // des champs libres : `fill()` echoue dessus.
+    await page
+      .getByTestId("retours-nouveau-depart")
+      .selectOption(CORRIDOR.depart);
+    await page
+      .getByTestId("retours-nouveau-arrivee")
+      .selectOption(CORRIDOR.arrivee);
 
     // Saisie 3 — la date, par choix tactile et non par calendrier.
     await page.getByTestId("retours-nouveau-date-aujourdhui").click();

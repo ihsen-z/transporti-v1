@@ -28,7 +28,11 @@ import { ArrowRight, RotateCcw } from "lucide-react";
 interface Props {
   /** Mission qui vient d'être livrée — sert de clé de non-répétition. */
   missionId: number;
-  /** Gouvernorat de livraison : le point de départ du retour. */
+  /**
+   * Gouvernorat de livraison : le point de départ du retour.
+   * Chaîne vide quand la mission n'en porte pas — l'amorce ne s'affiche alors
+   * pas, voir la note ci-dessous.
+   */
   depuis: string;
   /** Gouvernorat d'origine de la mission : la destination probable du retour. */
   vers: string;
@@ -68,6 +72,16 @@ export default function ReturnPromptBanner({ missionId, depuis, vers }: Props) {
   useEffect(() => {
     setVisible(!estRefusee(missionId));
   }, [missionId]);
+
+  // Sans gouvernorat de part et d'autre, on n'affiche rien.
+  //
+  // Constat de la recette du 27/08 : certaines missions n'en portent pas, et
+  // un repli sur l'adresse produisait « Vous rentrez à Rue de Marseille, La
+  // Marsa à vide ? » — une phrase absurde qui menait de surcroît à un
+  // formulaire VIDE, l'adresse ne correspondant à aucun gouvernorat de la
+  // liste. Une amorce qui n'économise aucune saisie est pire qu'une absence
+  // d'amorce : elle promet 30 secondes et n'en tient rien.
+  if (!depuis || !vers) return null;
 
   if (!visible) return null;
 

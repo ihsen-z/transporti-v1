@@ -14,16 +14,22 @@ import { test as base, expect, type APIRequestContext } from "@playwright/test";
 
 const BACKEND_URL = process.env.E2E_BACKEND_URL ?? "http://localhost:8000";
 
-/** Comptes de test, alimentes par l'endpoint `POST /api/auth/seed/`. */
+/**
+ * Comptes de test, crees par `python manage.py seed_test_data`.
+ *
+ * Ce sont les comptes REELS de la commande de seed du projet, pas des comptes
+ * inventes pour ces tests : la premiere version de cette fixture posait des
+ * identifiants qui n'existaient nulle part, et la connexion aurait echoue.
+ */
 export const COMPTES = {
   transporteur: {
     email:
-      process.env.E2E_TRANSPORTEUR_EMAIL ?? "transporteur.e2e@transporti.tn",
-    motDePasse: process.env.E2E_TRANSPORTEUR_PASSWORD ?? "Transporti!E2E",
+      process.env.E2E_TRANSPORTEUR_EMAIL ?? "mehdi.khelifi@test.transporti.tn",
+    motDePasse: process.env.E2E_TRANSPORTEUR_PASSWORD ?? "Test@123!",
   },
   client: {
-    email: process.env.E2E_CLIENT_EMAIL ?? "client.e2e@transporti.tn",
-    motDePasse: process.env.E2E_CLIENT_PASSWORD ?? "Transporti!E2E",
+    email: process.env.E2E_CLIENT_EMAIL ?? "leila.benamor@test.transporti.tn",
+    motDePasse: process.env.E2E_CLIENT_PASSWORD ?? "Test@123!",
   },
 } as const;
 
@@ -37,7 +43,11 @@ export const CORRIDOR = {
 
 async function backendJoignable(request: APIRequestContext): Promise<boolean> {
   try {
-    const reponse = await request.get(`${BACKEND_URL}/api/health/`, {
+    // `/health/` est monte a la racine (transporti_core/urls.py:89), pas sous
+    // /api/. La premiere version de cette fixture interrogeait /api/health/,
+    // qui repond 404 : les parcours auraient ete ignores en SILENCE meme avec
+    // un backend disponible — le socle aurait paru vert sans rien verifier.
+    const reponse = await request.get(`${BACKEND_URL}/health/`, {
       timeout: 3_000,
     });
     return reponse.ok();

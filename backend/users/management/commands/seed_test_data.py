@@ -221,6 +221,14 @@ class Command(BaseCommand):
         self.stdout.write('📦 Seeding jobs...')
         
         # Job 1: COMPLETED (Transport - Fridge)
+        #
+        # Les gouvernorats sont indispensables et non decoratifs : c'est la
+        # SEULE mission terminee du jeu de test, donc la seule qui puisse
+        # exercer l'amorce de retour a vide (T4.4), le coeur du pivot. Sans
+        # eux, l'amorce ne s'affiche pas — recette du 27/08 — et le parcours
+        # « mission livree -> publication du retour » reste intestable.
+        # Corridor choisi different de Tunis->Tunis pour que le retour inverse
+        # ait un sens.
         self.job_1, _ = TransportJob.objects.get_or_create(
             id=1,
             defaults={
@@ -228,11 +236,13 @@ class Command(BaseCommand):
                 'job_type': 'TRANSPORT',
                 'status': 'COMPLETED',
                 'pickup_address': 'Rue de Marseille, La Marsa',
+                'pickup_governorate': 'Tunis',
                 'pickup_lat': Decimal('36.8892'),
                 'pickup_lng': Decimal('10.3228'),
-                'dropoff_address': 'Rue du Lac Léman, Lac 2',
-                'dropoff_lat': Decimal('36.8374'),
-                'dropoff_lng': Decimal('10.2331'),
+                'dropoff_address': 'Avenue Habib Bourguiba, Sfax',
+                'dropoff_governorate': 'Sfax',
+                'dropoff_lat': Decimal('34.7406'),
+                'dropoff_lng': Decimal('10.7603'),
                 'scheduled_time': timezone.now() - timedelta(days=5),
                 'specifications': {'items': ['Fridge'], 'weight_kg': 80},
             }

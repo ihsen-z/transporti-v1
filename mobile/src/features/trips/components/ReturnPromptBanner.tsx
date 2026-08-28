@@ -52,8 +52,15 @@ export function ReturnPromptBanner() {
 
   // Le corridor est inversé : le transporteur a livré à l'arrivée de la
   // mission, il rentre vers son point de départ.
-  const depuis = derniere.dropoff_governorate || derniere.dropoff_address;
-  const vers = derniere.pickup_governorate || derniere.pickup_address;
+  const depuis = derniere.dropoff_governorate;
+  const vers = derniere.pickup_governorate;
+
+  // Constat de la recette du 27/08 : certaines missions ne portent pas de
+  // gouvernorat. Un repli sur l'adresse produisait une phrase absurde et
+  // menait a un formulaire VIDE, l'adresse ne correspondant a aucun
+  // gouvernorat. Une amorce qui n'economise aucune saisie est pire qu'une
+  // absence d'amorce : elle promet 30 secondes et n'en tient rien.
+  if (!depuis || !vers) return null;
 
   const publier = () => {
     router.push({

@@ -82,13 +82,8 @@ export default function ReturnsHubSection({
       {derniereMission && (
         <ReturnPromptBanner
           missionId={derniereMission.id}
-          depuis={
-            derniereMission.dropoff_governorate ||
-            derniereMission.dropoff_address
-          }
-          vers={
-            derniereMission.pickup_governorate || derniereMission.pickup_address
-          }
+          depuis={derniereMission.dropoff_governorate}
+          vers={derniereMission.pickup_governorate}
         />
       )}
 
