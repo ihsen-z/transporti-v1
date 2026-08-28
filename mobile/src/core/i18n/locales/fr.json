@@ -203,7 +203,25 @@
     },
     "prefill_from_profile": "depuis votre profil",
     "capacity_share_tout": "Tout le camion",
-    "capacity_share_moitie": "La moitié"
+    "capacity_share_moitie": "La moitié",
+    "inventory": {
+      "title": "Mes retours publiés",
+      "subtitle": "Un trajet expiré disparaît de la recherche client.",
+      "expired": "Expiré — invisible dans la recherche",
+      "expires_in_one": "Expire dans {{count}} jour",
+      "expires_in_other": "Expire dans {{count}} jours",
+      "extend": "Prolonger d'une semaine",
+      "duplicate": "Dupliquer",
+      "unpublish": "Dépublier",
+      "unpublish_title": "Dépublier ce trajet ?",
+      "unpublish_message": "{{from}} → {{to}} ne sera plus visible dans la recherche. Les demandes en attente seront refusées et leurs clients prévenus.",
+      "action_failed": "L'action n'a pas abouti. Réessayez.",
+      "load_error": "Impossible de charger vos trajets pour le moment.",
+      "empty_title": "Vous n'avez aucun retour en ligne.",
+      "empty_hint": "Publiez le trajet que vous faites déjà : les clients du corridor le verront.",
+      "publish_first": "Publier mon premier retour",
+      "see_mine": "Voir mes retours publiés"
+    }
   },
   "requests": {
     "title": "Demandes reçues",

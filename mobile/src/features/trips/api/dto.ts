@@ -52,3 +52,30 @@ export interface ReturnTripCreateResponse {
   job: { id: number; status: string };
   matching_requests_count: number;
 }
+
+// GET /api/v1/jobs/transporter/?type=owned (TRANSPORTER) — l'inventaire des
+// trajets retour publiés, tel que renvoyé par TransporterMissionSerializer.
+// Les Decimal DRF sont sérialisés en chaînes, et null quand non renseignés.
+export interface ReturnTripDto {
+  id: number;
+  job_type: JobType;
+  status:
+    | 'PUBLISHED'
+    | 'MATCHED'
+    | 'IN_PROGRESS'
+    | 'COMPLETED'
+    | 'CANCELLED'
+    | 'DISPUTED';
+  pickup_address: string;
+  pickup_governorate: string;
+  dropoff_address: string;
+  dropoff_governorate: string;
+  scheduled_time: string;
+  description: string;
+  is_return_trip: boolean;
+  available_capacity: string;
+  available_capacity_kg: string | null;
+  available_capacity_m3: string | null;
+  created_at: string;
+  updated_at: string;
+}

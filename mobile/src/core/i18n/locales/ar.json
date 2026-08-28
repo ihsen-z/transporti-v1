@@ -207,7 +207,25 @@
     },
     "prefill_from_profile": "من ملفك الشخصي",
     "capacity_share_tout": "الشاحنة كاملة",
-    "capacity_share_moitie": "النصف"
+    "capacity_share_moitie": "النصف",
+    "inventory": {
+      "title": "رحلات العودة المنشورة",
+      "subtitle": "الرحلة المنتهية تختفي من بحث العملاء.",
+      "expired": "منتهية — غير ظاهرة في البحث",
+      "expires_in_one": "تنتهي خلال يوم {{count}}",
+      "expires_in_other": "تنتهي خلال {{count}} أيام",
+      "extend": "التمديد أسبوعا",
+      "duplicate": "نسخ",
+      "unpublish": "إلغاء النشر",
+      "unpublish_title": "إلغاء نشر هذه الرحلة؟",
+      "unpublish_message": "{{from}} → {{to}} لن تظهر في البحث. الطلبات المعلقة سترفض وسيتم إعلام أصحابها.",
+      "action_failed": "لم تنجح العملية. أعد المحاولة.",
+      "load_error": "تعذر تحميل رحلاتك حاليا.",
+      "empty_title": "ليس لديك أي رحلة عودة منشورة.",
+      "empty_hint": "انشر الرحلة التي تقوم بها أصلا: سيراها عملاء المسار.",
+      "publish_first": "انشر أول رحلة عودة",
+      "see_mine": "عرض رحلاتي المنشورة"
+    }
   },
   "requests": {
     "title": "الطلبات الواردة",

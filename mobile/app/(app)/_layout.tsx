@@ -110,6 +110,11 @@ export default function AppLayout() {
           d'ouvrir directement le bon écran. */}
       <Tabs.Screen name="mission/[id]" options={{ href: null }} />
       <Tabs.Screen name="transporteur/[id]" options={{ href: null }} />
+      {/* T1.3 — inventaire des retours. Hors barre : la charte impose 4
+          onglets plus le bouton central, un cinquième casserait la mise en
+          page. On y arrive depuis l'écran de publication et depuis l'Accueil,
+          ce qui correspond au parcours réel. */}
+      <Tabs.Screen name="mes-retours" options={{ href: null }} />
     </Tabs>
   );
 }

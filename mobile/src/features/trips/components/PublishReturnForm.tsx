@@ -1,4 +1,5 @@
 import { Text, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { usePublishTripForm } from './publish/usePublishTripForm';
@@ -12,13 +13,22 @@ import { publishStyles as s } from './publish/publishStyles';
 // dans publishSchema, et les champs dans les sections Route/Schedule/Details.
 export function PublishReturnForm() {
   const { t } = useTranslation();
+  const router = useRouter();
   const f = usePublishTripForm();
 
-  // Succès : message + nombre de demandes ouvertes sur le corridor.
+  // Succès : message + nombre de demandes ouvertes sur le corridor, puis
+  // renvoi vers l'inventaire (T1.3) pour que le transporteur voie son trajet
+  // en ligne et puisse le gérer.
   if (f.isSuccess) {
     return (
       <View style={s.successBox}>
         <Text style={s.successText}>{t('trips.success', { count: f.successCount })}</Text>
+        <Button
+          testID="publish-voir-inventaire"
+          label={t('trips.inventory.see_mine')}
+          onPress={() => router.push('/mes-retours')}
+          variant="ghost"
+        />
       </View>
     );
   }
