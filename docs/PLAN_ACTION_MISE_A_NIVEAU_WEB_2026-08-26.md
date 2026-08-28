@@ -310,6 +310,31 @@ reste sans couverture** — or c'est lui qui traverse les 12 gestionnaires de `j
 lot 2 doit donc précéder le lot 4, ce que l'ordre du plan prévoit déjà, mais pour une raison
 supplémentaire : sans T2.1, le refactor du lot 4 se ferait toujours partiellement à l'aveugle.
 
+#### Lot 2 — B-5, l'endpoint qui manquait
+
+`trip-requests/my/` existait côté **client** ; aucun vis-à-vis ne permettait au transporteur de
+lire ses demandes tous trajets confondus. `ReceivedTripRequestsView` le fournit.
+
+Deux choix à retenir : le filtre porte sur `job__owner` et non sur les offres — sur un trajet
+retour, le transporteur est le **propriétaire** du job et le client n'y est rattaché que par sa
+demande. Et `?status=` **valide ses valeurs** au lieu de les passer brutes : un statut inconnu
+renverrait sinon une liste vide, indistinguable d'une absence de demandes — un compteur à zéro qui
+ment. Il renvoie 400.
+
+6 tests, dont un qui vérifie l'exposition sur `/api/v1/` : la règle des deux surfaces est désormais
+testée, plus seulement écrite.
+
+#### Défaut que j'avais introduit au lot 1, corrigé
+
+Mon `trips/api/useMyReturnTrips.ts` doublonnait un `requests/api/useMyReturnTrips.ts` préexistant —
+**même clé react-query `['myReturnTrips']`**, filtre et forme différents. Deux hooks sur une même
+clé, c'est le premier monté qui gagne le cache et l'autre qui reçoit des données mal filtrées.
+L'ancien ne lisait de surcroît que la première page, le bug 5.1 qu'il citait pourtant lui-même.
+
+Consolidé sur un hook unique. **Leçon** : avant de créer un fichier dans une base que l'on connaît
+mal, chercher le nom qu'on s'apprête à employer. Le coût de la vérification est nul, celui de la
+collision de cache est invisible jusqu'à ce qu'il ne le soit plus.
+
 #### Enseignement de méthode — la parité i18n est un coût récurrent
 
 Trois clés ajoutées côté mobile, en français **et** en arabe. Le projet maintient une parité stricte
@@ -884,10 +909,19 @@ d'amorce, avec deux règles de non-répétition différentes et deux calculs d'�
 | Écran | Mobile | Web |
 |---|---|---|
 | Alertes corridor (C1.7) | ✅ **complet** — `CorridorAlertsPanel.tsx`, `CorridorAlertRow.tsx`, `useCorridorAlerts.ts`, `useCreateCorridorAlert.ts`, `useDeleteCorridorAlert.ts` | ❌ à créer, priorité 6 du delta |
-| Demandes reçues consolidées (T2.1) | ✅ **complet** — `app/(app)/requests/index.tsx` + `[jobId].tsx` | ❌ à créer, priorité 3 du delta |
+| Demandes reçues consolidées (T2.1) | ❌ **constat erroné, corrigé le 27/08** — l'écran mobile liste les *trajets*, pas les demandes | ❌ à créer, priorité 3 du delta |
 
-Le mobile a donc déjà résolu deux problèmes que le plan web traite comme neufs. **Les lots 2 et 3
-doivent transposer ces implémentations, pas en écrire d'autres.**
+> **Correction du 27/08.** La ligne T2.1 ci-dessus était fausse, et je l'ai vérifiée trop vite en
+> me fiant au nom des fichiers. L'écran mobile « Demandes reçues » liste les **trajets** du
+> transporteur ; il faut en taper un pour voir ses demandes — exactement le motif « trajet par
+> trajet » que T2.1 doit remplacer. Son propre commentaire le disait.
+>
+> **Conséquence** : le lot 2 n'est pas une transposition mais une création, et il exige un
+> **cinquième chantier backend** (B-5), non prévu. Il s'allonge donc, contrairement à ce
+> qu'annonçait le tableau du §4.
+
+Le mobile a donc déjà résolu **un** problème que le plan web traitait comme neuf — les alertes
+corridor. **Le lot 3 doit transposer cette implémentation, pas en écrire une autre.**
 
 ### Ajustement retenu
 
