@@ -12,6 +12,7 @@ import { TripRequestsPanel } from "@/components/return-trips/TripRequestsPanel";
 import { OfferList } from "@/components/offers/OfferList";
 import { MissionStepper } from "@/components/jobs/MissionStepper";
 import { PostDeliveryPanel } from "@/components/jobs/PostDeliveryPanel";
+import ReturnPromptBanner from "@/components/return-trips/ReturnPromptBanner";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
@@ -1301,6 +1302,19 @@ export default function JobDetailsPage() {
             {/* POST-LIVRAISON FLOW (BL-03, UX-01, D1')     */}
             {/* Panneau unique cohérent — cf PostDeliveryPanel */}
             {/* ============================================ */}
+
+            {/* T4.4 — l'amorce de retour à vide. Réservée au transporteur qui
+                a exécuté la mission : le client n'a rien à publier, et le
+                propriétaire d'un trajet retour n'est pas dans ce cas de figure.
+                Placée AVANT le panneau post-livraison, parce que c'est l'action
+                la plus rentable de l'écran à cet instant. */}
+            {isCompleted && isAssignedTransporter && (
+              <ReturnPromptBanner
+                missionId={job.id}
+                depuis={job.dropoff_governorate || job.dropoff_address}
+                vers={job.pickup_governorate || job.pickup_address}
+              />
+            )}
 
             {isCompleted && (
               <PostDeliveryPanel

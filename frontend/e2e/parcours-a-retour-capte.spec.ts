@@ -51,22 +51,23 @@ test.describe("Parcours A — le retour a vide capte", () => {
     ).toBeVisible({ timeout: 15_000 });
   });
 
-  test.fixme("la fin de mission propose de publier le retour (T4.4, lot 1)", async ({
+  test("la fin de mission propose de publier le retour (T4.4)", async ({
     page,
   }) => {
     await seConnecter(page, "transporteur");
 
-    // Depuis une mission livree, l'amorce doit apparaitre avec le corridor
-    // inverse deja renseigne. C'est l'ecran de priorite 1 du delta : sans lui,
-    // l'inventaire de retours ne s'alimente que volontairement.
-    await page.goto("/missions/1");
+    // Le detail de mission vit encore sous /jobs/[id] : cette route porte deux
+    // roles (trajet vu par un client, mission vue par un transporteur) et sa
+    // separation en /missions/[id] releve du lot 4. Le test suivra le
+    // renommage, sans changer ce qu'il verifie.
+    await page.goto("/jobs/1");
 
     const amorce = page.getByTestId("mission-amorce-retour");
     await expect(amorce).toBeVisible();
 
-    // Le corridor inverse est pre-rempli : le transporteur a livre a Sfax, il
-    // rentre a Tunis.
-    await expect(amorce).toContainText(CORRIDOR.arrivee);
+    // Le corridor est inverse : le transporteur a livre a l'arrivee de la
+    // mission, il rentre vers son point de depart.
+    await expect(amorce).toContainText(CORRIDOR.depart);
 
     // Une echappatoire est obligatoire : sans elle, l'amorce serait percue
     // comme une relance publicitaire et desactivee mentalement.
@@ -74,10 +75,31 @@ test.describe("Parcours A — le retour a vide capte", () => {
 
     await page.getByTestId("mission-amorce-publier").click();
 
-    await expect(page).toHaveURL(/\/retours\/nouveau/);
-    await expect(page.getByTestId("retours-nouveau-depart")).toHaveValue(
-      CORRIDOR.arrivee,
+    // Le formulaire arrive avec l'itineraire deja renseigne : c'est tout
+    // l'interet de l'amorce, sinon elle ne fait que deplacer la saisie.
+    await expect(page).toHaveURL(/\/retours\/nouveau\?/);
+    await expect(page.getByTestId("retours-nouveau-depart")).not.toHaveValue(
+      "",
     );
+    await expect(page.getByTestId("retours-nouveau-arrivee")).not.toHaveValue(
+      "",
+    );
+  });
+
+  test("l'amorce refusee ne revient pas sur la meme mission", async ({
+    page,
+  }) => {
+    // La regle de non-repetition est ce qui separe une amorce utile d'une
+    // relance publicitaire. Sans elle, le transporteur la desactive
+    // mentalement des la deuxieme apparition.
+    await seConnecter(page, "transporteur");
+    await page.goto("/jobs/1");
+
+    await page.getByTestId("mission-amorce-plus-tard").click();
+    await expect(page.getByTestId("mission-amorce-retour")).toBeHidden();
+
+    await page.reload();
+    await expect(page.getByTestId("mission-amorce-retour")).toBeHidden();
   });
 
   test("le retour publie apparait dans l'inventaire (T1.3)", async ({

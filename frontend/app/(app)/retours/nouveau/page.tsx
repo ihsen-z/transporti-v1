@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiClient, ApiError } from "@/lib/api/client";
 import { useToast } from "@/components/ui/Toast";
@@ -52,6 +52,33 @@ const GOVERNORATES = [
   "Kebili",
 ];
 
+/**
+ * Retrouve un gouvernorat de la liste à partir d'une valeur externe.
+ *
+ * Le backend stocke `pickup_governorate` en texte libre : rien ne garantit que
+ * « Gabès » y soit accentué, ni que la casse corresponde. Une comparaison
+ * stricte échouerait **silencieusement** — le formulaire s'ouvrirait vide et
+ * l'amorce de fin de mission (T4.4) perdrait tout son intérêt, sans erreur
+ * visible pour le diagnostiquer.
+ *
+ * On compare donc sur une forme normalisée : accents retirés, casse ignorée.
+ * Retourne la valeur canonique de la liste, ou null si rien ne correspond.
+ */
+function resoudreGouvernorat(valeur: string | null): string | null {
+  if (!valeur) return null;
+  const cible = valeur.trim();
+  if (!cible) return null;
+  // `sensitivity: "base"` ignore à la fois la casse et les accents. Préféré à
+  // une normalisation NFD suivie d'un filtre de diacritiques : cette dernière
+  // s'écrit avec des caractères combinants invisibles dans le source, qu'une
+  // manipulation d'encodage casserait sans que rien ne le signale.
+  return (
+    GOVERNORATES.find(
+      (g) => g.localeCompare(cible, "fr", { sensitivity: "base" }) === 0,
+    ) ?? null
+  );
+}
+
 /* ------------------------------------------------------------------ */
 /*  Types de véhicules tunisiens                                       */
 /* ------------------------------------------------------------------ */
@@ -74,6 +101,7 @@ export default function ReturnTripPage() {
   ];
 
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { showToast } = useToast();
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
@@ -115,6 +143,34 @@ export default function ReturnTripPage() {
       return next;
     });
   }, [vehicule]);
+
+  // T4.4 — itinéraire pré-rempli par l'amorce de fin de mission. Le corridor
+  // arrive déjà inversé (le transporteur a livré à `depuis`, il rentre vers
+  // `vers`), et `quand=aujourdhui` évite la saisie de date. Un transporteur
+  // venu de l'amorce n'a donc plus rien à saisir avant de publier.
+  //
+  // Les valeurs sont validées contre la liste des gouvernorats : un paramètre
+  // d'URL arbitraire ne doit pas se retrouver dans le formulaire.
+  useEffect(() => {
+    const depuis = searchParams.get("depuis");
+    const vers = searchParams.get("vers");
+    const quand = searchParams.get("quand");
+
+    setForm((prev) => {
+      const next = { ...prev };
+      const gouvernoratDepuis = resoudreGouvernorat(depuis);
+      const gouvernoratVers = resoudreGouvernorat(vers);
+      if (gouvernoratDepuis) next.pickup_governorate = gouvernoratDepuis;
+      if (gouvernoratVers) next.dropoff_governorate = gouvernoratVers;
+      if (quand === "aujourdhui" && !prev.scheduled_time) {
+        const d = new Date();
+        d.setHours(d.getHours() + 3, 0, 0, 0);
+        const pad = (n: number) => String(n).padStart(2, "0");
+        next.scheduled_time = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+      }
+      return next;
+    });
+  }, [searchParams]);
 
   // Capacité structurée envoyée au backend (B-2). Dérivée de la part choisie
   // appliquée à la capacité du véhicule. Reste `null` quand le profil ne porte
