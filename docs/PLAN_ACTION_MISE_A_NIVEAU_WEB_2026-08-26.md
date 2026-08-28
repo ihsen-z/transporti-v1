@@ -102,7 +102,7 @@ publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2
 | T1.2 Publier un retour — **web** | ✅ **fait** | `05109e6` | Capacité structurée envoyée, 2 saisies rendues tactiles, `data-testid` posés |
 | T1.2 Publier un retour — **mobile** | ✅ **fait** | `5590520` | Hook jumeau du web, 125 tests mobile verts, lint propre |
 | T1.3 Inventaire des trajets publiés — **web** | ✅ **fait** | `8acce1a` | Pur frontend. Test `fixme` levé, l'inventaire devient exigible |
-| T1.3 Inventaire des trajets publiés — **mobile** | ⏳ à faire | — | Décision 6 : livraison simultanée |
+| T1.3 Inventaire des trajets publiés — **mobile** | ✅ **fait** | `cc7c8b2` | 125 tests mobile verts, lint propre. Écran hors barre d'onglets, choix assumé |
 | T1.1 Hub « Mes retours » — web + mobile | ⏳ à faire | — | — |
 
 **173 tests backend passent**, dont 13 nouveaux. Aucune régression. Côté web : 34 tests de routage,
@@ -177,6 +177,28 @@ entrée parmi d'autres. « Compléter mon aller » descend en secondaire, confor
 
 `lib/services/returnTrips.ts` est le **premier fichier de service par domaine** du projet. Le lot 4
 pourra modeler dessus l'extraction des autres domaines.
+
+#### T1.3 mobile — une contrainte de charte qui déplace le point d'entrée
+
+La barre transporteur porte **4 onglets plus le bouton central**, réparti en deux moitiés autour de
+lui. Un cinquième onglet casserait cette mise en page. L'inventaire est donc déclaré `href: null` :
+il existe et reste adressable, mais s'atteint depuis l'écran de publication — ce qui correspond au
+parcours réel, puisqu'on y vient après avoir publié — et le sera depuis l'Accueil quand T1.1 livrera
+le hub.
+
+**Écart assumé avec le web**, où « Mes retours » est passé en tête de la barre latérale. Les deux
+plateformes n'ont pas la même contrainte d'espace ; ce qui doit rester identique, c'est le
+comportement de l'inventaire, pas son point d'entrée.
+
+**Une confirmation utile** : le commentaire de `useMyMissions` documentait déjà le piège du
+paramètre `type` (bug 5.1 — sans lui, l'endpoint renvoie l'union missions + retours, paginée à 20).
+Le filtre défensif sur `is_return_trip` ajouté côté web répondait donc à un problème **déjà
+rencontré sur ce projet**, pas à une précaution théorique.
+
+**Le typecheck a rattrapé trois hypothèses fausses** sur les conventions mobile : variant
+`secondary` inexistant (c'est `ghost`), `colors.white` inexistant (c'est `neutral[0]`), `spacing.3xl`
+et `neutral[600]` inexistants. Rappel que les deux plateformes ne partagent pas leur design system —
+relever les valeurs réelles avant d'écrire, ne pas transposer celles du web.
 
 #### Enseignement de méthode — la parité i18n est un coût récurrent
 
