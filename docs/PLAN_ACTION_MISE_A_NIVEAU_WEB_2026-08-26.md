@@ -101,7 +101,8 @@ publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2
 | T4.4 Amorce de fin de mission — mobile | ⏳ à faire | — | Décision 6 : livraison simultanée |
 | T1.2 Publier un retour — **web** | ✅ **fait** | `05109e6` | Capacité structurée envoyée, 2 saisies rendues tactiles, `data-testid` posés |
 | T1.2 Publier un retour — **mobile** | ✅ **fait** | `5590520` | Hook jumeau du web, 125 tests mobile verts, lint propre |
-| T1.3 Inventaire des trajets publiés — web + mobile | ⏳ à faire | — | Test `fixme` déjà écrit |
+| T1.3 Inventaire des trajets publiés — **web** | ✅ **fait** | `8acce1a` | Pur frontend. Test `fixme` levé, l'inventaire devient exigible |
+| T1.3 Inventaire des trajets publiés — **mobile** | ⏳ à faire | — | Décision 6 : livraison simultanée |
 | T1.1 Hub « Mes retours » — web + mobile | ⏳ à faire | — | — |
 
 **173 tests backend passent**, dont 13 nouveaux. Aucune régression. Côté web : 34 tests de routage,
@@ -151,6 +152,31 @@ a rendu l'ajout net, là où le web imposait d'extraire un hook d'une page de 56
 
 **Coût réel de la livraison simultanée sur cet écran** : environ 35 % du temps du web, sous
 l'estimation de 40 % retenue au §4. À reconfirmer sur T4.4, plus lourd.
+
+#### T1.3 web — troisième fois que l'existant couvre plus que prévu
+
+L'inventaire était estimé comme un chantier mêlant backend et frontend. Il s'est révélé **du pur
+frontend** : `jobs/transporter/?type=owned` fournit la liste, `ReturnTripManageView` porte l'édition
+(PATCH) et la dépublication (DELETE, suppression douce qui rejette et notifie les demandes en
+attente). « Prolonger » n'est qu'un PATCH de `scheduled_time`, « dupliquer » un POST ordinaire.
+
+C'est le **troisième** constat du même type après B-3a et le pré-remplissage du véhicule. La leçon
+inscrite au §journal tient et doit être appliquée systématiquement : sur ce projet, vérifier
+l'existant **avant** d'estimer.
+
+**Décisions d'interface prises et pourquoi**
+
+- L'expiration est affichée en clair, avec trois tons selon l'urgence. Un trajet qui expire sans que le transporteur s'en aperçoive disparaît **silencieusement** de la recherche — c'est le défaut que cet écran doit rendre impossible, pas seulement signaler.
+- « Dépublier » est destructif et notifie les clients en attente. Traité en dernier, en texte seul, jamais au même poids visuel que les trois autres actions, et sa conséquence est annoncée **avant** dans la confirmation.
+- `getMyReturnTrips` filtre sur `is_return_trip` **malgré** `?type=owned` : si le paramètre était un jour ignoré, l'endpoint renverrait l'union avec les missions assignées et l'inventaire afficherait des objets étrangers.
+
+**Deux points de couture réglés au passage** : la redirection après publication pointe enfin vers
+`/retours` (elle allait provisoirement vers `/jobs`), et « Mes retours » passe **en tête** de la
+navigation transporteur — application d'IA-2, le retour étant la racine du transporteur et non une
+entrée parmi d'autres. « Compléter mon aller » descend en secondaire, conformément au pivot.
+
+`lib/services/returnTrips.ts` est le **premier fichier de service par domaine** du projet. Le lot 4
+pourra modeler dessus l'extraction des autres domaines.
 
 #### Enseignement de méthode — la parité i18n est un coût récurrent
 
