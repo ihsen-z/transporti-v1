@@ -8,6 +8,7 @@ import { HomeTopBar } from '@/features/dashboard/components/HomeTopBar';
 import { TransporterHero } from '@/features/dashboard/components/TransporterHero';
 import { MissionsList } from '@/features/missions/components/MissionsList';
 import { CompletedMissionsList } from '@/features/reviews/components/CompletedMissionsList';
+import { ReturnPromptBanner } from '@/features/trips/components/ReturnPromptBanner';
 import { Button } from '@/shared/ui/Button';
 import { GradientCard } from '@/shared/ui/GradientCard';
 import { Txt } from '@/shared/ui/Txt';
@@ -74,6 +75,9 @@ export default function HomeScreen() {
             dans son propre onglet (mes-demandes.tsx) : une section noyée en
             bas de l'Accueil, sans pull-to-refresh ni existence dans la barre
             de navigation, ne servait pas le principe de suivi du BO. */}
+        {/* T4.4 — l'amorce de retour a vide, en premiere position : a cet
+            instant, c'est l'action la plus rentable de l'ecran. */}
+        {isTransporter ? <ReturnPromptBanner /> : null}
         {isTransporter ? <MissionsList /> : null}
         {isTransporter ? <CompletedMissionsList /> : null}
       </ScrollView>

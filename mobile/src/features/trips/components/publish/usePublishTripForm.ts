@@ -1,8 +1,13 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocalSearchParams } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTranslation } from 'react-i18next';
-import { GOVERNORATES, findGovernorate } from '../../data/governorates';
+import {
+  GOVERNORATES,
+  findGovernorate,
+  resolveGovernorateCode,
+} from '../../data/governorates';
 import { nextDays, TIME_SLOTS, toScheduledTime } from '../../data/schedule';
 import { useEstimatePrice } from '../../api/useEstimatePrice';
 import { usePublishReturnTrip } from '../../api/usePublishReturnTrip';
@@ -27,6 +32,14 @@ export function usePublishTripForm() {
   const { vehicule } = useVehiclePrefill();
   const [partCapacite, setPartCapacite] = useState<PartCapacite>(null);
 
+  // T4.4 — itinéraire transmis par l'amorce de fin de mission, déjà inversé.
+  // Sans cette reprise, l'amorce ne ferait que déplacer la saisie ailleurs.
+  const params = useLocalSearchParams<{
+    depuis?: string;
+    vers?: string;
+    quand?: string;
+  }>();
+
   const {
     control,
     handleSubmit,
@@ -50,6 +63,20 @@ export function usePublishTripForm() {
       instantBooking: false,
     },
   });
+
+  // Applique l'itinéraire de l'amorce (T4.4). Les valeurs viennent du serveur
+  // en texte libre : elles passent par `resolveGovernorateCode`, qui tolère la
+  // casse et les accents. Une valeur inconnue est ignorée plutôt que devinée.
+  useEffect(() => {
+    const depuis = resolveGovernorateCode(params.depuis);
+    const vers = resolveGovernorateCode(params.vers);
+    if (depuis) setValue('pickupGov', depuis, { shouldValidate: true });
+    if (vers) setValue('dropoffGov', vers, { shouldValidate: true });
+    if (params.quand === 'aujourdhui') {
+      const aujourdhui = nextDays(1)[0];
+      if (aujourdhui) setValue('day', aujourdhui.value, { shouldValidate: true });
+    }
+  }, [params.depuis, params.vers, params.quand, setValue]);
 
   // Options localisées (nom du gouvernorat selon la langue active).
   const isAr = i18n.language === 'ar';

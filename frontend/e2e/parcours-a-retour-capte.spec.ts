@@ -11,10 +11,10 @@ import { test, expect, seConnecter, CORRIDOR } from "./fixtures/backend";
  * pas seulement fonctionnel, il est chronometre : moins de 30 secondes et moins
  * de 4 saisies manuelles.
  *
- * Deux etapes visent des ecrans qui n'existent pas encore (T4.4 l'amorce, T1.3
- * l'inventaire). Elles sont ecrites maintenant, marquees `fixme`, et deviendront
- * la definition de fini du lot 1 : le lot est termine quand ces tests passent
- * sans modification.
+ * Les quatre etapes du parcours sont desormais implementees (T1.2 la
+ * publication, T4.4 l'amorce, T1.3 l'inventaire) : plus aucun test n'est
+ * marque `fixme` ici. Ils constituent la definition de fini du lot 1 et
+ * deviennent exigibles des qu'un backend de recette est joignable.
  */
 
 test.describe("Parcours A — le retour a vide capte", () => {

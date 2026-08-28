@@ -1,4 +1,4 @@
-import { GOVERNORATES, findGovernorate } from './governorates';
+import { GOVERNORATES, findGovernorate, resolveGovernorateCode } from './governorates';
 
 describe('governorates', () => {
   it('contient les 24 gouvernorats avec coordonnées numériques', () => {
@@ -16,5 +16,28 @@ describe('governorates', () => {
     expect(findGovernorate('Tunis')?.nameAr).toBe('تونس');
     expect(findGovernorate('Sfax')?.lat).toBeCloseTo(34.7406, 3);
     expect(findGovernorate('Inconnu')).toBeUndefined();
+  });
+});
+
+describe('resolveGovernorateCode (T4.4)', () => {
+  it('accepte la valeur canonique', () => {
+    expect(resolveGovernorateCode('Sfax')).toBe('Sfax');
+  });
+
+  it('ignore la casse et les accents, car le backend stocke du texte libre', () => {
+    // Le cas qui casserait silencieusement le pre-remplissage de l'amorce.
+    expect(resolveGovernorateCode('gabes')).toBe('Gabès');
+    expect(resolveGovernorateCode('GABÈS')).toBe('Gabès');
+    expect(resolveGovernorateCode('  beja  ')).toBe('Béja');
+  });
+
+  it('accepte le nom arabe', () => {
+    expect(resolveGovernorateCode('تونس')).toBe('Tunis');
+  });
+
+  it('retourne null plutot que de deviner', () => {
+    expect(resolveGovernorateCode('Marseille')).toBeNull();
+    expect(resolveGovernorateCode('')).toBeNull();
+    expect(resolveGovernorateCode(null)).toBeNull();
   });
 });

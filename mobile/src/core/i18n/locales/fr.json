@@ -221,6 +221,12 @@
       "empty_hint": "Publiez le trajet que vous faites déjà : les clients du corridor le verront.",
       "publish_first": "Publier mon premier retour",
       "see_mine": "Voir mes retours publiés"
+    },
+    "prompt": {
+      "title": "Vous rentrez à {{vers}} à vide ?",
+      "body": "Publiez votre retour en 30 secondes. Votre véhicule et sa capacité sont déjà renseignés.",
+      "publish": "Publier mon retour",
+      "later": "Plus tard"
     }
   },
   "requests": {

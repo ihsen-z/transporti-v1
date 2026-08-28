@@ -42,3 +42,28 @@ export const GOVERNORATES: readonly Governorate[] = [
 export function findGovernorate(code: string): Governorate | undefined {
   return GOVERNORATES.find((g) => g.code === code);
 }
+
+/**
+ * Retrouve un gouvernorat à partir d'une valeur venue du serveur (T4.4).
+ *
+ * `pickup_governorate` est stocké en texte libre côté backend : rien ne
+ * garantit que « Gabès » y soit accentué, ni que la casse corresponde. Une
+ * comparaison stricte échouerait **silencieusement** — le formulaire s'ouvrirait
+ * vide et l'amorce de fin de mission perdrait tout son intérêt, sans erreur
+ * visible pour le diagnostiquer.
+ *
+ * `sensitivity: 'base'` ignore à la fois la casse et les accents.
+ * Retourne le code canonique, ou null si rien ne correspond.
+ */
+export function resolveGovernorateCode(value: string | null | undefined): string | null {
+  if (!value) return null;
+  const cible = value.trim();
+  if (!cible) return null;
+  const trouve = GOVERNORATES.find(
+    (g) =>
+      g.code.localeCompare(cible, 'fr', { sensitivity: 'base' }) === 0 ||
+      g.nameFr.localeCompare(cible, 'fr', { sensitivity: 'base' }) === 0 ||
+      g.nameAr === cible,
+  );
+  return trouve?.code ?? null;
+}
