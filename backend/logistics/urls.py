@@ -9,6 +9,7 @@ from .views import (
     TransporterJobListView, ReturnTripCreateView, PriceEstimateView,
     BookReturnTripView, ReturnTripManageView,
     JobTripRequestsView, MyTripRequestsView,
+    ReceivedTripRequestsView,
     TripRequestRespondView, TripRequestAcceptCounterView, TripRequestCancelView,
     ReturnTripMatchView, CorridorAlertListCreateView, CorridorAlertDeleteView,
     ClientProfileView, ClientProfileEditView,
@@ -45,6 +46,9 @@ urlpatterns = [
     path('jobs/<int:job_id>/return-trip/', ReturnTripManageView.as_view(), name='return_trip_manage'),
     path('jobs/<int:job_id>/requests/', JobTripRequestsView.as_view(), name='job_trip_requests'),
     path('trip-requests/my/', MyTripRequestsView.as_view(), name='my_trip_requests'),
+    # T2.1 — le vis-a-vis transporteur de `trip-requests/my/` : toutes les
+    # demandes recues, tous trajets confondus.
+    path('trip-requests/received/', ReceivedTripRequestsView.as_view(), name='received_trip_requests'),
     path('trip-requests/<int:request_id>/respond/', TripRequestRespondView.as_view(), name='trip_request_respond'),
     path('trip-requests/<int:request_id>/accept-counter/', TripRequestAcceptCounterView.as_view(), name='trip_request_accept_counter'),
     path('trip-requests/<int:request_id>/cancel/', TripRequestCancelView.as_view(), name='trip_request_cancel'),

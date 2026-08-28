@@ -306,3 +306,106 @@ class InboundNotificationTests(TripRequestTestBase):
         self.assertEqual(resp.status_code, 200, resp.data)
         self.assertTrue(Notification.objects.filter(
             user=loser, type='OFFER_REJECTED').exists())
+
+
+class ReceivedTripRequestsTests(TripRequestTestBase):
+    """
+    T2.1 (lot 2) — la boîte de réception transporteur.
+
+    Jusqu'ici les demandes n'étaient lisibles que trajet par trajet : un
+    transporteur avec trois retours en ligne devait visiter trois écrans pour
+    savoir ce qui attendait sa décision. Ces tests verrouillent le vis-à-vis
+    transporteur de `trip-requests/my/`.
+    """
+
+    URL = '/api/trip-requests/received/'
+
+    def test_consolide_les_demandes_de_tous_les_trajets(self):
+        """C'est l'objet même de l'écran : une seule liste, tous trajets."""
+        trip_a = self._trip()
+        # `_trip` fixe deja gouvernorats ET date : le second trajet est cree
+        # directement, sur un corridor different pour rester realiste.
+        trip_b = TransportJob.objects.create(
+            owner=self.transporter, status='PUBLISHED', job_type='TRANSPORT',
+            is_return_trip=True,
+            pickup_address='Sfax Centre', pickup_governorate='Sfax',
+            dropoff_address='Gabes Centre', dropoff_governorate='Gabès',
+            scheduled_time=timezone.now() + timedelta(days=4),
+            available_capacity='1 tonne',
+        )
+        self._request(trip_a, user=self.client_user)
+        self._request(trip_b, user=self.client_user2)
+
+        self._auth(self.transporter)
+        res = self.client.get(self.URL)
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data['count'], 2)
+        jobs = {ligne['job'] for ligne in res.data['results']}
+        self.assertEqual(jobs, {trip_a.id, trip_b.id})
+
+    def test_ne_montre_que_les_demandes_recues_par_ce_transporteur(self):
+        """Cloisonnement : les demandes d'un autre transporteur sont invisibles."""
+        autre = User.objects.create_user(
+            username='tr_autre', email='trautre@test.tn',
+            password='SecurePass123!', role='TRANSPORTER',
+        )
+        trip_autre = TransportJob.objects.create(
+            owner=autre, status='PUBLISHED', job_type='TRANSPORT',
+            is_return_trip=True,
+            pickup_address='Gabes', pickup_governorate='Gabès',
+            dropoff_address='Sfax', dropoff_governorate='Sfax',
+            scheduled_time=timezone.now() + timedelta(days=2),
+        )
+        self._request(trip_autre, user=self.client_user)
+
+        self._auth(self.transporter)
+        res = self.client.get(self.URL)
+
+        self.assertEqual(res.data['count'], 0)
+
+    def test_filtre_par_statut(self):
+        """L'écran a des onglets « à décider » / « en négociation »."""
+        trip = self._trip()
+        self._request(trip, user=self.client_user)
+        demande = ReturnTripRequest.objects.get()
+        demande.status = ReturnTripRequest.Status.COUNTERED
+        demande.save()
+
+        self._auth(self.transporter)
+        self.assertEqual(self.client.get(f'{self.URL}?status=PENDING').data['count'], 0)
+        self.assertEqual(self.client.get(f'{self.URL}?status=COUNTERED').data['count'], 1)
+        self.assertEqual(
+            self.client.get(f'{self.URL}?status=PENDING,COUNTERED').data['count'], 1,
+        )
+
+    def test_un_statut_inconnu_est_rejete_et_non_ignore(self):
+        """
+        Une valeur invalide renverrait sinon une liste vide, indistinguable
+        d'une absence de demandes — un compteur à zéro qui ment.
+        """
+        self._auth(self.transporter)
+        res = self.client.get(f'{self.URL}?status=NIMPORTEQUOI')
+
+        self.assertEqual(res.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('status', res.data)
+
+    def test_interdit_au_client(self):
+        """RequireRole : ce vis-à-vis est réservé au transporteur."""
+        self._auth(self.client_user)
+        res = self.client.get(self.URL)
+        self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_expose_sur_la_surface_v1_du_mobile(self):
+        """
+        Le plan impose les deux surfaces API : un endpoint absent de /api/v1/
+        desynchronise silencieusement le mobile.
+        """
+        trip = self._trip()
+        self._request(trip, user=self.client_user)
+
+        self._auth(self.transporter)
+        res = self.client.get('/api/v1/trip-requests/received/')
+
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(res.data['count'], 1)

@@ -11,6 +11,7 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from rest_framework import generics, status
+from rest_framework.exceptions import ValidationError
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -105,6 +106,50 @@ class MyTripRequestsView(generics.ListAPIView):
         return ReturnTripRequest.objects.filter(
             client=self.request.user
         ).select_related('job', 'client').order_by('-created_at')
+
+
+class ReceivedTripRequestsView(generics.ListAPIView):
+    """
+    GET /api/trip-requests/received/ — toutes les demandes reçues par un
+    transporteur, tous ses trajets retour confondus.
+
+    T2.1 (lot 2). Jusqu'ici les demandes n'étaient lisibles que trajet par
+    trajet (`GET jobs/<id>/requests/`) : un transporteur avec trois retours en
+    ligne devait visiter trois écrans pour savoir ce qui attendait sa décision.
+    Le pendant côté client (`trip-requests/my/`) existait déjà ; ce vis-à-vis
+    manquait.
+
+    Filtre optionnel `?status=` — une valeur ou plusieurs séparées par des
+    virgules. Sans paramètre, tout est renvoyé, du plus récent au plus ancien.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+    serializer_class = ReturnTripRequestSerializer
+
+    def get_queryset(self):
+        # `job__owner` et non une jointure par les offres : sur un trajet
+        # retour, le transporteur est le PROPRIÉTAIRE du job, et le client
+        # n'y est rattaché que par sa demande.
+        queryset = ReturnTripRequest.objects.filter(
+            job__owner=self.request.user,
+            job__is_return_trip=True,
+        ).select_related('job', 'client')
+
+        demandes = self.request.query_params.get('status')
+        if demandes:
+            statuts = [s.strip().upper() for s in demandes.split(',') if s.strip()]
+            # On valide contre les statuts connus plutôt que de passer la
+            # valeur brute : un statut inexistant renverrait une liste vide
+            # silencieuse, indistinguable d'une absence de demandes.
+            valides = {choix[0] for choix in ReturnTripRequest.Status.choices}
+            inconnus = [s for s in statuts if s not in valides]
+            if inconnus:
+                raise ValidationError({
+                    'status': f"Statut inconnu : {', '.join(inconnus)}. "
+                              f"Valeurs admises : {', '.join(sorted(valides))}."
+                })
+            queryset = queryset.filter(status__in=statuts)
+
+        return queryset.order_by('-created_at')
 
 
 def _accept_request(request_obj, client_total):

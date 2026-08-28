@@ -7,7 +7,8 @@ import { Txt } from '@/shared/ui/Txt';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
-import { useMyReturnTrips } from '@/features/requests/api/useMyReturnTrips';
+import { useMyReturnTrips } from '@/features/trips/api/useMyReturnTrips';
+import type { ReturnTripDto } from '@/features/trips/api/dto';
 import { TripSummaryCard } from '@/features/requests/components/TripSummaryCard';
 
 // Onglet TRANSPORTEUR « Demandes reçues » — liste de mes trajets retour
@@ -20,6 +21,21 @@ export default function RequestsScreen() {
   const router = useRouter();
   const trips = useMyReturnTrips();
 
+  // Seuls les trajets PUBLIES peuvent recevoir des demandes. Le filtre vit ici
+  // et non dans le hook : celui-ci est partage avec l'inventaire (T1.3), qui a
+  // besoin de TOUS les trajets, y compris annules et expires.
+  //
+  // Il existait auparavant un second hook dans requests/api/ portant le meme
+  // nom ET la meme cle react-query ['myReturnTrips'], avec un filtre different
+  // et sans gestion de la pagination. Deux hooks sur une meme cle, c'est le
+  // premier monte qui gagne le cache et l'autre qui recoit des donnees mal
+  // filtrees. Consolide le 27/08.
+  // `data ?? []` produit une union `ReturnTripDto[] | never[]` : TypeScript ne
+  // resout pas `.filter` sur une union de types tableau. D'ou la variable
+  // intermediaire typee.
+  const tous: ReturnTripDto[] = trips.data ?? [];
+  const publies = tous.filter((trajet) => trajet.status === 'PUBLISHED');
+
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <View style={styles.header}>
@@ -30,12 +46,12 @@ export default function RequestsScreen() {
         <SkeletonList />
       ) : (
         <FlatList
-          data={trips.data ?? []}
+          data={publies}
           keyExtractor={(item) => String(item.id)}
           contentContainerStyle={styles.list}
           refreshControl={queryRefreshControl(trips)}
           ListHeaderComponent={
-            trips.data && trips.data.length > 0 ? (
+            publies.length > 0 ? (
               <Txt style={styles.hint}>{t('requests.select_trip')}</Txt>
             ) : null
           }

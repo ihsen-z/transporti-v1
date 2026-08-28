@@ -3,7 +3,7 @@ import { Icon } from '@/shared/ui/icons';
 import { Card } from '@/shared/ui/Card';
 import { RouteRow } from '@/shared/ui/RouteRow';
 import { colors, spacing, fontSize } from '@/shared/theme';
-import type { TransporterTripDto } from '../api/dto';
+import type { ReturnTripDto } from '@/features/trips/api/dto';
 
 // Format court JJ/MM HH:mm (heure locale).
 function formatWhen(iso: string): string {
@@ -16,7 +16,7 @@ function formatWhen(iso: string): string {
 }
 
 interface Props {
-  trip: TransporterTripDto;
+  trip: ReturnTripDto;
   onPress: () => void;
 }
 

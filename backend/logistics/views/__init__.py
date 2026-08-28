@@ -17,7 +17,7 @@ from .offers import (
 )
 from .return_trips import ReturnTripCreateView, BookReturnTripView, ReturnTripManageView
 from .trip_requests import (
-    JobTripRequestsView, MyTripRequestsView,
+    JobTripRequestsView, MyTripRequestsView, ReceivedTripRequestsView,
     TripRequestRespondView, TripRequestAcceptCounterView, TripRequestCancelView,
 )
 from .profiles import (
