@@ -72,11 +72,15 @@ export default function AppSidebar() {
         },
       ];
 
+  // Le retour passe en tête (IA-2) : c'est la racine du transporteur, pas une
+  // entrée parmi d'autres. « Compléter mon aller » (/demandes) devient
+  // secondaire, conformément au pivot.
   const transporterItems: NavItemDef[] = [
+    { href: "/retours", icon: RotateCcw, label: "Mes retours" },
+    { href: "/retours/nouveau", icon: PlusCircle, label: t.nav.returnTrip },
     { href: "/demandes", icon: Search, label: t.nav.findMission },
     { href: "/mes-offres", icon: FileText, label: t.nav.myOffers },
     { href: "/portefeuille", icon: Wallet, label: t.nav.wallet },
-    { href: "/retours/nouveau", icon: RotateCcw, label: t.nav.returnTrip },
     { href: "/documents", icon: ShieldCheck, label: t.nav.verification },
   ];
 

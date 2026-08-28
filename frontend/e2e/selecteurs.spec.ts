@@ -39,13 +39,16 @@ test.describe("Selecteurs — ecran de connexion", () => {
   });
 });
 
-test.describe("Selecteurs — publication d'un retour", () => {
-  // L'ecran est derriere AuthGuard. Sans session, il redirige vers /login :
-  // c'est le comportement attendu et on le verrouille, car une page de
-  // publication accessible sans authentification serait une faille.
-  test("l'ecran de publication exige une session", async ({ page }) => {
-    await page.goto("/retours/nouveau");
+test.describe("Selecteurs — espace retours", () => {
+  // Ces ecrans sont derriere AuthGuard. Sans session, ils redirigent vers
+  // /login : c'est le comportement attendu et on le verrouille, car un ecran
+  // de publication ou d'inventaire accessible sans authentification serait
+  // une faille.
+  for (const route of ["/retours/nouveau", "/retours"]) {
+    test(`${route} exige une session`, async ({ page }) => {
+      await page.goto(route);
 
-    await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
-  });
+      await expect(page).toHaveURL(/\/login/, { timeout: 15_000 });
+    });
+  }
 });

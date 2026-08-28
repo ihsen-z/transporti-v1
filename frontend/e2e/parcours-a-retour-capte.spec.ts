@@ -80,7 +80,7 @@ test.describe("Parcours A — le retour a vide capte", () => {
     );
   });
 
-  test.fixme("le retour publie apparait dans l'inventaire (T1.3, lot 1)", async ({
+  test("le retour publie apparait dans l'inventaire (T1.3)", async ({
     page,
   }) => {
     await seConnecter(page, "transporteur");

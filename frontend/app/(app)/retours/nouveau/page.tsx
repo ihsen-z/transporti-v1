@@ -209,9 +209,12 @@ export default function ReturnTripPage() {
       const reqs = created?.matching_requests ?? [];
       setMatchingRequests(reqs);
       setMatchingCount(created?.matching_requests_count ?? reqs.length);
-      // Auto-redirect only when there is nothing to monetize right away
+      // Auto-redirect only when there is nothing to monetize right away.
+      // Destination : l'inventaire (T1.3), pour que le transporteur voie son
+      // trajet en ligne et puisse le gérer. Pointait vers /jobs tant que
+      // l'inventaire n'existait pas.
       if (!reqs.length) {
-        setTimeout(() => router.push("/jobs"), 2000);
+        setTimeout(() => router.push("/retours"), 2000);
       }
     } catch (e) {
       if (e instanceof ApiError && e.body) {
