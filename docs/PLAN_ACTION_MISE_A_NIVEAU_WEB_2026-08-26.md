@@ -100,7 +100,7 @@ publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2
 | T4.4 Amorce de fin de mission — web | ⏳ à faire | — | Test `fixme` déjà écrit |
 | T4.4 Amorce de fin de mission — mobile | ⏳ à faire | — | Décision 6 : livraison simultanée |
 | T1.2 Publier un retour — **web** | ✅ **fait** | `05109e6` | Capacité structurée envoyée, 2 saisies rendues tactiles, `data-testid` posés |
-| T1.2 Publier un retour — **mobile** | ⏳ à faire | — | Décision 6 : livraison simultanée. `PublishReturnForm.tsx` à aligner |
+| T1.2 Publier un retour — **mobile** | ✅ **fait** | `5590520` | Hook jumeau du web, 125 tests mobile verts, lint propre |
 | T1.3 Inventaire des trajets publiés — web + mobile | ⏳ à faire | — | Test `fixme` déjà écrit |
 | T1.1 Hub « Mes retours » — web + mobile | ⏳ à faire | — | — |
 
@@ -133,6 +133,30 @@ du travail déjà fait.
 
 **Reste ouvert sur T1.2** : après publication, la redirection va vers `/jobs` — elle devra pointer
 vers `/retours`, l'inventaire, dès que T1.3 existera.
+
+#### T1.2 mobile — premier écran livré des deux côtés
+
+La décision 6 s'applique pour la première fois. Le mobile reçoit un **hook jumeau**
+(`mobile/src/features/trips/components/publish/useVehiclePrefill.ts`, pendant de
+`frontend/hooks/useVehiclePrefill.ts`) à la sémantique volontairement identique.
+
+**Ce que cette symétrie évite concrètement** : deux règles différentes sur la part de capacité
+produiraient deux chiffres différents pour le même trajet selon la plateforme de publication. C'est
+précisément la divergence que la décision 6 cherche à supprimer, et elle se serait installée
+silencieusement.
+
+Deux bonnes surprises côté mobile : `useTrustStatus` fournissait déjà le véhicule — **aucun nouvel
+appel d'API** — et la structure en petits fichiers (`publish/` : 6 fichiers, 580 lignes au total)
+a rendu l'ajout net, là où le web imposait d'extraire un hook d'une page de 562 lignes.
+
+**Coût réel de la livraison simultanée sur cet écran** : environ 35 % du temps du web, sous
+l'estimation de 40 % retenue au §4. À reconfirmer sur T4.4, plus lourd.
+
+#### Enseignement de méthode — la parité i18n est un coût récurrent
+
+Trois clés ajoutées côté mobile, en français **et** en arabe. Le projet maintient une parité stricte
+(1 770 clés FR contre 1 767 AR côté web). Chaque écran des lots suivants portera ce coût : à ne pas
+oublier dans les estimations, et à vérifier avant chaque livraison.
 
 #### Correction d'un constat de l'audit — B-3a n'était pas manquant
 
