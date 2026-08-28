@@ -29,6 +29,7 @@ import {
 } from "lucide-react";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
+import ReturnsHubSection from "@/components/dashboard/ReturnsHubSection";
 import { RETURN_TRIPS_FIRST } from "@/lib/flags";
 
 /* -------------------------------------------------------------------------- */
@@ -286,6 +287,17 @@ function TransporterDashboard({
     <>
       {/* Onboarding Wizard — shown only on first visits */}
       <OnboardingWizard />
+
+      {/* T1.1 — le hub passe de « mes missions » à « mes retours ». Placé
+          au-dessus des indicateurs de missions : le pivot fait du retour la
+          racine du transporteur, pas une rubrique parmi d'autres (IA-2).
+          Au-dessus de la bannière de vérification, en cohérence avec la
+          décision 4 : publier un retour ne demande pas d'être déjà vérifié,
+          et bloquer l'amorçage de l'inventaire tarirait la promesse client. */}
+      <ReturnsHubSection
+        kmValorises={stats.km_transformed}
+        tauxRemplissage={stats.fill_rate}
+      />
 
       {/* Verification Banner */}
       {stats.verification_status !== "VERIFIED" && (

@@ -9,6 +9,7 @@ import { TransporterHero } from '@/features/dashboard/components/TransporterHero
 import { MissionsList } from '@/features/missions/components/MissionsList';
 import { CompletedMissionsList } from '@/features/reviews/components/CompletedMissionsList';
 import { ReturnPromptBanner } from '@/features/trips/components/ReturnPromptBanner';
+import { ReturnsHubSection } from '@/features/trips/components/ReturnsHubSection';
 import { Button } from '@/shared/ui/Button';
 import { GradientCard } from '@/shared/ui/GradientCard';
 import { Txt } from '@/shared/ui/Txt';
@@ -78,6 +79,9 @@ export default function HomeScreen() {
         {/* T4.4 — l'amorce de retour a vide, en premiere position : a cet
             instant, c'est l'action la plus rentable de l'ecran. */}
         {isTransporter ? <ReturnPromptBanner /> : null}
+        {/* T1.1 — le hub passe de « mes missions » a « mes retours » : le
+            retour est la racine du transporteur (IA-2). */}
+        {isTransporter ? <ReturnsHubSection /> : null}
         {isTransporter ? <MissionsList /> : null}
         {isTransporter ? <CompletedMissionsList /> : null}
       </ScrollView>

@@ -27,8 +27,14 @@ async function fetchMyReturnTrips(): Promise<ReturnTripDto[]> {
   return resultats.filter((trajet) => trajet.is_return_trip);
 }
 
+// Le parametre de type est explicite : sans lui, l'inference de useQuery
+// retombe sur `any` chez les appelants, et un `.filter((t) => ...)` y devient
+// une erreur d'implicit any difficile a rattacher a sa cause.
 export function useMyReturnTrips() {
-  return useQuery({ queryKey: CLE, queryFn: fetchMyReturnTrips });
+  return useQuery<ReturnTripDto[]>({
+    queryKey: CLE,
+    queryFn: fetchMyReturnTrips,
+  });
 }
 
 /** Invalide l'inventaire après toute mutation, pour éviter un écran périmé. */

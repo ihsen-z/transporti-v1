@@ -227,6 +227,15 @@
       "body": "Publiez votre retour en 30 secondes. Votre véhicule et sa capacité sont déjà renseignés.",
       "publish": "Publier mon retour",
       "later": "Plus tard"
+    },
+    "hub": {
+      "my_returns": "Mes retours en ligne",
+      "km_valued": "{{km}} km de retour à vide valorisés",
+      "fill_rate": "{{rate}} % de vos retours trouvent un client",
+      "none_online": "Aucun retour en ligne. Publiez le trajet que vous faites déjà.",
+      "expires_in_days_one": "expire dans {{count}} j",
+      "expires_in_days_other": "expire dans {{count}} j",
+      "manage": "Gérer mes retours"
     }
   },
   "requests": {
