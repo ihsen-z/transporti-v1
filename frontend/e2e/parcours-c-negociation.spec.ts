@@ -1,4 +1,11 @@
-import { test, expect, seConnecter, CORRIDOR } from "./fixtures/backend";
+import {
+  test,
+  expect,
+  seConnecter,
+  CORRIDOR,
+  preparerContrePropositionEnAttente,
+  preparerDemandesEnAttente,
+} from "./fixtures/backend";
 
 /**
  * PARCOURS C — La negociation qui converge.
@@ -85,9 +92,25 @@ test.describe("Parcours C — la negociation converge", () => {
     ).toBeVisible({ timeout: 15_000 });
   });
 
-  test("le client accepte la contre-proposition et paie", async ({ page }) => {
+  test("le client accepte la contre-proposition et paie", async ({
+    page,
+    request,
+  }) => {
+    // Le test consomme la contre-proposition qu'il accepte : sans mise en
+    // place, il passerait une fois puis echouerait, ce qui donnerait
+    // l'illusion d'une regression.
+    const trajet = await preparerContrePropositionEnAttente(request);
+    test.skip(
+      trajet === null,
+      "aucun trajet retour publie disponible pour preparer le scenario",
+    );
+
     await seConnecter(page, "client");
-    await page.goto("/expeditions");
+    // La liste du client vit encore sous /jobs : cette route porte deux roles
+    // (expeditions du client, missions du transporteur) et sa separation en
+    // /expeditions releve du lot 4. Le test suivra le renommage sans changer
+    // ce qu'il verifie.
+    await page.goto("/jobs");
 
     // Le tri primaire est « qui doit agir maintenant », pas la date : le client
     // doit trouver sa negociation en attente sans la chercher.
@@ -99,7 +122,20 @@ test.describe("Parcours C — la negociation converge", () => {
 
     await page.getByTestId("contre-offre-accepter").click();
 
-    await expect(page).toHaveURL(/\/reservation\/\d+/, { timeout: 15_000 });
+    // L'ecran de paiement vit sous /jobs/<id>/book ; /reservation/<id> est le
+    // SUIVI d'une reservation deja payee.
+    await expect(page).toHaveURL(/\/jobs\/\d+\/book/, { timeout: 15_000 });
+
+    // L'ecran de paiement s'ouvre sur un recapitulatif : le choix du moyen de
+    // paiement vient apres. On suit le parcours reel plutot que de supposer
+    // que tout est affiche d'emblee.
+    await page.getByTestId("reservation-continuer-paiement").click();
+
+    // L'escrow ne s'applique qu'au paiement numerique : le paiement a la
+    // livraison est un autre circuit, sans fonds bloques. On selectionne donc
+    // explicitement le mode avant d'exiger son explication, plutot que de
+    // supposer un etat par defaut.
+    await page.getByTestId("reservation-paiement-digital").click();
 
     // Le paiement doit annoncer ce qui est protege, sinon l'escrow ne rassure
     // personne.
@@ -110,7 +146,16 @@ test.describe("Parcours C — la negociation converge", () => {
 
   test("la boite de reception consolide toutes les demandes (T2.1)", async ({
     page,
+    request,
   }) => {
+    // Les autres tests du parcours CONSOMMENT les demandes en attente : sans
+    // provisionnement, ce test dependait de l'ordre d'execution.
+    const trajetsCouverts = await preparerDemandesEnAttente(request, 2);
+    test.skip(
+      trajetsCouverts < 2,
+      "moins de deux trajets retour publies : la consolidation n'est pas demontrable",
+    );
+
     await seConnecter(page, "transporteur");
 
     // Alimente par GET /api/trip-requests/received/ (B-5), le vis-a-vis

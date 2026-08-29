@@ -88,4 +88,153 @@ export async function seConnecter(
   await expect(page).toHaveURL(/\/(dashboard|recherche)/, { timeout: 15_000 });
 }
 
+/**
+ * Jetons mis en cache pour toute la session de test.
+ *
+ * `LoginView` porte `AuthRateThrottle`. Chaque aide de mise en place se
+ * connectait auparavant pour son propre compte, ce qui ajoutait deux appels
+ * par test aux connexions faites par l'interface — et declenchait la
+ * limitation, dont l'erreur (`tokens` indefini) ne dit rien de sa cause.
+ */
+const jetons = new Map<string, string>();
+
+async function jetonDe(
+  request: APIRequestContext,
+  role: keyof typeof COMPTES,
+): Promise<string> {
+  const enCache = jetons.get(role);
+  if (enCache) return enCache;
+
+  const reponse = await request.post(`${BACKEND_URL}/api/auth/login/`, {
+    data: { email: COMPTES[role].email, password: COMPTES[role].motDePasse },
+  });
+  if (!reponse.ok()) {
+    throw new Error(
+      `Connexion API refusee pour ${role} (HTTP ${reponse.status()}). ` +
+        "Cause probable : la limitation de debit sur /api/auth/login/.",
+    );
+  }
+  const jeton = (await reponse.json()).tokens.access;
+  jetons.set(role, jeton);
+  return jeton;
+}
+
 export { expect };
+
+/**
+ * Prepare une demande CONTRE-PROPOSEE, prete a etre acceptee par le client.
+ *
+ * Les tests de parcours MUTENT l'etat : accepter une contre-proposition la
+ * consomme. Sans cette preparation, le test passait une fois puis echouait,
+ * ce qui est pire qu'un test rouge — il donne l'illusion d'une regression.
+ *
+ * On passe par l'API et non par l'interface : la mise en place n'est pas ce
+ * que le test verifie, et la faire a l'ecran la rendrait aussi fragile que le
+ * parcours lui-meme.
+ *
+ * Retourne l'identifiant du trajet concerne, ou null si aucun trajet retour
+ * publie n'est disponible.
+ */
+export async function preparerContrePropositionEnAttente(
+  request: APIRequestContext,
+): Promise<number | null> {
+  const jetonClient = await jetonDe(request, "client");
+  const jetonTransporteur = await jetonDe(request, "transporteur");
+  const enTete = (t: string) => ({ Authorization: `Bearer ${t}` });
+
+  // Un trajet retour publie du transporteur de test.
+  const trajets = await request.get(
+    `${BACKEND_URL}/api/jobs/transporter/?type=owned`,
+    { headers: enTete(jetonTransporteur) },
+  );
+  const corpsTrajets = await trajets.json();
+  const candidats = (corpsTrajets.results ?? corpsTrajets).filter(
+    (t: { status: string; is_return_trip: boolean }) =>
+      t.is_return_trip && t.status === "PUBLISHED",
+  );
+  if (!candidats.length) return null;
+
+  // On essaie chaque trajet : le client ne peut avoir qu'une demande en cours
+  // par trajet, donc un trajet deja sollicite est refuse.
+  for (const trajet of candidats) {
+    const creation = await request.post(
+      `${BACKEND_URL}/api/jobs/${trajet.id}/requests/`,
+      {
+        headers: enTete(jetonClient),
+        data: {
+          description: "Preparation de test",
+          proposed_price: "85.00",
+          payment_method: "DIGITAL",
+        },
+      },
+    );
+    if (!creation.ok()) continue;
+
+    const demande = (await creation.json()).request;
+    const reponse = await request.post(
+      `${BACKEND_URL}/api/trip-requests/${demande.id}/respond/`,
+      {
+        headers: enTete(jetonTransporteur),
+        data: { action: "counter", counter_price: 95 },
+      },
+    );
+    if (reponse.ok()) return trajet.id;
+  }
+  return null;
+}
+
+/**
+ * Garantit au moins `minimum` demandes EN ATTENTE sur des trajets distincts.
+ *
+ * La boite de reception consolidee doit prouver qu'elle agrege plusieurs
+ * trajets : sans donnees provisionnees, le test dependait de ce que les autres
+ * tests avaient laisse — et echouait selon l'ordre d'execution, ce qui est
+ * pire qu'un echec franc.
+ *
+ * Retourne le nombre de trajets distincts effectivement couverts.
+ */
+export async function preparerDemandesEnAttente(
+  request: APIRequestContext,
+  minimum = 2,
+): Promise<number> {
+  const jetonClient = await jetonDe(request, "client");
+  const jetonTransporteur = await jetonDe(request, "transporteur");
+  const enTete = (t: string) => ({ Authorization: `Bearer ${t}` });
+
+  const recues = await request.get(
+    `${BACKEND_URL}/api/trip-requests/received/?status=PENDING`,
+    { headers: enTete(jetonTransporteur) },
+  );
+  const dejaLa = new Set<number>(
+    ((await recues.json()).results ?? []).map((d: { job: number }) => d.job),
+  );
+
+  const trajets = await request.get(
+    `${BACKEND_URL}/api/jobs/transporter/?type=owned`,
+    { headers: enTete(jetonTransporteur) },
+  );
+  const corps = await trajets.json();
+  const publies = (corps.results ?? corps).filter(
+    (t: { status: string; is_return_trip: boolean }) =>
+      t.is_return_trip && t.status === "PUBLISHED",
+  );
+
+  for (const trajet of publies) {
+    if (dejaLa.size >= minimum) break;
+    if (dejaLa.has(trajet.id)) continue;
+    const creation = await request.post(
+      `${BACKEND_URL}/api/jobs/${trajet.id}/requests/`,
+      {
+        headers: enTete(jetonClient),
+        data: {
+          description: "Preparation de test",
+          proposed_price: "85.00",
+          payment_method: "DIGITAL",
+        },
+      },
+    );
+    // Un refus signifie qu'une demande y est deja en cours : on passe.
+    if (creation.ok()) dejaLa.add(trajet.id);
+  }
+  return dejaLa.size;
+}

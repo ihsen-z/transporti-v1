@@ -32,6 +32,7 @@ export function PaymentMethodSelector({
       <div className="p-6 space-y-4">
         {/* Digital Payment */}
         <button
+          data-testid="reservation-paiement-digital"
           onClick={() => onSelect("DIGITAL")}
           className={`w-full text-start p-4 rounded-xl border-2 transition-all duration-200
                         ${
@@ -116,7 +117,9 @@ export function PaymentMethodSelector({
                 <div className="flex items-center gap-1.5 mt-2">
                   <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
                   <span className="text-xs text-red-600 font-medium">
-                    {interpolate(t.booking.codUnavailable, { threshold: codThreshold })}
+                    {interpolate(t.booking.codUnavailable, {
+                      threshold: codThreshold,
+                    })}
                   </span>
                 </div>
               )}

@@ -147,13 +147,17 @@ export default function BookingPage() {
 
           <div className="bg-neutral-50 rounded-xl p-4 mb-8 text-start space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-500">{t.bookingPage.orderNumber}</span>
+              <span className="text-neutral-500">
+                {t.bookingPage.orderNumber}
+              </span>
               <span className="font-mono font-medium text-neutral-900">
                 TRN-{job.id.toString().padStart(6, "0")}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-500">{t.bookingPage.paymentMethod}</span>
+              <span className="text-neutral-500">
+                {t.bookingPage.paymentMethod}
+              </span>
               <span className="font-medium text-neutral-900">
                 {paymentMethod === "DIGITAL"
                   ? t.bookingPage.paymentDigital
@@ -161,7 +165,9 @@ export default function BookingPage() {
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-neutral-500">{t.bookingPage.totalAmount}</span>
+              <span className="text-neutral-500">
+                {t.bookingPage.totalAmount}
+              </span>
               <span className="font-semibold text-brand-600">
                 {formatTND(offer.total_price)}
               </span>
@@ -265,6 +271,7 @@ export default function BookingPage() {
                 </div>
               )}
               <button
+                data-testid="reservation-continuer-paiement"
                 onClick={() => setStep("payment")}
                 className="w-full bg-brand-600 text-white py-3.5 rounded-xl font-semibold hover:bg-brand-700 transition-colors shadow-lg shadow-primary-600/20"
               >
@@ -332,19 +339,25 @@ export default function BookingPage() {
                 </h3>
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm py-2 border-b border-neutral-50">
-                    <span className="text-neutral-500">{t.bookingPage.route}</span>
+                    <span className="text-neutral-500">
+                      {t.bookingPage.route}
+                    </span>
                     <span className="text-neutral-900 font-medium text-end max-w-[60%]">
                       {job.pickup_address} → {job.dropoff_address}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm py-2 border-b border-neutral-50">
-                    <span className="text-neutral-500">{t.bookingPage.transporter}</span>
+                    <span className="text-neutral-500">
+                      {t.bookingPage.transporter}
+                    </span>
                     <span className="text-neutral-900 font-medium">
                       {offer.transporter_name}
                     </span>
                   </div>
                   <div className="flex justify-between text-sm py-2 border-b border-neutral-50">
-                    <span className="text-neutral-500">{t.bookingPage.paymentMethod}</span>
+                    <span className="text-neutral-500">
+                      {t.bookingPage.paymentMethod}
+                    </span>
                     <span className="text-neutral-900 font-medium">
                       {paymentMethod === "DIGITAL"
                         ? t.bookingPage.paymentDigital
@@ -352,7 +365,9 @@ export default function BookingPage() {
                     </span>
                   </div>
                   <div className="flex justify-between text-base py-2 font-bold">
-                    <span className="text-neutral-900">{t.bookingPage.total}</span>
+                    <span className="text-neutral-900">
+                      {t.bookingPage.total}
+                    </span>
                     <span className="text-brand-600">
                       {formatTND(offer.total_price)}
                     </span>
@@ -413,7 +428,9 @@ export default function BookingPage() {
                 </span>
               </div>
               <div className="flex justify-between">
-                <span className="text-neutral-500">{t.bookingPage.transporter}</span>
+                <span className="text-neutral-500">
+                  {t.bookingPage.transporter}
+                </span>
                 <span className="font-medium text-neutral-900">
                   {offer.transporter_name}
                 </span>

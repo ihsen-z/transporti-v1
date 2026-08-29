@@ -36,6 +36,12 @@ import { useToast } from "@/components/ui/Toast";
 import LoadingState from "@/components/ui/LoadingState";
 import Pagination, { paginateArray } from "@/components/ui/Pagination";
 import type { TransporterMission } from "@/lib/services/jobs";
+import {
+  getMySentRequests,
+  ongletDeLaDemande,
+  type OngletExpedition,
+  type TripRequest,
+} from "@/lib/services/tripRequests";
 
 /* -------------------------------------------------------------------------- */
 /*  Types & Helpers                                                            */
@@ -657,6 +663,58 @@ function ClientJobsView() {
   const [clientPage, setClientPage] = useState(1);
   const CLIENT_PAGE_SIZE = 10;
 
+  // C2.1 — les demandes envoyees sur des trajets retour. `trip-requests/my/`
+  // existait cote backend mais n etait consomme nulle part : un client ayant
+  // envoye une demande n en avait AUCUNE liste et devait se souvenir du trajet
+  // pour la retrouver. Sans elles, cet ecran ne montrerait que les demandes
+  // classiques — donc tout sauf le parcours que le pivot met en avant.
+  const [demandesEnvoyees, setDemandesEnvoyees] = useState<TripRequest[]>([]);
+  const [ongletExpedition, setOngletExpedition] =
+    useState<OngletExpedition>("attente");
+
+  useEffect(() => {
+    let annule = false;
+    void getMySentRequests()
+      .then((liste) => {
+        if (!annule) setDemandesEnvoyees(liste);
+      })
+      // L echec ne doit pas vider l ecran : les demandes classiques restent
+      // affichees, seules les demandes sur trajets retour manquent.
+      .catch(() => {});
+    return () => {
+      annule = true;
+    };
+  }, []);
+
+  // Le tri primaire est « qui doit agir maintenant », pas la date. Un job
+  // classique attend une offre tant qu il est PUBLISHED ; ensuite il suit son
+  // execution.
+  const ongletDuJob = (statut: string): OngletExpedition => {
+    if (statut === "PUBLISHED" || statut === "DRAFT") return "attente";
+    if (statut === "MATCHED") return "a-payer";
+    if (statut === "IN_PROGRESS") return "en-cours";
+    return "terminees";
+  };
+
+  const jobsDeLOnglet = jobs.filter(
+    (j) => ongletDuJob(j.status) === ongletExpedition,
+  );
+  const demandesDeLOnglet = demandesEnvoyees.filter(
+    (d) => ongletDeLaDemande(d) === ongletExpedition,
+  );
+
+  const compteur = (cle: OngletExpedition) =>
+    jobs.filter((j) => ongletDuJob(j.status) === cle).length +
+    demandesEnvoyees.filter((d) => ongletDeLaDemande(d) === cle).length;
+
+  const ONGLETS_EXPEDITION: { cle: OngletExpedition; label: string }[] = [
+    { cle: "attente", label: "En attente de reponse" },
+    { cle: "negociation", label: "En negociation" },
+    { cle: "a-payer", label: "A payer" },
+    { cle: "en-cours", label: "En cours" },
+    { cle: "terminees", label: "Terminees" },
+  ];
+
   if (loading) {
     return (
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -718,8 +776,63 @@ function ClientJobsView() {
         </div>
       </div>
 
+      {/* C2.1 — onglets ordonnes par qui doit agir. « En negociation » porte
+          les contre-propositions qui attendent la decision du client : c est
+          ce qu il doit voir en premier. */}
+      <div
+        role="tablist"
+        aria-label="Filtrer mes expeditions"
+        className="flex flex-wrap gap-2 mb-6"
+      >
+        {ONGLETS_EXPEDITION.map(({ cle, label }) => {
+          const actif = ongletExpedition === cle;
+          const n = compteur(cle);
+          return (
+            <button
+              key={cle}
+              type="button"
+              role="tab"
+              aria-selected={actif}
+              data-testid={`expeditions-onglet-${cle}`}
+              onClick={() => setOngletExpedition(cle)}
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none ${
+                actif
+                  ? "bg-brand-600 text-white border-brand-600"
+                  : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50"
+              }`}
+            >
+              {label}
+              {n > 0 && <span className="ms-2 tabular-nums">· {n}</span>}
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Demandes envoyees sur des trajets retour, dans l onglet courant. */}
+      {demandesDeLOnglet.length > 0 && (
+        <div className="space-y-3 mb-4">
+          {demandesDeLOnglet.map((demande) => (
+            <Link
+              key={`req-${demande.id}`}
+              href={`/jobs/${demande.job}`}
+              data-testid="expeditions-ligne"
+              className="block bg-white rounded-xl border border-neutral-200 p-4 hover:border-brand-600/40 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none"
+            >
+              <p className="font-semibold text-neutral-900">
+                {demande.job_pickup} → {demande.job_dropoff}
+              </p>
+              <p className="text-sm text-neutral-500 mt-1">
+                {demande.status === "COUNTERED" && demande.counter_price
+                  ? `Contre-proposition : ${demande.counter_price} DT — a accepter`
+                  : `Votre proposition : ${demande.proposed_price} DT`}
+              </p>
+            </Link>
+          ))}
+        </div>
+      )}
+
       {/* Jobs List */}
-      {jobs.length === 0 ? (
+      {jobsDeLOnglet.length === 0 && demandesDeLOnglet.length === 0 ? (
         <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-12 text-center">
           <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-8 h-8 text-neutral-400" />
@@ -737,16 +850,20 @@ function ClientJobsView() {
         </div>
       ) : (
         <div className="space-y-4">
-          {paginateArray(jobs, clientPage, CLIENT_PAGE_SIZE).map((job) => (
-            <JobCard key={job.id} job={job} />
-          ))}
+          {paginateArray(jobsDeLOnglet, clientPage, CLIENT_PAGE_SIZE).map(
+            (job) => (
+              <div key={job.id} data-testid="expeditions-ligne">
+                <JobCard job={job} />
+              </div>
+            ),
+          )}
         </div>
       )}
 
       {/* Pagination */}
       <Pagination
         currentPage={clientPage}
-        totalItems={jobs.length}
+        totalItems={jobsDeLOnglet.length}
         pageSize={CLIENT_PAGE_SIZE}
         onPageChange={setClientPage}
       />

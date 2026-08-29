@@ -109,3 +109,53 @@ export function anciennete(demande: TripRequest): string {
   const jours = Math.floor(heures / 24);
   return `il y a ${jours} j`;
 }
+
+/**
+ * Les demandes envoyées par le client sur des trajets retour (C2.1).
+ *
+ * `trip-requests/my/` existait côté backend mais n'était consommé nulle part :
+ * un client ayant envoyé une demande n'en avait aucune liste et devait se
+ * souvenir du trajet concerné pour la retrouver.
+ *
+ * Sans elles, « Mes expéditions » ne montrerait que les demandes classiques —
+ * c'est-à-dire tout sauf le parcours que le pivot met en avant.
+ */
+export async function getMySentRequests(): Promise<TripRequest[]> {
+  const reponse = await apiClient.get<
+    PaginatedResponse<TripRequest> | TripRequest[]
+  >("/api/trip-requests/my/");
+  return Array.isArray(reponse) ? reponse : (reponse.results ?? []);
+}
+
+/**
+ * Onglets de « Mes expéditions », ordonnés par qui doit agir.
+ *
+ * Le client est concerné en premier par ce qui attend SON geste : une
+ * contre-proposition à accepter, puis un paiement. Le reste suit.
+ */
+export type OngletExpedition =
+  | "attente"
+  | "negociation"
+  | "a-payer"
+  | "en-cours"
+  | "terminees";
+
+/** Ce qu'attend une demande envoyée, du point de vue du client. */
+export function ongletDeLaDemande(
+  demande: TripRequest,
+): OngletExpedition | null {
+  switch (demande.status) {
+    case "PENDING":
+      // Le transporteur doit répondre : le client attend.
+      return "attente";
+    case "COUNTERED":
+      // Une contre-proposition attend SA décision — l'onglet prioritaire.
+      return "negociation";
+    case "ACCEPTED":
+      // Acceptée : le paiement lui revient.
+      return "a-payer";
+    default:
+      // REJECTED, CANCELLED : plus rien à faire.
+      return "terminees";
+  }
+}

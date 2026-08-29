@@ -329,6 +329,11 @@ class TransportJobDetailSerializer(serializers.ModelSerializer):
         t = offer.transporter
         return {
             'id': t.id,
+            # C2.1 — l'ecran de paiement exige l'identifiant de l'OFFRE en
+            # parametre. Sans lui, un client venant d'accepter une
+            # contre-proposition arrivait sur « introuvable » : l'offre venait
+            # pourtant d'etre creee par son acceptation.
+            'offer_id': offer.id,
             'name': f"{t.first_name} {t.last_name}",
             'phone': t.phone if obj.status in ('IN_PROGRESS', 'COMPLETED') else None,
             'total_price': float(offer.total_price),

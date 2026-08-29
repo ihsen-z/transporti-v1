@@ -278,9 +278,30 @@ export default function JobDetailsPage() {
     if (!reqId) return;
     setCounterActionLoading(true);
     try {
-      await apiClient.post(`/api/trip-requests/${reqId}/accept-counter/`, {});
+      const resultat = await apiClient.post<{
+        job?: { accepted_transporter?: { offer_id?: number } | null };
+      }>(`/api/trip-requests/${reqId}/accept-counter/`, {});
       showToast("success", t.jobDetail.counterAccepted);
-      fetchJob();
+      // C2.1 — accepter une contre-proposition CREE la reservation : le
+      // paiement est l'etape suivante et immediate. Sans cette redirection, le
+      // client restait sur le detail du trajet et devait trouver seul ou payer,
+      // ce qui rompt le critere de convergence du parcours : a chaque etape, le
+      // destinataire doit savoir ce qu'il a a faire.
+      //
+      // Destination : /jobs/<id>/book, l'ecran de CHOIX du moyen de paiement.
+      // /reservation/<id> est le suivi d'une reservation deja payee : y
+      // envoyer le client avant qu'il ait paye l'aurait laisse devant un etat
+      // vide.
+      //
+      // L'ecran de paiement exige l'identifiant de l'offre en parametre : sans
+      // lui il affiche « introuvable ». L'acceptation vient justement de creer
+      // cette offre, et la reponse la porte.
+      const offreId = resultat?.job?.accepted_transporter?.offer_id;
+      router.push(
+        offreId
+          ? `/jobs/${job!.id}/book?offer=${offreId}`
+          : `/jobs/${job!.id}/book`,
+      );
     } catch (error) {
       if (error instanceof ApiError && error.body) {
         showToast(
@@ -811,6 +832,7 @@ export default function JobDetailsPage() {
                           </p>
                           <div className="flex gap-2">
                             <button
+                              data-testid="contre-offre-accepter"
                               onClick={handleAcceptCounter}
                               disabled={counterActionLoading}
                               className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50"
@@ -818,6 +840,7 @@ export default function JobDetailsPage() {
                               {t.jobDetail.acceptCounter}
                             </button>
                             <button
+                              data-testid="contre-offre-refuser"
                               onClick={handleCancelTripRequest}
                               disabled={counterActionLoading}
                               className="flex-1 py-2 border border-neutral-300 text-neutral-600 rounded-lg text-sm font-medium hover:bg-neutral-50 disabled:opacity-50"
