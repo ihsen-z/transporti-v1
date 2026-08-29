@@ -443,7 +443,7 @@ n'affichant **qu'un seul trajet** — c'est-à-dire sur l'ancien comportement, c
 Il vérifie désormais la **consolidation** : deux demandes posées sur deux trajets différents doivent
 apparaître dans la même liste.
 
-### Lot 3 — La conversion client · **en cours**
+### Lot 3 — La conversion client · **en cours** *(reste : la base de comparaison de C1.2)*
 
 | Tâche | État | Commit | Preuve |
 |---|---|---|---|
@@ -451,7 +451,7 @@ apparaître dans la même liste.
 | **C1.7** Alertes corridor | ✅ **sans objet** | — | Déjà listées, créées et supprimables dans `/recherche` |
 | **C1.2** Économie estimée — mobile | ✅ **fait** | `0511fc8` | 129 tests mobile, lint propre |
 | **C2.1** Expéditions triées par attente d'action — web | ✅ **fait** | `97cbf37` | 5 onglets, fusion des deux sources |
-| **C2.1** — mobile | ⏳ à faire | — | — |
+| **C2.1** — mobile | ✅ **fait** | `b74b346` | 4 onglets, 13 tests, parité FR/AR, lint propre |
 
 #### ✅ Le socle de tests de parcours est réparé — 49 tests verts
 
@@ -550,29 +550,55 @@ Deux défauts trouvés en suivant le parcours, pas en lisant le code :
 Aucun des deux n'était visible en lecture de code. C'est l'argument le plus concret en faveur de la
 remise en état du socle de tests.
 
-#### ⚠️ Une décision métier bloque l'affichage de l'économie
+#### ⚠️ C1.2 — le diagnostic du 26/08 était faux : ce n'est pas une calibration
 
-L'économie est implémentée et couverte par 5 tests. **Elle ne s'affichera pourtant jamais en l'état**,
-et la cause n'est pas technique.
+L'économie ne s'affiche toujours pas, mais **la cause écrite ici le 26/08 était la mauvaise**.
 
-| Corridor | Grille tarifaire | Prix annoncés par les transporteurs |
-|---|---|---|
-| Sousse → Tunis (113 km) | **~50 DT** | **100 à 140 DT** |
+Le plan comparait « ~50 DT de grille » à « 100-140 DT facturés par les transporteurs » et concluait
+que la grille était trop basse. Ces 100-140 DT ne sont pas un prix de transport dédié : c'est
+**le prix demandé par un trajet retour du jeu de test**. On comparait la grille à la mauvaise
+grandeur.
 
-La grille `TRANSPORT` vaut `10 DT + 0,35 DT/km`. Un transport dédié de 113 km à 50 DT est
-implausible pour le marché tunisien, et les transporteurs du jeu de test facturent le double sur le
-même corridor. Le retour coûtant plus cher qu'un dédié, l'économie est **correctement masquée** —
-puisque négative.
+Mesures faites le 29/08 sur la base :
 
-**Ce qu'il faut trancher** : le tarif au kilomètre de `PricingGrid` reflète-t-il le marché ? Si non,
-le recalibrer. C'est une question métier, pas d'ingénierie, et je n'ai pas les éléments pour y
-répondre.
+| Corridor | Distance | Grille (`base_calculated`) | Transaction dédiée acceptée | Ratio |
+|---|---|---|---|---|
+| Tunis → Sfax | 235,6 km | 92,45 DT | **112,00 DT** | 1,21 |
+| Kairouan → Monastir | 65,3 km | 32,84 DT | **134,40 DT** | 4,09 |
+| Sousse → Tunis | 115,6 km | 50,45 DT | — | — |
+
+**Le vrai défaut est conceptuel.** Question posée au porteur : « 55 DT pour Sousse → Tunis, ça te
+parle ? » Réponse : *oui, pour un transporteur qui groupe plusieurs colis ou qui fait un retour*.
+Donc la grille mesure le prix **mutualisé**, pas le prix dédié. Or `_prix_trajet_dedie()` s'en sert
+comme référence du dédié : on soustrait un prix de retour d'un prix de retour. **L'économie est nulle
+ou négative par construction**, quels que soient les chiffres. Recalibrer `per_km_rate` n'y changerait
+rien.
+
+**Et les données ne permettent pas de déduire le coefficient** : deux transactions dédiées
+exploitables, ratios 1,21 et 4,09. Une moyenne sur deux points qui se contredisent d'un facteur trois
+serait un chiffre inventé portant un air de mesure.
+
+**Ce qui est proposé, et attend une valeur du porteur** :
+
+1. Un coefficient dédié/mutualisé **explicite et éditable** sur `PricingGrid`, posé comme hypothèse
+   déclarée et non comme mesure. Une seule réponse le fixe : *combien coûte un transport dédié
+   Sousse → Tunis, un client, départ à sa convenance ?* — 75 DT donne 1,5 ; 90 DT donne 1,8.
+2. `savings_basis` doit dire **laquelle des deux bases** est employée : « estimation » tant qu'il n'y
+   a pas de volume, « médiane constatée sur N trajets » ensuite. D3 impose déjà d'afficher la base ;
+   il faut qu'elle soit vérifiable.
+3. Bascule automatique sur la **médiane des offres acceptées sur des trajets dédiés du même
+   corridor** au-delà d'un seuil (5 minimum). C'est la seule mesure du bon marché ; elle s'active
+   d'elle-même quand le volume arrive.
+4. Corriger le jeu de test : des trajets retour prixés **sous** l'estimation d'un dédié, comme la
+   réalité l'impose. C'est le blocage réel du test E2E, et il tombe sans qu'on touche à une assertion.
 
 **Ce que j'ai refusé de faire** : ajuster les prix du jeu de test pour verdir le test de bout en
-bout. Cela aurait produit une démonstration qui ne prouve rien, et masqué le vrai problème.
+bout, et fabriquer un coefficient à partir de deux points contradictoires. Le premier aurait produit
+une démonstration qui ne prouve rien ; le second, un chiffre faux d'apparence rigoureuse.
 
-Le test E2E est marqué en attente avec cette raison écrite dans le fichier. Les 5 tests unitaires,
-eux, valident le calcul sur des prix contrôlés.
+Le test E2E reste en attente avec sa raison écrite dans le fichier. Les 5 tests unitaires valident le
+calcul sur des prix contrôlés — ils restent justes, c'est la *référence* qui est en cause, pas le
+calcul.
 
 #### Un défaut introduit puis corrigé, du même motif que les précédents
 
