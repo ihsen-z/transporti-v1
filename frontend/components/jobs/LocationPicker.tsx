@@ -289,6 +289,11 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
                 {t.jobsComponents.location.governorate}
               </label>
               <select
+                // `target` vaut "pickup" ou "dropoff" : un seul testid par
+                // role, construit, plutot que deux blocs dupliques.
+                data-testid={`demandes-nouvelle-${
+                  target === "pickup" ? "depart" : "arrivee"
+                }`}
                 value={data[govField] || ""}
                 onChange={(e) => handleChange(govField, e.target.value)}
                 className="w-full p-2 border rounded-lg text-sm"

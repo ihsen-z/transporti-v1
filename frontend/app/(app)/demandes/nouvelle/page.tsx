@@ -678,6 +678,7 @@ export default function NewJobPage() {
             </button>
 
             <button
+              data-testid="demandes-nouvelle-suivant"
               onClick={handleNext}
               disabled={loading || (currentStep === 0 && !formData.job_type)}
               className="flex items-center gap-2 px-8 py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"

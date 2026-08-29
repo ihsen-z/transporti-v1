@@ -70,22 +70,52 @@ export default function BookingPage() {
   const [job, setJob] = useState<JobData | null>(null);
   const [offer, setOffer] = useState<OfferData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [erreur, setErreur] = useState<string | null>(null);
 
   // Fetch job and offer data from API
   useEffect(() => {
     async function fetchData() {
       try {
+        setErreur(null);
         const jobData = await apiClient.get<JobData>(`/api/jobs/${jobId}/`);
         setJob(jobData);
 
         if (offerId) {
-          const offerData = await apiClient.get<OfferData>(
-            `/api/jobs/${jobId}/offers/${offerId}/`,
-          );
-          setOffer(offerData);
+          // L'offre est lue dans la LISTE des offres du trajet : il n'existe
+          // pas de route de detail `/api/jobs/<id>/offers/<offerId>/`. La
+          // version precedente l'appelait quand meme, recevait un 404, et
+          // l'avalait — l'ecran affichait « introuvable » sans dire pourquoi.
+          // Consequence : le client qui acceptait une contre-proposition
+          // arrivait sur un ecran de paiement qui ne chargeait jamais.
+          const offres = await apiClient.get<
+            OfferData[] | { results: OfferData[] }
+          >(`/api/jobs/${jobId}/offers/`);
+          const liste = Array.isArray(offres) ? offres : offres.results;
+          const trouvee = liste.find((o) => o.id === offerId) ?? null;
+          if (!trouvee) {
+            throw new Error(
+              `L'offre ${offerId} n'appartient pas au trajet ${jobId}.`,
+            );
+          }
+          // DRF serialise les decimaux en CHAINE ("95.00"). Le type OfferData
+          // annonce `number` : la difference n'avait jamais ete exercee, cet
+          // ecran ne chargeant jamais. Des qu'il a charge, `totalPrice
+          // .toFixed(2)` d'EscrowBadge a fait tomber la page sur sa frontiere
+          // d'erreur. On normalise ici, une fois, plutot que de defendre
+          // chaque composant consommateur.
+          setOffer({
+            ...trouvee,
+            total_price: Number(trouvee.total_price),
+            commission_rate: Number(trouvee.commission_rate),
+            transporter_rating: Number(trouvee.transporter_rating),
+          });
         }
       } catch (err) {
+        // Remonter la cause plutot que de la masquer : un ecran de paiement
+        // vide sans explication est indistinguable d'une reservation
+        // inexistante.
         console.error("Failed to fetch booking data:", err);
+        setErreur(err instanceof Error ? err.message : String(err));
       } finally {
         setLoading(false);
       }
@@ -121,6 +151,7 @@ export default function BookingPage() {
     return (
       <div className="p-6 lg:p-8 max-w-2xl mx-auto text-center">
         <p className="text-neutral-500">{t.bookingPage.notFound}</p>
+        {erreur && <p className="mt-2 text-xs text-neutral-400">{erreur}</p>}
         <button
           onClick={() => router.back()}
           className="mt-4 text-brand-600 hover:underline"

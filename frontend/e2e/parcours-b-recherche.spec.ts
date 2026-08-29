@@ -1,4 +1,11 @@
-import { test, expect, seConnecter, CORRIDOR } from "./fixtures/backend";
+import {
+  test,
+  expect,
+  seConnecter,
+  CORRIDOR,
+  libererDemandesDuClient,
+  garantirTrajetsRetourPublies,
+} from "./fixtures/backend";
 
 /**
  * PARCOURS B — La recherche qui ne finit jamais dans le vide.
@@ -21,7 +28,18 @@ import { test, expect, seConnecter, CORRIDOR } from "./fixtures/backend";
 test.describe("Parcours B — la recherche sans impasse", () => {
   test("une recherche fructueuse mene a une demande structuree", async ({
     page,
+    request,
   }) => {
+    // Le detail d'un trajet masque le bouton d'envoi quand le client y a deja
+    // une demande, et les parcours consomment l'inventaire. On ne depend donc
+    // pas de ce que les autres tests ont laisse.
+    await libererDemandesDuClient(request);
+    await garantirTrajetsRetourPublies(
+      request,
+      CORRIDOR.depart,
+      CORRIDOR.arrivee,
+    );
+
     await seConnecter(page, "client");
     await page.goto("/recherche");
 
@@ -85,6 +103,13 @@ test.describe("Parcours B — la recherche sans impasse", () => {
     await page.getByTestId("recherche-repli-publier").click();
 
     await expect(page).toHaveURL(/\/demandes\/nouvelle/);
+
+    // Le formulaire est un assistant : le corridor vit a l'etape 2, apres le
+    // choix du type. Le pre-remplissage porte sur les champs de cette etape,
+    // il faut donc y arriver. Une seule saisie separe le repli du corridor
+    // repris — c'est le cout de la bifurcation, et il est mesure ici.
+    await page.getByTestId("demandes-nouvelle-type-transport").click();
+    await page.getByTestId("demandes-nouvelle-suivant").click();
 
     // « Pre-remplie » est la promesse du repli. Un formulaire vide apres ce clic
     // annulerait tout l'interet de la bifurcation.

@@ -19,6 +19,7 @@ export function JobTypeSelector({
       {/* Transport Option */}
       <button
         type="button"
+        data-testid="demandes-nouvelle-type-transport"
         onClick={() => onSelect("TRANSPORT")}
         className={`p-6 border-2 rounded-xl flex flex-col items-center gap-4 transition-all
           ${
@@ -45,6 +46,7 @@ export function JobTypeSelector({
       {/* Moving Option */}
       <button
         type="button"
+        data-testid="demandes-nouvelle-type-demenagement"
         onClick={() => onSelect("MOVING")}
         className={`p-6 border-2 rounded-xl flex flex-col items-center gap-4 transition-all
           ${

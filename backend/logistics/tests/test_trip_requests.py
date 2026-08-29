@@ -409,3 +409,59 @@ class ReceivedTripRequestsTests(TripRequestTestBase):
 
         self.assertEqual(res.status_code, status.HTTP_200_OK)
         self.assertEqual(res.data['count'], 1)
+
+
+class OffresLisiblesParLeClientTests(TripRequestTestBase):
+    """
+    Sur un trajet retour, le propriétaire est le TRANSPORTEUR. Le client dont
+    la demande vient d'être acceptée doit néanmoins pouvoir lire l'offre pour
+    la payer : l'écran /jobs/<id>/book la réclame. Avant ce correctif il
+    recevait 404 et le paiement était inatteignable — la négociation aboutissait
+    sans pouvoir se conclure.
+
+    L'ouverture est étroite et ces tests en fixent les bornes.
+    """
+
+    def _trajet_avec_demande_acceptee(self):
+        trip = self._trip()
+        self.assertEqual(self._request(trip).status_code, 201)
+        demande = ReturnTripRequest.objects.get(job=trip, client=self.client_user)
+        self._auth(self.transporter)
+        resp = self.client.post(
+            f'/api/trip-requests/{demande.id}/respond/',
+            {'action': 'accept'}, format='json',
+        )
+        self.assertEqual(resp.status_code, 200, resp.data)
+        return trip
+
+    def test_le_client_accepte_lit_l_offre(self):
+        trip = self._trajet_avec_demande_acceptee()
+        self._auth(self.client_user)
+        resp = self.client.get(f'/api/jobs/{trip.id}/offers/')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        resultats = resp.data.get('results', resp.data)
+        self.assertEqual(len(resultats), 1)
+        self.assertEqual(resultats[0]['status'], Offer.Status.ACCEPTED)
+
+    def test_un_autre_client_ne_voit_rien(self):
+        trip = self._trajet_avec_demande_acceptee()
+        self._auth(self.client_user2)
+        resp = self.client.get(f'/api/jobs/{trip.id}/offers/')
+        # 404 et non 403 : ne pas révéler qu'un trajet existe et appartient à
+        # quelqu'un d'autre.
+        self.assertEqual(resp.status_code, 404)
+
+    def test_demande_seulement_en_attente_ne_suffit_pas(self):
+        trip = self._trip()
+        self.assertEqual(self._request(trip).status_code, 201)
+        self._auth(self.client_user)
+        resp = self.client.get(f'/api/jobs/{trip.id}/offers/')
+        self.assertEqual(resp.status_code, 404)
+
+    def test_le_proprietaire_voit_toujours_tout(self):
+        trip = self._trajet_avec_demande_acceptee()
+        self._auth(self.transporter)
+        resp = self.client.get(f'/api/jobs/{trip.id}/offers/')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        resultats = resp.data.get('results', resp.data)
+        self.assertGreaterEqual(len(resultats), 1)

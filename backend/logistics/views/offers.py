@@ -4,9 +4,10 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.db import transaction
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 
-from ..models import TransportJob, Offer
+from ..models import TransportJob, Offer, ReturnTripRequest
 from ..serializers import (
     OfferCreateSerializer, OfferListSerializer, OfferDetailSerializer,
     OfferAcceptSerializer, TransportJobDetailSerializer,
@@ -20,15 +21,42 @@ class JobOffersView(generics.ListAPIView):
     The OWNER views offers on their own job — whatever their role.
     (C9 audit fix: a transporter owning a return trip was rejected by the
     CLIENT role gate and saw a misleading 403.)
+
+    Exception étroite pour les trajets retour : le propriétaire est alors le
+    TRANSPORTEUR, et le client qui vient de voir sa demande acceptée doit
+    pouvoir lire l'offre correspondante pour la payer. Sans cela l'écran
+    /jobs/<id>/book lui répondait 404 et le paiement était inatteignable — la
+    négociation aboutissait sans pouvoir se conclure.
+
+    Cette exception ne donne accès qu'aux offres ACCEPTÉES, et seulement au
+    client dont la demande sur ce trajet a été acceptée : les offres
+    concurrentes des autres transporteurs restent invisibles.
     """
     permission_classes = [IsAuthenticated]
     serializer_class = OfferListSerializer
 
     def get_queryset(self):
         job_id = self.kwargs['job_id']
-        # Ownership IS the permission — 404 if not the owner's job.
-        job = get_object_or_404(TransportJob, id=job_id, owner=self.request.user)
-        return Offer.objects.filter(job=job).select_related(
+        job = get_object_or_404(TransportJob, id=job_id)
+
+        if job.owner_id == self.request.user.id:
+            return Offer.objects.filter(job=job).select_related(
+                'transporter', 'transporter__trust_profile'
+            ).order_by('-created_at')
+
+        client_a_ete_accepte = ReturnTripRequest.objects.filter(
+            job=job,
+            client=self.request.user,
+            status=ReturnTripRequest.Status.ACCEPTED,
+        ).exists()
+        if not client_a_ete_accepte:
+            # Même réponse que pour un trajet inexistant : ne pas révéler
+            # qu'il existe et appartient à quelqu'un d'autre.
+            raise Http404
+
+        return Offer.objects.filter(
+            job=job, status=Offer.Status.ACCEPTED
+        ).select_related(
             'transporter', 'transporter__trust_profile'
         ).order_by('-created_at')
 

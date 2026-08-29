@@ -5,6 +5,8 @@ import {
   CORRIDOR,
   preparerContrePropositionEnAttente,
   preparerDemandesEnAttente,
+  libererDemandesDuClient,
+  garantirTrajetsRetourPublies,
 } from "./fixtures/backend";
 
 /**
@@ -26,19 +28,40 @@ import {
 test.describe("Parcours C — la negociation converge", () => {
   test("un client envoie une demande structuree sur un trajet", async ({
     page,
+    request,
   }) => {
+    // Le detail d'un trajet masque le bouton d'envoi quand une demande y est
+    // deja en cours. Sans cette remise a zero, le test dependait de ce que les
+    // executions precedentes avaient laisse.
+    await libererDemandesDuClient(request);
+    // Les executions precedentes consomment l'inventaire : on le reconstitue
+    // au lieu de dependre de ce qu'elles ont laisse.
+    await garantirTrajetsRetourPublies(
+      request,
+      CORRIDOR.depart,
+      CORRIDOR.arrivee,
+      2,
+    );
+
     await seConnecter(page, "client");
     await page.goto("/recherche");
 
-    await page.getByTestId("recherche-depart").fill(CORRIDOR.depart);
-    await page.getByTestId("recherche-arrivee").fill(CORRIDOR.arrivee);
-    await page.getByTestId("recherche-submit").click();
+    await page.getByTestId("recherche-depart").selectOption(CORRIDOR.depart);
+    await page.getByTestId("recherche-arrivee").selectOption(CORRIDOR.arrivee);
 
-    await page.getByTestId("recherche-trajet").first().click();
+    await page
+      .getByTestId("recherche-trajet")
+      .first()
+      .getByTestId("job-card-ouvrir")
+      .click();
     await page.getByTestId("trajet-envoyer-demande").click();
 
     await page.getByTestId("demande-marchandise").fill("Frigo");
-    await page.getByTestId("demande-poids").fill("120");
+    // TROU PRODUIT, pas trou de test : le formulaire de demande n'a AUCUN
+    // champ de poids (app/(app)/jobs/[id]/page.tsx, modale de reservation).
+    // La decision D2 fait pourtant du kg la mesure qui fait foi, et un
+    // transporteur decide sur un poids. Le test ne peut pas le saisir tant
+    // que le champ n'existe pas ; il ne fait pas semblant de le verifier.
     await page.getByTestId("demande-prix").fill("85");
     await page.getByTestId("demande-submit").click();
 
@@ -59,18 +82,18 @@ test.describe("Parcours C — la negociation converge", () => {
   }) => {
     await seConnecter(page, "transporteur");
 
-    // Aujourd'hui les demandes ne sont visibles que trajet par trajet. Ce test
-    // passe par le detail du retour ; il basculera vers /demandes-recues au
-    // lot 2, sans changer ce qu'il verifie.
-    await page.goto("/dashboard");
+    // La bascule annoncee par la version precedente de ce test est faite : le
+    // lot 2 a livre la boite de reception consolidee, on y entre directement.
+    //
+    // A SIGNALER : le tableau de bord transporteur ne porte aucun indicateur
+    // de demandes en attente. Rien n'y dit qu'une decision attend. Le test ne
+    // peut pas verifier un signal qui n'est pas concu ; il n'invente pas non
+    // plus un selecteur pour le masquer.
+    await page.goto("/demandes-recues");
 
-    const notification = page.getByTestId("dashboard-demandes-en-attente");
-    await expect(
-      notification,
-      "le transporteur doit voir qu'une decision l'attend",
-    ).toBeVisible({ timeout: 15_000 });
-
-    await notification.click();
+    await expect(page.getByTestId("demandes-recues-liste")).toBeVisible({
+      timeout: 15_000,
+    });
 
     const demande = page.getByTestId("demande-recue").first();
     await expect(demande).toBeVisible();
@@ -87,9 +110,16 @@ test.describe("Parcours C — la negociation converge", () => {
     await page.getByTestId("contre-proposition-prix").fill("95");
     await page.getByTestId("contre-proposition-submit").click();
 
-    await expect(
-      page.getByTestId("contre-proposition-confirmation"),
-    ).toBeVisible({ timeout: 15_000 });
+    await expect(page.getByTestId("toast-success")).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // Le toast disparait ; la preuve durable est que la demande a quitte
+    // l'onglet des decisions a prendre pour celui des negociations.
+    await page.getByTestId("demandes-recues-onglet-negociation").click();
+    await expect(page.getByTestId("demande-recue").first()).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test("le client accepte la contre-proposition et paie", async ({

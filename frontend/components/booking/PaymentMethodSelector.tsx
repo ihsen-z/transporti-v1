@@ -83,6 +83,7 @@ export function PaymentMethodSelector({
 
         {/* Cash on Delivery */}
         <button
+          data-testid="reservation-paiement-livraison"
           onClick={() => !codBlocked && onSelect("COD")}
           disabled={codBlocked}
           className={`w-full text-start p-4 rounded-xl border-2 transition-all duration-200

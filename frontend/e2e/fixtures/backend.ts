@@ -152,6 +152,18 @@ export { expect };
 export async function preparerContrePropositionEnAttente(
   request: APIRequestContext,
 ): Promise<number | null> {
+  // On repart d'un etat propre : un trajet deja porteur d'une demande du
+  // client refuse la creation, et la preparation rendait alors `null` — le
+  // test s'ignorait en silence, ce qui est la panne la plus couteuse : la
+  // suite parait verte sans avoir rien verifie.
+  await libererDemandesDuClient(request);
+  await garantirTrajetsRetourPublies(
+    request,
+    CORRIDOR.depart,
+    CORRIDOR.arrivee,
+    2,
+  );
+
   const jetonClient = jetonDe("client");
   const jetonTransporteur = jetonDe("transporteur");
   const enTete = (t: string) => ({ Authorization: `Bearer ${t}` });
@@ -194,7 +206,14 @@ export async function preparerContrePropositionEnAttente(
     );
     if (reponse.ok()) return trajet.id;
   }
-  return null;
+  // Des trajets existent mais aucune contre-proposition n'a pu etre posee :
+  // c'est un defaut, pas une absence d'environnement. Le signaler plutot que
+  // de laisser le test s'ignorer.
+  throw new Error(
+    `${candidats.length} trajet(s) retour publie(s), mais aucune ` +
+      "contre-proposition n'a pu etre preparee. Verifier /requests/ et " +
+      "/respond/ ; le test ne peut pas se prononcer sans elle.",
+  );
 }
 
 /**
@@ -211,6 +230,16 @@ export async function preparerDemandesEnAttente(
   request: APIRequestContext,
   minimum = 2,
 ): Promise<number> {
+  // Meme raison que ci-dessus : sans remise a zero, le nombre de demandes
+  // dependait de ce que les tests precedents avaient laisse.
+  await libererDemandesDuClient(request);
+  await garantirTrajetsRetourPublies(
+    request,
+    CORRIDOR.depart,
+    CORRIDOR.arrivee,
+    minimum,
+  );
+
   const jetonClient = jetonDe("client");
   const jetonTransporteur = jetonDe("transporteur");
   const enTete = (t: string) => ({ Authorization: `Bearer ${t}` });
@@ -251,4 +280,123 @@ export async function preparerDemandesEnAttente(
     if (creation.ok()) dejaLa.add(trajet.id);
   }
   return dejaLa.size;
+}
+
+/**
+ * Annule toutes les demandes en cours du client.
+ *
+ * Le detail d'un trajet n'affiche le bouton d'envoi que si le client n'a PAS
+ * deja de demande dessus : sinon il montre l'etat de la demande existante.
+ * Une execution precedente laissait donc le test suivant sans bouton a
+ * cliquer — la suite passait une fois puis echouait, ce qui se lit a tort
+ * comme une regression.
+ *
+ * Retourne le nombre de demandes annulees.
+ */
+export async function libererDemandesDuClient(
+  request: APIRequestContext,
+): Promise<number> {
+  const enTete = { Authorization: `Bearer ${jetonDe("client")}` };
+  const miennes = await request.get(`${BACKEND_URL}/api/trip-requests/my/`, {
+    headers: enTete,
+  });
+  const corps = await miennes.json();
+  const enCours = (
+    (corps.results ?? corps) as Array<{
+      id: number;
+      status: string;
+    }>
+  ).filter((d) => d.status === "PENDING" || d.status === "COUNTERED");
+
+  let annulees = 0;
+  for (const demande of enCours) {
+    const reponse = await request.post(
+      `${BACKEND_URL}/api/trip-requests/${demande.id}/cancel/`,
+      { headers: enTete },
+    );
+    if (reponse.ok()) annulees += 1;
+  }
+  return annulees;
+}
+
+/**
+ * Garantit qu'au moins `minimum` trajets retour PUBLIES existent sur le
+ * corridor, en en publiant au besoin.
+ *
+ * Les parcours CONSOMMENT l'inventaire : accepter une contre-proposition
+ * retire le trajet de la recherche. Chaque execution en epuisait donc une
+ * part du jeu de seed, et la suite finissait par echouer sur une recherche
+ * vide — un symptome qui accuse l'ecran de recherche alors que la cause est
+ * l'usure des donnees.
+ *
+ * On publie plutot que de reamorcer toute la base : `seed_test_data --clear`
+ * detruirait le travail en cours de l'environnement de developpement.
+ *
+ * Retourne le nombre de trajets publies par cet appel (0 si l'inventaire
+ * suffisait deja).
+ */
+export async function garantirTrajetsRetourPublies(
+  request: APIRequestContext,
+  depart: string,
+  arrivee: string,
+  minimum = 1,
+): Promise<number> {
+  const enTete = { Authorization: `Bearer ${jetonDe("transporteur")}` };
+
+  const existants = await request.get(
+    `${BACKEND_URL}/api/jobs/transporter/?type=owned`,
+    { headers: enTete },
+  );
+  const corps = await existants.json();
+  const maintenant = Date.now();
+  const surLeCorridor = (
+    (corps.results ?? corps) as Array<{
+      status: string;
+      is_return_trip: boolean;
+      pickup_governorate: string;
+      dropoff_governorate: string;
+      scheduled_time: string;
+    }>
+  ).filter(
+    (t) =>
+      t.is_return_trip &&
+      t.status === "PUBLISHED" &&
+      t.pickup_governorate === depart &&
+      t.dropoff_governorate === arrivee &&
+      // MEME REGLE QUE LA RECHERCHE : JobPublicListView ecarte les trajets
+      // dont la date est passee (logistics/views/jobs.py:111). Un trajet
+      // PUBLISHED mais perime est invisible du client. Sans ce filtre,
+      // l'inventaire du seed — date du jour meme a 17h00 — paraissait
+      // suffisant des l'heure passee, et la recherche restait vide.
+      new Date(t.scheduled_time).getTime() > maintenant,
+  );
+
+  let publies = 0;
+  for (let i = surLeCorridor.length; i < minimum; i += 1) {
+    // Date volontairement lointaine : un trajet trop proche peut etre refuse
+    // par le delai minimum de planification.
+    const date = new Date(Date.now() + (i + 3) * 24 * 3_600_000);
+    const reponse = await request.post(`${BACKEND_URL}/api/jobs/return-trip/`, {
+      headers: enTete,
+      data: {
+        job_type: "TRANSPORT",
+        pickup_address: `${depart} centre`,
+        pickup_governorate: depart,
+        dropoff_address: `${arrivee} centre`,
+        dropoff_governorate: arrivee,
+        scheduled_time: date.toISOString(),
+        description: "Trajet de test provisionne par la suite e2e",
+        available_capacity: "Volume disponible",
+        available_capacity_kg: 800,
+      },
+    });
+    if (!reponse.ok()) {
+      throw new Error(
+        `Publication d'un trajet ${depart} vers ${arrivee} refusee ` +
+          `(HTTP ${reponse.status()}) : ${await reponse.text()}`,
+      );
+    }
+    publies += 1;
+  }
+  return publies;
 }

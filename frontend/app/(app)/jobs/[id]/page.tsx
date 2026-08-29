@@ -803,7 +803,10 @@ export default function JobDetailsPage() {
                 {job.my_trip_request &&
                 job.my_trip_request.status !== "CANCELLED" &&
                 job.my_trip_request.status !== "REJECTED" ? (
-                  <div className="bg-white rounded-xl p-4 mb-2 border border-purple-200">
+                  <div
+                    data-testid="demande-confirmation"
+                    className="bg-white rounded-xl p-4 mb-2 border border-purple-200"
+                  >
                     <p className="text-sm font-semibold text-neutral-900 mb-1">
                       {t.jobDetail.myRequestTitle}
                     </p>
@@ -863,6 +866,7 @@ export default function JobDetailsPage() {
                 ) : (
                   /* Primary CTA — request (default) or instant booking (D11) */
                   <button
+                    data-testid="trajet-envoyer-demande"
                     onClick={() => {
                       setBookingPrice(String(job.price_tnd_min || ""));
                       setBookingPayment("DIGITAL");
@@ -885,7 +889,10 @@ export default function JobDetailsPage() {
                   <MessageSquare className="w-4 h-4" />
                   {t.jobDetail.contactTransporter}
                 </Link>
-                <p className="text-xs text-purple-500 text-center mt-2 flex items-center justify-center gap-1">
+                <p
+                  data-testid="demande-reassurance-paiement"
+                  className="text-xs text-purple-500 text-center mt-2 flex items-center justify-center gap-1"
+                >
                   <ShieldCheck className="w-3 h-3" />
                   {t.jobDetail.securePaymentEscrow}
                 </p>
@@ -945,6 +952,7 @@ export default function JobDetailsPage() {
                           {t.jobDetail.requestDescriptionLabel}
                         </label>
                         <textarea
+                          data-testid="demande-marchandise"
                           value={bookingDescription}
                           onChange={(e) =>
                             setBookingDescription(e.target.value)
@@ -965,6 +973,7 @@ export default function JobDetailsPage() {
                       </label>
                       <div className="relative">
                         <input
+                          data-testid="demande-prix"
                           type="number"
                           min="1"
                           step="0.01"
@@ -1035,6 +1044,7 @@ export default function JobDetailsPage() {
                       {t.common.cancel}
                     </button>
                     <button
+                      data-testid="demande-submit"
                       onClick={
                         job.instant_booking
                           ? handleBookReturnTrip

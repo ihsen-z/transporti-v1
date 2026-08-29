@@ -77,6 +77,11 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         {toasts.map((toast) => (
           <div
             key={toast.id}
+            // Selecteur generique par type, plutot qu'un identifiant par flux :
+            // le toast est le seul retour visible de plusieurs actions, et une
+            // liste de testids specifiques deriverait a chaque nouvelle action.
+            data-testid={`toast-${toast.type}`}
+            role="status"
             className={`
                             flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg
                             animate-in slide-in-from-right duration-300
