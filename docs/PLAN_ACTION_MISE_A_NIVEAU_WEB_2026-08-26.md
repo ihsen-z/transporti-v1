@@ -443,7 +443,48 @@ n'affichant **qu'un seul trajet** — c'est-à-dire sur l'ancien comportement, c
 Il vérifie désormais la **consolidation** : deux demandes posées sur deux trajets différents doivent
 apparaître dans la même liste.
 
-### Lots 3 à 6 · **non démarrés**
+### Lot 3 — La conversion client · **en cours**
+
+| Tâche | État | Commit | Preuve |
+|---|---|---|---|
+| **C1.2** Économie estimée — backend + web | ✅ **fait** | `d6c440b` | 5 tests backend. Affichage bloqué par une calibration, voir ci-dessous |
+| **C1.7** Alertes corridor | ✅ **sans objet** | — | Déjà listées, créées et supprimables dans `/recherche` |
+| **C1.2** Économie estimée — mobile | ⏳ à faire | — | Le champ est servi par l'API, reste l'affichage |
+| **C2.1** Expéditions triées par attente d'action | ⏳ à faire | — | Débloque `expeditions-onglet-negociation` |
+
+#### ⚠️ Une décision métier bloque l'affichage de l'économie
+
+L'économie est implémentée et couverte par 5 tests. **Elle ne s'affichera pourtant jamais en l'état**,
+et la cause n'est pas technique.
+
+| Corridor | Grille tarifaire | Prix annoncés par les transporteurs |
+|---|---|---|
+| Sousse → Tunis (113 km) | **~50 DT** | **100 à 140 DT** |
+
+La grille `TRANSPORT` vaut `10 DT + 0,35 DT/km`. Un transport dédié de 113 km à 50 DT est
+implausible pour le marché tunisien, et les transporteurs du jeu de test facturent le double sur le
+même corridor. Le retour coûtant plus cher qu'un dédié, l'économie est **correctement masquée** —
+puisque négative.
+
+**Ce qu'il faut trancher** : le tarif au kilomètre de `PricingGrid` reflète-t-il le marché ? Si non,
+le recalibrer. C'est une question métier, pas d'ingénierie, et je n'ai pas les éléments pour y
+répondre.
+
+**Ce que j'ai refusé de faire** : ajuster les prix du jeu de test pour verdir le test de bout en
+bout. Cela aurait produit une démonstration qui ne prouve rien, et masqué le vrai problème.
+
+Le test E2E est marqué en attente avec cette raison écrite dans le fichier. Les 5 tests unitaires,
+eux, valident le calcul sur des prix contrôlés.
+
+#### Un défaut introduit puis corrigé, du même motif que les précédents
+
+Ma première version passait `pickup_governorate=` à `estimate_price`, qui n'accepte que des
+coordonnées. Le `TypeError` était avalé par un `except Exception` large — **exactement le motif de
+panne silencieuse** que je traque ailleurs. Or les trajets retour n'ont pas de coordonnées : sans
+résolution des centroïdes, l'économie aurait été absente sur précisément les trajets qu'elle doit
+valoriser. La clause a été resserrée.
+
+### Lots 4 à 6 · **non démarrés**
 
 **Toutes les décisions du plan sont tranchées**, produit comme méthode. Les lots 2 à 6 peuvent
 s'enchaîner sans nouvel arbitrage.
