@@ -274,6 +274,15 @@
       "validation": "Action impossible. Vérifiez le montant.",
       "forbidden": "Action non autorisée.",
       "network": "Connexion au serveur impossible. Réessayez."
+    },
+    "inbox_subtitle": "Toutes vos demandes, tous trajets confondus.",
+    "inbox_empty": "Aucune demande n'attend votre décision.",
+    "inbox_empty_hint": "Plus vous avez de retours en ligne, plus vous recevez de demandes.",
+    "tab_empty": "Rien dans cet onglet.",
+    "tabs": {
+      "a-decider": "À décider",
+      "negociation": "En négociation",
+      "archivees": "Archivées"
     }
   },
   "missions": {

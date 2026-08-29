@@ -41,6 +41,11 @@ export function useRespondRequest() {
       // acceptation ferme le trajet -> il quitte la liste PUBLISHED).
       void qc.invalidateQueries({ queryKey: ['jobRequests', vars.jobId] });
       void qc.invalidateQueries({ queryKey: ['myReturnTrips'] });
+      // T2.1 — la boîte de réception consolidée doit suivre, sinon une demande
+      // traitée y resterait affichée comme en attente. Invalidation de la
+      // racine : les trois onglets sont concernés, une acceptation faisant
+      // passer la demande de « à décider » à « archivées ».
+      void qc.invalidateQueries({ queryKey: ['receivedRequests'] });
     },
   });
 }

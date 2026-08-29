@@ -65,12 +65,11 @@ export default function HomeScreen() {
           />
         ) : null}
 
-        {/* La maquette place ici « Demandes reçues » avec ses cartes. Non
-            livré : les demandes ne sont lisibles que trajet par trajet
-            (GET jobs/<id>/requests/), il n'existe aucun endpoint transverse
-            pour en faire une liste à plat. Un en-tête suivi de rien se lirait
-            comme un écran cassé — l'onglet Demandes assure ce rôle en
-            attendant. */}
+        {/* La maquette place ici « Demandes reçues » avec ses cartes.
+            L'endpoint transverse existe depuis T2.1
+            (GET trip-requests/received/) et l'onglet Demandes porte desormais
+            la liste consolidee. Le dupliquer ici ferait deux sources pour la
+            meme information, donc deux compteurs a tenir d'accord. */}
 
         {/* Sections rôle-aware. Le suivi des demandes du client vit désormais
             dans son propre onglet (mes-demandes.tsx) : une section noyée en

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { TextField } from '@/shared/ui/TextField';
@@ -15,10 +16,17 @@ import { useRespondRequest } from '../api/useRespondRequest';
 interface Props {
   request: TripRequestDto;
   jobId: number;
+  /**
+   * T2.1 — affiche le corridor du trajet concerné. Utile uniquement dans la
+   * boîte de réception consolidée : sur le détail d'UN trajet, le corridor est
+   * déjà dans l'en-tête et le répéter serait du bruit.
+   */
+  montrerCorridor?: boolean;
 }
 
-export function RequestCard({ request, jobId }: Props) {
+export function RequestCard({ request, jobId, montrerCorridor = false }: Props) {
   const { t } = useTranslation();
+  const router = useRouter();
   const respond = useRespondRequest();
   const [counterOpen, setCounterOpen] = useState(false);
   const [counterPrice, setCounterPrice] = useState('');
@@ -51,6 +59,31 @@ export function RequestCard({ request, jobId }: Props) {
         <Txt style={styles.client} numberOfLines={1}>{request.client_name}</Txt>
         <Badge label={t(`requests.status.${request.status}`)} variant={statusVariant(request.status)} />
       </View>
+
+      {montrerCorridor ? (
+        // Tappable : c'est le seul point d'entree vers le detail d'UN trajet
+        // (`requests/[jobId]`) depuis que la liste consolidee a remplace la
+        // liste de trajets. Le detail reste utile pour traiter d'affilee
+        // toutes les demandes d'un meme corridor.
+        <Pressable
+          testID={`request-${request.id}-open-trip`}
+          accessibilityRole="button"
+          onPress={() =>
+            router.push({
+              pathname: '/requests/[jobId]',
+              params: {
+                jobId: String(jobId),
+                pickup: request.job_pickup,
+                dropoff: request.job_dropoff,
+              },
+            })
+          }
+        >
+          <Txt style={styles.corridor} numberOfLines={1}>
+            {request.job_pickup} → {request.job_dropoff}
+          </Txt>
+        </Pressable>
+      ) : null}
 
       {/* VERT = valeur : le prix proposé par le client. */}
       <Txt style={styles.price}>{t('requests.proposed', { price: request.proposed_price })}</Txt>
@@ -135,6 +168,11 @@ export function RequestCard({ request, jobId }: Props) {
 }
 
 const styles = StyleSheet.create({
+  corridor: {
+    fontSize: fontSize.sm,
+    color: colors.neutral[500],
+    marginBottom: spacing.xs,
+  },
   top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   client: { flex: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
   price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.green[700], marginTop: spacing.md },

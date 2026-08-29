@@ -50,6 +50,11 @@ export interface TripRequestDto {
   counter_price: string | null;
   response_message: string;
   client_name: string;
+  // T2.1 — contexte du trajet, indispensable dans une liste consolidee : sans
+  // lui, on ne sait pas de quel trajet vient chaque demande.
+  job_pickup: string;
+  job_dropoff: string;
+  job_date: string;
   created_at: string;
 }
 
