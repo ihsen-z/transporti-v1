@@ -10,7 +10,7 @@
 > **Ce document est mis à jour à chaque échange.** Il doit pouvoir être lu seul
 > pour savoir où en est le chantier.
 
-**Dernière mise à jour** : 26/08/2026 · **Branche de travail** : `feature/lot0-fondations-retour-first`
+**Dernière mise à jour** : 29/08/2026 · **Branche de travail** : `feature/lot0-fondations-retour-first`
 
 ### Lot 0 — Fondations et filet de sécurité · **en cours, 4 tâches sur 6**
 
@@ -453,35 +453,88 @@ apparaître dans la même liste.
 | **C2.1** Expéditions triées par attente d'action — web | ✅ **fait** | `97cbf37` | 5 onglets, fusion des deux sources |
 | **C2.1** — mobile | ⏳ à faire | — | — |
 
-#### ⛔ Le socle de tests de parcours est à refaire
+#### ✅ Le socle de tests de parcours est réparé — 49 tests verts
 
-**Les tests de parcours B et C sont rouges, et la cause n'est pas le produit.** Je l'ai diagnostiquée
-sans la résoudre, et je préfère le dire que laisser croire à des régressions.
+**Les trois parcours passent, et la suite est stable sur deux exécutions consécutives.**
+49 passés · 2 en attente (les deux `fixme` documentés plus bas) · 0 échec.
 
-Deux défauts de conception, dans le socle que j'ai écrit :
+Les deux défauts annoncés le 26/08 sont levés, et trois autres ont été trouvés en chemin.
 
-**1. Les tests partagent un jeu de données mutable.** Accepter une contre-proposition la consomme ;
-le test suivant qui en attend une échoue. La suite dépend donc de son **ordre d'exécution** — pire
-qu'un échec franc, puisqu'elle passe une fois puis échoue.
+**1. La limitation de débit — levée par `storageState`.** `e2e/global-setup.ts` ouvre une session par
+rôle, **une seule fois, par l'interface**, et `seConnecter` la restaure par `addInitScript`. Deux
+connexions par exécution au lieu de treize et plus, quel que soit le nombre de tests. Le plafond
+`auth: 10/minute` n'est plus atteignable. Le parcours de connexion **reste couvert** : c'est
+`global-setup` qui le joue, et s'il casse aucun parcours ne démarre.
 
-J'ai commencé à corriger en provisionnant les données par test
-(`preparerContrePropositionEnAttente`, `preparerDemandesEnAttente`). C'est la bonne direction, mais
-incomplète.
+> **Piège rencontré** : restaurer les deux jetons ne suffit pas. La connexion dépose aussi
+> `transporti_auth_role` et `transporti_auth_user`. Avec les seuls jetons, l'application tourne
+> **sans utilisateur** : les écrans s'affichent, vides de tout ce qui dépend du rôle, et onze tests
+> échouaient loin de la cause. On restaure donc l'état `localStorage` entier, jamais une liste de
+> clés — elle aurait dérivé au premier ajout.
 
-**2. La limitation de débit sur la connexion.** `LoginView` porte `AuthRateThrottle`. Chaque test se
-connecte par l'interface, et mes aides ajoutaient des connexions API. Le passage à un worker unique
-avait masqué le problème ; l'ajout des aides l'a ramené. J'ai mis les jetons en cache, ce qui ne
-suffit pas : les connexions par l'interface restent.
+**2. Les données mutables partagées — levées par provisionnement.** Trois aides dans
+`e2e/fixtures/backend.ts` : `libererDemandesDuClient` (annule les demandes en cours, sans quoi le
+détail d'un trajet masque le bouton d'envoi), `garantirTrajetsRetourPublies` (republie l'inventaire
+consommé) et le durcissement des deux préparations existantes.
 
-**Le remède, identifié et non appliqué** : un `storageState` Playwright — se connecter une fois,
-enregistrer la session, la réutiliser dans tous les tests. Cela supprime les deux problèmes à la
-fois. C'est une demi-journée, et c'est un prérequis du lot 4, dont le filet repose sur ces tests.
+> `garantirTrajetsRetourPublies` applique **la même règle que la recherche** : `JobPublicListView`
+> écarte `scheduled_time < now`. Les trajets du jeu de test sont datés du jour même à 17 h 00 : passée
+> cette heure ils restent `PUBLISHED` mais deviennent invisibles. Sans ce filtre, l'inventaire
+> paraissait suffisant et la recherche restait vide.
 
-**Ce qui reste vert et prouve l'absence de régression** : 205 tests backend, 34 tests de routage,
-4 tests de sélecteurs, `tsc` propre sur les deux plateformes.
+**3. Les préparations ne s'ignorent plus en silence.** Elles rendaient `null` quand elles ne
+pouvaient rien préparer, et le test s'ignorait — la suite paraissait verte sans avoir rien vérifié.
+Elles lèvent désormais une erreur nommée quand l'inventaire existe mais que la préparation échoue.
 
-**Ce que je n'ai pas fait** : affaiblir les assertions pour verdir la suite. Un test qui passe en
-n'exigeant plus rien est pire qu'un test rouge.
+#### Ce que la réparation a mis au jour : le socle 0.4 était écrit contre des sélecteurs absents
+
+Diff des `data-testid` attendus par les specs contre ceux réellement présents : **19 manquants**, sur
+six écrans. Les parcours B et C décrivaient un produit en partie non construit. `selecteurs.spec.ts`,
+censé être le garde-fou, ne couvrait que `/login` — sans session, il ne pouvait rien voir de plus.
+
+Deux étaient de faux manquants (`demandes-recues-onglet-a-decider` et `reservation-escrow-explication`
+sont construits dynamiquement). Les autres ont été posés dans l'interface, sans changement de
+comportement. Trois cas ont été traités autrement, et ce sont les plus instructifs :
+
+| Sélecteur attendu | Réalité | Traitement |
+|---|---|---|
+| `recherche-submit` | **N'a jamais existé** : les filtres s'appliquent en direct | Retiré du test, avec la raison écrite |
+| `demande-poids` | **Trou produit** : le formulaire de demande n'a aucun champ de poids | Consigné dans le test, non masqué |
+| `dashboard-demandes-en-attente` | **Trou produit** : rien sur le tableau de bord ne signale qu'une décision attend | Le test entre par `/demandes-recues`, la bascule que le lot 2 avait annoncée |
+
+Les filtres de corridor sont par ailleurs des `<select>`, sur lesquels `fill()` échoue.
+
+#### 🐞 Trois défauts produit trouvés en suivant le parcours — commit `4a970ba`
+
+Le paiement après acceptation d'une contre-proposition **était inatteignable**. Trois défauts
+empilés, aucun visible en lecture de code, tous masqués par le même `catch` silencieux :
+
+1. L'écran appelait `/api/jobs/<id>/offers/<offerId>/`, **une route qui n'existe pas**. Le 404 était
+   avalé par un `catch` réduit à un `console.error`, et l'écran affichait « introuvable » sans dire
+   pourquoi.
+2. La route de liste, elle, **refusait le client**. Sur un trajet retour le propriétaire est le
+   *transporteur*, et `JobOffersView` faisait de la propriété la permission : le client ne pouvait
+   jamais lire l'offre qu'il devait payer. Ouverture délibérément étroite — seules les offres
+   `ACCEPTED`, et seulement pour le client dont la demande sur ce trajet a été acceptée. Les offres
+   concurrentes restent invisibles ; un tiers reçoit 404 et non 403, pour ne pas révéler l'existence
+   du trajet. **Quatre tests backend fixent ces bornes.**
+3. DRF sérialise les décimaux en **chaîne** ; le type `OfferData` annonce `number`. La différence
+   n'avait jamais été exercée, l'écran ne chargeant jamais. Dès qu'il a chargé,
+   `totalPrice.toFixed(2)` a fait tomber la page sur sa frontière d'erreur.
+
+C'est l'argument le plus concret en faveur du socle : aucun des trois ne se voyait en lisant le code,
+et le premier était **activement caché** par la clause qui l'avalait. Elle affiche désormais la cause.
+
+#### Réserves à connaître
+
+- **`backend/test_workflows.py` échoue à l'import** (`PermissionDenied` dans `messaging`). C'est un
+  script exécuté au niveau module, ramassé par le lanceur de tests ; il est antérieur à ces travaux
+  (`8f652cc`) et sans rapport. Les **217 tests des applications passent**. À traiter séparément.
+- **`next lint` ne démarre plus** : `@eslint-community/regexpp` absent de `node_modules`. Défaut
+  d'environnement, pas de code. `tsc --noEmit` est propre.
+- `workers: 1` est **conservé**. La cause « limitation de débit » a disparu, mais les parcours
+  partagent toujours un jeu de données qu'ils mutent. À relever quand les préparations seront
+  totalement indépendantes.
 
 #### C2.1 — un sixième endpoint orphelin, et deux défauts produit
 
