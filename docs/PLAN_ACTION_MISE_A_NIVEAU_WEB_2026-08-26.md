@@ -366,7 +366,39 @@ côté frontend**, et tout nouvel indicateur doit passer par `get_transporter_st
 au dictionnaire. C'est pourquoi `stats_corridors.py` est un module séparé mais **appelé depuis**
 `get_transporter_stats`, et non exposé directement.
 
-### Lots 2 à 6 · **non démarrés**
+### Lot 2 — La boîte de réception transporteur · **en cours**
+
+| Tâche | État | Commit | Preuve |
+|---|---|---|---|
+| **B-5** Endpoint transverse des demandes reçues | ✅ **fait** | `56c2da7` | 6 tests, dont l'exposition sur `/api/v1/` |
+| **T2.1** Boîte de réception — **web** | ✅ **fait** | `199b302` | Test de consolidation vert contre backend réel |
+| **T2.1** Boîte de réception — **mobile** | ⏳ à faire | — | L'écran actuel liste les trajets, à transformer |
+| **T4.1** Missions segmentées — web + mobile | ⏳ à faire | — | — |
+
+#### Un défaut d'infrastructure de test, trouvé au passage
+
+T2.1 passait **seul** mais échouait en exécution complète, avec une erreur qui ressemblait à un
+défaut fonctionnel : le test s'arrêtait sur `/login`.
+
+Cause réelle : les parcours se connectent tous aux **mêmes comptes** de `seed_test_data`, et
+`LoginView` porte `AuthRateThrottle`. Avec plusieurs workers, la limitation se déclenche. Les
+parcours partagent de surcroît un **unique jeu de données**, ce qui les rendait dépendants de leur
+ordre d'exécution.
+
+Configuration passée à **un seul worker**. La piste `storageState` — se connecter une fois et
+réutiliser la session — est notée pour le jour où la suite s'allongera.
+
+**Deuxième fois** qu'un problème du socle de tests se déguise en défaut produit, après la fixture
+qui sondait la mauvaise URL de santé. Un socle de tests demande la même défiance qu'un code métier.
+
+#### Le test T2.1 vérifiait la mauvaise chose
+
+Sa première version vérifiait qu'un onglet s'affiche avec un compteur. Il serait passé sur un écran
+n'affichant **qu'un seul trajet** — c'est-à-dire sur l'ancien comportement, celui que T2.1 remplace.
+Il vérifie désormais la **consolidation** : deux demandes posées sur deux trajets différents doivent
+apparaître dans la même liste.
+
+### Lots 3 à 6 · **non démarrés**
 
 **Toutes les décisions du plan sont tranchées**, produit comme méthode. Les lots 2 à 6 peuvent
 s'enchaîner sans nouvel arbitrage.
