@@ -377,7 +377,9 @@
       "delete": "حذف التنبيه",
       "delete_title": "حذف التنبيه",
       "delete_msg": "ما باش تتعلم كي تتنشر رحلة على هذا المسار."
-    }
+    },
+    "savings": "توفر {{amount}} دينار",
+    "savings_basis": "مقابل {{amount}} دينار لنقل مخصص"
   },
   "my_requests": {
     "title": "طلباتي",

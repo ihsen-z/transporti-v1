@@ -369,7 +369,9 @@
       "delete": "Supprimer l'alerte",
       "delete_title": "Supprimer l'alerte",
       "delete_msg": "Vous ne serez plus notifié des trajets publiés sur ce corridor."
-    }
+    },
+    "savings": "Vous économisez {{amount}} DT",
+    "savings_basis": "face à {{amount}} DT pour un transport dédié"
   },
   "my_requests": {
     "title": "Mes demandes",

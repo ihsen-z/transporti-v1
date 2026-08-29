@@ -10,6 +10,10 @@ function trip(overrides: Partial<TripResultDto> = {}): TripResultDto {
     pickup_address: 'Centre',
     dropoff_address: 'Centre',
     scheduled_time: '2026-09-05T09:00:00Z',
+    // C1.2 : `null` est le cas nominal — l'economie n'est calculable que
+    // lorsque le retour est reellement moins cher qu'un dedie.
+    estimated_savings: null,
+    savings_basis: null,
     owner_name: 'Mehdi',
     owner_id: 42,
     owner_rating: null,

@@ -32,6 +32,13 @@ export interface TripResultDto {
   owner_verification_status: string | null;
   price_tnd_min: string;
   price_tnd_max: string;
+  // C1.2 — economie face a un transport dedie, calculee SERVEUR pour que le
+  // chiffre soit identique sur les deux plateformes. `null` quand le calcul
+  // est impossible ou l'economie negative : jamais zero, qui se lirait
+  // « aucune economie » au lieu de « economie inconnue ».
+  estimated_savings: number | null;
+  /** Prix du dedie servant de reference. Le montant n'est jamais affiche nu. */
+  savings_basis: number | null;
   instant_booking: boolean;
   available_capacity: string;
   distance_km: string | null;

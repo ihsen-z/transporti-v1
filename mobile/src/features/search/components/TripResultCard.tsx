@@ -6,7 +6,7 @@ import { Card } from '@/shared/ui/Card';
 import { Avatar } from '@/shared/ui/Avatar';
 import { Badge } from '@/shared/ui/Badge';
 import { RouteRow } from '@/shared/ui/RouteRow';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { TripResultDto } from '../api/dto';
 
 interface Props {
@@ -55,6 +55,24 @@ export function TripResultCard({ trip, onRequest }: Props) {
         <Text style={styles.price}>
           {t('search.price_range', { min: trip.price_tnd_min, max: trip.price_tnd_max })}
         </Text>
+
+        {/* C1.2 — l'argument de conversion du pivot : « vous payez moins parce
+            que le camion roulait deja ». Ligne DEDIEE et non mention noyee
+            (IA-5), et jamais un montant nu : la base de comparaison
+            l'accompagne, sans quoi le chiffre n'est pas verifiable. */}
+        {trip.estimated_savings !== null && trip.savings_basis !== null ? (
+          <View style={styles.economie} testID="recherche-trajet-economie">
+            <Text style={styles.economieMontant}>
+              {t('search.savings', { amount: Math.round(trip.estimated_savings) })}
+            </Text>
+            <Text
+              style={styles.economieBase}
+              testID="recherche-trajet-economie-base"
+            >
+              {t('search.savings_basis', { amount: Math.round(trip.savings_basis) })}
+            </Text>
+          </View>
+        ) : null}
         <Button
           testID={`trip-${trip.id}-request`}
           label={t('search.request.title')}
@@ -82,4 +100,20 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.green[700] },
+  economie: {
+    marginTop: spacing.sm,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.green[50],
+    borderWidth: 1,
+    borderColor: colors.green[600],
+    gap: 2,
+  },
+  economieMontant: {
+    fontSize: fontSize.md,
+    fontWeight: '800',
+    color: colors.green[700],
+  },
+  economieBase: { fontSize: fontSize.sm, color: colors.green[700] },
 });
