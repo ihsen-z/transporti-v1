@@ -402,7 +402,19 @@
     "track": "Suivre la mission",
     "withdraw": "Retirer ma demande",
     "withdraw_confirm_title": "Retirer la demande",
-    "withdraw_confirm_msg": "Le transporteur ne pourra plus y répondre. Vous pourrez en envoyer une nouvelle."
+    "withdraw_confirm_msg": "Le transporteur ne pourra plus y répondre. Vous pourrez en envoyer une nouvelle.",
+    "tabs": {
+      "attente": "En attente de réponse",
+      "negociation": "En négociation",
+      "a-payer": "À payer",
+      "terminees": "Terminées"
+    },
+    "empty_tabs": {
+      "attente": "Aucune demande en attente de réponse.",
+      "negociation": "Aucune contre-proposition à décider.",
+      "a-payer": "Aucune demande acceptée à payer.",
+      "terminees": "Aucune demande terminée."
+    }
   },
   "messaging": {
     "empty": "Aucune conversation.",
