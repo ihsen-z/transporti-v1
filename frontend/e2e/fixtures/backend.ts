@@ -45,6 +45,10 @@ export const CORRIDOR = {
   arrivee: "Tunis",
   // Corridor volontairement desert, pour exercer l'etat de repli du parcours B.
   arriveeSansTrajet: "Tozeur",
+  // Second corridor, pour les scenarios qui doivent prouver une agregation
+  // ENTRE trajets : deux demandes sur le meme corridor ne montrent pas qu'une
+  // boite de reception consolide plusieurs trajets.
+  departSecondaire: "Sousse",
 } as const;
 
 async function backendJoignable(request: APIRequestContext): Promise<boolean> {
@@ -133,6 +137,35 @@ function jetonDe(role: keyof typeof COMPTES): string {
   return lireSession(role).jetonAcces;
 }
 
+/**
+ * Lit une reponse de liste, ou echoue en le DISANT.
+ *
+ * Les aides supposaient `(corps.results ?? corps)` toujours iterable. Quand
+ * l'API repondait autre chose — 429 de limitation, 401 de jeton perime, page
+ * d'erreur — le test tombait sur un « .filter is not a function » qui ne
+ * nomme ni l'endpoint ni le code HTTP. Le diagnostic coutait plus cher que
+ * l'incident.
+ */
+async function listeDe<T>(
+  reponse: import("@playwright/test").APIResponse,
+  quoi: string,
+): Promise<T[]> {
+  if (!reponse.ok()) {
+    throw new Error(
+      `${quoi} : HTTP ${reponse.status()} — ${(await reponse.text()).slice(0, 200)}`,
+    );
+  }
+  const corps = await reponse.json();
+  const liste = Array.isArray(corps) ? corps : corps?.results;
+  if (!Array.isArray(liste)) {
+    throw new Error(
+      `${quoi} : reponse inattendue, ni tableau ni page paginee — ` +
+        `${JSON.stringify(corps).slice(0, 200)}`,
+    );
+  }
+  return liste as T[];
+}
+
 export { expect };
 
 /**
@@ -173,11 +206,12 @@ export async function preparerContrePropositionEnAttente(
     `${BACKEND_URL}/api/jobs/transporter/?type=owned`,
     { headers: enTete(jetonTransporteur) },
   );
-  const corpsTrajets = await trajets.json();
-  const candidats = (corpsTrajets.results ?? corpsTrajets).filter(
-    (t: { status: string; is_return_trip: boolean }) =>
-      t.is_return_trip && t.status === "PUBLISHED",
-  );
+  const candidats = (
+    await listeDe<{ status: string; is_return_trip: boolean; id: number }>(
+      trajets,
+      "GET /api/jobs/transporter/?type=owned",
+    )
+  ).filter((t) => t.is_return_trip && t.status === "PUBLISHED");
   if (!candidats.length) return null;
 
   // On essaie chaque trajet : le client ne peut avoir qu'une demande en cours
@@ -233,11 +267,18 @@ export async function preparerDemandesEnAttente(
   // Meme raison que ci-dessus : sans remise a zero, le nombre de demandes
   // dependait de ce que les tests precedents avaient laisse.
   await libererDemandesDuClient(request);
+  // Sur DEUX corridors : la boite de reception doit prouver qu'elle agrege des
+  // trajets differents, et deux demandes sur le meme corridor afficheraient le
+  // meme libelle — le test ne saurait pas les distinguer.
   await garantirTrajetsRetourPublies(
     request,
     CORRIDOR.depart,
     CORRIDOR.arrivee,
-    minimum,
+  );
+  await garantirTrajetsRetourPublies(
+    request,
+    CORRIDOR.departSecondaire,
+    CORRIDOR.arrivee,
   );
 
   const jetonClient = jetonDe("client");
@@ -249,18 +290,24 @@ export async function preparerDemandesEnAttente(
     { headers: enTete(jetonTransporteur) },
   );
   const dejaLa = new Set<number>(
-    ((await recues.json()).results ?? []).map((d: { job: number }) => d.job),
+    (
+      await listeDe<{ job: number }>(
+        recues,
+        "GET /api/trip-requests/received/?status=PENDING",
+      )
+    ).map((d) => d.job),
   );
 
   const trajets = await request.get(
     `${BACKEND_URL}/api/jobs/transporter/?type=owned`,
     { headers: enTete(jetonTransporteur) },
   );
-  const corps = await trajets.json();
-  const publies = (corps.results ?? corps).filter(
-    (t: { status: string; is_return_trip: boolean }) =>
-      t.is_return_trip && t.status === "PUBLISHED",
-  );
+  const publies = (
+    await listeDe<{ status: string; is_return_trip: boolean; id: number }>(
+      trajets,
+      "GET /api/jobs/transporter/?type=owned",
+    )
+  ).filter((t) => t.is_return_trip && t.status === "PUBLISHED");
 
   for (const trajet of publies) {
     if (dejaLa.size >= minimum) break;
@@ -300,12 +347,11 @@ export async function libererDemandesDuClient(
   const miennes = await request.get(`${BACKEND_URL}/api/trip-requests/my/`, {
     headers: enTete,
   });
-  const corps = await miennes.json();
   const enCours = (
-    (corps.results ?? corps) as Array<{
-      id: number;
-      status: string;
-    }>
+    await listeDe<{ id: number; status: string }>(
+      miennes,
+      "GET /api/trip-requests/my/",
+    )
   ).filter((d) => d.status === "PENDING" || d.status === "COUNTERED");
 
   let annulees = 0;
@@ -340,35 +386,51 @@ export async function garantirTrajetsRetourPublies(
   depart: string,
   arrivee: string,
   minimum = 1,
+  /**
+   * N'accepter comme suffisants que les trajets qui ANNONCENT un prix.
+   *
+   * Un retour sans prix n'a pas d'economie calculable — D3 impose alors
+   * `None`, pas un zero. Le test de C1.2 exige donc de l'inventaire prixe,
+   * la ou les autres se contentent d'un trajet visible.
+   */
+  exigerUnPrix = false,
 ): Promise<number> {
   const enTete = { Authorization: `Bearer ${jetonDe("transporteur")}` };
 
-  const existants = await request.get(
-    `${BACKEND_URL}/api/jobs/transporter/?type=owned`,
-    { headers: enTete },
+  // On interroge l'endpoint que la RECHERCHE utilise, avec le jeton du client
+  // — pas la liste du transporteur.
+  //
+  // Deux raisons. D'abord la verite : `JobPublicListView` applique lui-meme
+  // ses filtres (statut PUBLISHED, `scheduled_time >= now`), donc ce qu'il
+  // renvoie est exactement ce que le client verra. Ensuite un piege paye
+  // comptant : la liste du transporteur n'expose PAS `price_tnd_min`, si bien
+  // qu'un controle `!== null` y recevait `undefined` et declarait prixe chaque
+  // trajet. L'inventaire paraissait suffisant, rien n'etait publie, et le test
+  // echouait sur une absence de donnees qu'il croyait avoir garantie.
+  const parametres = new URLSearchParams({
+    is_return_trip: "true",
+    pickup_governorate: depart,
+    dropoff_governorate: arrivee,
+    page_size: "50",
+  });
+  const visibles = await request.get(
+    `${BACKEND_URL}/api/jobs/public/?${parametres.toString()}`,
+    { headers: { Authorization: `Bearer ${jetonDe("client")}` } },
   );
-  const corps = await existants.json();
-  const maintenant = Date.now();
-  const surLeCorridor = (
-    (corps.results ?? corps) as Array<{
-      status: string;
-      is_return_trip: boolean;
-      pickup_governorate: string;
-      dropoff_governorate: string;
-      scheduled_time: string;
-    }>
-  ).filter(
-    (t) =>
-      t.is_return_trip &&
-      t.status === "PUBLISHED" &&
-      t.pickup_governorate === depart &&
-      t.dropoff_governorate === arrivee &&
-      // MEME REGLE QUE LA RECHERCHE : JobPublicListView ecarte les trajets
-      // dont la date est passee (logistics/views/jobs.py:111). Un trajet
-      // PUBLISHED mais perime est invisible du client. Sans ce filtre,
-      // l'inventaire du seed — date du jour meme a 17h00 — paraissait
-      // suffisant des l'heure passee, et la recherche restait vide.
-      new Date(t.scheduled_time).getTime() > maintenant,
+  const resultats = await listeDe<Record<string, unknown>>(
+    visibles,
+    `GET /api/jobs/public/ (${depart} vers ${arrivee})`,
+  );
+
+  if (exigerUnPrix && resultats.length && !("price_tnd_min" in resultats[0])) {
+    throw new Error(
+      "`price_tnd_min` absent de /api/jobs/public/ : le controle de prix ne " +
+        "mesurerait rien. Verifier TransportJobListSerializer.",
+    );
+  }
+
+  const surLeCorridor = resultats.filter(
+    (t) => !exigerUnPrix || t.price_tnd_min !== null,
   );
 
   let publies = 0;
@@ -388,6 +450,11 @@ export async function garantirTrajetsRetourPublies(
         description: "Trajet de test provisionne par la suite e2e",
         available_capacity: "Volume disponible",
         available_capacity_kg: 800,
+        // Un prix EST necessaire : sans lui l'economie estimee vaut `None`
+        // (on ne soustrait rien d'un prix absent) et le badge C1.2 ne
+        // s'affiche pas. Valeur volontairement basse devant l'estimation d'un
+        // dedie sur ces corridors — c'est la promesse meme du trajet retour.
+        price_tnd_min: "120.00",
       },
     });
     if (!reponse.ok()) {

@@ -302,6 +302,38 @@ REST_FRAMEWORK = {
     },
 }
 
+# Interrupteur de limitation de debit, pour les suites de bout en bout UNIQUEMENT.
+#
+# La suite Playwright rejoue les trois parcours plusieurs fois par heure, et
+# chaque parcours enchaine des dizaines d'appels. Le plafond `user: 1000/hour`
+# — dimensionne contre l'abus en production — finit par se declencher, et les
+# tests echouent alors sur des 429 qui ressemblent a des defauts fonctionnels.
+#
+# Le remede n'est PAS de relever le plafond de production : ce serait affaiblir
+# une protection reelle pour la commodite d'un test. C'est un interrupteur
+# explicite, ferme par defaut, que seule la machine de test ouvre :
+#
+#     THROTTLING_DISABLED=1 python manage.py runserver
+#
+# A NE JAMAIS POSITIONNER EN PRODUCTION. Le journal l'annonce au demarrage pour
+# qu'un environnement mal configure se voie.
+if os.getenv('THROTTLING_DISABLED') == '1':
+    REST_FRAMEWORK['DEFAULT_THROTTLE_CLASSES'] = []
+    # Les PORTEES restent declarees, avec un taux `None`, qui vaut « aucune
+    # limite » pour DRF. Les supprimer ferait lever `ImproperlyConfigured: No
+    # default throttle rate set for 'auth' scope` a la premiere connexion : les
+    # vues qui posent `throttle_classes = [AuthRateThrottle]` cherchent leur
+    # portee par son nom, quelles que soient les classes par defaut.
+    REST_FRAMEWORK['DEFAULT_THROTTLE_RATES'] = {
+        portee: None for portee in REST_FRAMEWORK['DEFAULT_THROTTLE_RATES']
+    }
+    import warnings
+    warnings.warn(
+        "THROTTLING_DISABLED=1 : la limitation de debit est DESACTIVEE. "
+        "Acceptable pour une suite de tests, jamais en production.",
+        RuntimeWarning,
+    )
+
 SPECTACULAR_SETTINGS = {
     'TITLE': 'Transporti V1 API',
     'DESCRIPTION': 'Modular Monolith API for Transporti Tunisia',

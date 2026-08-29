@@ -11,6 +11,9 @@ def seed_pricing_grids(apps, schema_editor):
         {
             'job_type': 'TRANSPORT',
             'base_rate': 10.00,
+            # Recalibre a 1.384 par 0016 (prix DEDIE, pas mutualise). Valeur
+            # laissee telle quelle ici : rejouer l historique doit reproduire
+            # l etat d origine, c est 0016 qui porte le changement.
             'per_km_rate': 0.350,
             'min_price': 25.00,
             'max_multiplier': 1.50,

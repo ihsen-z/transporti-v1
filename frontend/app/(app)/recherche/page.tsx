@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
@@ -128,7 +128,20 @@ export default function ReturnTripsPage() {
     fetchReturnTrips();
   }, [filters, currentPage, sortBy]);
 
+  // Numero de la requete en cours. Les filtres se declenchent a chaque frappe
+  // ou changement de select : deux requetes partent coup sur coup et rien ne
+  // garantissait leur ordre d'arrivee. La plus lente ecrasait la plus recente,
+  // et l'ecran affichait les resultats du filtre PRECEDENT — un corridor sans
+  // trajet montrait ceux d'un autre, au lieu de l'etat vide et de ses deux
+  // sorties. Le compteur fait ignorer toute reponse qui n'est plus la derniere
+  // demandee.
+  const requeteCourante = useRef(0);
+
   const fetchReturnTrips = async () => {
+    const numero = requeteCourante.current + 1;
+    requeteCourante.current = numero;
+    const estPerimee = () => requeteCourante.current !== numero;
+
     setLoading(true);
     try {
       const queryParams = new URLSearchParams();
@@ -151,6 +164,8 @@ export default function ReturnTripsPage() {
         `/api/jobs/public/?${queryParams.toString()}`,
       );
 
+      if (estPerimee()) return;
+
       if (response.results) {
         setJobs(response.results);
         setTotalCount(response.count || response.results.length);
@@ -163,9 +178,12 @@ export default function ReturnTripsPage() {
         setTotalCount(0);
       }
     } catch (error) {
+      if (estPerimee()) return;
       console.error("Error fetching return trips:", error);
     } finally {
-      setLoading(false);
+      // Une reponse perimee ne doit pas non plus eteindre l'indicateur de
+      // chargement de la requete qui, elle, est encore en vol.
+      if (!estPerimee()) setLoading(false);
     }
   };
 

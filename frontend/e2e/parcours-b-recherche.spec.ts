@@ -121,20 +121,26 @@ test.describe("Parcours B — la recherche sans impasse", () => {
     );
   });
 
-  // BLOQUE PAR UNE CALIBRATION, PAS PAR LE CODE. L economie est implementee et
-  // couverte par 5 tests unitaires cote backend
-  // (logistics/tests/test_estimated_savings.py). Elle ne s affiche pas ici
-  // parce que la grille tarifaire et les prix des trajets se contredisent :
-  // la grille TRANSPORT vaut 10 DT + 0,35 DT/km, soit ~50 DT pour les 113 km
-  // de Sousse->Tunis, quand les transporteurs y annoncent 100 a 140 DT. Le
-  // retour coute donc le double d un dedie et l economie est correctement
-  // masquee, puisque negative.
-  //
-  // A lever quand la grille aura ete calibree sur le marche reel. Le tarif au
-  // kilometre est une question metier, pas technique.
-  test.fixme("chaque trajet affiche son economie estimee et sa base de comparaison (C1.2)", async ({
+  // DEBLOQUE LE 29/08. Le diagnostic precedent — « la grille est trop basse,
+  // question metier » — visait a cote. La grille decrivait le prix MUTUALISE
+  // et servait pourtant de reference au prix DEDIE : l'economie etait nulle ou
+  // negative PAR CONSTRUCTION, et aucun recalibrage ne l'aurait montre tant
+  // que la confusion n'etait pas nommee. Grille recalibree sur un prix de
+  // dedie donne par le porteur (170 DT pour Sousse->Tunis) — migration 0016.
+  test("une economie affichee porte toujours sa base de comparaison (C1.2)", async ({
     page,
+    request,
   }) => {
+    // `true` : il faut de l'inventaire qui ANNONCE un prix, sans quoi il n'y a
+    // pas d'economie a afficher et le test mesurerait l'absence de donnees.
+    await garantirTrajetsRetourPublies(
+      request,
+      CORRIDOR.depart,
+      CORRIDOR.arrivee,
+      1,
+      true,
+    );
+
     await seConnecter(page, "client");
     await page.goto("/recherche");
 
@@ -144,18 +150,26 @@ test.describe("Parcours B — la recherche sans impasse", () => {
     await page.getByTestId("recherche-depart").selectOption(CORRIDOR.depart);
     await page.getByTestId("recherche-arrivee").selectOption(CORRIDOR.arrivee);
 
-    const trajet = page.getByTestId("recherche-trajet").first();
+    await expect(page.getByTestId("recherche-resultats")).toBeVisible({
+      timeout: 15_000,
+    });
+
+    // PAS « chaque trajet » : un retour qui n'annonce aucun prix n'a pas
+    // d'economie calculable, et la decision D3 impose alors `None` et non un
+    // zero trompeur. La promesse verifiable est donc : au moins un trajet
+    // l'affiche, et JAMAIS un montant sans sa base.
+    const montants = page.getByTestId("recherche-trajet-economie");
+    const bases = page.getByTestId("recherche-trajet-economie-base");
 
     // L'economie est une ligne dediee, pas une mention noyee (IA-5).
-    const economie = trajet.getByTestId("recherche-trajet-economie");
-    await expect(economie).toBeVisible();
+    await expect(montants.first()).toBeVisible({ timeout: 15_000 });
 
-    // Decision du 26/08 : jamais un montant nu. La base de comparaison est
-    // affichee a cote du chiffre, sans quoi l'economie n'est pas justifiable.
-    await expect(
-      trajet.getByTestId("recherche-trajet-economie-base"),
-      "la base de comparaison doit accompagner le montant",
-    ).toBeVisible();
+    // Decision du 26/08 : jamais un montant nu. Un ecart entre les deux
+    // comptes signifierait qu'une economie s'affiche sans etre justifiable.
+    expect(
+      await bases.count(),
+      "chaque montant d'economie doit porter sa base de comparaison",
+    ).toBe(await montants.count());
   });
 
   test.fixme("les alertes corridor sont gerables (C1.7, lot 3)", async ({
