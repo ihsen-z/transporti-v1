@@ -108,19 +108,40 @@ test.describe("Parcours C — la negociation converge", () => {
     ).toBeVisible();
   });
 
-  test.fixme("la boite de reception consolide toutes les demandes (T2.1, lot 2)", async ({
+  test("la boite de reception consolide toutes les demandes (T2.1)", async ({
     page,
   }) => {
     await seConnecter(page, "transporteur");
 
-    // A transposer depuis le mobile : app/(app)/requests/index.tsx et
-    // [jobId].tsx couvrent deja ce besoin. Ne pas reecrire.
+    // Alimente par GET /api/trip-requests/received/ (B-5), le vis-a-vis
+    // transporteur de trip-requests/my/.
     await page.goto("/demandes-recues");
 
-    // Le compteur doit refleter le total tous trajets confondus. Aujourd'hui
-    // un transporteur avec trois retours en ligne doit visiter trois ecrans.
+    // Le compteur doit refleter le total tous trajets confondus. Avant T2.1,
+    // un transporteur avec trois retours en ligne devait visiter trois ecrans.
     const onglet = page.getByTestId("demandes-recues-onglet-a-decider");
     await expect(onglet).toBeVisible();
     await expect(onglet).toContainText(/\d+/);
+
+    // La promesse de l'ecran n'est pas d'afficher un onglet, c'est de
+    // CONSOLIDER : deux demandes posees sur deux trajets differents doivent
+    // apparaitre dans la meme liste. Sans cette assertion, le test passerait
+    // sur un ecran qui n'afficherait qu'un seul trajet.
+    const cartes = page.getByTestId("demande-recue");
+    await expect(cartes.first()).toBeVisible({ timeout: 15_000 });
+
+    const corridors = await cartes.allInnerTexts();
+    expect(
+      new Set(corridors).size,
+      "les demandes doivent provenir de trajets distincts",
+    ).toBeGreaterThan(1);
+
+    // Les trois actions sont atteignables sans ouvrir le detail.
+    const premiere = cartes.first();
+    await expect(premiere.getByTestId("demande-recue-accepter")).toBeVisible();
+    await expect(
+      premiere.getByTestId("demande-recue-contre-proposer"),
+    ).toBeVisible();
+    await expect(premiere.getByTestId("demande-recue-refuser")).toBeVisible();
   });
 });

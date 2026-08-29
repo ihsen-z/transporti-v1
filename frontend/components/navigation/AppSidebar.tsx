@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   UserCircle,
   Wallet,
+  Inbox,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { RETURN_TRIPS_FIRST } from "@/lib/flags";
@@ -77,6 +78,7 @@ export default function AppSidebar() {
   // secondaire, conformément au pivot.
   const transporterItems: NavItemDef[] = [
     { href: "/retours", icon: RotateCcw, label: "Mes retours" },
+    { href: "/demandes-recues", icon: Inbox, label: "Demandes reçues" },
     { href: "/retours/nouveau", icon: PlusCircle, label: t.nav.returnTrip },
     { href: "/demandes", icon: Search, label: t.nav.findMission },
     { href: "/mes-offres", icon: FileText, label: t.nav.myOffers },
