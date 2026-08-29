@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from rest_framework import serializers
 from django.utils import timezone
 from .models import TransportJob, Offer
@@ -46,6 +48,14 @@ class TransportJobListSerializer(serializers.ModelSerializer):
     owner_rating = serializers.SerializerMethodField()
     owner_review_count = serializers.SerializerMethodField()
     owner_verification_status = serializers.SerializerMethodField()
+    # C1.2 (lot 3) — l'economie estimee, calculee SERVEUR.
+    #
+    # Cote client, elle exigerait un appel a estimate-price par trajet affiche.
+    # Surtout, la decision 6 impose un chiffre identique sur les deux
+    # plateformes : deux implementations produiraient deux montants pour le
+    # meme trajet.
+    estimated_savings = serializers.SerializerMethodField()
+    savings_basis = serializers.SerializerMethodField()
 
     class Meta:
         model = TransportJob
@@ -58,6 +68,7 @@ class TransportJobListSerializer(serializers.ModelSerializer):
             'price_tnd_min', 'price_tnd_max',
             'is_return_trip', 'available_capacity', 'instant_booking',
             'available_capacity_kg', 'available_capacity_m3',
+            'estimated_savings', 'savings_basis',
             'distance_km', 'route_polyline',
             'created_at'
         ]
@@ -91,6 +102,78 @@ class TransportJobListSerializer(serializers.ModelSerializer):
     def get_owner_verification_status(self, obj) -> str | None:
         profile = getattr(obj.owner, 'trust_profile', None)
         return profile.verification_status if profile is not None else None
+
+    def _prix_trajet_dedie(self, obj):
+        """
+        Prix de reference d'un transport dedie sur ce corridor.
+
+        Reference = `base_calculated` de la grille tarifaire, c'est-a-dire le
+        prix TYPIQUE d'un trajet dedie — ni le plancher, ni le plafond.
+        Prendre le plancher sous-estimerait l'economie.
+
+        Les trajets retour n'ont PAS de coordonnees : ils sont saisis par
+        corridor, gouvernorat a gouvernorat. On resout donc les centroides
+        avant d'appeler `estimate_price`, qui n'accepte que des coordonnees.
+        Sans cette resolution, l'economie serait toujours absente sur
+        exactement les trajets qu'elle doit valoriser.
+        """
+        from .pricing import estimate_price, GOVERNORATE_CENTROIDS
+
+        depart = (obj.pickup_lat, obj.pickup_lng)
+        arrivee = (obj.dropoff_lat, obj.dropoff_lng)
+        if depart[0] is None or arrivee[0] is None:
+            depart = GOVERNORATE_CENTROIDS.get(
+                (obj.pickup_governorate or '').strip().lower())
+            arrivee = GOVERNORATE_CENTROIDS.get(
+                (obj.dropoff_governorate or '').strip().lower())
+            if not depart or not arrivee:
+                return None
+
+        resultat = estimate_price(
+            pickup_lat=depart[0], pickup_lng=depart[1],
+            dropoff_lat=arrivee[0], dropoff_lng=arrivee[1],
+            job_type=obj.job_type,
+        )
+        # `estimate_price` signale ses echecs par un `grid_source` d'erreur
+        # plutot que par une exception : on ne masque donc rien avec un
+        # `except` large, qui avalerait aussi les erreurs de programmation.
+        if not resultat or resultat.get('grid_source') == 'error':
+            return None
+        base = resultat.get('base_calculated')
+        return Decimal(str(base)) if base else None
+
+    def get_estimated_savings(self, obj):
+        """
+        Ce que le client economise par rapport a un transport dedie.
+
+        `None` — et non zero — quand le calcul n'est pas possible : trajet non
+        retour, prix non annonce, ou grille indisponible. Un zero se lirait
+        comme « aucune economie », ce qui est un message different de
+        « economie inconnue ».
+
+        Une economie negative n'est jamais affichee : si le retour coute plus
+        cher qu'un dedie, il n'y a rien a vanter.
+        """
+        if not obj.is_return_trip or obj.price_tnd_min is None:
+            return None
+        dedie = self._prix_trajet_dedie(obj)
+        if dedie is None:
+            return None
+        economie = dedie - obj.price_tnd_min
+        return float(round(economie, 2)) if economie > 0 else None
+
+    def get_savings_basis(self, obj):
+        """
+        La base de comparaison, affichee A COTE du montant.
+
+        Decision du 26/08 : jamais un montant nu. Une economie sans reference
+        n'est pas verifiable par le client, donc pas credible.
+        """
+        if self.get_estimated_savings(obj) is None:
+            return None
+        dedie = self._prix_trajet_dedie(obj)
+        return float(round(dedie, 2)) if dedie is not None else None
+
 
 
 class TransportJobDetailSerializer(serializers.ModelSerializer):

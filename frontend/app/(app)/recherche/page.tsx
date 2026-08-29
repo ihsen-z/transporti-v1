@@ -226,6 +226,7 @@ export default function ReturnTripsPage() {
                     {t.returnTrips.departure}
                   </label>
                   <select
+                    data-testid="recherche-depart"
                     value={filters.pickup_governorate}
                     onChange={(e) =>
                       setFilters((f) => ({
@@ -248,6 +249,7 @@ export default function ReturnTripsPage() {
                     {t.returnTrips.destination}
                   </label>
                   <select
+                    data-testid="recherche-arrivee"
                     value={filters.dropoff_governorate}
                     onChange={(e) =>
                       setFilters((f) => ({
@@ -354,10 +356,11 @@ export default function ReturnTripsPage() {
               </div>
             ) : jobs.length > 0 ? (
               <>
-                <div className="space-y-4">
+                <div data-testid="recherche-resultats" className="space-y-4">
                   {jobs.map((job, index) => (
                     <div
                       key={job.id}
+                      data-testid="recherche-trajet"
                       className="animate-fade-in-up"
                       style={{ animationDelay: `${index * 0.05}s` }}
                     >
@@ -410,7 +413,10 @@ export default function ReturnTripsPage() {
                 )}
               </>
             ) : (
-              <div className="bg-white rounded-xl p-12 text-center border animate-fade-in-up">
+              <div
+                data-testid="recherche-repli"
+                className="bg-white rounded-xl p-12 text-center border animate-fade-in-up"
+              >
                 <div className="mx-auto w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
                   <RotateCcw className="w-8 h-8 text-purple-400" />
                 </div>
@@ -423,6 +429,7 @@ export default function ReturnTripsPage() {
                 {/* Funnel fallback (pivot §5.2, cas B) : jamais de cul-de-sac */}
                 <div className="flex flex-wrap justify-center gap-3">
                   <Link
+                    data-testid="recherche-repli-publier"
                     href={`/demandes/nouvelle?pickup_governorate=${encodeURIComponent(filters.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(filters.dropoff_governorate)}`}
                     className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors"
                   >
@@ -432,6 +439,7 @@ export default function ReturnTripsPage() {
                   {filters.pickup_governorate &&
                     filters.dropoff_governorate && (
                       <button
+                        data-testid="recherche-repli-alerte"
                         onClick={handleCreateAlert}
                         disabled={alertLoading}
                         className="inline-flex items-center gap-2 px-5 py-2.5 border-2 border-purple-300 text-purple-700 rounded-xl text-sm font-semibold hover:bg-purple-50 transition-colors disabled:opacity-50"

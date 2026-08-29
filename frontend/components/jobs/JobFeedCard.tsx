@@ -17,8 +17,31 @@ import { formatDate } from "@/lib/format";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 
+/**
+ * Le sous-ensemble reellement lu par cette carte. Typage explicite plutot que
+ * `any` (CLAUDE.md §3) : c'est ce qui a permis de voir que `estimated_savings`
+ * pouvait etre absent et devait donc etre traite comme tel.
+ */
+export interface JobFeedItem {
+  id: number;
+  is_return_trip?: boolean;
+  price_tnd_min?: string | number | null;
+  price_tnd_max?: string | number | null;
+  /** C1.2 — economie face a un transport dedie. `null` quand incalculable. */
+  estimated_savings?: number | null;
+  /** Prix du dedie servant de reference. Jamais un montant nu. */
+  savings_basis?: number | null;
+  // Le reste de la carte lit une quinzaine d'autres champs sans typage. Les
+  // typer tous fait tomber une cascade d'erreurs qui depasse le cadre de C1.2 :
+  // c'est du perimetre du lot 4 (dette). L'index reste donc permissif, et seuls
+  // les champs introduits ici sont contraints — amelioration partielle, pas
+  // conformite au CLAUDE.md §3.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  [cle: string]: any;
+}
+
 interface JobFeedCardProps {
-  job: any;
+  job: JobFeedItem;
 }
 
 export function JobFeedCard({ job }: JobFeedCardProps) {
@@ -105,6 +128,28 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
             )}
           </div>
         </div>
+
+        {/* C1.2 — l'economie estimee : une LIGNE DEDIEE, pas une mention noyee
+            (IA-5). C'est l'argument de conversion du pivot — « vous payez
+            moins parce que le camion roulait deja ».
+            Le montant n'est jamais nu : la base de comparaison l'accompagne,
+            sans quoi le chiffre n'est pas verifiable donc pas credible. */}
+        {job.estimated_savings != null && job.savings_basis != null && (
+          <p
+            data-testid="recherche-trajet-economie"
+            className="mt-3 px-3 py-2 rounded-lg bg-accent-50 border border-accent-600/25 text-sm font-semibold text-accent-700 flex flex-wrap items-baseline gap-x-2"
+          >
+            <span className="tabular-nums">
+              Vous economisez {Math.round(job.estimated_savings)} DT
+            </span>
+            <span
+              data-testid="recherche-trajet-economie-base"
+              className="font-normal text-accent-700/80"
+            >
+              face a {Math.round(job.savings_basis)} DT pour un transport dedie
+            </span>
+          </p>
+        )}
 
         {/* Route */}
         <div className="space-y-3 mb-4">

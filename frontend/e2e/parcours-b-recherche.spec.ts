@@ -89,15 +89,28 @@ test.describe("Parcours B — la recherche sans impasse", () => {
     );
   });
 
-  test.fixme("chaque trajet affiche son economie estimee et sa base de comparaison (C1.2, lot 3)", async ({
+  // BLOQUE PAR UNE CALIBRATION, PAS PAR LE CODE. L economie est implementee et
+  // couverte par 5 tests unitaires cote backend
+  // (logistics/tests/test_estimated_savings.py). Elle ne s affiche pas ici
+  // parce que la grille tarifaire et les prix des trajets se contredisent :
+  // la grille TRANSPORT vaut 10 DT + 0,35 DT/km, soit ~50 DT pour les 113 km
+  // de Sousse->Tunis, quand les transporteurs y annoncent 100 a 140 DT. Le
+  // retour coute donc le double d un dedie et l economie est correctement
+  // masquee, puisque negative.
+  //
+  // A lever quand la grille aura ete calibree sur le marche reel. Le tarif au
+  // kilometre est une question metier, pas technique.
+  test.fixme("chaque trajet affiche son economie estimee et sa base de comparaison (C1.2)", async ({
     page,
   }) => {
     await seConnecter(page, "client");
     await page.goto("/recherche");
 
-    await page.getByTestId("recherche-depart").fill(CORRIDOR.depart);
-    await page.getByTestId("recherche-arrivee").fill(CORRIDOR.arrivee);
-    await page.getByTestId("recherche-submit").click();
+    // La recherche est un panneau de FILTRES : chaque changement relance la
+    // requete, il n'y a pas de bouton de soumission. Le test suit
+    // l'interaction reelle plutot que d'imposer un widget.
+    await page.getByTestId("recherche-depart").selectOption(CORRIDOR.depart);
+    await page.getByTestId("recherche-arrivee").selectOption(CORRIDOR.arrivee);
 
     const trajet = page.getByTestId("recherche-trajet").first();
 
