@@ -366,14 +366,43 @@ côté frontend**, et tout nouvel indicateur doit passer par `get_transporter_st
 au dictionnaire. C'est pourquoi `stats_corridors.py` est un module séparé mais **appelé depuis**
 `get_transporter_stats`, et non exposé directement.
 
-### Lot 2 — La boîte de réception transporteur · **en cours**
+### Lot 2 — La boîte de réception transporteur · ✅ **TERMINÉ**
 
 | Tâche | État | Commit | Preuve |
 |---|---|---|---|
 | **B-5** Endpoint transverse des demandes reçues | ✅ **fait** | `56c2da7` | 6 tests, dont l'exposition sur `/api/v1/` |
 | **T2.1** Boîte de réception — **web** | ✅ **fait** | `199b302` | Test de consolidation vert contre backend réel |
 | **T2.1** Boîte de réception — **mobile** | ✅ **fait** | `88ea43a` | 129 tests mobile, lint propre |
-| **T4.1** Missions segmentées — web + mobile | ⏳ à faire | — | — |
+| **T4.1** Missions segmentées — **web** | ✅ **fait** | `012e8fd` | Onglet « À venir » séparé, onglet doublon retiré |
+| **T4.1** Missions segmentées — **mobile** | ✅ **sans objet** | — | La distinction est déjà rendue par `MissionCard` — voir ci-dessous |
+
+#### T4.1 — deux ajustements, pas une création
+
+**Quatrième fois que l'existant couvre plus que prévu.** `/jobs` portait déjà des onglets. Deux
+écarts réels subsistaient :
+
+- **« À venir » était fondu dans « En cours ».** Une mission acceptée mais pas démarrée appelle une
+  action *différente* — confirmer le départ. Les mélanger masquait ce qui attendait un geste. Le
+  compteur d'« En cours » incluait aussi MATCHED : la même mission aurait été comptée deux fois
+  entre les deux onglets.
+- **L'onglet « Trajets retour » doublonnait `/retours`**, livré en T1.3 avec l'édition, la
+  prolongation et la dépublication. Deux listes pour la même chose, ce sont deux comptages à tenir
+  d'accord. Retiré.
+
+**T4.1 mobile : aucun travail requis, et c'est un constat, pas un report.** `MissionCard`
+différencie déjà l'action attendue (`isMatched` affiche « confirmer le départ » avec son propre
+bouton) et `CompletedMissionsList` sépare déjà les missions terminées. La distinction que T4.1
+existe pour rendre visible est donc déjà rendue. Ajouter des onglets à une liste de 0 à 3 éléments
+sur un écran défilant serait de la forme sans fond.
+
+#### Un piège d'environnement, tombé trois fois
+
+Lancer `npm run build` en laissant tourner le serveur de développement mélange les deux caches
+`.next` et produit des échecs qui ressemblent à des régressions — 16 tests rouges cette fois, 6
+attendus. Ce n'est jamais le code.
+
+**Parade, désormais systématique : arrêter le serveur avant tout build.** Consigné ici parce que le
+diagnostic coûte plusieurs minutes à chaque fois et que rien dans le message d'erreur n'y mène.
 
 #### Un défaut d'infrastructure de test, trouvé au passage
 
