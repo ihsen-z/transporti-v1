@@ -1239,6 +1239,7 @@ export const ar = {
     refresh: "حدّث",
     loadError: "ما نجّمناش نحمّلو الخدمات متاعك.",
     tabAll: "الكل",
+    tabUpcoming: "قادمة",
     tabInProgress: "قاعدة",
     tabCompleted: "كمّلت",
     tabReturnTrip: "رحلات الرجوع",

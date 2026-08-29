@@ -12,6 +12,7 @@ import {
   Loader2,
   Clock,
   CheckCircle,
+  CalendarClock,
   ArrowRight,
   MapPin,
   Calendar,
@@ -40,16 +41,26 @@ import type { TransporterMission } from "@/lib/services/jobs";
 /*  Types & Helpers                                                            */
 /* -------------------------------------------------------------------------- */
 
-type MissionFilter = "ALL" | "IN_PROGRESS" | "COMPLETED" | "RETURN_TRIP";
+// T4.1 (lot 2) — segmentation par ce que la mission attend du transporteur.
+//
+// « À venir » (MATCHED) etait auparavant fondu dans « En cours » : or une
+// mission acceptee mais pas demarree appelle une action differente — confirmer
+// le depart — d une mission deja en route. Les melanger masquait ce qui
+// attendait un geste.
+//
+// L onglet « Trajets retour » a ete retire : /retours (T1.3) porte desormais
+// l inventaire, avec l edition, la prolongation et la depublication. Deux
+// listes pour la meme chose, ce sont deux comptages a tenir d accord.
+type MissionFilter = "ALL" | "UPCOMING" | "IN_PROGRESS" | "COMPLETED";
 
 const MISSION_TABS: {
   id: MissionFilter;
   icon: React.ElementType;
 }[] = [
   { id: "ALL", icon: FileText },
+  { id: "UPCOMING", icon: CalendarClock },
   { id: "IN_PROGRESS", icon: Clock },
   { id: "COMPLETED", icon: CheckCircle },
-  { id: "RETURN_TRIP", icon: RotateCcw },
 ];
 
 const JOB_TYPE_CONFIG = {
@@ -387,14 +398,12 @@ function TransporterMissionsView() {
     let list = missions;
 
     // Tab filter
-    if (activeTab === "IN_PROGRESS")
-      list = list.filter(
-        (m) => m.status === "IN_PROGRESS" || m.status === "MATCHED",
-      );
+    if (activeTab === "UPCOMING")
+      list = list.filter((m) => m.status === "MATCHED");
+    else if (activeTab === "IN_PROGRESS")
+      list = list.filter((m) => m.status === "IN_PROGRESS");
     else if (activeTab === "COMPLETED")
       list = list.filter((m) => m.status === "COMPLETED");
-    else if (activeTab === "RETURN_TRIP")
-      list = list.filter((m) => m.is_return_trip);
 
     // Search filter
     if (searchQuery.trim()) {
@@ -418,13 +427,15 @@ function TransporterMissionsView() {
   const paginatedMissions = paginateArray(filtered, currentPage, PAGE_SIZE);
 
   // Stats
+  // MATCHED est desormais compte par « A venir » : le laisser ici ferait
+  // compter deux fois la meme mission entre les deux onglets.
   const inProgressCount = missions.filter(
-    (m) => m.status === "IN_PROGRESS" || m.status === "MATCHED",
+    (m) => m.status === "IN_PROGRESS",
   ).length;
   const completedCount = missions.filter(
     (m) => m.status === "COMPLETED",
   ).length;
-  const returnTripCount = missions.filter((m) => m.is_return_trip).length;
+  const upcomingCount = missions.filter((m) => m.status === "MATCHED").length;
   // Local fallback only — the card prefers K4 (earnings_confirmed) from the
   // canonical stats endpoint (B2).
   const totalEarnings = missions
@@ -519,11 +530,11 @@ function TransporterMissionsView() {
           const count =
             tab.id === "ALL"
               ? missions.length
-              : tab.id === "IN_PROGRESS"
-                ? inProgressCount
-                : tab.id === "COMPLETED"
-                  ? completedCount
-                  : returnTripCount;
+              : tab.id === "UPCOMING"
+                ? upcomingCount
+                : tab.id === "IN_PROGRESS"
+                  ? inProgressCount
+                  : completedCount;
           const isActive = activeTab === tab.id;
           return (
             <button
@@ -542,11 +553,11 @@ function TransporterMissionsView() {
               />
               {tab.id === "ALL"
                 ? t.jobsList.tabAll
-                : tab.id === "IN_PROGRESS"
-                  ? t.jobsList.tabInProgress
-                  : tab.id === "COMPLETED"
-                    ? t.jobsList.tabCompleted
-                    : t.jobsList.tabReturnTrip}
+                : tab.id === "UPCOMING"
+                  ? t.jobsList.tabUpcoming
+                  : tab.id === "IN_PROGRESS"
+                    ? t.jobsList.tabInProgress
+                    : t.jobsList.tabCompleted}
               <span
                 className={`text-[11px] px-1.5 py-0.5 rounded-full font-bold ${
                   isActive
@@ -588,14 +599,10 @@ function TransporterMissionsView() {
               </div>
             </div>
             <p className="text-neutral-700 font-semibold mb-1">
-              {activeTab === "RETURN_TRIP"
-                ? t.jobsList.emptyReturnTitle
-                : t.jobsList.emptyMissionsTitle}
+              {t.jobsList.emptyMissionsTitle}
             </p>
             <p className="text-sm text-neutral-400 max-w-md mx-auto">
-              {activeTab === "RETURN_TRIP"
-                ? t.jobsList.emptyReturnDesc
-                : t.jobsList.emptyMissionsDesc}
+              {t.jobsList.emptyMissionsDesc}
             </p>
             <div className="flex gap-3 justify-center mt-5">
               <Link
@@ -605,15 +612,15 @@ function TransporterMissionsView() {
                 {t.jobsList.findMission}
                 <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
               </Link>
-              {activeTab === "RETURN_TRIP" && (
-                <Link
-                  href="/demandes/nouvelle?return_trip=true"
-                  className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 px-5 py-2.5 rounded-xl transition-all border border-purple-200"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  {t.jobsList.proposeTrip}
-                </Link>
-              )}
+              {/* La publication d'un retour vit sur /retours/nouveau depuis
+                  T1.3 : cet ecran ne porte plus que les missions executees. */}
+              <Link
+                href="/retours/nouveau"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 px-5 py-2.5 rounded-xl transition-all border border-purple-200"
+              >
+                <RotateCcw className="w-4 h-4" />
+                {t.jobsList.proposeTrip}
+              </Link>
             </div>
           </div>
         ) : (

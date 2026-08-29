@@ -1334,6 +1334,7 @@ export const fr = {
     refresh: "Rafraîchir",
     loadError: "Impossible de charger vos missions.",
     tabAll: "Toutes",
+    tabUpcoming: "À venir",
     tabInProgress: "En cours",
     tabCompleted: "Terminées",
     tabReturnTrip: "Trajets retour",
