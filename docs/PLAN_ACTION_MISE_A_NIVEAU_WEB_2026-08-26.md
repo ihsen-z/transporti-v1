@@ -449,8 +449,53 @@ apparaître dans la même liste.
 |---|---|---|---|
 | **C1.2** Économie estimée — backend + web | ✅ **fait** | `d6c440b` | 5 tests backend. Affichage bloqué par une calibration, voir ci-dessous |
 | **C1.7** Alertes corridor | ✅ **sans objet** | — | Déjà listées, créées et supprimables dans `/recherche` |
-| **C1.2** Économie estimée — mobile | ⏳ à faire | — | Le champ est servi par l'API, reste l'affichage |
-| **C2.1** Expéditions triées par attente d'action | ⏳ à faire | — | Débloque `expeditions-onglet-negociation` |
+| **C1.2** Économie estimée — mobile | ✅ **fait** | `0511fc8` | 129 tests mobile, lint propre |
+| **C2.1** Expéditions triées par attente d'action — web | ✅ **fait** | `97cbf37` | 5 onglets, fusion des deux sources |
+| **C2.1** — mobile | ⏳ à faire | — | — |
+
+#### ⛔ Le socle de tests de parcours est à refaire
+
+**Les tests de parcours B et C sont rouges, et la cause n'est pas le produit.** Je l'ai diagnostiquée
+sans la résoudre, et je préfère le dire que laisser croire à des régressions.
+
+Deux défauts de conception, dans le socle que j'ai écrit :
+
+**1. Les tests partagent un jeu de données mutable.** Accepter une contre-proposition la consomme ;
+le test suivant qui en attend une échoue. La suite dépend donc de son **ordre d'exécution** — pire
+qu'un échec franc, puisqu'elle passe une fois puis échoue.
+
+J'ai commencé à corriger en provisionnant les données par test
+(`preparerContrePropositionEnAttente`, `preparerDemandesEnAttente`). C'est la bonne direction, mais
+incomplète.
+
+**2. La limitation de débit sur la connexion.** `LoginView` porte `AuthRateThrottle`. Chaque test se
+connecte par l'interface, et mes aides ajoutaient des connexions API. Le passage à un worker unique
+avait masqué le problème ; l'ajout des aides l'a ramené. J'ai mis les jetons en cache, ce qui ne
+suffit pas : les connexions par l'interface restent.
+
+**Le remède, identifié et non appliqué** : un `storageState` Playwright — se connecter une fois,
+enregistrer la session, la réutiliser dans tous les tests. Cela supprime les deux problèmes à la
+fois. C'est une demi-journée, et c'est un prérequis du lot 4, dont le filet repose sur ces tests.
+
+**Ce qui reste vert et prouve l'absence de régression** : 205 tests backend, 34 tests de routage,
+4 tests de sélecteurs, `tsc` propre sur les deux plateformes.
+
+**Ce que je n'ai pas fait** : affaiblir les assertions pour verdir la suite. Un test qui passe en
+n'exigeant plus rien est pire qu'un test rouge.
+
+#### C2.1 — un sixième endpoint orphelin, et deux défauts produit
+
+`trip-requests/my/` existait mais n'était **consommé nulle part** côté web : un client ayant envoyé
+une demande sur un trajet retour n'en avait aucune liste. « Mes expéditions » fusionne désormais les
+deux sources.
+
+Deux défauts trouvés en suivant le parcours, pas en lisant le code :
+
+- **Accepter une contre-proposition ne menait nulle part.** Le client restait sur le détail du trajet et devait trouver seul où payer, alors que son acceptation venait de créer la réservation.
+- **L'écran de paiement exige l'identifiant de l'offre** en paramètre, sans quoi il affiche « introuvable ». L'offre venait d'être créée par l'acceptation, mais le sérialiseur ne l'exposait pas.
+
+Aucun des deux n'était visible en lecture de code. C'est l'argument le plus concret en faveur de la
+remise en état du socle de tests.
 
 #### ⚠️ Une décision métier bloque l'affichage de l'économie
 
