@@ -40,3 +40,6 @@ next-env.d.ts
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+# Sessions Playwright ouvertes par e2e/global-setup.ts (jetons de test).
+e2e/.auth/

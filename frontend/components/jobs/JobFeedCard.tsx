@@ -221,6 +221,10 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
           </div>
 
           <Link
+            // Seul element navigable de la carte : le conteneur n'est pas
+            // cliquable. Les parcours ciblaient la carte entiere et le clic
+            // tombait a cote, sans erreur ni navigation.
+            data-testid="job-card-ouvrir"
             href={`/jobs/${job.id}`}
             className="px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-800 transition-colors"
           >

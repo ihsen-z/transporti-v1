@@ -12,6 +12,12 @@ import { test, expect, seConnecter, CORRIDOR } from "./fixtures/backend";
  * deja. Ce test la verrouille pour qu'elle ne regresse pas.
  */
 
+// Les deux filtres de corridor sont des <select> de gouvernorats appliques en
+// direct (`onChange`, app/(app)/recherche/page.tsx:229 et :252). Il n'y a pas
+// de bouton de validation : la premiere version de ce fichier attendait un
+// `recherche-submit` qui n'a jamais existe, et les trois tests expiraient sur
+// un selecteur introuvable — un echec d'ecriture de test, lisible a tort comme
+// une regression de l'ecran.
 test.describe("Parcours B — la recherche sans impasse", () => {
   test("une recherche fructueuse mene a une demande structuree", async ({
     page,
@@ -19,14 +25,17 @@ test.describe("Parcours B — la recherche sans impasse", () => {
     await seConnecter(page, "client");
     await page.goto("/recherche");
 
-    await page.getByTestId("recherche-depart").fill(CORRIDOR.depart);
-    await page.getByTestId("recherche-arrivee").fill(CORRIDOR.arrivee);
-    await page.getByTestId("recherche-submit").click();
+    await page.getByTestId("recherche-depart").selectOption(CORRIDOR.depart);
+    await page.getByTestId("recherche-arrivee").selectOption(CORRIDOR.arrivee);
 
     const resultats = page.getByTestId("recherche-resultats");
     await expect(resultats).toBeVisible({ timeout: 15_000 });
 
-    await page.getByTestId("recherche-trajet").first().click();
+    await page
+      .getByTestId("recherche-trajet")
+      .first()
+      .getByTestId("job-card-ouvrir")
+      .click();
     await expect(page).toHaveURL(/\/trajets\/\d+|\/jobs\/\d+/);
 
     await page.getByTestId("trajet-envoyer-demande").click();
@@ -39,11 +48,10 @@ test.describe("Parcours B — la recherche sans impasse", () => {
     await seConnecter(page, "client");
     await page.goto("/recherche");
 
-    await page.getByTestId("recherche-depart").fill(CORRIDOR.depart);
+    await page.getByTestId("recherche-depart").selectOption(CORRIDOR.depart);
     await page
       .getByTestId("recherche-arrivee")
-      .fill(CORRIDOR.arriveeSansTrajet);
-    await page.getByTestId("recherche-submit").click();
+      .selectOption(CORRIDOR.arriveeSansTrajet);
 
     const repli = page.getByTestId("recherche-repli");
     await expect(repli, "l'etat vide doit s'afficher").toBeVisible({
@@ -69,11 +77,10 @@ test.describe("Parcours B — la recherche sans impasse", () => {
     await seConnecter(page, "client");
     await page.goto("/recherche");
 
-    await page.getByTestId("recherche-depart").fill(CORRIDOR.depart);
+    await page.getByTestId("recherche-depart").selectOption(CORRIDOR.depart);
     await page
       .getByTestId("recherche-arrivee")
-      .fill(CORRIDOR.arriveeSansTrajet);
-    await page.getByTestId("recherche-submit").click();
+      .selectOption(CORRIDOR.arriveeSansTrajet);
 
     await page.getByTestId("recherche-repli-publier").click();
 

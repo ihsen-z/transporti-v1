@@ -1,4 +1,9 @@
 import { test as base, expect, type APIRequestContext } from "@playwright/test";
+import {
+  entreesLocalStorage,
+  lireSession,
+  sessionsDisponibles,
+} from "./sessions";
 
 /**
  * Socle commun aux trois parcours critiques — lot 0.4.
@@ -12,7 +17,8 @@ import { test as base, expect, type APIRequestContext } from "@playwright/test";
  * Voir docs/PLAN_ACTION_MISE_A_NIVEAU_WEB_2026-08-26.md, lot 0.4.
  */
 
-const BACKEND_URL = process.env.E2E_BACKEND_URL ?? "http://localhost:8000";
+export const BACKEND_URL =
+  process.env.E2E_BACKEND_URL ?? "http://localhost:8000";
 
 /**
  * Comptes de test, crees par `python manage.py seed_test_data`.
@@ -66,6 +72,15 @@ export const test = base.extend<{ backendPret: void }>({
           `les comptes de test, ou definir E2E_BACKEND_URL. Ce test ne mesure ` +
           `rien sans lui — il est ignore plutot que declare en echec.`,
       );
+      // Le backend repond mais `global-setup.ts` n'a pas pu ouvrir de session :
+      // comptes de seed absents, ou parcours de connexion casse. Distinguer ce
+      // cas evite de laisser croire a un defaut du parcours teste.
+      test.skip(
+        !sessionsDisponibles(),
+        "Aucune session ouverte par global-setup.ts alors que le backend " +
+          "repond. Amorcer les comptes : `manage.py seed_test_data --clear`. " +
+          "Le detail de l'echec de connexion est dans la sortie [global-setup].",
+      );
       await use();
     },
     { auto: true },
@@ -73,50 +88,49 @@ export const test = base.extend<{ backendPret: void }>({
 });
 
 /**
- * Connecte un role via l'interface, et non par injection de jeton : le parcours
- * de connexion fait partie de ce que l'on veut garder sous surveillance.
+ * Restaure la session du role, ouverte une seule fois par `global-setup.ts`.
+ *
+ * Le nom est conserve : du point de vue d'un parcours, le resultat est le meme
+ * — la page s'ouvre authentifiee. Ce qui change est le cout. Une connexion par
+ * l'interface a chaque test faisait treize appels a /api/auth/login/, plafonne
+ * a dix par minute par `AuthRateThrottle` : la suite echouait a partir du
+ * onzieme, sur /login, ce qui se lisait comme une regression fonctionnelle.
+ *
+ * Le parcours de connexion reste couvert : c'est `global-setup.ts` qui le joue,
+ * par l'interface, et s'il casse aucun parcours ne demarre.
+ *
+ * L'etat est pose par `addInitScript`, donc AVANT le premier script de la page :
+ * l'application le trouve des son montage et ne redirige pas vers /login le
+ * temps d'une hydratation.
  */
 export async function seConnecter(
   page: import("@playwright/test").Page,
   role: keyof typeof COMPTES,
 ): Promise<void> {
-  const compte = COMPTES[role];
-  await page.goto("/login");
-  await page.getByTestId("login-email").fill(compte.email);
-  await page.getByTestId("login-password").fill(compte.motDePasse);
-  await page.getByTestId("login-submit").click();
-  await expect(page).toHaveURL(/\/(dashboard|recherche)/, { timeout: 15_000 });
+  const session = lireSession(role);
+
+  await page.addInitScript((entrees) => {
+    for (const entree of entrees) {
+      localStorage.setItem(entree.name, entree.value);
+    }
+  }, entreesLocalStorage(role));
+
+  await page.goto(session.urlApresConnexion);
+  // Assertion volontairement conservee : si le jeton restaure n'est plus
+  // accepte, l'application renvoie sur /login et il faut le voir ici, au lieu
+  // d'un echec obscur plus loin dans le parcours.
+  await expect(page).not.toHaveURL(/\/login/, { timeout: 15_000 });
 }
 
 /**
- * Jetons mis en cache pour toute la session de test.
+ * Jeton d'un role pour les appels API de mise en place.
  *
- * `LoginView` porte `AuthRateThrottle`. Chaque aide de mise en place se
- * connectait auparavant pour son propre compte, ce qui ajoutait deux appels
- * par test aux connexions faites par l'interface — et declenchait la
- * limitation, dont l'erreur (`tokens` indefini) ne dit rien de sa cause.
+ * Lu depuis la session de `global-setup.ts` : aucune connexion supplementaire
+ * n'est emise. C'etait la seconde source d'appels a /api/auth/login/, et donc
+ * de declenchement de la limitation de debit.
  */
-const jetons = new Map<string, string>();
-
-async function jetonDe(
-  request: APIRequestContext,
-  role: keyof typeof COMPTES,
-): Promise<string> {
-  const enCache = jetons.get(role);
-  if (enCache) return enCache;
-
-  const reponse = await request.post(`${BACKEND_URL}/api/auth/login/`, {
-    data: { email: COMPTES[role].email, password: COMPTES[role].motDePasse },
-  });
-  if (!reponse.ok()) {
-    throw new Error(
-      `Connexion API refusee pour ${role} (HTTP ${reponse.status()}). ` +
-        "Cause probable : la limitation de debit sur /api/auth/login/.",
-    );
-  }
-  const jeton = (await reponse.json()).tokens.access;
-  jetons.set(role, jeton);
-  return jeton;
+function jetonDe(role: keyof typeof COMPTES): string {
+  return lireSession(role).jetonAcces;
 }
 
 export { expect };
@@ -138,8 +152,8 @@ export { expect };
 export async function preparerContrePropositionEnAttente(
   request: APIRequestContext,
 ): Promise<number | null> {
-  const jetonClient = await jetonDe(request, "client");
-  const jetonTransporteur = await jetonDe(request, "transporteur");
+  const jetonClient = jetonDe("client");
+  const jetonTransporteur = jetonDe("transporteur");
   const enTete = (t: string) => ({ Authorization: `Bearer ${t}` });
 
   // Un trajet retour publie du transporteur de test.
@@ -197,8 +211,8 @@ export async function preparerDemandesEnAttente(
   request: APIRequestContext,
   minimum = 2,
 ): Promise<number> {
-  const jetonClient = await jetonDe(request, "client");
-  const jetonTransporteur = await jetonDe(request, "transporteur");
+  const jetonClient = jetonDe("client");
+  const jetonTransporteur = jetonDe("transporteur");
   const enTete = (t: string) => ({ Authorization: `Bearer ${t}` });
 
   const recues = await request.get(

@@ -24,25 +24,23 @@ const BASE_URL = process.env.E2E_BASE_URL ?? "http://localhost:3000";
 
 export default defineConfig({
   testDir: "./e2e",
+  // Ouvre une session par role avant toute la suite. Voir e2e/global-setup.ts.
+  globalSetup: "./e2e/global-setup.ts",
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
 
   // Un seul worker, y compris en local.
   //
-  // Constat du 29/08 : les parcours se connectent tous aux mêmes comptes de
-  // `seed_test_data`, et `LoginView` porte `AuthRateThrottle`. Avec plusieurs
-  // workers, la limitation se déclenche et la connexion échoue — le test
-  // s'arrête alors sur `/login` avec une erreur qui ressemble à un défaut
-  // fonctionnel alors que c'est une contrainte d'infrastructure.
+  // La cause historique — `AuthRateThrottle` (auth: 10/minute) declenche par
+  // une connexion par test — est levee : `global-setup.ts` ouvre une session
+  // par role, une seule fois, et `seConnecter` la restaure (voir
+  // e2e/fixtures/sessions.ts).
   //
-  // Les parcours partagent de surcroît un unique jeu de données : les faire
-  // tourner en parallèle les rendrait dépendants de leur ordre d'exécution.
-  //
-  // Le coût est modéré : les projets `routage` et `selecteurs` prennent
-  // quelques secondes de plus, les parcours dominent de toute façon le temps
-  // total. La piste pour lever cette limite serait un `storageState` partagé,
-  // à ouvrir si la suite s'allonge.
+  // La seconde raison demeure : les parcours partagent un unique jeu de
+  // donnees et le mutent (accepter une contre-proposition la consomme). Les
+  // paralleliser les rendrait dependants de leur ordre d'execution. A relever
+  // seulement une fois les mises en place rendues independantes.
   workers: 1,
   reporter: process.env.CI ? [["github"], ["list"]] : [["list"]],
 
