@@ -372,7 +372,7 @@ au dictionnaire. C'est pourquoi `stats_corridors.py` est un module séparé mais
 |---|---|---|---|
 | **B-5** Endpoint transverse des demandes reçues | ✅ **fait** | `56c2da7` | 6 tests, dont l'exposition sur `/api/v1/` |
 | **T2.1** Boîte de réception — **web** | ✅ **fait** | `199b302` | Test de consolidation vert contre backend réel |
-| **T2.1** Boîte de réception — **mobile** | ⏳ à faire | — | L'écran actuel liste les trajets, à transformer |
+| **T2.1** Boîte de réception — **mobile** | ✅ **fait** | `88ea43a` | 129 tests mobile, lint propre |
 | **T4.1** Missions segmentées — web + mobile | ⏳ à faire | — | — |
 
 #### Un défaut d'infrastructure de test, trouvé au passage
@@ -390,6 +390,22 @@ réutiliser la session — est notée pour le jour où la suite s'allongera.
 
 **Deuxième fois** qu'un problème du socle de tests se déguise en défaut produit, après la fixture
 qui sondait la mauvaise URL de santé. Un socle de tests demande la même défiance qu'un code métier.
+
+#### T2.1 mobile — une régression de navigation, introduite puis corrigée
+
+En remplaçant la liste de trajets par la liste de demandes, j'ai rendu `requests/[jobId]`
+**inatteignable depuis l'interface** : son seul point d'entrée était la carte de trajet que je
+venais de supprimer. L'écran restait adressable par notification, mais un transporteur ne pouvait
+plus traiter d'affilée toutes les demandes d'un même corridor.
+
+Le corridor affiché sur chaque carte est devenu tappable et y ramène. **Leçon** : remplacer un
+écran, c'est aussi hériter de ses rôles de navigation — vérifier ce qui y menait avant de le
+retirer.
+
+`RequestCard` a été **réutilisé plutôt que doublé** : il portait déjà les trois actions et la
+contre-proposition. Une prop optionnelle ajoute le contexte du trajet, qui n'a de sens que dans la
+liste consolidée. C'est la deuxième fois du lot que la question « ce composant existe-t-il déjà ? »
+évite une duplication, après le hook `useMyReturnTrips`.
 
 #### Le test T2.1 vérifiait la mauvaise chose
 
