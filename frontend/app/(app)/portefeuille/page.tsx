@@ -19,33 +19,16 @@ import {
   Loader2,
   RefreshCw,
 } from "lucide-react";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import {
+  getWallet,
+  requestWithdrawal,
+  type Portefeuille as WalletData,
+} from "@/lib/services/wallet";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDateTime } from "@/lib/format";
 import { useToast } from "@/components/ui/Toast";
-
-interface WalletHistoryItem {
-  kind: "ESCROW" | "WITHDRAWAL";
-  status: string;
-  job_id?: number;
-  id?: number;
-  gross?: number;
-  net?: number;
-  amount?: number;
-  bank_details?: string;
-  date: string;
-}
-
-interface WalletData {
-  available: number;
-  pending_net: number;
-  released_net: number;
-  cod_debt: number;
-  withdrawals_total: number;
-  cod_debts: { job_id: number; amount: number }[];
-  history: WalletHistoryItem[];
-}
 
 export default function WalletPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -67,8 +50,7 @@ export default function WalletPage() {
     setLoading(true);
     setError(false);
     try {
-      const d = await apiClient.get<WalletData>("/api/wallet/");
-      setData(d);
+      setData(await getWallet());
     } catch (_e) {
       setError(true);
     } finally {
@@ -94,10 +76,7 @@ export default function WalletPage() {
     }
     setSubmitting(true);
     try {
-      await apiClient.post("/api/wallet/withdrawals/", {
-        amount: val.toFixed(2),
-        bank_details: bankDetails.trim(),
-      });
+      await requestWithdrawal(val, bankDetails.trim());
       showToast("success", t.withdrawSuccess);
       setAmount("");
       setBankDetails("");
