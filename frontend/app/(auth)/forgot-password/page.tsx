@@ -18,10 +18,9 @@ export default function ForgotPasswordPage() {
 
     setIsSubmitting(true);
     try {
-      const { apiClient } = await import("@/lib/api/client");
-      await apiClient.post("/api/auth/password-reset/", {
-        email: email.trim().toLowerCase(),
-      });
+      // Import dynamique conserve : le service n est charge qu a l envoi.
+      const { requestPasswordReset } = await import("@/lib/services/auth");
+      await requestPasswordReset(email.trim().toLowerCase());
     } catch {
       // Always show success to prevent email enumeration
     } finally {
@@ -40,9 +39,7 @@ export default function ForgotPasswordPage() {
         <h1 className="text-2xl font-bold text-white mb-2">
           {t.forgotPassword.title}
         </h1>
-        <p className="text-blue-200 text-sm">
-          {t.forgotPassword.subtitle}
-        </p>
+        <p className="text-blue-200 text-sm">{t.forgotPassword.subtitle}</p>
       </div>
 
       <div className="px-6 py-8">

@@ -3,7 +3,13 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import {
+  getMyOffers,
+  getTransporterKpis,
+  withdrawOffer,
+  type OffreEnvoyee as ApiOffer,
+} from "@/lib/services/offers";
 import { useToast } from "@/components/ui/Toast";
 import { OfferStatusCard } from "@/components/offers/OfferStatusCard";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -29,23 +35,6 @@ import { formatTND } from "@/lib/format";
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
 /* -------------------------------------------------------------------------- */
-
-interface ApiOffer {
-  id: number;
-  job: number;
-  status: string;
-  total_price: string;
-  price_net: string;
-  commission_amount: string;
-  message: string;
-  job_pickup: string;
-  job_dropoff: string;
-  job_type: string;
-  job_date: string;
-  client_name: string;
-  valid_until: string;
-  created_at: string;
-}
 
 export interface MappedOffer {
   id: number;
@@ -218,18 +207,9 @@ export default function MyOffersPage() {
     async (silent = false) => {
       try {
         if (!silent) setRefreshing(true);
-        const data = await apiClient.get<ApiOffer[] | { results: ApiOffer[] }>(
-          "/api/offers/my/",
-        );
-        const list = Array.isArray(data) ? data : (data.results ?? []);
-        setOffers(list.map(mapApiOffer));
-        // KPIs from the stats endpoint (non-blocking)
-        apiClient
-          .get<{ active_offers: number; potential_earnings: number }>(
-            "/api/transporter/stats/",
-          )
-          .then(setKpis)
-          .catch(() => setKpis(null));
+        setOffers((await getMyOffers()).map(mapApiOffer));
+        // Indicateurs non bloquants : le service rend null s ils echouent.
+        void getTransporterKpis().then(setKpis);
       } catch (e: unknown) {
         console.error("Failed to fetch offers:", e);
         if (!silent) {
@@ -269,7 +249,7 @@ export default function MyOffersPage() {
     if (!withdrawTarget) return;
     setWithdrawing(true);
     try {
-      await apiClient.post(`/api/offers/${withdrawTarget.id}/withdraw/`, {});
+      await withdrawOffer(withdrawTarget.id);
       showToast("success", t.myOfferCard.withdrawSuccess);
       setWithdrawTarget(null);
       await fetchOffers();

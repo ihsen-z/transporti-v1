@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
-import { apiClient } from "@/lib/api/client";
+import { getUserRole } from "@/lib/services/auth";
 import { useAuth } from "@/hooks/useAuth";
 import ClientProfilePage from "./ClientProfilePage";
 import TransporterProfilePage from "./TransporterProfilePage";
@@ -37,10 +37,7 @@ export default function ProfilePage() {
     // For other users, call the lightweight role endpoint
     const fetchRole = async () => {
       try {
-        const data = await apiClient.get<{ id: number; role: string }>(
-          `/api/user/${userId}/role/`,
-        );
-        setTargetRole(data.role?.toUpperCase() || "CLIENT");
+        setTargetRole(await getUserRole(userId));
       } catch {
         // Fallback: default to CLIENT if role endpoint fails
         setTargetRole("CLIENT");

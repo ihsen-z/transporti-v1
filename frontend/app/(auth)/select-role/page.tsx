@@ -73,16 +73,17 @@ export default function SelectRolePage() {
           </h1>
           <Sparkles className="w-5 h-5 text-accent-300" />
         </div>
-        <p className="text-blue-200 text-sm">
-          {t.auth.selectRoleSubtitle}
-        </p>
+        <p className="text-blue-200 text-sm">{t.auth.selectRoleSubtitle}</p>
       </div>
 
       <div className="px-6 pt-6 pb-4 space-y-5">
         {/* Welcome message */}
         <div className="text-center">
           <p className="text-sm text-neutral-600">
-            {t.auth.welcomeUser.replace("{name}", user.first_name || user.name || "")}
+            {t.auth.welcomeUser.replace(
+              "{name}",
+              user.first_name || user.name || "",
+            )}
           </p>
         </div>
 
@@ -94,9 +95,7 @@ export default function SelectRolePage() {
 
         {/* Role Selection Cards */}
         <div className="space-y-3">
-          <p className="text-sm font-medium text-neutral-700">
-            {t.auth.iAmA}
-          </p>
+          <p className="text-sm font-medium text-neutral-700">{t.auth.iAmA}</p>
           <div className="grid grid-cols-1 gap-3">
             {roleOptions.map(({ value, icon: Icon, descriptionKey }) => (
               <button
@@ -116,9 +115,7 @@ export default function SelectRolePage() {
               >
                 <div
                   className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    selectedRole === value
-                      ? "bg-accent-100"
-                      : "bg-neutral-100"
+                    selectedRole === value ? "bg-accent-100" : "bg-neutral-100"
                   }`}
                 >
                   <Icon
@@ -137,7 +134,9 @@ export default function SelectRolePage() {
                         : "text-neutral-700"
                     }`}
                   >
-                    {(t.auth.roles as Record<string, string>)[value.toLowerCase()] || value}
+                    {(t.auth.roles as Record<string, string>)[
+                      value.toLowerCase()
+                    ] || value}
                   </span>
                   <span className="text-sm text-neutral-500 mt-0.5 block">
                     {descriptionKey === "clientDescription"
@@ -148,8 +147,18 @@ export default function SelectRolePage() {
                 {selectedRole === value && (
                   <div className="ms-auto flex-shrink-0 mt-1">
                     <div className="w-5 h-5 rounded-full bg-accent-500 flex items-center justify-center">
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-3 h-3 text-white"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                        strokeWidth={3}
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     </div>
                   </div>

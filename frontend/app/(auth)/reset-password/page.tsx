@@ -37,12 +37,9 @@ export default function ResetPasswordPage() {
     setError("");
 
     try {
-      const { apiClient } = await import("@/lib/api/client");
-      await apiClient.post("/api/auth/password-reset/confirm/", {
-        uid,
-        token,
-        new_password: newPassword,
-      });
+      // Import dynamique conserve : le service n est charge qu a l envoi.
+      const { confirmPasswordReset } = await import("@/lib/services/auth");
+      await confirmPasswordReset(uid, token, newPassword);
       setSuccess(true);
     } catch (err: unknown) {
       const { ApiError } = await import("@/lib/api/client");
@@ -68,9 +65,7 @@ export default function ResetPasswordPage() {
           <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto">
             <AlertTriangle className="w-8 h-8 text-red-500" />
           </div>
-          <p className="text-neutral-600">
-            {t.resetPassword.invalidDesc}
-          </p>
+          <p className="text-neutral-600">{t.resetPassword.invalidDesc}</p>
           <Link
             href="/forgot-password"
             className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-medium transition-colors"
@@ -92,9 +87,7 @@ export default function ResetPasswordPage() {
         <h1 className="text-2xl font-bold text-white mb-2">
           {t.resetPassword.title}
         </h1>
-        <p className="text-blue-200 text-sm">
-          {t.resetPassword.subtitle}
-        </p>
+        <p className="text-blue-200 text-sm">{t.resetPassword.subtitle}</p>
       </div>
 
       <div className="px-6 py-8">

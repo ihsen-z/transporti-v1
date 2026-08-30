@@ -105,10 +105,10 @@ export default function RegisterPage() {
         <div className="flex items-center justify-center gap-2 mb-3">
           <AuthLogo />
         </div>
-        <h1 className="text-2xl font-bold text-white mb-2">{t.auth.registerTitle}</h1>
-        <p className="text-blue-200 text-sm">
-          {t.auth.registerSubtitle}
-        </p>
+        <h1 className="text-2xl font-bold text-white mb-2">
+          {t.auth.registerTitle}
+        </h1>
+        <p className="text-blue-200 text-sm">{t.auth.registerSubtitle}</p>
       </div>
 
       <>
@@ -149,7 +149,9 @@ export default function RegisterPage() {
                   <span
                     className={`text-sm font-medium ${selectedRole === value ? "text-accent-700" : "text-neutral-600"}`}
                   >
-                    {(t.auth.roles as unknown as Record<string, string>)[value] || value}
+                    {(t.auth.roles as unknown as Record<string, string>)[
+                      value
+                    ] || value}
                   </span>
                 </button>
               ))}
