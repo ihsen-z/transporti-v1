@@ -12,20 +12,89 @@
 
 **Dernière mise à jour** : 29/08/2026 · **Branche de travail** : `feature/lot0-fondations-retour-first`
 
-### Lot 0 — Fondations et filet de sécurité · **en cours, 4 tâches sur 6**
+> **Les dates sont celles des commits**, relevées par `git show -s --format=%cd`, et non des
+> estimations reconstituées. Une colonne *Date* accompagne chaque tâche, chaque section du journal
+> porte la date des travaux qu'elle décrit, et la chronologie ci-dessous liste chaque modification
+> jour par jour. Une plage (`27 → 28/08`) signale un lot étalé sur plusieurs jours ; un tiret, une
+> tâche sans commit — non faite, ou constatée déjà en place.
 
-| Tâche | État | Commit | Preuve |
-|---|---|---|---|
-| 0.1 Durcir la porte de merge | ✅ **fait** | `cb66d5b` | Tube `\| head -100` retiré ; le code de sortie d'ESLint remonte |
-| 0.2 Renommer les routes — **vague A** (4 routes du pivot) | ✅ **fait** | `cb66d5b` | 4 redirections en `308` vers la bonne cible, 4 nouvelles routes en `200` |
-| 0.2 Renommer les routes — **vague B** (7 routes restantes) | ✅ **fait** | `cb0d6d0` | 11 redirections vérifiées en `308`, 11 nouvelles routes en `200`, `next build` vert |
-| 0.3 Annuler le mode sombre métier | ✅ **fait** | `cb66d5b` | `ThemeToggle` retiré d'`AppSidebar` + `ForceLightTheme` dans les deux layouts |
-| 0.4 Socle Playwright — projet **`routage`** | ✅ **fait, actif en CI** | `731bc29` | **34 tests, 1,6 s**, sans binaire de navigateur ni backend |
-| 0.4 Socle Playwright — projet **`parcours`** | ✅ **exécutable** | `731bc29`, `05109e6` | Décision 5 tranchée voie A : Chromium installé, étape de CI avec cache. Reste non bloquant tant qu'aucun backend de recette n'est joignable |
-| 0.4 Socle Playwright — projet **`selecteurs`** | ✅ **fait, bloquant en CI** | `05109e6` | **3 tests verts dans Chromium.** Garde-fou des `data-testid`, sans backend |
-| 0.5 Recette visuelle en arabe | ⏳ à faire | — | Demande un œil humain, non automatisable |
+#### Chronologie des modifications · *27 → 29/08/2026*
 
-#### Comment 0.4 a été livré à moitié, sans trancher la décision 5
+Chaque modification, dans l'ordre où elle a été faite. Les commits `docs(plan)` sont les mises à
+jour de ce document lui-même : ils sont comptés à part, pour ne pas gonfler le décompte des
+livraisons.
+
+**27/08/2026** — 5 modification(s) de code, 3 mise(s) à jour du plan
+
+| Commit | Objet |
+|---|---|
+| `cb66d5b` | feat(web): Lot 0 - annule le mode sombre metier et renomme les routes du pivot |
+| `cb0d6d0` | feat(web): Lot 0.2 vague B - acheve le renommage de l arborescence metier |
+| `731bc29` | test(web): Lot 0.4 - socle Playwright, integrite de routage active en CI |
+| `1e1b5cd` | docs(plan): Marque le lot 0 livre a une reserve pres |
+| `24425cd` | feat(backend): Lot 1 - capacite structuree et ventilation par corridor |
+| `f14178a` | docs(plan): Lot 1 backend livre, corrige le constat B-3 |
+| `05109e6` | feat(web): Lot 1 T1.2 - capacite structuree et selecteurs, decision 5 voie A |
+| `bc6e817` | docs(plan): Decision 5 tranchee, T1.2 web livre, deuxieme correction du risque n 1 |
+
+**28/08/2026** — 8 modification(s) de code, 7 mise(s) à jour du plan
+
+| Commit | Objet |
+|---|---|
+| `5590520` | feat(mobile): Lot 1 T1.2 - aligne la publication d un retour sur le web |
+| `eedbac8` | docs(plan): T1.2 livre sur les deux plateformes, premier test de la decision 6 |
+| `8acce1a` | feat(web): Lot 1 T1.3 - inventaire des trajets retour |
+| `5cc58c4` | docs(plan): T1.3 web livre, troisieme confirmation de la lecon d estimation |
+| `cc7c8b2` | feat(mobile): Lot 1 T1.3 - inventaire des trajets retour |
+| `7a899e5` | docs(plan): T1.3 livre sur les deux plateformes |
+| `0cc0682` | feat(web): Lot 1 T4.4 - amorce de retour a vide en fin de mission |
+| `95fa62a` | feat(mobile): Lot 1 T4.4 - amorce de retour a vide sur l Accueil |
+| `aa22a28` | docs(plan): T4.4 livre sur les deux plateformes |
+| `5255baa` | feat(web+mobile): Lot 1 T1.1 - le hub passe de « mes missions » a « mes retours » |
+| `700c7a0` | docs(plan): Lot 1 termine, les 7 livrables sur les deux plateformes |
+| `3168353` | fix: Recette du parcours A contre un vrai backend, 3 defauts corriges |
+| `1c80de4` | docs(plan): Recette du 27/08, reserve levee sur le parcours A |
+| `56c2da7` | feat(backend): Lot 2 - endpoint transverse des demandes recues (T2.1) |
+| `a6e4efc` | docs(plan): Corrige le constat T2.1 et consigne B-5 |
+
+**29/08/2026** — 11 modification(s) de code, 8 mise(s) à jour du plan
+
+| Commit | Objet |
+|---|---|
+| `199b302` | feat(web): Lot 2 T2.1 - la boite de reception transporteur |
+| `2e23c19` | docs(plan): Lot 2 en cours, B-5 et T2.1 web livres |
+| `88ea43a` | feat(mobile): Lot 2 T2.1 - la boite de reception consolidee |
+| `a03c1f9` | docs(plan): T2.1 livre sur les deux plateformes |
+| `012e8fd` | feat(web): Lot 2 T4.1 - segmente les missions par ce qu elles attendent |
+| `8f6ec70` | docs(plan): Lot 2 termine |
+| `d6c440b` | feat(web): Lot 3 C1.2 - l economie estimee, calculee serveur |
+| `5f94b09` | docs(plan): Lot 3 en cours, une decision metier bloque l economie |
+| `0511fc8` | feat(mobile): Lot 3 C1.2 - affiche l economie estimee |
+| `97cbf37` | feat(web): Lot 3 C2.1 - les expeditions triees par attente d action |
+| `6913829` | docs(plan): C1.2 et C2.1 web livres, le socle de tests est a refaire |
+| `3a6fd50` | test(e2e): Ouvre une session par role au lieu d une par test |
+| `67ca874` | chore(graph): Met a jour le graphe de connaissances (code seul) |
+| `4a970ba` | fix(reservation): Rend le paiement atteignable apres une contre-proposition |
+| `04e6a6b` | docs(plan): Le socle de parcours est vert, 3 defauts produit corriges |
+| `b74b346` | feat(mobile): Trie les demandes envoyees par qui doit agir (C2.1) |
+| `f80743f` | docs(plan): C2.1 mobile livre, et le blocage de C1.2 etait mal diagnostique |
+| `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
+| `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
+
+### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
+
+| Tâche | État | Commit | Date | Preuve |
+|---|---|---|---|---|
+| 0.1 Durcir la porte de merge | ✅ **fait** | `cb66d5b` | 27/08/2026 | Tube `\| head -100` retiré ; le code de sortie d'ESLint remonte |
+| 0.2 Renommer les routes — **vague A** (4 routes du pivot) | ✅ **fait** | `cb66d5b` | 27/08/2026 | 4 redirections en `308` vers la bonne cible, 4 nouvelles routes en `200` |
+| 0.2 Renommer les routes — **vague B** (7 routes restantes) | ✅ **fait** | `cb0d6d0` | 27/08/2026 | 11 redirections vérifiées en `308`, 11 nouvelles routes en `200`, `next build` vert |
+| 0.3 Annuler le mode sombre métier | ✅ **fait** | `cb66d5b` | 27/08/2026 | `ThemeToggle` retiré d'`AppSidebar` + `ForceLightTheme` dans les deux layouts |
+| 0.4 Socle Playwright — projet **`routage`** | ✅ **fait, actif en CI** | `731bc29` | 27/08/2026 | **34 tests, 1,6 s**, sans binaire de navigateur ni backend |
+| 0.4 Socle Playwright — projet **`parcours`** | ✅ **exécutable** | `731bc29`, `05109e6` | 27/08/2026 | Décision 5 tranchée voie A : Chromium installé, étape de CI avec cache. Reste non bloquant tant qu'aucun backend de recette n'est joignable |
+| 0.4 Socle Playwright — projet **`selecteurs`** | ✅ **fait, bloquant en CI** | `05109e6` | 27/08/2026 | **3 tests verts dans Chromium.** Garde-fou des `data-testid`, sans backend |
+| 0.5 Recette visuelle en arabe | ⏳ à faire | — | — | Demande un œil humain, non automatisable |
+
+#### Comment 0.4 a été livré à moitié, sans trancher la décision 5 · *27/08/2026*
 
 Le téléchargement du binaire Chromium (~150 Mo) ayant été refusé le 26/08, le socle a été **scindé en
 deux projets Playwright séparés par ce qu'ils exigent pour tourner**. Cela permet d'encaisser la
@@ -47,7 +116,7 @@ donc **sans filet réel** : l'intégrité de routage ne couvre aucun gestionnair
 demeure ouverte, mais son coût a baissé — il ne reste plus qu'à installer le binaire et lever les
 `fixme`, tout le code de test est écrit.
 
-#### Convention de sélecteurs retenue pour les tests web
+#### Convention de sélecteurs retenue pour les tests web · *27/08/2026*
 
 Reprise de celle du mobile (lots L6.5 et L6.7) plutôt que d'en inventer une seconde :
 `data-testid="<ecran>-<element>"` en kebab-case — par exemple `recherche-depart`,
@@ -58,14 +127,9 @@ Reprise de celle du mobile (lots L6.5 et L6.7) plutôt que d'en inventer une sec
 attributs. Chaque lot doit les poser sur les écrans qu'il touche, sans quoi les tests `parcours`
 échoueront sur des sélecteurs absents et non sur de vrais défauts.
 
-#### Convention de sélecteurs retenue pour les tests web
+#### Décidé en chemin au lot 0, hors plan initial · *27/08/2026*
 
-Reprise de celle du mobile (lots L6.5 et L6.7) plutôt que d'en inventer une seconde :
-`data-testid="<ecran>-<element>"` en kebab-case — par exemple `recherche-depart`,
-`retours-nouveau-submit`, `demandes-recues-accepter`. Le mobile utilise déjà
-`testID="change-password-submit"`, `testID="edit-profile-phone"`.
-
-**Décidé en chemin, hors plan initial** — la classe `dark` posée sur `<html>` par la zone
+**Le mode sombre de l'administration débordait sur les écrans métier** — la classe `dark` posée sur `<html>` par la zone
 d'administration survivait à une navigation côté client vers les écrans métier. D'où la création de
 `components/layout/ForceLightTheme.tsx`, monté dans les layouts `(app)` et `(marketing)`. Non prévu,
 nécessaire.
@@ -79,7 +143,7 @@ leur séparation relève du lot 4. Documenté comme dépendance.
 tout commit. Leçon pour la vague B et les lots suivants : **ne jamais réécrire un motif de route sans
 exclure les chemins commençant par `/api/`.**
 
-### Lot 0 · **terminé, à une réserve près**
+### Lot 0 · **terminé, à une réserve près** · *27/08/2026*
 
 Cinq tâches sur six sont livrées. Il reste **0.5**, la recette visuelle en arabe, qui demande un œil
 humain, et la moitié « navigateur » de 0.4, suspendue à la décision 5.
@@ -89,26 +153,26 @@ humain, et la moitié « navigateur » de 0.4, suspendue à la décision 5.
 publiés (T1.3). Première tâche du lot : les trois éléments backend B-1, B-2 et B-3a, puisque les
 écrans en dépendent.
 
-### Lot 1 — Le retour à vide capté · ✅ **TERMINÉ**
+### Lot 1 — Le retour à vide capté · ✅ **TERMINÉ** · *27 → 28/08/2026*
 
-| Tâche | État | Commit | Preuve |
-|---|---|---|---|
-| **B-1** Volume de véhicule optionnel | ✅ **fait** | `24425cd` | `TrustProfile.vehicle_capacity_m3`, migration `trust/0011` |
-| **B-2** Capacité disponible structurée | ✅ **fait** | `24425cd` | `available_capacity_kg` + `_m3`, migration `logistics/0015`, 6 sérialiseurs |
-| **B-3a** Km à vide valorisés, taux de remplissage | ✅ **déjà en place** | — | **Constat corrigé, voir ci-dessous** |
-| **B-3b** Revenu par corridor | ✅ **fait** | `24425cd` | `logistics/stats_corridors.py`, réconciliation avec K4 sous test |
-| T4.4 Amorce de fin de mission — **web** | ✅ **fait** | `0cc0682` | Composant autonome, deux garde-fous, correspondance de gouvernorat tolérante |
-| T4.4 Amorce de fin de mission — **mobile** | ✅ **fait** | `95fa62a` | Sur l'Accueil : le transporteur n'a pas de détail de mission sur mobile |
-| T1.2 Publier un retour — **web** | ✅ **fait** | `05109e6` | Capacité structurée envoyée, 2 saisies rendues tactiles, `data-testid` posés |
-| T1.2 Publier un retour — **mobile** | ✅ **fait** | `5590520` | Hook jumeau du web, 125 tests mobile verts, lint propre |
-| T1.3 Inventaire des trajets publiés — **web** | ✅ **fait** | `8acce1a` | Pur frontend. Test `fixme` levé, l'inventaire devient exigible |
-| T1.3 Inventaire des trajets publiés — **mobile** | ✅ **fait** | `cc7c8b2` | 125 tests mobile verts, lint propre. Écran hors barre d'onglets, choix assumé |
-| T1.1 Hub « Mes retours » — **web + mobile** | ✅ **fait** | `5255baa` | Section extraite des deux côtés, km valorisés, retours en ligne |
+| Tâche | État | Commit | Date | Preuve |
+|---|---|---|---|---|
+| **B-1** Volume de véhicule optionnel | ✅ **fait** | `24425cd` | 27/08/2026 | `TrustProfile.vehicle_capacity_m3`, migration `trust/0011` |
+| **B-2** Capacité disponible structurée | ✅ **fait** | `24425cd` | 27/08/2026 | `available_capacity_kg` + `_m3`, migration `logistics/0015`, 6 sérialiseurs |
+| **B-3a** Km à vide valorisés, taux de remplissage | ✅ **déjà en place** | — | — | **Constat corrigé, voir ci-dessous** |
+| **B-3b** Revenu par corridor | ✅ **fait** | `24425cd` | 27/08/2026 | `logistics/stats_corridors.py`, réconciliation avec K4 sous test |
+| T4.4 Amorce de fin de mission — **web** | ✅ **fait** | `0cc0682` | 28/08/2026 | Composant autonome, deux garde-fous, correspondance de gouvernorat tolérante |
+| T4.4 Amorce de fin de mission — **mobile** | ✅ **fait** | `95fa62a` | 28/08/2026 | Sur l'Accueil : le transporteur n'a pas de détail de mission sur mobile |
+| T1.2 Publier un retour — **web** | ✅ **fait** | `05109e6` | 27/08/2026 | Capacité structurée envoyée, 2 saisies rendues tactiles, `data-testid` posés |
+| T1.2 Publier un retour — **mobile** | ✅ **fait** | `5590520` | 28/08/2026 | Hook jumeau du web, 125 tests mobile verts, lint propre |
+| T1.3 Inventaire des trajets publiés — **web** | ✅ **fait** | `8acce1a` | 28/08/2026 | Pur frontend. Test `fixme` levé, l'inventaire devient exigible |
+| T1.3 Inventaire des trajets publiés — **mobile** | ✅ **fait** | `cc7c8b2` | 28/08/2026 | 125 tests mobile verts, lint propre. Écran hors barre d'onglets, choix assumé |
+| T1.1 Hub « Mes retours » — **web + mobile** | ✅ **fait** | `5255baa` | 28/08/2026 | Section extraite des deux côtés, km valorisés, retours en ligne |
 
 **173 tests backend passent**, dont 13 nouveaux. Aucune régression. Côté web : 34 tests de routage,
 3 tests de sélecteurs, `tsc --noEmit` propre.
 
-#### Deuxième correction du même constat — le « risque n° 1 » était faux deux fois
+#### Deuxième correction du même constat — le « risque n° 1 » était faux deux fois · *27/08/2026*
 
 Le plan initial classait en risque **élevé** l'absence de pré-remplissage du véhicule, dont dépend
 la promesse des 30 secondes. Ce risque a été démenti en deux temps :
@@ -125,7 +189,7 @@ matching quantitatif restait donc impossible malgré des données présentes de 
 à 80 %. Vérifier l'existant avant d'estimer — deux fois de suite, l'estimation initiale portait sur
 du travail déjà fait.
 
-#### Ce que T1.2 a réellement livré côté web
+#### Ce que T1.2 a réellement livré côté web · *27/08/2026*
 
 - `hooks/useVehiclePrefill.ts` — extraction hors d'une page de 562 lignes (CLAUDE.md §4), lecture du volume en plus du poids, et **aucune déduction de l'un vers l'autre**
 - `available_capacity_kg` / `_m3` transmis au backend, en plus du libellé texte qui reste la description lisible
@@ -135,7 +199,7 @@ du travail déjà fait.
 **Reste ouvert sur T1.2** : après publication, la redirection va vers `/jobs` — elle devra pointer
 vers `/retours`, l'inventaire, dès que T1.3 existera.
 
-#### T1.2 mobile — premier écran livré des deux côtés
+#### T1.2 mobile — premier écran livré des deux côtés · *28/08/2026*
 
 La décision 6 s'applique pour la première fois. Le mobile reçoit un **hook jumeau**
 (`mobile/src/features/trips/components/publish/useVehiclePrefill.ts`, pendant de
@@ -153,7 +217,7 @@ a rendu l'ajout net, là où le web imposait d'extraire un hook d'une page de 56
 **Coût réel de la livraison simultanée sur cet écran** : environ 35 % du temps du web, sous
 l'estimation de 40 % retenue au §4. À reconfirmer sur T4.4, plus lourd.
 
-#### T1.3 web — troisième fois que l'existant couvre plus que prévu
+#### T1.3 web — troisième fois que l'existant couvre plus que prévu · *28/08/2026*
 
 L'inventaire était estimé comme un chantier mêlant backend et frontend. Il s'est révélé **du pur
 frontend** : `jobs/transporter/?type=owned` fournit la liste, `ReturnTripManageView` porte l'édition
@@ -178,7 +242,7 @@ entrée parmi d'autres. « Compléter mon aller » descend en secondaire, confor
 `lib/services/returnTrips.ts` est le **premier fichier de service par domaine** du projet. Le lot 4
 pourra modeler dessus l'extraction des autres domaines.
 
-#### T1.3 mobile — une contrainte de charte qui déplace le point d'entrée
+#### T1.3 mobile — une contrainte de charte qui déplace le point d'entrée · *28/08/2026*
 
 La barre transporteur porte **4 onglets plus le bouton central**, réparti en deux moitiés autour de
 lui. Un cinquième onglet casserait cette mise en page. L'inventaire est donc déclaré `href: null` :
@@ -200,7 +264,7 @@ rencontré sur ce projet**, pas à une précaution théorique.
 et `neutral[600]` inexistants. Rappel que les deux plateformes ne partagent pas leur design system —
 relever les valeurs réelles avant d'écrire, ne pas transposer celles du web.
 
-#### T4.4 — l'écran de priorité 1, livré des deux côtés
+#### T4.4 — l'écran de priorité 1, livré des deux côtés · *28/08/2026*
 
 **Une différence structurelle découverte en implémentant.** Sur mobile,
 `mission/[id]` est un écran **client** — payer, confirmer la réception, noter — atteint depuis
@@ -226,7 +290,7 @@ anticipé.
 `setString`, nuance `cta[700]` inexistante), après les trois de T1.3. Le constat est désormais
 systématique et vaut consigne pour les lots suivants.
 
-#### T1.1 — le lot 1 est clos
+#### T1.1 — le lot 1 est clos · *28/08/2026*
 
 Le hub passe de « mes missions » à « mes retours », des deux côtés. Trois blocs, dans l'ordre de ce
 qui rapporte : l'amorce conditionnelle, les kilomètres valorisés, les retours en ligne.
@@ -242,7 +306,7 @@ mais `data ?? []`, qui produit une union `T[] | never[]` : TypeScript ne résout
 `.filter` sur une union de types tableau. Corrigé et documenté sur place, pour que le prochain
 développeur ne refasse pas la même recherche.
 
-#### Bilan du lot 1
+#### Bilan du lot 1 · *28/08/2026*
 
 | Livrable | Web | Mobile |
 |---|---|---|
@@ -264,7 +328,7 @@ inventaire. C'est le parcours qui porte la métrique unique.
 T1.3 pur frontend). La règle inscrite au plan — vérifier l'existant avant d'estimer — vaut pour les
 lots suivants, dont les durées sont probablement surévaluées de la même façon.
 
-#### Recette du 27/08 — première exécution contre un backend réel
+#### Recette du 27/08 — première exécution contre un backend réel · *27/08/2026*
 
 Backend démarré, migrations du lot 1 appliquées, base peuplée. **Parcours A : 4 tests sur 4.**
 
@@ -310,7 +374,7 @@ reste sans couverture** — or c'est lui qui traverse les 12 gestionnaires de `j
 lot 2 doit donc précéder le lot 4, ce que l'ordre du plan prévoit déjà, mais pour une raison
 supplémentaire : sans T2.1, le refactor du lot 4 se ferait toujours partiellement à l'aveugle.
 
-#### Lot 2 — B-5, l'endpoint qui manquait
+#### Lot 2 — B-5, l'endpoint qui manquait · *28/08/2026*
 
 `trip-requests/my/` existait côté **client** ; aucun vis-à-vis ne permettait au transporteur de
 lire ses demandes tous trajets confondus. `ReceivedTripRequestsView` le fournit.
@@ -324,7 +388,7 @@ ment. Il renvoie 400.
 6 tests, dont un qui vérifie l'exposition sur `/api/v1/` : la règle des deux surfaces est désormais
 testée, plus seulement écrite.
 
-#### Défaut que j'avais introduit au lot 1, corrigé
+#### Défaut que j'avais introduit au lot 1, corrigé · *28/08/2026*
 
 Mon `trips/api/useMyReturnTrips.ts` doublonnait un `requests/api/useMyReturnTrips.ts` préexistant —
 **même clé react-query `['myReturnTrips']`**, filtre et forme différents. Deux hooks sur une même
@@ -335,13 +399,13 @@ Consolidé sur un hook unique. **Leçon** : avant de créer un fichier dans une 
 mal, chercher le nom qu'on s'apprête à employer. Le coût de la vérification est nul, celui de la
 collision de cache est invisible jusqu'à ce qu'il ne le soit plus.
 
-#### Enseignement de méthode — la parité i18n est un coût récurrent
+#### Enseignement de méthode — la parité i18n est un coût récurrent · *28/08/2026*
 
 Trois clés ajoutées côté mobile, en français **et** en arabe. Le projet maintient une parité stricte
 (1 770 clés FR contre 1 767 AR côté web). Chaque écran des lots suivants portera ce coût : à ne pas
 oublier dans les estimations, et à vérifier avant chaque livraison.
 
-#### Correction d'un constat de l'audit — B-3a n'était pas manquant
+#### Correction d'un constat de l'audit — B-3a n'était pas manquant · *27/08/2026*
 
 L'analyse backend du 26/08 annonçait que les KPI du pivot étaient absents. **C'était faux pour deux
 d'entre eux.** `logistics/stats.py` expose déjà `km_transformed` (somme de `distance_km` sur les
@@ -355,7 +419,7 @@ Conséquence : B-3 était surestimé d'environ 1,5 jour. Le gain est réinvesti 
 prospective de T5.4 (`underserved_corridors`), qui n'était pas prévue au plan initial et qui
 transforme un écran rétrospectif en invitation à publier.
 
-#### Découverte à retenir — `stats.py` porte un contrat explicite
+#### Découverte à retenir — `stats.py` porte un contrat explicite · *27/08/2026*
 
 > *« Every figure shown to a transporter anywhere in the product MUST come from
 > `get_transporter_stats()` … Frontends must never recompute these. »*
@@ -366,17 +430,17 @@ côté frontend**, et tout nouvel indicateur doit passer par `get_transporter_st
 au dictionnaire. C'est pourquoi `stats_corridors.py` est un module séparé mais **appelé depuis**
 `get_transporter_stats`, et non exposé directement.
 
-### Lot 2 — La boîte de réception transporteur · ✅ **TERMINÉ**
+### Lot 2 — La boîte de réception transporteur · ✅ **TERMINÉ** · *28 → 29/08/2026*
 
-| Tâche | État | Commit | Preuve |
-|---|---|---|---|
-| **B-5** Endpoint transverse des demandes reçues | ✅ **fait** | `56c2da7` | 6 tests, dont l'exposition sur `/api/v1/` |
-| **T2.1** Boîte de réception — **web** | ✅ **fait** | `199b302` | Test de consolidation vert contre backend réel |
-| **T2.1** Boîte de réception — **mobile** | ✅ **fait** | `88ea43a` | 129 tests mobile, lint propre |
-| **T4.1** Missions segmentées — **web** | ✅ **fait** | `012e8fd` | Onglet « À venir » séparé, onglet doublon retiré |
-| **T4.1** Missions segmentées — **mobile** | ✅ **sans objet** | — | La distinction est déjà rendue par `MissionCard` — voir ci-dessous |
+| Tâche | État | Commit | Date | Preuve |
+|---|---|---|---|---|
+| **B-5** Endpoint transverse des demandes reçues | ✅ **fait** | `56c2da7` | 28/08/2026 | 6 tests, dont l'exposition sur `/api/v1/` |
+| **T2.1** Boîte de réception — **web** | ✅ **fait** | `199b302` | 29/08/2026 | Test de consolidation vert contre backend réel |
+| **T2.1** Boîte de réception — **mobile** | ✅ **fait** | `88ea43a` | 29/08/2026 | 129 tests mobile, lint propre |
+| **T4.1** Missions segmentées — **web** | ✅ **fait** | `012e8fd` | 29/08/2026 | Onglet « À venir » séparé, onglet doublon retiré |
+| **T4.1** Missions segmentées — **mobile** | ✅ **sans objet** | — | — | La distinction est déjà rendue par `MissionCard` — voir ci-dessous |
 
-#### T4.1 — deux ajustements, pas une création
+#### T4.1 — deux ajustements, pas une création · *29/08/2026*
 
 **Quatrième fois que l'existant couvre plus que prévu.** `/jobs` portait déjà des onglets. Deux
 écarts réels subsistaient :
@@ -395,7 +459,7 @@ bouton) et `CompletedMissionsList` sépare déjà les missions terminées. La di
 existe pour rendre visible est donc déjà rendue. Ajouter des onglets à une liste de 0 à 3 éléments
 sur un écran défilant serait de la forme sans fond.
 
-#### Un piège d'environnement, tombé trois fois
+#### Un piège d'environnement, tombé trois fois · *29/08/2026*
 
 Lancer `npm run build` en laissant tourner le serveur de développement mélange les deux caches
 `.next` et produit des échecs qui ressemblent à des régressions — 16 tests rouges cette fois, 6
@@ -404,7 +468,7 @@ attendus. Ce n'est jamais le code.
 **Parade, désormais systématique : arrêter le serveur avant tout build.** Consigné ici parce que le
 diagnostic coûte plusieurs minutes à chaque fois et que rien dans le message d'erreur n'y mène.
 
-#### Un défaut d'infrastructure de test, trouvé au passage
+#### Un défaut d'infrastructure de test, trouvé au passage · *29/08/2026*
 
 T2.1 passait **seul** mais échouait en exécution complète, avec une erreur qui ressemblait à un
 défaut fonctionnel : le test s'arrêtait sur `/login`.
@@ -420,7 +484,7 @@ réutiliser la session — est notée pour le jour où la suite s'allongera.
 **Deuxième fois** qu'un problème du socle de tests se déguise en défaut produit, après la fixture
 qui sondait la mauvaise URL de santé. Un socle de tests demande la même défiance qu'un code métier.
 
-#### T2.1 mobile — une régression de navigation, introduite puis corrigée
+#### T2.1 mobile — une régression de navigation, introduite puis corrigée · *29/08/2026*
 
 En remplaçant la liste de trajets par la liste de demandes, j'ai rendu `requests/[jobId]`
 **inatteignable depuis l'interface** : son seul point d'entrée était la carte de trajet que je
@@ -436,24 +500,24 @@ contre-proposition. Une prop optionnelle ajoute le contexte du trajet, qui n'a d
 liste consolidée. C'est la deuxième fois du lot que la question « ce composant existe-t-il déjà ? »
 évite une duplication, après le hook `useMyReturnTrips`.
 
-#### Le test T2.1 vérifiait la mauvaise chose
+#### Le test T2.1 vérifiait la mauvaise chose · *29/08/2026*
 
 Sa première version vérifiait qu'un onglet s'affiche avec un compteur. Il serait passé sur un écran
 n'affichant **qu'un seul trajet** — c'est-à-dire sur l'ancien comportement, celui que T2.1 remplace.
 Il vérifie désormais la **consolidation** : deux demandes posées sur deux trajets différents doivent
 apparaître dans la même liste.
 
-### Lot 3 — La conversion client · ✅ **TERMINÉ**
+### Lot 3 — La conversion client · ✅ **TERMINÉ** · *29/08/2026*
 
-| Tâche | État | Commit | Preuve |
-|---|---|---|---|
-| **C1.2** Économie estimée — backend + web | ✅ **fait et VISIBLE** | `d6c440b`, `8bfe13e` | Grille recalibrée sur le prix dédié. E2E sorti de son `fixme` |
-| **C1.7** Alertes corridor | ✅ **sans objet** | — | Déjà listées, créées et supprimables dans `/recherche` |
-| **C1.2** Économie estimée — mobile | ✅ **fait** | `0511fc8` | 129 tests mobile, lint propre |
-| **C2.1** Expéditions triées par attente d'action — web | ✅ **fait** | `97cbf37` | 5 onglets, fusion des deux sources |
-| **C2.1** — mobile | ✅ **fait** | `b74b346` | 4 onglets, 13 tests, parité FR/AR, lint propre |
+| Tâche | État | Commit | Date | Preuve |
+|---|---|---|---|---|
+| **C1.2** Économie estimée — backend + web | ✅ **fait et VISIBLE** | `d6c440b`, `8bfe13e` | 29/08/2026 | Grille recalibrée sur le prix dédié. E2E sorti de son `fixme` |
+| **C1.7** Alertes corridor | ✅ **sans objet** | — | — | Déjà listées, créées et supprimables dans `/recherche` |
+| **C1.2** Économie estimée — mobile | ✅ **fait** | `0511fc8` | 29/08/2026 | 129 tests mobile, lint propre |
+| **C2.1** Expéditions triées par attente d'action — web | ✅ **fait** | `97cbf37` | 29/08/2026 | 5 onglets, fusion des deux sources |
+| **C2.1** — mobile | ✅ **fait** | `b74b346` | 29/08/2026 | 4 onglets, 13 tests, parité FR/AR, lint propre |
 
-#### ✅ Le socle de tests de parcours est réparé — 49 tests verts
+#### ✅ Le socle de tests de parcours est réparé — 49 tests verts · *29/08/2026*
 
 **Les trois parcours passent, et la suite est stable sur deux exécutions consécutives.**
 49 passés · 2 en attente (les deux `fixme` documentés plus bas) · 0 échec.
@@ -486,7 +550,7 @@ consommé) et le durcissement des deux préparations existantes.
 pouvaient rien préparer, et le test s'ignorait — la suite paraissait verte sans avoir rien vérifié.
 Elles lèvent désormais une erreur nommée quand l'inventaire existe mais que la préparation échoue.
 
-#### Ce que la réparation a mis au jour : le socle 0.4 était écrit contre des sélecteurs absents
+#### Ce que la réparation a mis au jour : le socle 0.4 était écrit contre des sélecteurs absents · *29/08/2026*
 
 Diff des `data-testid` attendus par les specs contre ceux réellement présents : **19 manquants**, sur
 six écrans. Les parcours B et C décrivaient un produit en partie non construit. `selecteurs.spec.ts`,
@@ -504,7 +568,7 @@ comportement. Trois cas ont été traités autrement, et ce sont les plus instru
 
 Les filtres de corridor sont par ailleurs des `<select>`, sur lesquels `fill()` échoue.
 
-#### 🐞 Trois défauts produit trouvés en suivant le parcours — commit `4a970ba`
+#### 🐞 Trois défauts produit trouvés en suivant le parcours — commit `4a970ba` · *29/08/2026*
 
 Le paiement après acceptation d'une contre-proposition **était inatteignable**. Trois défauts
 empilés, aucun visible en lecture de code, tous masqués par le même `catch` silencieux :
@@ -525,7 +589,7 @@ empilés, aucun visible en lecture de code, tous masqués par le même `catch` s
 C'est l'argument le plus concret en faveur du socle : aucun des trois ne se voyait en lisant le code,
 et le premier était **activement caché** par la clause qui l'avalait. Elle affiche désormais la cause.
 
-#### Réserves à connaître
+#### Réserves à connaître · *29/08/2026*
 
 - **`backend/test_workflows.py` échoue à l'import** (`PermissionDenied` dans `messaging`). C'est un
   script exécuté au niveau module, ramassé par le lanceur de tests ; il est antérieur à ces travaux
@@ -536,7 +600,7 @@ et le premier était **activement caché** par la clause qui l'avalait. Elle aff
   partagent toujours un jeu de données qu'ils mutent. À relever quand les préparations seront
   totalement indépendantes.
 
-#### C2.1 — un sixième endpoint orphelin, et deux défauts produit
+#### C2.1 — un sixième endpoint orphelin, et deux défauts produit · *29/08/2026*
 
 `trip-requests/my/` existait mais n'était **consommé nulle part** côté web : un client ayant envoyé
 une demande sur un trajet retour n'en avait aucune liste. « Mes expéditions » fusionne désormais les
@@ -550,7 +614,7 @@ Deux défauts trouvés en suivant le parcours, pas en lisant le code :
 Aucun des deux n'était visible en lecture de code. C'est l'argument le plus concret en faveur de la
 remise en état du socle de tests.
 
-#### ✅ C1.2 s'affiche — et le blocage n'était pas celui qu'on croyait
+#### ✅ C1.2 s'affiche — et le blocage n'était pas celui qu'on croyait · *29/08/2026*
 
 Le badge d'économie fonctionne : **70 DT** sur Sousse → Tunis (100 DT demandés contre 170 DT en
 dédié). Le test de bout en bout est sorti de son `fixme`.
@@ -595,7 +659,7 @@ le transport n'aurait aucun fondement. Le budget suggéré au client y reste don
 basculer seul sur la médiane des dédiés du corridor au-delà d'un seuil. C'est la seule mesure du bon
 marché ; elle est aujourd'hui du code mort, faute de transactions.
 
-#### Deux garde-fous posés en chemin
+#### Deux garde-fous posés en chemin · *29/08/2026*
 
 **`THROTTLING_DISABLED`, fermé par défaut.** La suite épuisait le plafond `user: 1000/hour` et
 échouait sur des 429 lus comme des défauts fonctionnels. Le remède n'est pas de relever un plafond de
@@ -611,7 +675,7 @@ maintenant une erreur qui les nomme — c'est ce qui a permis de trouver la caus
 lente écrasait la plus récente, et l'écran affichait les résultats du filtre précédent. Un corridor
 sans trajet pouvait donc montrer ceux d'un autre au lieu de son état vide et de ses deux sorties.
 
-#### Un défaut introduit puis corrigé, du même motif que les précédents
+#### Un défaut introduit puis corrigé, du même motif que les précédents · *29/08/2026*
 
 Ma première version passait `pickup_governorate=` à `estimate_price`, qui n'accepte que des
 coordonnées. Le `TypeError` était avalé par un `except Exception` large — **exactement le motif de
