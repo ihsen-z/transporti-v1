@@ -6,6 +6,8 @@ import { useAuthStore } from '@/core/auth/authStore';
 import { useWallet } from '@/features/wallet/api/useWallet';
 import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
 import { CorridorPerformanceCard } from '@/features/stats/components/CorridorPerformanceCard';
+import { useLoyalClients } from '@/features/stats/api/useLoyalClients';
+import { LoyalClientsCard } from '@/features/stats/components/LoyalClientsCard';
 import { WithdrawalSheet } from '@/features/wallet/components/WithdrawalSheet';
 import { WalletHistoryRow } from '@/features/wallet/components/WalletHistoryRow';
 import type { WalletHistoryEntry } from '@/features/wallet/api/dto';
@@ -33,6 +35,9 @@ export default function GainsScreen() {
   // n'ouvre pas de sixieme onglet : la performance par corridor vit sous le
   // portefeuille, ou le transporteur vient deja voir ce qu'il a gagne.
   const stats = useTransporterStats(isTransporter);
+  // T5.5 — le pendant transporteur des favoris. Meme place que la performance
+  // par corridor : c'est la meme question, « ou est ma valeur ».
+  const fidelite = useLoyalClients(isTransporter);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   const d = wallet.data;
@@ -118,6 +123,10 @@ export default function GainsScreen() {
             corridors={stats.data.revenue_by_corridor ?? []}
             opportunites={stats.data.underserved_corridors ?? []}
           />
+        )}
+
+        {isTransporter && fidelite.data && (
+          <LoyalClientsCard fidelite={fidelite.data} />
         )}
       </ScrollView>
 

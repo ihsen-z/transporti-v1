@@ -27,6 +27,7 @@ from .profiles import (
 from .misc import (
     PriceEstimateView, FavoriteToggleView, FavoriteListView, CrossMetricsView,
     TransporterStatsView,
+    LoyalClientsView,
 )
 from .corridors import (
     ReturnTripMatchView, CorridorAlertListCreateView, CorridorAlertDeleteView,
@@ -50,6 +51,7 @@ __all__ = [
     # misc
     'PriceEstimateView', 'FavoriteToggleView', 'FavoriteListView', 'CrossMetricsView',
     'TransporterStatsView',
+    'LoyalClientsView',
     # corridors (Sprint 4)
     'ReturnTripMatchView', 'CorridorAlertListCreateView', 'CorridorAlertDeleteView',
 ]

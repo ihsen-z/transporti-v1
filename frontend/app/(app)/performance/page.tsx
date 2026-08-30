@@ -4,17 +4,21 @@ import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
   BarChart3,
+  Heart,
   Loader2,
   MapPin,
   PlusCircle,
   TrendingUp,
+  Users,
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { formatTND } from "@/lib/format";
 import {
+  getLoyalClients,
   getTransporterStats,
   type CorridorSousDesservi,
+  type Fidelite,
   type RevenuParCorridor,
 } from "@/lib/services/stats";
 
@@ -36,6 +40,9 @@ export default function PerformancePage() {
   const { t } = useAppI18n();
   const [revenus, setRevenus] = useState<RevenuParCorridor[]>([]);
   const [opportunites, setOpportunites] = useState<CorridorSousDesservi[]>([]);
+  // T5.5 — les clients fideles. `null` = indisponible : la section est alors
+  // tue plutot que rendue vide, ce qui ferait croire a un portefeuille desert.
+  const [fidelite, setFidelite] = useState<Fidelite | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(false);
 
@@ -52,6 +59,7 @@ export default function PerformancePage() {
     }
     setRevenus(stats.revenue_by_corridor ?? []);
     setOpportunites(stats.underserved_corridors ?? []);
+    setFidelite(await getLoyalClients());
     setChargement(false);
   }, []);
 
@@ -212,6 +220,88 @@ export default function PerformancePage() {
           </p>
         )}
       </section>
+
+      {/* T5.5 — le pendant transporteur de C5.3 : le client met en favori, le
+          transporteur voit qui. Tue quand la lecture echoue (`null`) plutot
+          que rendue vide : un portefeuille desert et une panne ne se disent
+          pas de la meme facon. */}
+      {fidelite && (
+        <section className="bg-white rounded-xl border border-neutral-200 p-5">
+          <h2 className="text-lg font-semibold text-neutral-900 mb-1 flex items-center gap-2">
+            <Users className="w-5 h-5 text-brand-600" aria-hidden="true" />
+            {t.performance.loyalTitle}
+          </h2>
+          <p className="text-sm text-neutral-500 mb-4">
+            {t.performance.loyalHint}
+          </p>
+
+          <div className="flex flex-wrap gap-4 mb-4 text-sm text-neutral-600">
+            <span data-testid="performance-fidelite-favoris">
+              {interpolate(t.performance.loyalFavorited, {
+                count: fidelite.favorited_by,
+              })}
+            </span>
+            <span data-testid="performance-fidelite-recurrents">
+              {interpolate(t.performance.loyalRepeat, {
+                count: fidelite.repeat_clients,
+              })}
+            </span>
+          </div>
+
+          {fidelite.clients.length > 0 ? (
+            <ul data-testid="performance-clients" className="space-y-2">
+              {fidelite.clients.map((client) => (
+                <li
+                  key={client.client_id}
+                  data-testid="performance-client-ligne"
+                  className="flex flex-wrap items-center justify-between gap-3 border border-neutral-200 rounded-lg p-3"
+                >
+                  <div>
+                    <p className="font-medium text-neutral-900 flex items-center gap-2">
+                      {client.client_name}
+                      {client.is_favorite && (
+                        <span
+                          data-testid="performance-client-favori"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-red-700"
+                        >
+                          <Heart
+                            className="w-3.5 h-3.5 fill-red-600 text-red-600"
+                            aria-hidden="true"
+                          />
+                          {t.performance.loyalFavoriteBadge}
+                        </span>
+                      )}
+                    </p>
+                    <p className="text-sm text-neutral-500">
+                      {/* Zero mission chez un favori n'est pas « zero » : c'est
+                          « interesse, jamais converti ». Deux messages
+                          differents, deux libelles differents. */}
+                      {client.missions > 0
+                        ? interpolate(t.performance.loyalMissions, {
+                            count: client.missions,
+                          })
+                        : t.performance.loyalNeverBooked}
+                    </p>
+                  </div>
+                  <Link
+                    href={`/profile/${client.client_id}`}
+                    className="px-4 py-2 border border-neutral-200 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-50 transition-colors"
+                  >
+                    {t.favorites.viewProfile}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p
+              data-testid="performance-clients-vide"
+              className="text-neutral-500"
+            >
+              {t.performance.loyalEmpty}
+            </p>
+          )}
+        </section>
+      )}
     </div>
   );
 }

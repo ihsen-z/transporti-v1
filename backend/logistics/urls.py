@@ -15,7 +15,7 @@ from .views import (
     ClientProfileView, ClientProfileEditView,
     UserRoleView,
     FavoriteToggleView, FavoriteListView,
-    CrossMetricsView, TransporterStatsView,
+    CrossMetricsView, TransporterStatsView, LoyalClientsView,
     CounterOfferCreateView, CounterOfferRespondView,
 )
 from .upload_views import PhotoUploadView
@@ -86,6 +86,8 @@ urlpatterns = [
 
     # Canonical transporter KPIs (Sprint 2 — B2)
     path('transporter/stats/', TransporterStatsView.as_view(), name='transporter_stats'),
+    # T5.5 — le pendant transporteur de C5.3 (favoris cote client).
+    path('transporter/loyal-clients/', LoyalClientsView.as_view(), name='loyal_clients'),
 
     # Counter-Offers (P2-05)
     path('offers/<int:offer_id>/counter/', CounterOfferCreateView.as_view(), name='counter_offer_create'),

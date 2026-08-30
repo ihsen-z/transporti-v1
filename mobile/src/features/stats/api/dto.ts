@@ -53,3 +53,31 @@ export interface CorridorSousDesserviDto {
   dropoff_governorate: string;
   demandes: number;
 }
+
+/* ------------------------------------------------------------------ */
+/*  T5.5 — les clients fideles (B-4, « favoris inverses »)             */
+/* ------------------------------------------------------------------ */
+
+// Source : backend/logistics/stats_clients.py, expose par
+// GET transporter/loyal-clients/ (TRANSPORTER uniquement).
+//
+// Les deux signaux restent SEPARES et le backend ne renvoie aucun score
+// combine : un client a six missions sans favori est plus fidele qu'un favori
+// qui n'a jamais reserve, et un chiffre unique effacerait la difference.
+
+export interface ClientFideleDto {
+  client_id: number;
+  client_name: string;
+  /** Missions TERMINEES ensemble. Une mission en cours ne compte pas. */
+  missions: number;
+  is_favorite: boolean;
+  /** `null` pour un favori qui n'a jamais reserve — distinction porteuse. */
+  last_mission_at: string | null;
+}
+
+export interface FideliteDto {
+  favorited_by: number;
+  /** Clients avec AU MOINS DEUX missions terminees. Seuil delibere. */
+  repeat_clients: number;
+  clients: ClientFideleDto[];
+}

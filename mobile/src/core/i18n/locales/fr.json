@@ -695,5 +695,14 @@
     "history_title": "Mouvements",
     "empty_title": "Aucun mouvement",
     "empty_body": "Vos paiements et remboursements apparaîtront ici."
+  },
+  "loyal_clients": {
+    "title": "Vos clients fidèles",
+    "favorited": "{{count}} vous ont mis en favori",
+    "repeat": "{{count}} revenus au moins deux fois",
+    "missions": "{{count}} mission(s) ensemble",
+    "never_booked": "Vous a mis en favori, sans avoir encore réservé",
+    "favorite_badge": "Favori",
+    "empty": "Aucun client fidèle pour l'instant."
   }
 }

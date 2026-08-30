@@ -2102,6 +2102,16 @@ export const fr = {
     underservedEmpty:
       "Aucune opportunité à signaler sur vos zones. Déclarez vos gouvernorats dans votre profil pour en recevoir.",
     underservedCount: "{count} demande(s) en attente",
+    loyalTitle: "Vos clients fidèles",
+    loyalHint:
+      "Ceux avec qui vous avez déjà travaillé, et ceux qui vous ont mis en favori.",
+    loyalEmpty:
+      "Aucun client fidèle pour l'instant. Il apparaîtra ici après votre première mission terminée, ou dès qu'un client vous mettra en favori.",
+    loyalFavorited: "{count} client(s) vous ont mis en favori",
+    loyalRepeat: "{count} client(s) revenus au moins deux fois",
+    loyalMissions: "{count} mission(s) ensemble",
+    loyalNeverBooked: "Vous a mis en favori, sans avoir encore réservé",
+    loyalFavoriteBadge: "Favori",
     publishCta: "Publier un retour sur ce corridor",
     loadError: "Impossible de charger vos performances. Réessayez.",
   },

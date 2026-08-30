@@ -202,6 +202,26 @@ class CrossMetricsView(APIView):
         return Response({'error': 'Role not supported.'}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class LoyalClientsView(APIView):
+    """
+    GET /api/transporter/loyal-clients/
+    T5.5 (B-4) — les clients fideles d'un transporteur : ceux avec qui il a
+    deja travaille, et ceux qui l'ont mis en favori.
+
+    Pendant de C5.3 : le client met en favori, le transporteur veut savoir qui.
+    Formules : `logistics.stats_clients`, source unique — rien n'est recalcule
+    cote client.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
+
+    def get(self, request):
+        from logistics.stats_clients import loyal_clients, loyalty_summary
+        return Response({
+            **loyalty_summary(request.user),
+            'clients': loyal_clients(request.user),
+        })
+
+
 class TransporterStatsView(APIView):
     """
     GET /api/transporter/stats/

@@ -54,3 +54,42 @@ export async function getTransporterStats(): Promise<StatistiquesTransporteur | 
     return null;
   }
 }
+
+/* ------------------------------------------------------------------ */
+/*  T5.5 — les clients fidèles (B-4, « favoris inversés »)             */
+/* ------------------------------------------------------------------ */
+
+export interface ClientFidele {
+  client_id: number;
+  client_name: string;
+  /** Missions TERMINÉES ensemble. Une mission en cours ne compte pas. */
+  missions: number;
+  /** Le client a explicitement mis ce transporteur en favori. */
+  is_favorite: boolean;
+  /** `null` pour un favori qui n'a jamais réservé — distinction porteuse. */
+  last_mission_at: string | null;
+}
+
+export interface Fidelite {
+  /** Nombre de clients ayant mis ce transporteur en favori. */
+  favorited_by: number;
+  /** Clients avec AU MOINS DEUX missions terminées. Seuil délibéré. */
+  repeat_clients: number;
+  clients: ClientFidele[];
+}
+
+/**
+ * Pendant transporteur de C5.3.
+ *
+ * Les deux signaux — favori déclaré, missions faites — restent SÉPARÉS. Le
+ * backend ne renvoie aucun score combiné : un client à six missions sans
+ * favori est plus fidèle qu'un favori qui n'a jamais réservé, et un chiffre
+ * unique effacerait la différence.
+ */
+export async function getLoyalClients(): Promise<Fidelite | null> {
+  try {
+    return await apiClient.get<Fidelite>("/api/transporter/loyal-clients/");
+  } catch {
+    return null;
+  }
+}
