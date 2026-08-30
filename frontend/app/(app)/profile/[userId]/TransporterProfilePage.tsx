@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
+import { ApiError, getErrorMessage } from "@/lib/api/client";
+import {
+  getTransporterProfile,
+  getUserReviews,
+  updateTransporterProfile,
+  uploadAvatar,
+  uploadVehiclePhoto,
+} from "@/lib/services/profiles";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import Image from "next/image";
@@ -280,13 +287,7 @@ export default function TransporterProfilePage({
     setAvatarCropSrc(null);
     setAvatarUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("avatar", blob, "avatar.jpg");
-      const res = await apiClient.upload<{ avatar_url: string }>(
-        "/api/auth/avatar/",
-        fd,
-      );
-      setEditAvatarUrl(res.avatar_url);
+      setEditAvatarUrl(await uploadAvatar(blob));
       setSaveMsg({ type: "ok", text: t_i18n.profile.avatarUpdated });
       setTimeout(() => setSaveMsg(null), 2500);
     } catch (err: unknown) {
@@ -312,13 +313,7 @@ export default function TransporterProfilePage({
     setVehicleCropSrc(null);
     setVehicleUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("photo", blob, "vehicle.jpg");
-      const res = await apiClient.upload<{ url: string }>(
-        "/api/upload/photo/",
-        fd,
-      );
-      setEditVehiclePhotos([res.url]);
+      setEditVehiclePhotos([await uploadVehiclePhoto(blob)]);
       setSaveMsg({ type: "ok", text: t_i18n.profile.vehiclePhotoUpdated });
       setTimeout(() => setSaveMsg(null), 2500);
     } catch (err: unknown) {
@@ -368,11 +363,7 @@ export default function TransporterProfilePage({
       if (editCapacity.trim()) {
         payload.vehicle_capacity_kg = parseFloat(editCapacity);
       }
-      const res = await apiClient.patch<{
-        message: string;
-        profile: TransporterData;
-      }>("/api/transporter/profile/me/", payload);
-      setTransporter(res.profile);
+      setTransporter(await updateTransporterProfile<TransporterData>(payload));
       setEditing(false);
       setSaveMsg({ type: "ok", text: t_i18n.profile.profileUpdated });
       setTimeout(() => setSaveMsg(null), 3000);
@@ -397,20 +388,20 @@ export default function TransporterProfilePage({
   }, [userId]);
 
   const fetchProfile = async () => {
+    // Le segment d URL peut manquer. L appel en ligne fabriquait alors
+    // /api/transporter/profile/null/ et attendait le serveur pour l apprendre.
+    if (!userId) return;
     setLoading(true);
     setError(null);
     try {
+      // Les avis ne conditionnent pas le profil : le service rend une liste
+      // vide s'ils echouent, au lieu de faire tomber tout l'ecran.
       const [profileData, reviewsData] = await Promise.all([
-        apiClient.get<TransporterData>(`/api/transporter/profile/${userId}/`),
-        apiClient.get<ReviewData[] | { results?: ReviewData[] }>(
-          `/api/reviews/user/${userId}/`,
-        ),
+        getTransporterProfile<TransporterData>(userId),
+        getUserReviews(userId),
       ]);
       setTransporter(profileData);
-      const reviewsList = Array.isArray(reviewsData)
-        ? reviewsData
-        : (reviewsData.results ?? []);
-      setReviews(reviewsList);
+      setReviews(reviewsData);
     } catch (e: unknown) {
       console.error("Error fetching profile:", e);
       setError(getErrorMessage(e) || t_i18n.profile.profileNotFound);

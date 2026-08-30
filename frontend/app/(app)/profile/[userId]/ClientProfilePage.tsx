@@ -2,7 +2,14 @@
 
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
+import { ApiError, getErrorMessage } from "@/lib/api/client";
+import {
+  getClientProfile,
+  getUserReviews,
+  updateClientProfile,
+  uploadAvatar,
+  type Avis as ReviewData,
+} from "@/lib/services/profiles";
 import { useAuth } from "@/hooks/useAuth";
 import Image from "next/image";
 import ImageCropper from "@/components/ImageCropper";
@@ -55,15 +62,6 @@ interface ClientData {
     label: string;
     breakdown: Record<string, number>;
   };
-}
-
-interface ReviewData {
-  id: number;
-  rating: number | null;
-  comment: string;
-  reviewer_name: string;
-  reviewer_avatar: string | null;
-  created_at: string;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -132,22 +130,17 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
 
   /* --- Data Fetching --- */
   const fetchProfile = async () => {
+    // Le segment d URL peut manquer : ne pas appeler /api/client/profile/null/.
+    if (!userId) return;
     setLoading(true);
     setError(null);
     try {
       const [data, reviewsData] = await Promise.all([
-        apiClient.get<ClientData>(`/api/client/profile/${userId}/`),
-        apiClient
-          .get<
-            ReviewData[] | { results?: ReviewData[] }
-          >(`/api/reviews/user/${userId}/`)
-          .catch(() => [] as ReviewData[]),
+        getClientProfile<ClientData>(userId),
+        getUserReviews(userId),
       ]);
       setClient(data);
-      const reviewsList = Array.isArray(reviewsData)
-        ? reviewsData
-        : (reviewsData.results ?? []);
-      setReviews(reviewsList);
+      setReviews(reviewsData);
     } catch (e: unknown) {
       console.error("Error fetching client profile:", e);
       setError(getErrorMessage(e) || "Profil introuvable.");
@@ -193,13 +186,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
     setAvatarCropSrc(null);
     setAvatarUploading(true);
     try {
-      const fd = new FormData();
-      fd.append("avatar", blob, "avatar.jpg");
-      const res = await apiClient.upload<{ avatar_url: string }>(
-        "/api/auth/avatar/",
-        fd,
-      );
-      setEditAvatarUrl(res.avatar_url);
+      setEditAvatarUrl(await uploadAvatar(blob));
       setSaveMsg({ type: "ok", text: "Photo de profil mise à jour !" });
       setTimeout(() => setSaveMsg(null), 2500);
     } catch (err: unknown) {
@@ -241,11 +228,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
         bio: editBio.trim(),
         address_summary: editAddress.trim(),
       };
-      const res = await apiClient.patch<{
-        message: string;
-        profile: ClientData;
-      }>("/api/client/profile/me/", payload);
-      setClient(res.profile);
+      setClient(await updateClientProfile<ClientData>(payload));
       setEditing(false);
       setSaveMsg({ type: "ok", text: "Profil enregistré avec succès !" });
       setTimeout(() => setSaveMsg(null), 3000);
