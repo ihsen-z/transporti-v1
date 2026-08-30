@@ -18,7 +18,7 @@
 > jour par jour. Une plage (`27 → 28/08`) signale un lot étalé sur plusieurs jours ; un tiret, une
 > tâche sans commit — non faite, ou constatée déjà en place.
 
-#### Chronologie des modifications · *27 → 29/08/2026*
+#### Chronologie des modifications · *27 → 30/08/2026*
 
 Chaque modification, dans l'ordre où elle a été faite. Les commits `docs(plan)` sont les mises à
 jour de ce document lui-même : ils sont comptés à part, pour ne pas gonfler le décompte des
@@ -81,7 +81,7 @@ livraisons.
 | `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
 | `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
 
-**30/08/2026** — 19 modification(s) de code, 4 mise(s) à jour du plan
+**30/08/2026** — 20 modification(s) de code, 5 mise(s) à jour du plan
 
 | Commit | Objet |
 |---|---|
@@ -108,6 +108,8 @@ livraisons.
 | `7cfb28f` | fix(web): La date du transport s affichait jamais sur la reservation |
 | `557e5ed` | refactor(web): Sort le reseau des composants partages (lot 4.2) |
 | `6151df7` | refactor(web): Sort le reseau des ecrans d administration (lot 4.2) |
+| `fb166ce` | docs(plan): Lot 4.2 termine, chronologie du 30/08 datee |
+| `f17852f` | feat(web+mobile): T5.4 - la performance par corridor a enfin une interface |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
 
@@ -854,18 +856,61 @@ pas de la suppression : la complexité est répartie, pas réduite. La cible du 
 `app/` au-dessus de 300 lignes* — reste hors d'atteinte par extraction seule. C'est la séparation des
 deux rôles qui fera le gros du chemin, en coupant le fichier en deux écrans distincts.
 
-### Lots 5 à 6 · **non démarrés**
+### Lot 5 — Argent et réputation · **en cours** · *30/08/2026*
 
-**Toutes les décisions du plan sont tranchées**, produit comme méthode. Les lots 2 à 6 peuvent
-s'enchaîner sans nouvel arbitrage.
+| Tâche | État | Commit | Date | Preuve |
+|---|---|---|---|---|
+| **T5.4** Performance par corridor — **web + mobile** | ✅ **fait** | `f17852f` | 30/08/2026 | Écran `/performance` + carte sous Gains. 147 tests mobile, 50 web |
+| **T5.5** Clients fidèles (B-4, favoris inversés) | ⏳ à faire | — | — | Endpoint à écrire |
+| **T5.3** Réputation | ⏳ à faire | — | — | — |
+| **C5.1** Portefeuille client | ⏳ à faire | — | — | — |
+| **C5.2** Mes avis | ⏳ à faire | — | — | `reviews/my/` livré sans interface |
+| **C5.3** Favoris | ⏳ à faire | — | — | `favorites/` + `favorites/toggle/` livrés sans interface |
 
-**Prochain lot** : le 2, la boîte de réception transporteur. Rappel du §1bis — le mobile porte
-**déjà** cet écran (`app/(app)/requests/index.tsx` et `[jobId].tsx`). Le lot 2 est donc une
-**transposition vers le web**, pas une création, et c'est le seul lot que la décision 6 n'allonge
-pas.
+#### T5.4 — le septième cas de code livré sans lecteur · *30/08/2026*
 
-**Prérequis non technique à traiter en parallèle** : monter un backend de recette joignable, sans
-quoi les tests du parcours A resteront non exécutés et le filet du lot 4 restera théorique.
+`revenue_by_corridor` et `underserved_corridors` sont calculés par `stats.py` et exposés **depuis le
+lot 1**. Vérification faite avant d'écrire une ligne : ce sont les **deux seules** figures de
+`get_transporter_stats()` que ni le web ni le mobile ne lisaient. Toutes les autres — `km_transformed`,
+`fill_rate`, `return_trips_published/filled` — étaient déjà consommées.
+
+C'est la **septième occurrence** du même motif dans ce chantier, après le service de notifications,
+`getTransporterMissions`, `createReturnTrip`, et les endpoints `favorites/`, `reviews/my/`,
+`metrics/dashboard/`. Le constat mérite d'être posé : **ce projet écrit plus vite qu'il ne branche.**
+
+**Deux moitiés, et c'est le point.** La première est rétrospective — ce que les corridors ont
+rapporté. La seconde est prospective — où la demande attend. Un bilan seul n'appelle aucune action :
+l'opportunité porte donc un lien de publication avec le corridor **déjà pré-rempli**.
+
+**Écart de place assumé entre les plateformes.** Le web a un écran dédié et un tableau à cinq
+colonnes ; le mobile met une carte sous le portefeuille, dans l'onglet Gains. La charte n'ouvre pas
+de sixième onglet, et les deux écrans répondent de toute façon à la même question — combien j'ai
+gagné. Le comportement est identique, l'emplacement diverge : c'est exactement ce que la décision 6
+autorise.
+
+**Trois refus, fixés par les tests plutôt que par un commentaire** :
+
+1. La carte mobile **disparaît** quand elle n'a rien à dire des deux côtés, au lieu d'empiler deux
+   vides.
+2. L'aller et le retour restent **deux corridors distincts**. Les confondre ferait fondre le revenu
+   du retour dans celui de l'aller — c'est le fondement même du pivot.
+3. `null` signifie *indisponible*, jamais *zéro corridor*. Afficher un tableau vide ferait croire à
+   un transporteur qu'il n'a rien gagné.
+
+### Lot 6 — Rétention · **non démarré**
+
+**Toutes les décisions du plan sont tranchées**, produit comme méthode.
+
+**Deux valeurs métier restent en attente**, et elles bloquent des livrables :
+
+- **La grille `MOVING`.** Le transport a été recalibré sur un ancrage (170 DT pour Sousse → Tunis) ;
+  le déménagement ne l'a pas été, faute de référence. Le budget suggéré au client y reste donc
+  probablement trop bas, avec la même conséquence qu'avant le recalibrage du transport : une annonce
+  publiée à ce prix ne trouve pas preneur.
+- **Le routage de la séparation des rôles** (lot 4.1). `/jobs/[id]` doit-il rediriger selon le rôle —
+  côté client, puisque les 11 redirections actuelles sont des `308` statiques qui ne connaissent pas
+  l'utilisateur — ou rester une route unique à deux compositions ? Les deux lectures donnent des
+  travaux et des URLs très différents, et c'est visible par l'utilisateur.
 
 ---
 
