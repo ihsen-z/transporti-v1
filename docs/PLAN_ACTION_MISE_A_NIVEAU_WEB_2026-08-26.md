@@ -81,7 +81,7 @@ livraisons.
 | `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
 | `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
 
-**30/08/2026** — 26 modification(s) de code, 10 mise(s) à jour du plan
+**30/08/2026** — 27 modification(s) de code, 11 mise(s) à jour du plan
 
 | Commit | Objet |
 |---|---|
@@ -121,6 +121,8 @@ livraisons.
 | `6870a7e` | feat(backend+web+mobile): T5.5 - les clients fideles du transporteur |
 | `c7e85b3` | docs(plan): T5.5 livre sur les trois couches |
 | `3805582` | feat(backend+web+mobile): T5.3 - le score de confiance dit enfin quoi corriger |
+| `5c37896` | docs(plan): Lot 5 termine, et un arbitrage produit a prendre sur T5.3 |
+| `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
 
@@ -1068,7 +1070,54 @@ déjà public sur les profils, suffit à décider.
 **Placement** : la réputation rejoint `/mes-avis`. Le score est l'agrégat, les avis en sont le détail
 — un seul écran, pas deux. Idem sur mobile, dans le panneau des avis.
 
-### Lot 6 — Rétention · **non démarré**
+### Lot 6 — Rétention · **en cours** · *30/08/2026*
+
+| Tâche | État | Commit | Date | Preuve |
+|---|---|---|---|---|
+| **T0.1** Onboarding — étape « zones de service » | ✅ **fait** | `a4be7c0` | 30/08/2026 | Destination corrigée, étape conditionnelle, boucle T5.4 fermée |
+| **T0.4** Onboarding transporteur complet — **mobile** | ⏳ à faire | — | — | **Le mobile n'a AUCUN onboarding** — chantier à part |
+| **P4** Devenir transporteur | ⏳ à faire | — | — | Acquisition |
+| **P3** Confiance et sécurité | ⏳ à faire | — | — | Lève l'objection n°1 du persona client |
+| **C5.6** Carnet d'adresses | ⏳ à faire | — | — | Confort |
+
+#### T0.1 — le guide envoyait vers un écran sans le champ promis · *30/08/2026*
+
+**Vérifié avant d'écrire** : les zones de service sont **déjà éditables** sur le profil transporteur.
+Rien à créer. Trois défauts, en revanche :
+
+1. L'étape « Optimisez votre profil » parlait des zones de service et pointait **`/compte`**, où ce
+   champ **n'existe pas**. Le transporteur arrivait sur un écran muet.
+2. L'étape ne disparaissait **jamais**. Seule « vérifier son identité » était filtrée. Un guide qui
+   redemande ce qui est déjà fait cesse d'être lu.
+3. Sur `/performance`, une liste d'opportunités vide ne disait pas **pourquoi**. La cause la plus
+   fréquente est justement l'absence de zones : `underserved_corridors` rend `[]` par construction.
+
+#### Le défaut que seule la vérification pouvait révéler · *30/08/2026*
+
+Le champ des opportunités s'appelle **`pending_demands`** côté API. Je l'avais typé `demandes` — le
+nom **interne** de l'annotation Django, celui que j'avais lu dans le `.annotate()` sans redescendre
+jusqu'au `return`. L'écran aurait affiché **« undefined demande(s) en attente »**.
+
+**Il était invisible depuis la veille** : aucun transporteur n'avait déclaré de zone, la liste était
+donc toujours vide, et la ligne fautive n'était jamais rendue. Ni les tests, ni `tsc`, ni la relecture
+ne pouvaient le voir — seule une donnée réelle le pouvait.
+
+C'est le troisième défaut de cette session découvert en faisant *exister* la donnée plutôt qu'en
+regardant l'écran se charger. Le premier était l'ordre des messages, le deuxième le placeholder
+`{{count}}`, celui-ci le nom d'un champ.
+
+**Conséquence heureuse** : en déclarant les zones pour vérifier, la moitié **prospective** de T5.4 —
+livrée la veille, inerte depuis — a fonctionné pour la première fois : *« Tunis → Sfax, 3 demande(s)
+en attente »*.
+
+**Une fausse piste écartée, et notée dans le code** : le profil public est mis en cache **120 s**
+(`CACHE_TTL_PROFILE`). L'étape peut donc survivre deux minutes après la déclaration. Ce n'est pas un
+défaut, c'est le TTL — et l'écrire évite qu'on le rechasse comme un bug.
+
+**Signalé sans être traité** : le **mobile n'a aucun onboarding**. Ce n'est pas une transposition,
+c'est un chantier à part.
+
+
 
 **Toutes les décisions du plan sont tranchées**, produit comme méthode.
 
