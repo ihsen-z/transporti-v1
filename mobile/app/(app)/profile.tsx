@@ -12,6 +12,7 @@ import { Card } from '@/shared/ui/Card';
 import { LanguageToggle } from '@/shared/ui/LanguageToggle';
 import { DisputesPanel } from '@/features/disputes/components/DisputesPanel';
 import { ReviewsPanel } from '@/features/reviews/components/ReviewsPanel';
+import { FavoritesPanel } from '@/features/favorites/components/FavoritesPanel';
 import { TrustPanel } from '@/features/trust/components/TrustPanel';
 import { EditProfilePanel } from '@/features/auth/components/EditProfilePanel';
 import { ChangePasswordPanel } from '@/features/auth/components/ChangePasswordPanel';
@@ -26,6 +27,9 @@ export default function ProfileScreen() {
   const logout = useAuthStore((s) => s.logout);
   const [disputesOpen, setDisputesOpen] = useState(false);
   const [reviewsOpen, setReviewsOpen] = useState(false);
+  // C5.3 — favoris. Reserve au CLIENT : les endpoints portent
+  // RequireRole('CLIENT') et repondraient 403 a un transporteur.
+  const [favorisOpen, setFavorisOpen] = useState(false);
   const [trustOpen, setTrustOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
@@ -110,6 +114,19 @@ export default function ProfileScreen() {
             <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
 
+          {!isTransporter && (
+            <Pressable
+              testID="profile-favorites"
+              style={styles.link}
+              onPress={() => setFavorisOpen(true)}
+              accessibilityRole="button"
+            >
+              <Icon name="heart" size={22} color={colors.brand[600]} />
+              <Txt style={styles.linkText}>{t('favorites.title')}</Txt>
+              <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
+            </Pressable>
+          )}
+
           <Pressable
             testID="profile-disputes"
             style={styles.link}
@@ -156,6 +173,10 @@ export default function ProfileScreen() {
       <NotificationPrefsPanel visible={notifOpen} onClose={() => setNotifOpen(false)} />
       <DisputesPanel visible={disputesOpen} onClose={() => setDisputesOpen(false)} />
       <ReviewsPanel visible={reviewsOpen} onClose={() => setReviewsOpen(false)} />
+      <FavoritesPanel
+        visible={favorisOpen}
+        onClose={() => setFavorisOpen(false)}
+      />
       <TrustPanel visible={trustOpen} onClose={() => setTrustOpen(false)} />
       <AboutPanel visible={aboutOpen} onClose={() => setAboutOpen(false)} />
     </SafeAreaView>

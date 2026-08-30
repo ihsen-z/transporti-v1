@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { ApiError, getErrorMessage } from "@/lib/api/client";
+import { getFavorites, toggleFavorite } from "@/lib/services/favorites";
 import {
   getTransporterProfile,
   getUserReviews,
@@ -34,6 +35,7 @@ import {
   Weight,
   ImageOff,
   Pencil,
+  Heart,
   Save,
   X,
   Plus,
@@ -197,6 +199,47 @@ export default function TransporterProfilePage({
 
   // Edit mode
   const isOwner = user?.id !== undefined && userId === String(user.id);
+  // C5.3 — favori. Reserve au CLIENT : les endpoints portent
+  // RequireRole('CLIENT') et repondraient 403 a un transporteur.
+  const estClient = user?.role?.toUpperCase() === "CLIENT";
+  const [estFavori, setEstFavori] = useState(false);
+  const [favoriEnCours, setFavoriEnCours] = useState(false);
+
+  useEffect(() => {
+    if (!estClient || isOwner || !userId) return;
+    let annule = false;
+    void getFavorites()
+      .then((liste) => {
+        if (!annule)
+          setEstFavori(liste.some((f) => String(f.transporter_id) === userId));
+      })
+      // Ne pas savoir si c'est un favori ne doit pas empecher de lire le
+      // profil : le bouton reste dans son etat par defaut.
+      .catch(() => {});
+    return () => {
+      annule = true;
+    };
+  }, [estClient, isOwner, userId]);
+
+  const basculerFavori = async () => {
+    if (!userId) return;
+    setFavoriEnCours(true);
+    try {
+      const resultat = await toggleFavorite(Number(userId));
+      // L'etat vient du SERVEUR, jamais d'une inversion locale.
+      setEstFavori(resultat.is_favorite);
+      setSaveMsg({
+        type: "ok",
+        text: resultat.is_favorite
+          ? t_i18n.favorites.added
+          : t_i18n.favorites.removed,
+      });
+    } catch {
+      setSaveMsg({ type: "err", text: t_i18n.favorites.toggleError });
+    } finally {
+      setFavoriEnCours(false);
+    }
+  };
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [saveMsg, setSaveMsg] = useState<{
@@ -519,6 +562,26 @@ export default function TransporterProfilePage({
           <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
           {t_i18n.profile.back}
         </button>
+
+        {!isOwner && estClient && (
+          <button
+            data-testid="profil-favori"
+            onClick={() => void basculerFavori()}
+            disabled={favoriEnCours}
+            aria-pressed={estFavori}
+            className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 ${
+              estFavori
+                ? "bg-red-50 border border-red-200 text-red-700 hover:bg-red-100"
+                : "bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50"
+            }`}
+          >
+            <Heart
+              className={`w-4 h-4 ${estFavori ? "fill-red-600 text-red-600" : ""}`}
+              aria-hidden="true"
+            />
+            {estFavori ? t_i18n.favorites.remove : t_i18n.favorites.add}
+          </button>
+        )}
 
         {isOwner && !editing && (
           <button

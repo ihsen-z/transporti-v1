@@ -691,5 +691,14 @@
     "missions_count": "{{count}} مهمة، منها {{returns}} رجوع",
     "underserved_title": "فين الطلب يستنّى فيك",
     "underserved_count": "{{count}} طلب في الانتظار"
+  },
+  "favorites": {
+    "title": "الناقلين المفضّلين",
+    "empty_title": "ما فماش مفضّل",
+    "empty_body": "زيد ناقل من البروفايل متاعه باش تلقاه هوني.",
+    "jobs_done": "{{count}} مهمة مكمّلة",
+    "add": "زيد للمفضّلين",
+    "remove": "نحّي من المفضّلين",
+    "error": "العملية ما نجحتش. عاود جرّب."
   }
 }

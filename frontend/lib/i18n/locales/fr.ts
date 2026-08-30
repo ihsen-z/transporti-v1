@@ -2115,4 +2115,21 @@ export const fr = {
       "Il s'affichera quand vous aurez noté à votre tour, ou automatiquement après sept jours. Cette règle protège les deux parties des notes de représailles.",
     count: "{count} avis reçu(s)",
   },
+  favorites: {
+    title: "Mes transporteurs favoris",
+    subtitle:
+      "Ceux avec qui vous avez déjà travaillé et que vous voulez retrouver.",
+    empty:
+      "Aucun favori pour l'instant. Ajoutez un transporteur depuis son profil pour le retrouver ici.",
+    loadError: "Impossible de charger vos favoris. Réessayez.",
+    since: "Ajouté le {date}",
+    jobsDone: "{count} mission(s) terminée(s)",
+    verified: "Vérifié",
+    viewProfile: "Voir le profil",
+    add: "Ajouter aux favoris",
+    remove: "Retirer des favoris",
+    added: "Transporteur ajouté à vos favoris.",
+    removed: "Transporteur retiré de vos favoris.",
+    toggleError: "L'action n'a pas abouti. Réessayez.",
+  },
 } as const;

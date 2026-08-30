@@ -18,6 +18,7 @@ import {
   Wallet,
   BarChart3,
   Star,
+  Heart,
   Inbox,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -78,6 +79,12 @@ export default function AppSidebar() {
   // Le retour passe en tête (IA-2) : c'est la racine du transporteur, pas une
   // entrée parmi d'autres. « Compléter mon aller » (/demandes) devient
   // secondaire, conformément au pivot.
+  const favorisItem: NavItemDef = {
+    href: "/favoris",
+    icon: Heart,
+    label: t.favorites.title,
+  };
+
   const transporterItems: NavItemDef[] = [
     { href: "/retours", icon: RotateCcw, label: "Mes retours" },
     { href: "/demandes-recues", icon: Inbox, label: "Demandes reçues" },
@@ -104,7 +111,7 @@ export default function AppSidebar() {
 
   let mainItems = [...commonItems];
   if (role === "CLIENT") {
-    mainItems = [...clientItems, ...mainItems, avisItem];
+    mainItems = [...clientItems, ...mainItems, favorisItem, avisItem];
   } else if (role === "TRANSPORTER") {
     mainItems = [...mainItems, ...transporterItems, avisItem];
   }

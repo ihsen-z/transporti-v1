@@ -675,5 +675,14 @@
     "missions_count": "{{count}} mission(s), dont {{returns}} en retour",
     "underserved_title": "Où la demande vous attend",
     "underserved_count": "{{count}} demande(s) en attente"
+  },
+  "favorites": {
+    "title": "Mes transporteurs favoris",
+    "empty_title": "Aucun favori",
+    "empty_body": "Ajoutez un transporteur depuis son profil pour le retrouver ici.",
+    "jobs_done": "{{count}} mission(s) terminée(s)",
+    "add": "Ajouter aux favoris",
+    "remove": "Retirer des favoris",
+    "error": "L'action n'a pas abouti. Réessayez."
   }
 }
