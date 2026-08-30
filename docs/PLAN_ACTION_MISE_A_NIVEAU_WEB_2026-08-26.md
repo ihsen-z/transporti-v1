@@ -10,7 +10,7 @@
 > **Ce document est mis à jour à chaque échange.** Il doit pouvoir être lu seul
 > pour savoir où en est le chantier.
 
-**Dernière mise à jour** : 29/08/2026 · **Branche de travail** : `feature/lot0-fondations-retour-first`
+**Dernière mise à jour** : 30/08/2026 · **Branche de travail** : `feature/lot0-fondations-retour-first`
 
 > **Les dates sont celles des commits**, relevées par `git show -s --format=%cd`, et non des
 > estimations reconstituées. Une colonne *Date* accompagne chaque tâche, chaque section du journal
@@ -80,6 +80,34 @@ livraisons.
 | `f80743f` | docs(plan): C2.1 mobile livre, et le blocage de C1.2 etait mal diagnostique |
 | `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
 | `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
+
+**30/08/2026** — 19 modification(s) de code, 4 mise(s) à jour du plan
+
+| Commit | Objet |
+|---|---|
+| `439170a` | docs(plan): Date chaque modification et ajoute la chronologie |
+| `0d5bcff` | refactor(web): Sort les appels reseau du detail d un transport (lot 4.1) |
+| `65f174c` | refactor(web): Extrait la lecture du detail dans useJobDetail (lot 4.1) |
+| `f0a49bc` | refactor(web): Extrait la modale de demande du detail (lot 4.1) |
+| `c82edd3` | refactor(web): Extrait les quatre confirmations du detail (lot 4.1) |
+| `59a529e` | refactor(web): Extrait le panneau client d un trajet retour (lot 4.1) |
+| `b3cb53f` | refactor(web): Extrait le panneau de mission en cours (lot 4.1) |
+| `7ef5ea3` | docs(plan): Lot 4.1 - six extractions, 1517 vers 939 lignes |
+| `b038408` | refactor(web): Extrait le panneau de mission attribuee (lot 4.1) |
+| `fd521dc` | refactor(web): Couche service pour les litiges (lot 4.2) |
+| `5598792` | refactor(web): Couche service pour le portefeuille (lot 4.2) |
+| `b062fe6` | refactor(web): Couche service pour la messagerie (lot 4.2) |
+| `de32eb7` | refactor(web): Couche service pour les profils et les avis (lot 4.2) |
+| `206c611` | docs(plan): Lot 4.2 - quatre domaines sortis de app/, 19 restants |
+| `4c80274` | refactor(web): Couche service pour le compte (lot 4.2) |
+| `5486760` | refactor(web): Couche service pour la reservation et l escrow (lot 4.2) |
+| `9bea619` | refactor(web): Couche service pour la recherche et les alertes (lot 4.2) |
+| `14004c9` | refactor(web): Couches service notifications et verification (lot 4.2) |
+| `1312e12` | docs(plan): Lot 4.2 - neuf domaines livres, 10 ecrans restants |
+| `67df920` | refactor(web): Couches service auth et offres (lot 4.2) |
+| `7cfb28f` | fix(web): La date du transport s affichait jamais sur la reservation |
+| `557e5ed` | refactor(web): Sort le reseau des composants partages (lot 4.2) |
+| `6151df7` | refactor(web): Sort le reseau des ecrans d administration (lot 4.2) |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
 
@@ -694,7 +722,6 @@ valoriser. La clause a été resserrée.
 | 4.1 Panneau client d'un retour → `ReturnTripClientPanel` | ✅ **fait** | `59a529e` | 29/08/2026 | 1198 → 1050 |
 | 4.1 Mission en cours → `MissionInProgressPanel` | ✅ **fait** | `b3cb53f` | 29/08/2026 | 1050 → 939 |
 | 4.1 Mission attribuée → `MissionMatchedPanel` | ✅ **fait** | `b038408` | 29/08/2026 | 939 → 873 |
-| 4.1 Séparation des deux rôles → `/missions/[id]` + `/trajets/[id]` | ⏳ à faire | — | — | La seule étape qui change le routage |
 | 4.2 Litiges → `lib/services/disputes.ts` | ✅ **fait** | `fd521dc` | 29/08/2026 | 3 appels sortis, 2 règles métier remontées |
 | 4.2 Portefeuille → `lib/services/wallet.ts` | ✅ **fait** | `5598792` | 29/08/2026 | 2 appels sortis |
 | 4.2 Messagerie → `lib/services/messaging.ts` | ✅ **fait** | `b062fe6` | 29/08/2026 | 4 appels, types dédupliqués, ordre prouvé |
@@ -703,7 +730,11 @@ valoriser. La clause a été resserrée.
 | 4.2 Réservation et escrow → `lib/services/bookings.ts` | ✅ **fait** | `5486760` | 29/08/2026 | 4 appels, initiation de paiement dédupliquée |
 | 4.2 Recherche et alertes → `lib/services/search.ts` | ✅ **fait** | `9bea619` | 29/08/2026 | 4 appels, traduction du tri nommée |
 | 4.2 Notifications et vérification → `notifications.ts`, `trust.ts` | ✅ **fait** | `14004c9` | 29/08/2026 | Service existant enfin consommé |
-| 4.2 Écrans restants | ⏳ à faire | — | — | **10 écrans hors admin**, 4 écrans d'admin, 8 composants |
+| 4.2 Auth et offres → `auth.ts`, `offers.ts` | ✅ **fait** | `67df920` | 30/08/2026 | Imports dynamiques préservés |
+| 4.2 Six écrans restants + `stats.ts` | ✅ **fait** | `7cfb28f` | 30/08/2026 | Défaut produit corrigé : date jamais affichée |
+| 4.2 Composants partagés | ✅ **fait** | `557e5ed` | 30/08/2026 | 8 composants, 3 duplications supprimées |
+| 4.2 Écrans d'administration | ✅ **fait** | `6151df7` | 30/08/2026 | **Cible atteinte : 0 appel hors `lib/`** |
+| 4.1 Séparation des deux rôles → `/missions/[id]` + `/trajets/[id]` | ⛔ **bloqué** | — | — | Décision de routage requise, voir ci-dessous |
 
 **`jobs/[id]/page.tsx` : 1517 → 939 lignes**, et plus un seul appel réseau. Parcours repassé vert
 après **chacune** des six étapes, comme le plan l'exige.
@@ -763,6 +794,58 @@ même la testabilité.
 page avec une **vraie session**, en observant les appels réseau et la console. Pour la messagerie, où
 un ordre inversé ne casse rien, deux messages ont été postés puis relus : l'API les rend `ZZBB, ZZAA`,
 la page affiche `ZZAA` au-dessus. Ils restent dans la base de développement.
+
+#### ✅ Lot 4.2 terminé — plus aucun appel réseau hors de `lib/` · *30/08/2026*
+
+**25 fichiers au départ, zéro à l'arrivée.** Treize modules de service, dont cinq déjà existants et
+enfin consommés.
+
+Le déplacement n'a jamais été qu'un déplacement. Ce que les derniers domaines ont livré :
+
+| Domaine | Ce qui n'allait pas |
+|---|---|
+| Réservation ↔ paiement | **Défaut produit** : `/reservation` lisait `job.scheduled_date`, un champ qui n'existe pas — l'API renvoie `scheduled_time`. Le bloc conditionnel était toujours faux, **la date du transport n'a jamais été affichée**. Trouvé en rapprochant deux types du même endpoint |
+| Paiement | `/api/payments/initiate/` était appelé depuis **trois** endroits, avec deux charges utiles différentes (`platform: "web"` ou rien) sans que rien ne dise laquelle faisait foi |
+| Missions et trajets retour | `getTransporterMissions` et `createReturnTrip` existaient **sans aucun appelant**, pendant que les écrans refaisaient les appels. Même chose pour `TripRequestsPanel`, qui refaisait le `PATCH` et le `DELETE` d'un trajet retour livrés au lot 1 |
+| Administration | `getAdminJobs()` et `getAdminUsers()` existaient mais **sans pagination ni filtre** : les écrans ne pouvaient pas s'en servir |
+
+**Le motif qui revient six fois : du code écrit puis jamais consommé.** C'est le symétrique exact des
+« endpoints livrés sans interface » que ce plan recense depuis le lot 2. Un service qui existe sans
+appelant coûte autant qu'un endpoint sans écran, et se voit encore moins.
+
+**Deux règles métier remontées** dans les services plutôt que laissées implicites : D1 « net garanti »
+(une offre envoie le NET, le serveur calcule commission et total — l'inverse renverserait le contrat)
+et le contrat de `stats.py` (toute figure d'argent vient du serveur, `null` ≠ zéro).
+
+#### Ce que ces vérifications valent, et ce qu'elles ne valent pas · *30/08/2026*
+
+La plupart de ces écrans **ne sont traversés par aucun parcours**. Leur vert ne prouvait rien. Chacun
+a donc été chargé avec une **vraie session**, appels réseau et console observés. Pour la messagerie,
+où un ordre inversé ne casse rien et ne se voit pas, deux messages ont été postés puis relus.
+Le formulaire de mot de passe oublié a été **réellement soumis**, parce que le code modifié ne
+s'exécute qu'à l'envoi.
+
+**Deux fois, cette vérification a crié au loup à tort** — zéro champ de saisie sur `/compte`, mot-clé
+absent sur `/documents`. Dans les deux cas c'était l'attente qui était fausse : l'onglet Profil est en
+lecture seule, et `/documents` affiche « Profil Vérifié » pour un transporteur qui l'est. Comparaison
+avec la version commitée avant toute conclusion. Une vérification qui produit de faux positifs use la
+confiance aussi sûrement qu'une qui n'en produit aucun.
+
+**Réserve nette** : les quatre écrans d'administration n'ont **pas** été vérifiés en exécution, faute
+de compte administrateur dans les sessions de test. Seuls `tsc` et la suite les couvrent. C'est la
+zone la moins prouvée du lot.
+
+#### ⛔ La séparation des rôles attend une décision · *30/08/2026*
+
+C'est la dernière tâche du 4.1, et elle est **volontairement repoussée**. Mêler un découpage de
+composants et un changement d'URL rendrait une régression invisible : les parcours assertent des URLs
+`/jobs/<id>`. Elle mérite un commit où **seul le routage change**.
+
+Reste une question de conception qui n'est pas technique : **`/jobs/[id]` doit-il rediriger selon le
+rôle, ou rester une route unique avec deux compositions ?** Les 11 redirections actuelles sont des
+`308` statiques, qui ne connaissent pas l'utilisateur — une redirection par rôle serait donc
+forcément côté client, avec le clignotement que cela implique. Les deux lectures donnent des travaux
+et des URLs très différents, et c'est visible par l'utilisateur.
 
 #### Ce que le découpage ne fait pas · *29/08/2026*
 
