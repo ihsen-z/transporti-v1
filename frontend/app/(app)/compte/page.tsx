@@ -4,9 +4,15 @@ import React, { useState, useEffect, useCallback } from "react";
 import Image from "next/image";
 import { getMediaUrl } from "@/lib/imageUtils";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient, ApiError } from "@/lib/api/client";
-import { getAccessToken } from "@/lib/api/tokenManager";
-import { config } from "@/lib/config";
+import { ApiError } from "@/lib/api/client";
+import {
+  changePassword,
+  getNotificationPreferences,
+  getProfile,
+  updateLanguagePreference,
+  updateNotificationPreferences,
+  updateProfile,
+} from "@/lib/services/account";
 import {
   User,
   Mail,
@@ -40,38 +46,6 @@ const TABS: { id: SettingsTab; labelKey: string; icon: React.ElementType }[] = [
   { id: "security", labelKey: "securityTab", icon: Shield },
   { id: "preferences", labelKey: "preferencesTab", icon: Globe },
 ];
-
-interface ProfileApiResponse {
-  user: {
-    id: number;
-    email: string;
-    phone: string;
-    role: string;
-    first_name: string;
-    last_name: string;
-    is_phone_verified: boolean;
-    verification_status: string | null;
-    avatar_url?: string;
-    address_summary?: string;
-    language_pref?: string;
-  };
-}
-
-interface NotificationPrefsResponse {
-  data?: {
-    email_enabled?: boolean;
-    push_enabled?: boolean;
-    sms_enabled?: boolean;
-    notify_new_offer?: boolean;
-    notify_offer_accepted?: boolean;
-    notify_new_message?: boolean;
-  };
-}
-
-interface ProfileUpdateResponse {
-  message: string;
-  user: ProfileApiResponse["user"];
-}
 
 const GOVERNORATES = [
   "Tunis",
@@ -143,9 +117,7 @@ export default function SettingsPage() {
   const fetchProfile = useCallback(async () => {
     setLoading(true);
     try {
-      const data =
-        await apiClient.get<ProfileApiResponse>("/api/auth/profile/");
-      const u = data.user;
+      const u = await getProfile();
       setFirstName(u.first_name || "");
       setLastName(u.last_name || "");
       setEmail(u.email || "");
@@ -177,20 +149,18 @@ export default function SettingsPage() {
   useEffect(() => {
     fetchProfile();
     // Fetch notification preferences from backend
-    apiClient
-      .get<NotificationPrefsResponse>("/api/auth/notification-preferences/")
-      .then((res) => {
-        const d = res.data;
-        if (d) {
-          setNotifEmail(d.email_enabled ?? true);
-          setNotifPush(d.push_enabled ?? true);
-          setNotifSms(d.sms_enabled ?? false);
-          setNotifNewOffer(d.notify_new_offer ?? true);
-          setNotifBooking(d.notify_offer_accepted ?? true);
-          setNotifMessage(d.notify_new_message ?? true);
-        }
-      })
-      .catch(() => {}); // Fail silently — defaults remain
+    // Le service rend `null` quand la lecture echoue : les valeurs par defaut
+    // de l'ecran restent alors en place.
+    void getNotificationPreferences().then((d) => {
+      if (d) {
+        setNotifEmail(d.email_enabled ?? true);
+        setNotifPush(d.push_enabled ?? true);
+        setNotifSms(d.sms_enabled ?? false);
+        setNotifNewOffer(d.notify_new_offer ?? true);
+        setNotifBooking(d.notify_offer_accepted ?? true);
+        setNotifMessage(d.notify_new_message ?? true);
+      }
+    });
   }, [fetchProfile]);
 
   // ─── Save profile to API ──────────────────────────────────────────────
@@ -200,22 +170,19 @@ export default function SettingsPage() {
     setErrorMessage("");
 
     try {
-      const data = await apiClient.put<ProfileUpdateResponse>(
-        "/api/auth/profile/",
-        {
-          first_name: firstName.trim(),
-          last_name: lastName.trim(),
-          phone: phone.trim() || null,
-          profile: { address_summary: governorate },
-        },
-      );
+      const utilisateur = await updateProfile({
+        first_name: firstName.trim(),
+        last_name: lastName.trim(),
+        phone: phone.trim() || null,
+        profile: { address_summary: governorate },
+      });
 
       // Update local auth context with new data
       updateUser({
-        first_name: data.user.first_name,
-        last_name: data.user.last_name,
-        name: `${data.user.first_name} ${data.user.last_name}`,
-        phone: data.user.phone,
+        first_name: utilisateur.first_name,
+        last_name: utilisateur.last_name,
+        name: `${utilisateur.first_name} ${utilisateur.last_name}`,
+        phone: utilisateur.phone,
       });
 
       setSaveStatus("success");
@@ -249,10 +216,7 @@ export default function SettingsPage() {
     setPwError("");
 
     try {
-      await apiClient.post("/api/auth/change-password/", {
-        current_password: currentPassword,
-        new_password: newPassword,
-      });
+      await changePassword(currentPassword, newPassword);
       setPwStatus("success");
       setCurrentPassword("");
       setNewPassword("");
@@ -278,7 +242,7 @@ export default function SettingsPage() {
     setNotifSaving(true);
     setSaveStatus("idle");
     try {
-      await apiClient.put("/api/auth/notification-preferences/", {
+      await updateNotificationPreferences({
         email_enabled: notifEmail,
         push_enabled: notifPush,
         sms_enabled: notifSms,
@@ -303,9 +267,7 @@ export default function SettingsPage() {
     setPrefsSaving(true);
     setSaveStatus("idle");
     try {
-      await apiClient.put("/api/auth/profile/", {
-        profile: { language_pref: language },
-      });
+      await updateLanguagePreference(language);
       setSaveStatus("success");
       setTimeout(() => setSaveStatus("idle"), 3000);
     } catch {
