@@ -81,7 +81,7 @@ livraisons.
 | `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
 | `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
 
-**30/08/2026** — 24 modification(s) de code, 8 mise(s) à jour du plan
+**30/08/2026** — 25 modification(s) de code, 9 mise(s) à jour du plan
 
 | Commit | Objet |
 |---|---|
@@ -117,6 +117,8 @@ livraisons.
 | `249b11f` | feat(web): C5.1 - le portefeuille client, et l endpoint qui manquait |
 | `45ea0c6` | docs(plan): C5.1 livre cote web, et l audit de cette ligne etait faux |
 | `ac59204` | feat(mobile): C5.1 - le portefeuille client, en parite avec le web |
+| `ce79a22` | docs(plan): C5.1 mobile livre, parite retablie |
+| `6870a7e` | feat(backend+web+mobile): T5.5 - les clients fideles du transporteur |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
 
@@ -868,7 +870,7 @@ deux rôles qui fera le gros du chemin, en coupant le fichier en deux écrans di
 | Tâche | État | Commit | Date | Preuve |
 |---|---|---|---|---|
 | **T5.4** Performance par corridor — **web + mobile** | ✅ **fait** | `f17852f` | 30/08/2026 | Écran `/performance` + carte sous Gains. 147 tests mobile, 50 web |
-| **T5.5** Clients fidèles (B-4, favoris inversés) | ⏳ à faire | — | — | Endpoint à écrire |
+| **T5.5** Clients fidèles — **backend + web + mobile** | ✅ **fait** | `6870a7e` | 30/08/2026 | Endpoint `transporter/loyal-clients/` créé, 9 tests backend |
 | **T5.3** Réputation | ⏳ à faire | — | — | — |
 | **C5.1** Portefeuille client — **web** | ✅ **fait** | `249b11f` | 30/08/2026 | Endpoint `/api/client/wallet/` **créé** : il n'existait pas |
 | **C5.1** Portefeuille client — **mobile** | ✅ **fait** | `ac59204` | 30/08/2026 | Panneau du Profil, 6 tests. Aucun total, vérifié par test |
@@ -985,6 +987,41 @@ un commentaire n'empêche personne d'ajouter une tuile « total » six mois plus
 
 Le panneau n'interroge pas `client/wallet/` tant qu'il est fermé : la vue porte
 `RequireRole('CLIENT')` et répondrait 403 à un transporteur.
+
+#### T5.5 — deux signaux qu'il ne faut surtout pas fusionner · *30/08/2026*
+
+Pendant exact de C5.3 : le client met un transporteur en favori, le transporteur veut savoir **qui**
+l'a fait, et avec qui il a déjà travaillé. C'est la matière d'une relation commerciale directe —
+l'inverse de la place de marché anonyme que le pivot cherche justement à dépasser.
+
+Endpoint **créé** : `GET transporter/loyal-clients/`, formules dans `logistics/stats_clients.py`, sur
+le modèle de `stats_corridors.py`.
+
+| Signal | Nature |
+|---|---|
+| `is_favorite` | Une intention **déclarée**, qui peut n'avoir jamais donné lieu à une mission |
+| `missions` | Un **fait** : missions terminées ensemble |
+
+**Les fusionner en un score serait la facilité, et l'erreur.** Un client à six missions sans favori
+est plus fidèle qu'un favori qui n'a jamais réservé. Le backend ne renvoie donc aucun score combiné,
+et un test vérifie l'absence des clés `score` et `loyalty` — c'est le genre de raccourci qu'on ajoute
+« pour trier » six mois plus tard.
+
+**Trois refus, chacun tenu par un test** :
+
+1. Une mission **en cours** ne compte pas. La fidélité se constate après coup, pas pendant.
+2. `repeat_clients` exige **au moins deux** missions. Un client venu une fois n'est pas fidèle, et
+   l'annoncer comme tel donnerait au transporteur une image flatteuse et fausse de son portefeuille.
+3. Zéro mission chez un favori n'est pas « zéro » mais **« intéressé, jamais converti »**. Deux
+   situations, deux libellés — et `last_mission_at` à `null` porte la même distinction côté données.
+
+**Un piège de requête évité, et commenté dans le code** : mélanger un `Count` et un `Max` sur des
+jointures multiples gonfle le compte par produit cartésien. La date de dernière mission fait donc
+l'objet d'une requête séparée.
+
+**Placement** : T5.5 rejoint `/performance` plutôt que d'ouvrir une route — c'est la même question que
+T5.4, *« où est ma valeur »*. Le mobile met la carte sous Gains, au même endroit et pour la même
+raison.
 
 ### Lot 6 — Rétention · **non démarré**
 
