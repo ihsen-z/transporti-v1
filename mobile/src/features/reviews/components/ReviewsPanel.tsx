@@ -16,6 +16,8 @@ import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { useFlatInfiniteList } from '@/core/api/useFlatInfiniteList';
 import { useMyReviews } from '../api/useMyReviews';
 import { ReviewRow } from './ReviewRow';
+import { useMyTrustScore } from '@/features/trust/api/useMyTrustScore';
+import { ReputationCard } from '@/features/trust/components/ReputationCard';
 
 interface Props {
   visible: boolean;
@@ -27,6 +29,9 @@ export function ReviewsPanel({ visible, onClose }: Props) {
   const { t } = useTranslation();
   const reviews = useMyReviews(visible);
   const { items, onEndReached } = useFlatInfiniteList(reviews);
+  // T5.3 — la reputation est l'agregat, les avis en sont le detail : un seul
+  // panneau, pas deux. Charge seulement a l'ouverture.
+  const score = useMyTrustScore(visible);
 
   return (
     <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
@@ -46,6 +51,9 @@ export function ReviewsPanel({ visible, onClose }: Props) {
             keyExtractor={(item) => String(item.id)}
             contentContainerStyle={styles.list}
             refreshControl={queryRefreshControl(reviews)}
+            ListHeaderComponent={
+              score.data ? <ReputationCard score={score.data} /> : null
+            }
             onEndReached={onEndReached}
             onEndReachedThreshold={0.5}
             ListEmptyComponent={<EmptyState icon="star" title={t('reviews.empty')} />}

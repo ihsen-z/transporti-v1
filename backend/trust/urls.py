@@ -2,6 +2,7 @@ from django.urls import path
 from .views import (
     VerificationDocumentListCreateView,
     TrustProfileSubmissionView,
+    MyTrustScoreView,
     AdminVerificationListView,
     AdminVerificationApproveView,
     AdminVerificationRejectView,
@@ -14,6 +15,8 @@ urlpatterns = [
     # Transporter endpoints
     path('documents/', VerificationDocumentListCreateView.as_view(), name='trust-documents'),
     path('status/', TrustProfileSubmissionView.as_view(), name='trust-status'),
+    # T5.3 — la decomposition du score, pour savoir quoi corriger.
+    path('score-breakdown/', MyTrustScoreView.as_view(), name='trust-score-breakdown'),
     path('submit/', TrustProfileSubmissionView.as_view(), name='trust-submit'),
 
     # Admin endpoints (global request-level)

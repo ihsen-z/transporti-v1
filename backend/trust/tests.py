@@ -12,7 +12,7 @@ from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.utils import timezone
-from rest_framework.test import APIRequestFactory
+from rest_framework.test import APIRequestFactory, APITestCase
 
 from trust.models import VerificationDocument
 from trust.serializers import VerificationDocumentUploadSerializer
@@ -91,3 +91,92 @@ class UploadExpiryValidationTests(TestCase):
     def test_non_expiring_type_needs_no_date(self):
         s = self._serializer({"document_type": "CIN_FRONT"})
         self.assertTrue(s.is_valid(), s.errors)
+
+
+class TrustScoreBreakdownTests(APITestCase):
+    """
+    T5.3 — la décomposition du score de confiance.
+
+    Le point de ces tests n'est pas de figer les valeurs du barème, qui
+    relèvent du produit, mais d'empêcher la seule dérive vraiment coûteuse :
+    que le détail montré à l'utilisateur cesse de correspondre au score montré
+    partout ailleurs.
+    """
+
+    def setUp(self):
+        from django.contrib.auth import get_user_model
+        User = get_user_model()
+        self.transporteur = User.objects.create_user(
+            username='ts_transporteur', email='tst@test.tn',
+            password='SecurePass123!', role='TRANSPORTER',
+        )
+        self.client_user = User.objects.create_user(
+            username='ts_client', email='tsc@test.tn',
+            password='SecurePass123!', role='CLIENT',
+        )
+
+    def test_la_somme_des_composantes_egale_le_score(self):
+        """
+        L'invariant qui justifie la refonte : `get_user_trust_score` EST la
+        somme de `trust_score_components`. Si quelqu'un modifie l'un sans
+        l'autre, ce test tombe.
+        """
+        from analytics.services import (
+            trust_score_components, get_user_trust_score,
+        )
+        composantes = trust_score_components(self.transporteur)
+        somme = sum(c['earned'] for c in composantes)
+        attendu = min(100, max(0, int(somme)))
+        self.assertEqual(get_user_trust_score(self.transporteur), attendu)
+
+    def test_les_plafonds_totalisent_cent(self):
+        from analytics.services import trust_score_components
+        composantes = trust_score_components(self.transporteur)
+        self.assertEqual(sum(c['max'] for c in composantes), 100)
+
+    def test_distingue_qualite_de_service_et_usage_de_l_app(self):
+        """
+        Deux composantes sur cinq mesurent l'USAGE de l'application, pas le
+        service rendu. Le drapeau permet à l'interface de ne pas présenter
+        « connecte-toi plus souvent » comme un levier de fiabilité.
+        """
+        from analytics.services import trust_score_components
+        par_cle = {c['key']: c for c in trust_score_components(self.transporteur)}
+        self.assertTrue(par_cle['completion']['is_service_quality'])
+        self.assertTrue(par_cle['disputes']['is_service_quality'])
+        self.assertTrue(par_cle['payment']['is_service_quality'])
+        self.assertFalse(par_cle['engagement']['is_service_quality'])
+        self.assertFalse(par_cle['recency']['is_service_quality'])
+
+    def test_endpoint_repond_a_l_utilisateur_connecte(self):
+        self.client.force_authenticate(user=self.transporteur)
+        reponse = self.client.get('/api/trust/score-breakdown/')
+        self.assertEqual(reponse.status_code, 200, reponse.data)
+        self.assertIn('trust_score', reponse.data)
+        self.assertEqual(len(reponse.data['components']), 5)
+
+    def test_endpoint_sert_aussi_un_client(self):
+        """Un client a lui aussi un score : la vue n'est pas réservée."""
+        self.client.force_authenticate(user=self.client_user)
+        self.assertEqual(
+            self.client.get('/api/trust/score-breakdown/').status_code, 200
+        )
+
+    def test_endpoint_refuse_l_anonyme(self):
+        self.assertEqual(
+            self.client.get('/api/trust/score-breakdown/').status_code, 401
+        )
+
+    def test_aucun_identifiant_en_parametre(self):
+        """
+        La vue est STRICTEMENT personnelle. Exposer le detail du score d'autrui
+        donnerait une carte pour le contester ou le manipuler.
+        """
+        self.client.force_authenticate(user=self.client_user)
+        reponse = self.client.get(
+            '/api/trust/score-breakdown/?user_id=%d' % self.transporteur.id
+        )
+        from analytics.services import get_user_trust_score
+        self.assertEqual(
+            reponse.data['trust_score'], get_user_trust_score(self.client_user)
+        )

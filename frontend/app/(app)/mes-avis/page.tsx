@@ -1,11 +1,12 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { EyeOff, Loader2, Star } from "lucide-react";
+import { EyeOff, Loader2, ShieldCheck, Star } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { formatDate } from "@/lib/format";
 import { getMyReviews, type Avis } from "@/lib/services/reviews";
+import { getMyTrustScore, type ScoreDeConfiance } from "@/lib/services/trust";
 
 /**
  * C5.2 — les avis reçus par l'utilisateur connecté.
@@ -24,6 +25,10 @@ import { getMyReviews, type Avis } from "@/lib/services/reviews";
 export default function MesAvisPage() {
   const { t } = useAppI18n();
   const [avis, setAvis] = useState<Avis[]>([]);
+  // T5.3 — la reputation est l'agregat, les avis en sont le detail : un seul
+  // ecran, pas deux. `null` = indisponible, la section est alors tue plutot
+  // que de montrer un score a zero, qui se lirait comme une sanction.
+  const [score, setScore] = useState<ScoreDeConfiance | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(false);
 
@@ -32,6 +37,7 @@ export default function MesAvisPage() {
     setErreur(false);
     try {
       setAvis(await getMyReviews());
+      setScore(await getMyTrustScore());
     } catch {
       setErreur(true);
     } finally {
@@ -59,6 +65,75 @@ export default function MesAvisPage() {
         </h1>
         <p className="text-neutral-600">{t.myReviews.subtitle}</p>
       </header>
+
+      {/* T5.3 — les cinq composantes, y compris les deux qui mesurent l'usage
+          de l'application. Les masquer rendrait l'addition fausse a l'ecran :
+          le total ne correspondrait plus aux parts montrees. On les affiche
+          donc, en disant ce qu'elles mesurent vraiment. */}
+      {score && (
+        <section
+          data-testid="reputation"
+          className="bg-white rounded-xl border border-neutral-200 p-5"
+        >
+          <h2 className="text-lg font-semibold text-neutral-900 mb-1 flex items-center gap-2">
+            <ShieldCheck
+              className="w-5 h-5 text-brand-600"
+              aria-hidden="true"
+            />
+            {t.reputation.title}
+          </h2>
+          <p className="text-sm text-neutral-500 mb-4">{t.reputation.hint}</p>
+
+          <p className="text-sm text-neutral-500">{t.reputation.scoreLabel}</p>
+          <p
+            data-testid="reputation-score"
+            className="text-3xl font-bold text-neutral-900 tabular-nums mb-4"
+          >
+            {interpolate(t.reputation.outOf, { score: score.trust_score })}
+          </p>
+
+          <ul className="space-y-3">
+            {score.components.map((composante) => (
+              <li
+                key={composante.key}
+                data-testid={`reputation-${composante.key}`}
+                className="space-y-1"
+              >
+                <div className="flex items-center justify-between gap-3 text-sm">
+                  <span className="text-neutral-700">
+                    {t.reputation[composante.key]}
+                  </span>
+                  <span className="text-neutral-500 tabular-nums">
+                    {interpolate(t.reputation.points, {
+                      earned: composante.earned,
+                      max: composante.max,
+                    })}
+                  </span>
+                </div>
+                <div className="h-1.5 bg-neutral-100 rounded-full overflow-hidden">
+                  <div
+                    className={
+                      composante.is_service_quality
+                        ? "h-full bg-brand-600"
+                        : "h-full bg-neutral-300"
+                    }
+                    style={{
+                      width: `${Math.round((composante.earned / composante.max) * 100)}%`,
+                    }}
+                  />
+                </div>
+              </li>
+            ))}
+          </ul>
+
+          <p
+            data-testid="reputation-avertissement-usage"
+            className="text-xs text-neutral-500 mt-4"
+          >
+            {t.reputation.usageWarning}
+          </p>
+        </section>
+      )}
 
       {erreur ? (
         <p data-testid="mes-avis-erreur" className="text-neutral-500">

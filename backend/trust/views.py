@@ -269,3 +269,27 @@ class AdminTrustProfileListView(APIView):
 
         serializer = AdminTrustProfileSerializer(qs, many=True)
         return Response(serializer.data)
+
+class MyTrustScoreView(APIView):
+    """
+    GET /api/trust/score-breakdown/
+    T5.3 — la decomposition du score de confiance de l'utilisateur CONNECTE.
+
+    Le score seul ne dit pas quoi corriger : un transporteur a 62/100 ignore
+    ce qui le retient. Cette vue expose les cinq composantes et leur plafond.
+
+    Strictement PERSONNEL : aucun identifiant en parametre. Exposer le detail
+    du score d'autrui donnerait une carte pour le contester ou le manipuler,
+    et le profil public montre deja le total, qui suffit a decider.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        from analytics.services import (
+            trust_score_components, get_user_trust_score,
+        )
+        return Response({
+            'trust_score': get_user_trust_score(request.user),
+            'components': trust_score_components(request.user),
+        })
+

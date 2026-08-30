@@ -56,3 +56,35 @@ export interface UploadDocumentArgs {
   mimeType: string;
   expires_at?: string;
 }
+
+/* ------------------------------------------------------------------ */
+/*  T5.3 — la decomposition du score de confiance                      */
+/* ------------------------------------------------------------------ */
+
+// Source : backend/analytics/services.py::trust_score_components, expose par
+// GET trust/score-breakdown/. STRICTEMENT personnel : aucun identifiant en
+// parametre — le total est deja public sur les profils, le detail ne l'est pas.
+
+export type CleComposante =
+  | 'completion'
+  | 'disputes'
+  | 'payment'
+  | 'engagement'
+  | 'recency';
+
+export interface ComposanteScoreDto {
+  key: CleComposante;
+  earned: number;
+  max: number;
+  /**
+   * `false` pour les composantes qui mesurent l'USAGE DE L'APPLICATION et non
+   * la qualite du service rendu. L'interface s'en sert pour ne pas presenter
+   * « connecte-toi plus souvent » comme un levier de fiabilite.
+   */
+  is_service_quality: boolean;
+}
+
+export interface ScoreConfianceDto {
+  trust_score: number;
+  components: ComposanteScoreDto[];
+}

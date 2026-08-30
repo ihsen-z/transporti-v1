@@ -2161,4 +2161,18 @@ export const fr = {
     noTotal:
       "Ces montants ne s'additionnent pas : ils décrivent des situations différentes.",
   },
+  reputation: {
+    title: "Ma réputation",
+    scoreLabel: "Score de confiance",
+    outOf: "{score}/100",
+    hint: "Ce qui compose votre score, et ce qui peut le faire monter.",
+    completion: "Missions menées à terme",
+    disputes: "Absence de litiges",
+    payment: "Commissions réglées",
+    engagement: "Activité sur l'application",
+    recency: "Connexion récente",
+    usageWarning:
+      "Ces deux critères mesurent votre usage de l'application, pas la qualité de votre service.",
+    points: "{earned} / {max} points",
+  },
 } as const;

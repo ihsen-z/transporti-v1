@@ -519,10 +519,22 @@ TrustScore Formula:
 """
 
 
-def get_user_trust_score(user: User) -> int:
+def trust_score_components(user: User) -> list[dict]:
     """
-    Calculate trust score (0-100) for a user.
-    Higher score = more reliable partner.
+    Les CINQ composantes du score de confiance, chacune avec son plafond.
+
+    T5.3. Le score seul ne dit pas quoi corriger : un transporteur a 62/100
+    ignore ce qui le retient. Cette fonction expose la decomposition, et
+    `get_user_trust_score` en est desormais la SOMME — les deux ne peuvent
+    donc plus diverger, ce qu'un test verifie.
+
+    NOTE PRODUIT, a lire avant d'afficher ces chiffres : deux composantes sur
+    cinq — `engagement` (25 pts cumules avec `recency`) — mesurent l'USAGE DE
+    L'APPLICATION, pas la qualite du service rendu. Les presenter comme des
+    leviers revient a dire « connecte-toi plus souvent pour paraitre plus
+    fiable ». C'est signale dans le plan ; en attendant un arbitrage, elles
+    sont renvoyees mais marquees `is_service_quality: False`, pour que
+    l'interface puisse choisir de ne pas les mettre en avant.
     """
     from logistics.models import Offer
     from payments.models import CommissionLedger
@@ -594,9 +606,51 @@ def get_user_trust_score(user: User) -> int:
     
     recency_score = recency_factor * 10
     
-    # Total
-    total = completion_score + dispute_score + payment_score + engagement_score + recency_score
-    
+    return [
+        {
+            'key': 'completion',
+            'earned': round(completion_score, 1),
+            'max': 30,
+            'is_service_quality': True,
+        },
+        {
+            'key': 'disputes',
+            'earned': round(dispute_score, 1),
+            'max': 20,
+            'is_service_quality': True,
+        },
+        {
+            'key': 'payment',
+            'earned': round(payment_score, 1),
+            'max': 25,
+            'is_service_quality': True,
+        },
+        # Mesure l'usage de l'application, pas le service rendu.
+        {
+            'key': 'engagement',
+            'earned': round(engagement_score, 1),
+            'max': 15,
+            'is_service_quality': False,
+        },
+        {
+            'key': 'recency',
+            'earned': round(recency_score, 1),
+            'max': 10,
+            'is_service_quality': False,
+        },
+    ]
+
+
+def get_user_trust_score(user: User) -> int:
+    """
+    Calculate trust score (0-100) for a user.
+    Higher score = more reliable partner.
+
+    SOMME de `trust_score_components` : le detail affiche a l'utilisateur et le
+    chiffre affiche partout ailleurs viennent du meme calcul, et ne peuvent
+    pas diverger.
+    """
+    total = sum(c['earned'] for c in trust_score_components(user))
     return min(100, max(0, int(total)))
 
 

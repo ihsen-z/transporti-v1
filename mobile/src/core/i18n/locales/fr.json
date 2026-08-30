@@ -704,5 +704,16 @@
     "never_booked": "Vous a mis en favori, sans avoir encore réservé",
     "favorite_badge": "Favori",
     "empty": "Aucun client fidèle pour l'instant."
+  },
+  "reputation": {
+    "title": "Ma réputation",
+    "score_label": "Score de confiance",
+    "completion": "Missions menées à terme",
+    "disputes": "Absence de litiges",
+    "payment": "Commissions réglées",
+    "engagement": "Activité sur l'application",
+    "recency": "Connexion récente",
+    "usage_warning": "Ces deux critères mesurent votre usage de l'application, pas la qualité de votre service.",
+    "points": "{{earned}} / {{max}} points"
   }
 }

@@ -49,3 +49,41 @@ export function uploadVerificationDocument(corps: FormData): Promise<unknown> {
 export function submitForReview(): Promise<unknown> {
   return apiClient.put("/api/trust/submit/", {});
 }
+
+/* ------------------------------------------------------------------ */
+/*  T5.3 — la décomposition du score de confiance                      */
+/* ------------------------------------------------------------------ */
+
+export interface ComposanteDuScore {
+  key: "completion" | "disputes" | "payment" | "engagement" | "recency";
+  earned: number;
+  max: number;
+  /**
+   * `false` pour les composantes qui mesurent l'USAGE DE L'APPLICATION et non
+   * la qualité du service. L'interface s'en sert pour ne pas présenter
+   * « connecte-toi plus souvent » comme un levier de fiabilité.
+   */
+  is_service_quality: boolean;
+}
+
+export interface ScoreDeConfiance {
+  trust_score: number;
+  components: ComposanteDuScore[];
+}
+
+/**
+ * Le score de l'utilisateur CONNECTÉ et sa décomposition.
+ *
+ * Strictement personnel : aucun identifiant en paramètre. Le total est déjà
+ * public sur les profils ; le détail ne l'est pas, et n'a pas à l'être.
+ *
+ * `null` en cas d'échec : la section est alors tue, plutôt que de montrer un
+ * score à zéro qui se lirait comme une sanction.
+ */
+export async function getMyTrustScore(): Promise<ScoreDeConfiance | null> {
+  try {
+    return await apiClient.get<ScoreDeConfiance>("/api/trust/score-breakdown/");
+  } catch {
+    return null;
+  }
+}
