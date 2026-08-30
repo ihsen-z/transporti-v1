@@ -3,7 +3,9 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { getTransporterProfile } from "@/lib/services/profiles";
 import {
+  MapPin,
   Truck,
   PlusCircle,
   Search,
@@ -86,13 +88,18 @@ const TRANSPORTER_STEPS: OnboardingStep[] = [
     color: "from-purple-600 to-purple-800",
   },
   {
-    id: "profile",
-    icon: Star,
-    title: "Optimisez votre profil",
+    id: "zones",
+    icon: MapPin,
+    title: "Déclarez vos zones de service",
     description:
-      "Ajoutez vos spécialisations, zones de service et photos de véhicule pour attirer plus de clients.",
-    cta: "Mon profil",
-    href: "/compte",
+      "Sans elles, la plateforme ne peut pas vous signaler les corridors où la demande dépasse l'offre — et vous ne voyez aucune opportunité sur votre écran Performance.",
+    // ANCIENNE DESTINATION : /compte, qui ne contient PAS les zones. Le guide
+    // envoyait le transporteur sur un ecran ou le champ qu'il nommait n'existe
+    // pas. Verifie avant correction.
+    cta: "Déclarer mes zones",
+    // Destination calculee au rendu : les zones s'editent sur le profil du
+    // transporteur, dont l'URL porte son identifiant.
+    href: "",
     color: "from-accent-600 to-accent-800",
   },
 ];
@@ -104,6 +111,9 @@ const TRANSPORTER_STEPS: OnboardingStep[] = [
 export default function OnboardingWizard() {
   const { user } = useAuth();
   const [dismissed, setDismissed] = useState(false);
+  // T0.1 — l'etape « zones » ne doit pas survivre a son accomplissement. Un
+  // guide qui redemande ce qui est deja fait cesse d'etre lu.
+  const [zonesDeclarees, setZonesDeclarees] = useState<boolean | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
 
   const storageKey = `transporti_onboarding_${user?.id}`;
@@ -122,6 +132,31 @@ export default function OnboardingWizard() {
       }
     }
   }, [storageKey, stepKey]);
+
+  // Lecture ciblee : uniquement pour un transporteur, et uniquement pour
+  // savoir si l'etape « zones » a encore lieu d'etre.
+  //
+  // Le profil public est MIS EN CACHE 120 s cote serveur (CACHE_TTL_PROFILE).
+  // L'etape peut donc survivre jusqu'a deux minutes apres la declaration des
+  // zones. Ce n'est pas un defaut : c'est le TTL, et le noter ici evite qu'on
+  // le rechasse comme un bug.
+  useEffect(() => {
+    if (user?.role?.toUpperCase() !== "TRANSPORTER" || !user?.id) return;
+    let annule = false;
+    void getTransporterProfile<{ service_areas?: string[] }>(user.id)
+      .then((profil) => {
+        if (!annule) setZonesDeclarees((profil.service_areas?.length ?? 0) > 0);
+      })
+      // En cas d'echec, on garde l'etape : mieux vaut la proposer une fois de
+      // trop que priver un transporteur de la seule chose qui alimente les
+      // opportunites de corridor.
+      .catch(() => {
+        if (!annule) setZonesDeclarees(false);
+      });
+    return () => {
+      annule = true;
+    };
+  }, [user?.id, user?.role]);
 
   const handleDismiss = () => {
     setDismissed(true);
@@ -142,11 +177,18 @@ export default function OnboardingWizard() {
   const isTransporter = user.role?.toUpperCase() === "TRANSPORTER";
   // B3 (audit M2): never ask a VERIFIED account to verify its identity.
   const allSteps = isTransporter ? TRANSPORTER_STEPS : CLIENT_STEPS;
-  const steps = allSteps.filter(
-    (s) => s.id !== "verify" || user.is_verified !== true,
-  );
+  const steps = allSteps.filter((s) => {
+    // B3 (audit M2) : ne jamais demander a un compte VERIFIE de se verifier.
+    if (s.id === "verify" && user.is_verified === true) return false;
+    // T0.1 : ni de declarer des zones deja declarees.
+    if (s.id === "zones" && zonesDeclarees === true) return false;
+    return true;
+  });
   if (steps.length === 0) return null;
   const step = steps[Math.min(currentStep, steps.length - 1)];
+  // L'etape « zones » pointe le profil de l'utilisateur, dont l'URL depend de
+  // son identifiant : impossible a ecrire dans une liste statique.
+  const destination = step.id === "zones" ? `/profile/${user.id}` : step.href;
   const StepIcon = step.icon;
 
   return (
@@ -218,7 +260,7 @@ export default function OnboardingWizard() {
             </p>
             <div className="flex items-center gap-3">
               <Link
-                href={step.href}
+                href={destination}
                 className="inline-flex items-center gap-2 bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-700 transition-all hover:scale-[1.02] shadow-sm"
               >
                 {step.cta}

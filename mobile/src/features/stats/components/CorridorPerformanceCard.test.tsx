@@ -29,7 +29,7 @@ function corridor(
 const opportunite: CorridorSousDesserviDto = {
   pickup_governorate: 'Tunis',
   dropoff_governorate: 'Sousse',
-  demandes: 9,
+  pending_demands: 9,
 };
 
 describe('CorridorPerformanceCard', () => {

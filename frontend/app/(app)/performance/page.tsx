@@ -12,6 +12,8 @@ import {
   Users,
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useAuth } from "@/hooks/useAuth";
+import { getTransporterProfile } from "@/lib/services/profiles";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { formatTND } from "@/lib/format";
 import {
@@ -38,6 +40,12 @@ import {
  */
 export default function PerformancePage() {
   const { t } = useAppI18n();
+  const { user } = useAuth();
+  // T0.1 — quand il n'y a AUCUNE opportunite, la cause la plus frequente est
+  // qu'aucune zone n'est declaree : `underserved_corridors` rend alors []
+  // par construction. Un ecran vide sans explication laisse croire que le
+  // marche est calme, alors que c'est le profil qui est incomplet.
+  const [zonesDeclarees, setZonesDeclarees] = useState<boolean | null>(null);
   const [revenus, setRevenus] = useState<RevenuParCorridor[]>([]);
   const [opportunites, setOpportunites] = useState<CorridorSousDesservi[]>([]);
   // T5.5 — les clients fideles. `null` = indisponible : la section est alors
@@ -60,8 +68,23 @@ export default function PerformancePage() {
     setRevenus(stats.revenue_by_corridor ?? []);
     setOpportunites(stats.underserved_corridors ?? []);
     setFidelite(await getLoyalClients());
+
+    // Lecture CIBLEE : seulement quand la section prospective est vide, pour
+    // savoir s'il faut expliquer pourquoi.
+    if ((stats.underserved_corridors ?? []).length === 0 && user?.id) {
+      try {
+        const profil = await getTransporterProfile<{
+          service_areas?: string[];
+        }>(user.id);
+        setZonesDeclarees((profil.service_areas?.length ?? 0) > 0);
+      } catch {
+        // Ne pas savoir n'autorise pas a accuser le profil : on retombe sur
+        // le message generique.
+        setZonesDeclarees(null);
+      }
+    }
     setChargement(false);
-  }, []);
+  }, [user?.id]);
 
   useEffect(() => {
     void charger();
@@ -194,7 +217,7 @@ export default function PerformancePage() {
                   </p>
                   <p className="text-sm text-neutral-500">
                     {interpolate(t.performance.underservedCount, {
-                      count: corridor.demandes,
+                      count: corridor.pending_demands,
                     })}
                   </p>
                 </div>
@@ -212,12 +235,27 @@ export default function PerformancePage() {
             ))}
           </ul>
         ) : (
-          <p
-            data-testid="performance-opportunites-vide"
-            className="text-neutral-500"
-          >
-            {t.performance.underservedEmpty}
-          </p>
+          <div data-testid="performance-opportunites-vide">
+            {zonesDeclarees === false ? (
+              <>
+                <p className="text-neutral-500 mb-3">
+                  {t.performance.underservedNoZones}
+                </p>
+                <Link
+                  data-testid="performance-declarer-zones"
+                  href={`/profile/${user?.id}`}
+                  className="inline-flex items-center gap-2 px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-semibold hover:bg-brand-700 transition-colors"
+                >
+                  <MapPin className="w-4 h-4" aria-hidden="true" />
+                  {t.performance.declareZonesCta}
+                </Link>
+              </>
+            ) : (
+              <p className="text-neutral-500">
+                {t.performance.underservedEmpty}
+              </p>
+            )}
+          </div>
         )}
       </section>
 

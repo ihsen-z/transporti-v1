@@ -1973,6 +1973,9 @@ export const ar = {
     colRevenue: "المدخول الصافي",
     underservedTitle: "فين الطلب يستنّى فيك",
     underservedHint: "طلبات في الانتظار في مناطقك، فين ما عندكش رجوع منشور.",
+    underservedNoZones:
+      "ما صرّحتش بأي منطقة خدمة. على هذا المنصة ما تنجّمش تعرف أي محاور تقترحلك.",
+    declareZonesCta: "صرّح بالمناطق متاعي",
     underservedEmpty:
       "ما فماش فرصة نعلموك بيها في مناطقك. سجّل الولايات متاعك في البروفايل باش توصلك.",
     underservedCount: "{count} طلب في الانتظار",

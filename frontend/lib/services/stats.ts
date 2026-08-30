@@ -25,7 +25,13 @@ export interface RevenuParCorridor {
 export interface CorridorSousDesservi {
   pickup_governorate: string;
   dropoff_governorate: string;
-  demandes: number;
+  /**
+   * Nombre de demandes en attente. Le champ s'appelle `pending_demands` cote
+   * API — je l'avais type `demandes`, le nom INTERNE de l'annotation Django.
+   * L'ecran aurait affiche « undefined demande(s) », defaut invisible tant
+   * qu'aucun transporteur n'avait declare de zone.
+   */
+  pending_demands: number;
 }
 
 export interface StatistiquesTransporteur {

@@ -87,7 +87,7 @@ export function CorridorPerformanceCard({ corridors, opportunites }: Props) {
               </Txt>
               <Txt style={styles.detail}>
                 {t('performance.underserved_count', {
-                  count: corridor.demandes,
+                  count: corridor.pending_demands,
                 })}
               </Txt>
             </View>

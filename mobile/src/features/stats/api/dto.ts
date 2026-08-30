@@ -51,7 +51,8 @@ export interface RevenueParCorridorDto {
 export interface CorridorSousDesserviDto {
   pickup_governorate: string;
   dropoff_governorate: string;
-  demandes: number;
+  /** Nom API : `pending_demands` (et non `demandes`, nom interne Django). */
+  pending_demands: number;
 }
 
 /* ------------------------------------------------------------------ */

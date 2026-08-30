@@ -2099,6 +2099,9 @@ export const fr = {
     underservedTitle: "Où la demande vous attend",
     underservedHint:
       "Demandes en attente sur vos zones, là où vous n'avez pas encore de retour publié.",
+    underservedNoZones:
+      "Vous n'avez déclaré aucune zone de service. La plateforme ne peut donc pas savoir quels corridors vous proposer.",
+    declareZonesCta: "Déclarer mes zones",
     underservedEmpty:
       "Aucune opportunité à signaler sur vos zones. Déclarez vos gouvernorats dans votre profil pour en recevoir.",
     underservedCount: "{count} demande(s) en attente",
