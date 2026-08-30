@@ -9,7 +9,8 @@ import {
   Loader2,
   RotateCcw,
 } from "lucide-react";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { uploadVerificationDocument } from "@/lib/services/trust";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -106,7 +107,7 @@ function SideUpload({
       formData.append("document_file", file);
       if (expiresAt) formData.append("expires_at", expiresAt);
 
-      await apiClient.upload("/api/trust/documents/", formData);
+      await uploadVerificationDocument(formData);
 
       setSuccess(true);
       setFile(null);

@@ -2,7 +2,12 @@
 
 import React, { useState, useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api/client";
+import {
+  getVerificationDocuments,
+  getVerificationStatus,
+  submitForReview,
+  type DocumentDeVerification as VerificationDoc,
+} from "@/lib/services/trust";
 import { useToast } from "@/components/ui/Toast";
 import { VerificationUpload } from "@/components/trust/VerificationUpload";
 import {
@@ -25,19 +30,9 @@ import { interpolate } from "@/lib/i18n/interpolate";
 /*  Types                                                                      */
 /* -------------------------------------------------------------------------- */
 
-interface VerificationDoc {
-  id: number;
-  document_type: string;
-  file_url: string;
-  is_valid: boolean;
-  uploaded_at: string;
-  rejection_reason: string | null;
-  reviewed_at: string | null;
-  // WS-H — expiration (calculée côté serveur ; jamais recalculée ici).
-  expires_at: string | null;
-  is_expired: boolean;
-  expires_soon: boolean;
-}
+/* -------------------------------------------------------------------------- */
+/*  Types                                                                      */
+/* -------------------------------------------------------------------------- */
 
 /* -------------------------------------------------------------------------- */
 /*  Component                                                                  */
@@ -61,10 +56,9 @@ export default function VerificationPage() {
 
   const fetchStatus = async () => {
     try {
-      const data = await apiClient.get<{ verification_status: string }>(
-        "/api/trust/status/",
-      );
-      setStatus(data.verification_status);
+      // Le service retombe deja sur UNVERIFIED : un statut inconnu ne doit
+      // jamais etre pris pour une verification acquise.
+      setStatus(await getVerificationStatus());
     } catch (e) {
       console.error(e);
       setStatus("UNVERIFIED");
@@ -73,10 +67,7 @@ export default function VerificationPage() {
 
   const fetchDocuments = async () => {
     try {
-      const data = await apiClient.get<VerificationDoc[]>(
-        "/api/trust/documents/",
-      );
-      setDocuments(data);
+      setDocuments(await getVerificationDocuments());
     } catch (e) {
       console.error(e);
     } finally {
@@ -86,7 +77,7 @@ export default function VerificationPage() {
 
   const handleSubmitReview = async () => {
     try {
-      await apiClient.put("/api/trust/submit/", {});
+      await submitForReview();
       showToast("success", t.verify.submitSuccess);
       fetchStatus();
     } catch (e) {

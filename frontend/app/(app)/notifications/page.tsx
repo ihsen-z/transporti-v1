@@ -17,7 +17,12 @@ import {
   Loader2,
   Filter,
 } from "lucide-react";
-import { apiClient } from "@/lib/api/client";
+import {
+  getNotifications,
+  markAllNotificationsAsRead,
+  markNotificationAsRead,
+} from "@/lib/services/notifications";
+import type { Notification } from "@/lib/services/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDate } from "@/lib/format";
@@ -27,17 +32,6 @@ type NotificationsT = AppTranslationKeys["notifications"];
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
 /* -------------------------------------------------------------------------- */
-
-interface Notification {
-  id: number;
-  category: "PAYMENT" | "TRUST" | "JOB" | "DISPUTE" | "REVIEW" | "SYSTEM";
-  type: string;
-  title: string;
-  message: string;
-  is_read: boolean;
-  created_at: string;
-  metadata?: Record<string, any>;
-}
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                    */
@@ -296,12 +290,9 @@ export default function NotificationsPage() {
     if (!silent) setLoading(true);
     setError(null);
     try {
-      const data = await apiClient.get<
-        Notification[] | { results: Notification[] }
-      >("/api/notifications/my/");
-      const items = Array.isArray(data)
-        ? data
-        : (data as { results: Notification[] }).results;
+      // lib/services/notifications.ts existait deja et n etait consomme nulle
+      // part : cet ecran refaisait les trois memes appels en ligne.
+      const { data: items } = await getNotifications();
       setNotifications(items);
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : t.loading;
@@ -341,7 +332,7 @@ export default function NotificationsPage() {
       prev.map((n) => (n.id === id ? { ...n, is_read: true } : n)),
     );
     try {
-      await apiClient.post(`/api/notifications/${id}/read/`);
+      await markNotificationAsRead(id);
     } catch {
       // Revert on failure
       setNotifications((prev) =>
@@ -354,7 +345,7 @@ export default function NotificationsPage() {
     const prevState = notifications.map((n) => ({ ...n }));
     setNotifications((prev) => prev.map((n) => ({ ...n, is_read: true })));
     try {
-      await apiClient.post("/api/notifications/read-all/");
+      await markAllNotificationsAsRead();
     } catch {
       setNotifications(prevState);
     }
