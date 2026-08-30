@@ -81,7 +81,7 @@ livraisons.
 | `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
 | `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
 
-**30/08/2026** — 23 modification(s) de code, 7 mise(s) à jour du plan
+**30/08/2026** — 24 modification(s) de code, 8 mise(s) à jour du plan
 
 | Commit | Objet |
 |---|---|
@@ -115,6 +115,8 @@ livraisons.
 | `32b3b20` | feat(web+mobile): C5.3 - les transporteurs favoris ont enfin une interface |
 | `c7a9426` | docs(plan): C5.2 et C5.3 livres, et je corrige une affirmation trop large |
 | `249b11f` | feat(web): C5.1 - le portefeuille client, et l endpoint qui manquait |
+| `45ea0c6` | docs(plan): C5.1 livre cote web, et l audit de cette ligne etait faux |
+| `ac59204` | feat(mobile): C5.1 - le portefeuille client, en parite avec le web |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
 
@@ -869,7 +871,7 @@ deux rôles qui fera le gros du chemin, en coupant le fichier en deux écrans di
 | **T5.5** Clients fidèles (B-4, favoris inversés) | ⏳ à faire | — | — | Endpoint à écrire |
 | **T5.3** Réputation | ⏳ à faire | — | — | — |
 | **C5.1** Portefeuille client — **web** | ✅ **fait** | `249b11f` | 30/08/2026 | Endpoint `/api/client/wallet/` **créé** : il n'existait pas |
-| **C5.1** Portefeuille client — **mobile** | ⏳ à faire | — | — | Décision 6 : à transposer |
+| **C5.1** Portefeuille client — **mobile** | ✅ **fait** | `ac59204` | 30/08/2026 | Panneau du Profil, 6 tests. Aucun total, vérifié par test |
 | **C5.2** Mes avis — **web** | ✅ **fait** | `116c23a` | 30/08/2026 | Double aveugle respecté, branches masquée et révélée vérifiées |
 | **C5.2** Mes avis — **mobile** | ✅ **déjà livré** | — | — | `useMyReviews` + `ReviewsPanel` existaient — voir ci-dessous |
 | **C5.3** Favoris — **web + mobile** | ✅ **fait** | `32b3b20` | 30/08/2026 | Cycle complet vérifié, 7 tests mobile |
@@ -970,6 +972,19 @@ ne garantit pas.
 **Un défaut introduit puis corrigé dans le même commit** : les hooks React s'exécutent **avant** la
 bifurcation de rôle, si bien qu'un client déclenchait `/api/wallet/` — réservé au transporteur — et
 récoltait deux 403 en console avant même de voir son écran. Trouvé en vérifiant, pas en relisant.
+
+#### C5.1 mobile — un refus vérifié par un test qui cherche un chiffre · *30/08/2026*
+
+La transposition suit la charte : pas de sixième onglet pour un client, donc un panneau du Profil,
+comme les avis et les favoris. Le contenu est identique au web.
+
+Le test le plus utile de ce lot cherche **la chaîne `225`** dans le rendu et exige de **ne pas la
+trouver** — c'est la somme des quatre montants du jeu de test. Documenter « ne pas additionner » dans
+un commentaire n'empêche personne d'ajouter une tuile « total » six mois plus tard ; un test qui
+échoue si le chiffre apparaît, si.
+
+Le panneau n'interroge pas `client/wallet/` tant qu'il est fermé : la vue porte
+`RequireRole('CLIENT')` et répondrait 403 à un transporteur.
 
 ### Lot 6 — Rétention · **non démarré**
 
