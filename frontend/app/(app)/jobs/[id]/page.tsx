@@ -7,6 +7,7 @@ import { apiClient, ApiError } from "@/lib/api/client";
 import type { JobDetail } from "@/lib/types/jobs";
 import { useJobDetail } from "@/hooks/useJobDetail";
 import { TripRequestDialog } from "@/components/jobs/TripRequestDialog";
+import { JobDetailDialogs } from "@/components/jobs/JobDetailDialogs";
 import {
   accepterContreProposition,
   annulerDemandeSurTrajet,
@@ -1174,121 +1175,24 @@ export default function JobDetailsPage() {
       {/* ============================================ */}
       {/* DIALOGUES — remplacent window.confirm/prompt */}
       {/* ============================================ */}
-
-      <ConfirmModal
-        open={activeDialog === "confirmDelivery"}
-        title={t.jobDetail.confirmReceptionTitle}
-        message={t.jobDetail.confirmReceptionMsg}
-        confirmLabel={t.jobDetail.confirmReceptionLabel}
-        confirmColor="brand"
-        loading={confirming}
-        onConfirm={handleConfirmDelivery}
-        onCancel={() => setActiveDialog(null)}
+      <JobDetailDialogs
+        dialogueOuvert={activeDialog}
+        job={job}
+        codeLivraison={deliveryPin}
+        motifAnnulation={cancelReason}
+        confirmationEnCours={confirming}
+        annulationEnCours={cancelling}
+        livraisonEnCours={completing}
+        annulationTransporteurEnCours={transporterCancelling}
+        onCodeChange={setDeliveryPin}
+        onPhotoChange={setPodFile}
+        onMotifChange={setCancelReason}
+        onFermer={() => setActiveDialog(null)}
+        onConfirmerReception={handleConfirmDelivery}
+        onAnnulerLeTransport={handleCancelJob}
+        onMarquerLivre={handleMarkDelivered}
+        onAnnulerCoteTransporteur={handleTransporterCancel}
       />
-
-      <ConfirmModal
-        open={activeDialog === "cancelJob"}
-        title={t.jobDetail.cancelJobTitle}
-        message={t.jobDetail.cancelJobMsg}
-        confirmLabel={t.jobDetail.cancelJobLabel}
-        cancelLabel={t.jobDetail.backLabel}
-        confirmColor="red"
-        loading={cancelling}
-        onConfirm={handleCancelJob}
-        onCancel={() => setActiveDialog(null)}
-      />
-
-      <ConfirmModal
-        open={activeDialog === "markDelivered"}
-        title={t.jobDetail.markDeliveredTitle}
-        message={t.jobDetail.markDeliveredMsg}
-        confirmLabel={t.jobDetail.markDeliveredLabel}
-        confirmColor="brand"
-        loading={completing}
-        onConfirm={handleMarkDelivered}
-        onCancel={() => setActiveDialog(null)}
-        detail={
-          <div className="space-y-3 text-start">
-            {job?.booking_payment_method && (
-              <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  {t.jobDetail.podPinInputLabel}
-                </label>
-                <input
-                  inputMode="numeric"
-                  maxLength={4}
-                  value={deliveryPin}
-                  onChange={(e) =>
-                    setDeliveryPin(
-                      e.target.value.replace(/\D/g, "").slice(0, 4),
-                    )
-                  }
-                  className="w-full px-3 py-2 border rounded-lg text-center text-lg tracking-[0.3em] font-bold focus:ring-2 focus:ring-brand-500"
-                  placeholder="••••"
-                />
-              </div>
-            )}
-            <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                {t.jobDetail.podPhotoLabel}
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={(e) => setPodFile(e.target.files?.[0] ?? null)}
-                className="w-full text-sm text-neutral-500"
-              />
-            </div>
-          </div>
-        }
-      />
-
-      <Modal
-        open={activeDialog === "transporterCancel"}
-        title={t.jobDetail.cancelJobTitle}
-        onClose={() => {
-          setActiveDialog(null);
-          setCancelReason("");
-        }}
-        closeDisabled={transporterCancelling}
-        footer={
-          <>
-            <Button
-              variant="outline"
-              fullWidth
-              disabled={transporterCancelling}
-              onClick={() => {
-                setActiveDialog(null);
-                setCancelReason("");
-              }}
-            >
-              {t.jobDetail.backLabel}
-            </Button>
-            <Button
-              variant="danger"
-              fullWidth
-              loading={transporterCancelling}
-              loadingLabel={t.jobDetail.cancelling}
-              disabled={!cancelReason.trim()}
-              onClick={handleTransporterCancel}
-            >
-              {t.jobDetail.cancelJobLabel}
-            </Button>
-          </>
-        }
-      >
-        <p className="text-sm text-neutral-500 mb-4">
-          {t.jobDetail.transporterCancelBody}
-        </p>
-        <Textarea
-          label={t.jobDetail.cancelReasonLabel}
-          required
-          rows={3}
-          value={cancelReason}
-          onChange={(e) => setCancelReason(e.target.value)}
-          placeholder={t.jobDetail.cancelReasonPlaceholder}
-        />
-      </Modal>
     </div>
   );
 }
