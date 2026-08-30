@@ -684,5 +684,16 @@
     "add": "Ajouter aux favoris",
     "remove": "Retirer des favoris",
     "error": "L'action n'a pas abouti. Réessayez."
+  },
+  "client_wallet": {
+    "title": "Mon portefeuille",
+    "held": "Séquestré",
+    "released": "Versé aux transporteurs",
+    "refunded": "Remboursé",
+    "cod_pending": "À payer en espèces",
+    "no_total": "Ces montants ne s'additionnent pas : ils décrivent des situations différentes.",
+    "history_title": "Mouvements",
+    "empty_title": "Aucun mouvement",
+    "empty_body": "Vos paiements et remboursements apparaîtront ici."
   }
 }

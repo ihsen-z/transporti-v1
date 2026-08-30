@@ -54,3 +54,36 @@ export interface WithdrawalResponse {
 // Dupliqué ici uniquement pour informer l'utilisateur AVANT l'envoi ; le
 // serveur reste l'autorité, l'erreur 400 est affichée telle quelle.
 export const MIN_WITHDRAWAL_TND = 10;
+
+/* ------------------------------------------------------------------ */
+/*  C5.1 — le portefeuille du CLIENT                                   */
+/* ------------------------------------------------------------------ */
+
+// Source : backend/payments/views.py::ClientWalletView (GET client/wallet/).
+//
+// Endpoint DISTINCT de `wallet/`, qui porte RequireRole('TRANSPORTER') et
+// repond 403 a un client. Un client n'a pas de solde : il n'a rien a retirer.
+// Les quatre montants ci-dessous NE S'ADDITIONNENT PAS — ils decrivent des
+// situations differentes, et le backend ne renvoie deliberement aucun total.
+
+export interface ClientWalletHistoryEntry {
+  id: number;
+  job_id: number;
+  status: string;
+  amount: number;
+  pickup_governorate: string;
+  dropoff_governorate: string;
+  date: string;
+}
+
+export interface ClientWalletDto {
+  /** Seques­tre sur des missions en cours : ni depense, ni recuperable. */
+  held: number;
+  /** Verse aux transporteurs apres confirmation de livraison. */
+  released: number;
+  /** Annulations et litiges tranches en faveur du client. */
+  refunded: number;
+  /** Especes non encore livrees. La plateforme n'a jamais tenu cet argent. */
+  cod_pending: number;
+  history: ClientWalletHistoryEntry[];
+}
