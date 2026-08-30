@@ -395,3 +395,131 @@ class AutoReleaseDisputeGuardTests(PaymentsTestBase):
         """A REJECTED dispute (claim dismissed) does not block the transporter."""
         self._dispute('REJECTED')
         self.assertIn(self.escrow, get_escrow_eligible_for_auto_release())
+
+
+class ClientWalletSummaryTests(PaymentsTestBase):
+    """
+    C5.1 — figures d'argent du CLIENT.
+
+    L'audit du plan annonçait « `wallet/` existe, absent de la navigation
+    client ». C'était faux : `TransporterWalletView` porte
+    `RequireRole('TRANSPORTER')` et répond 403 à un client. Ces tests couvrent
+    l'endpoint qui manquait.
+    """
+
+    def _escrow(self, statut, montant, job=None):
+        return EscrowTransaction.objects.create(
+            booking_reference=job or self.job,
+            status=statut,
+            amount=Decimal(montant),
+        )
+
+    def test_separe_seques_tre_verse_et_rembourse(self):
+        from payments.services import get_client_wallet_summary
+
+        self._escrow(EscrowTransaction.Status.HELD, '100.00')
+        self._escrow(EscrowTransaction.Status.RELEASED, '60.00')
+        self._escrow(EscrowTransaction.Status.REFUNDED, '25.00')
+
+        resume = get_client_wallet_summary(self.client_user)
+
+        self.assertEqual(resume['held'], Decimal('100.00'))
+        self.assertEqual(resume['released'], Decimal('60.00'))
+        self.assertEqual(resume['refunded'], Decimal('25.00'))
+
+    def test_ne_renvoie_pas_de_total_depense(self):
+        """
+        Additionner un escrow détenu, un escrow versé et une dette en espèces
+        donnerait un chiffre qui ne correspond à aucune réalité comptable.
+        L'absence de ce total est donc voulue, et ce test la verrouille.
+        """
+        from payments.services import get_client_wallet_summary
+
+        resume = get_client_wallet_summary(self.client_user)
+        self.assertNotIn('total', resume)
+        self.assertNotIn('total_spent', resume)
+
+    def test_ignore_l_argent_des_autres_clients(self):
+        from payments.services import get_client_wallet_summary
+
+        autre = User.objects.create_user(
+            username='pay_client2', email='payclient2@test.tn',
+            password='SecurePass123!', role='CLIENT',
+        )
+        job_autre = TransportJob.objects.create(
+            owner=autre, status='PUBLISHED', job_type='TRANSPORT',
+            pickup_address='Sfax', dropoff_address='Gabes',
+            scheduled_time=timezone.now() + timedelta(days=1),
+        )
+        self._escrow(EscrowTransaction.Status.HELD, '999.00', job=job_autre)
+
+        resume = get_client_wallet_summary(self.client_user)
+        self.assertEqual(resume['held'], Decimal('0'))
+
+    def test_compte_le_cod_non_encore_livre(self):
+        """
+        La plateforme n'a jamais tenu cet argent, mais le client le devra à la
+        livraison. L'omettre lui laisserait croire qu'il ne doit rien.
+        """
+        from payments.services import get_client_wallet_summary
+
+        Booking.objects.create(
+            job=self.job, accepted_offer=self.offer,
+            final_price=Decimal('100.00'), commission_rate=Decimal('0.2000'),
+            payment_method=Booking.PaymentMethod.COD,
+        )
+
+        resume = get_client_wallet_summary(self.client_user)
+        self.assertEqual(resume['cod_pending'], Decimal('100.00'))
+
+    def test_le_cod_livre_ne_compte_plus(self):
+        from payments.services import get_client_wallet_summary
+
+        Booking.objects.create(
+            job=self.job, accepted_offer=self.offer,
+            final_price=Decimal('100.00'), commission_rate=Decimal('0.2000'),
+            payment_method=Booking.PaymentMethod.COD,
+        )
+        self.job.status = TransportJob.Status.COMPLETED
+        self.job.save(update_fields=['status'])
+
+        resume = get_client_wallet_summary(self.client_user)
+        self.assertEqual(resume['cod_pending'], Decimal('0'))
+
+
+class ClientWalletEndpointTests(PaymentsTestBase):
+    """
+    Bornes d'accès de `/api/client/wallet/`.
+
+    Le standard du projet veut que tout endpoint passe par
+    `RequireRole.for_roles(...)`. Ces tests le vérifient pour de bon plutôt que
+    de faire confiance à la déclaration.
+    """
+
+    def setUp(self):
+        super().setUp()
+        from rest_framework.test import APIClient
+        self.api = APIClient()
+
+    def test_un_client_lit_son_portefeuille(self):
+        self.api.force_authenticate(user=self.client_user)
+        reponse = self.api.get('/api/client/wallet/')
+        self.assertEqual(reponse.status_code, 200, reponse.data)
+        for cle in ('held', 'released', 'refunded', 'cod_pending', 'history'):
+            self.assertIn(cle, reponse.data)
+
+    def test_un_transporteur_est_refuse(self):
+        self.api.force_authenticate(user=self.transporter_user)
+        reponse = self.api.get('/api/client/wallet/')
+        self.assertEqual(reponse.status_code, 403)
+
+    def test_anonyme_refuse(self):
+        self.assertEqual(self.api.get('/api/client/wallet/').status_code, 401)
+
+    def test_expose_aussi_sur_la_surface_v1(self):
+        """
+        Double surface API : tout endpoint doit exister sous /api/ ET /api/v1/,
+        sous peine de desynchroniser le mobile.
+        """
+        self.api.force_authenticate(user=self.client_user)
+        self.assertEqual(self.api.get('/api/v1/client/wallet/').status_code, 200)

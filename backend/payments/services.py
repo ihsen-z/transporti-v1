@@ -406,6 +406,59 @@ def get_wallet_summary(transporter) -> dict:
     }
 
 
+def get_client_wallet_summary(client) -> dict:
+    """
+    Figures d'argent d'un CLIENT — miroir de `get_wallet_summary`.
+
+    C5.1. L'audit du plan annoncait « `wallet/` existe, absent de la navigation
+    client » : c'etait faux. `TransporterWalletView` porte
+    `RequireRole('TRANSPORTER')` et repond 403 a un client. Il manquait donc
+    l'endpoint, pas un lien de menu.
+
+    Un client ne possede pas de solde : il n'a rien a retirer. Ce qui le
+    concerne, c'est OU EN EST SON ARGENT :
+
+    - `held` : seques­tre sur des missions en cours. Ni depense ni recuperable
+      — c'est precisement ce que l'escrow promet, et le montre.
+    - `released` : verse aux transporteurs apres confirmation. C'est ce qu'il a
+      REELLEMENT paye via la plateforme.
+    - `refunded` : rembourse (annulation, litige tranche en sa faveur).
+    - `cod_pending` : reservations en especes non encore livrees. La plateforme
+      n'a jamais tenu cet argent ; l'omettre laisserait croire au client qu'il
+      ne doit rien alors qu'il paiera a la livraison.
+
+    Aucun total « depense » n'est renvoye : additionner un escrow detenu, un
+    escrow verse et une dette en especes donnerait un chiffre qui ne correspond
+    a aucune realite comptable.
+    """
+    from django.db.models import Sum
+    from .models import Booking
+
+    escrows = EscrowTransaction.objects.filter(booking_reference__owner=client)
+
+    def _somme(statut):
+        return escrows.filter(status=statut).aggregate(
+            total=Sum('amount')
+        )['total'] or Decimal('0')
+
+    cod_pending = Booking.objects.filter(
+        job__owner=client,
+        payment_method=Booking.PaymentMethod.COD,
+    ).exclude(
+        job__status__in=[
+            TransportJob.Status.COMPLETED,
+            TransportJob.Status.CANCELLED,
+        ]
+    ).aggregate(total=Sum('final_price'))['total'] or Decimal('0')
+
+    return {
+        'held': _somme(EscrowTransaction.Status.HELD),
+        'released': _somme(EscrowTransaction.Status.RELEASED),
+        'refunded': _somme(EscrowTransaction.Status.REFUNDED),
+        'cod_pending': cod_pending,
+    }
+
+
 def derive_net_from_total(job_type: str, total_price: Decimal, is_return_trip: bool = False) -> tuple[Decimal, Decimal]:
     """
     Inverse of the net-guaranteed model, for flows where the CLIENT-facing

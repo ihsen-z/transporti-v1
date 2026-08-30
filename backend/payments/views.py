@@ -465,6 +465,47 @@ class AdminCommissionListView(generics.ListAPIView):
 # TRANSPORTER WALLET (Sprint 2 — WS-A A2, decision D4)
 # =============================================================================
 
+class ClientWalletView(APIView):
+    """
+    GET /api/client/wallet/
+    C5.1 — ou en est l'argent d'un CLIENT : seques­tre, verse, rembourse, et
+    ce qu'il devra en especes.
+
+    Endpoint NOUVEAU. `TransporterWalletView` porte
+    `RequireRole('TRANSPORTER')` et repond 403 a un client : l'audit qui le
+    presentait comme reutilisable cote client se trompait.
+
+    Formules : `payments.services.get_client_wallet_summary`, source unique.
+    """
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
+
+    def get(self, request):
+        from .services import get_client_wallet_summary
+
+        resume = get_client_wallet_summary(request.user)
+
+        # Historique : les mouvements d'escrow sur SES transports, du plus
+        # recent au plus ancien. Le montant vient de l'escrow lui-meme, jamais
+        # d'un recalcul a partir de l'offre.
+        historique = []
+        escrows = EscrowTransaction.objects.filter(
+            booking_reference__owner=request.user
+        ).select_related('booking_reference').order_by('-updated_at')[:50]
+        for e in escrows:
+            job = e.booking_reference
+            historique.append({
+                'id': e.id,
+                'job_id': job.id,
+                'status': e.status,
+                'amount': e.amount,
+                'pickup_governorate': job.pickup_governorate,
+                'dropoff_governorate': job.dropoff_governorate,
+                'date': e.updated_at,
+            })
+
+        return Response({**resume, 'history': historique})
+
+
 class TransporterWalletView(APIView):
     """
     GET /api/wallet/

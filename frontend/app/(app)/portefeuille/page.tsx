@@ -29,6 +29,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDateTime } from "@/lib/format";
 import { useToast } from "@/components/ui/Toast";
+import { ClientWalletView } from "@/components/wallet/ClientWalletView";
 
 export default function WalletPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -58,9 +59,14 @@ export default function WalletPage() {
     }
   }, []);
 
+  // Les hooks s'executent AVANT la bifurcation de role plus bas : sans ce
+  // garde, un client declenchait /api/wallet/ — reserve au transporteur — et
+  // recoltait deux 403 dans la console avant meme de voir son ecran.
+  const estTransporteur = user?.role?.toUpperCase() === "TRANSPORTER";
+
   useEffect(() => {
-    if (!authLoading) fetchWallet();
-  }, [authLoading, fetchWallet]);
+    if (!authLoading && estTransporteur) fetchWallet();
+  }, [authLoading, estTransporteur, fetchWallet]);
 
   const handleWithdraw = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -97,6 +103,12 @@ export default function WalletPage() {
   };
 
   const role = user?.role?.toUpperCase();
+  // C5.1 — la meme route sert les deux roles, avec deux ecrans differents.
+  // Un client n'a pas de solde a retirer : il veut savoir OU EN EST son
+  // argent. L'ecran precedent lui repondait « reserve aux transporteurs ».
+  if (!authLoading && role === "CLIENT") {
+    return <ClientWalletView />;
+  }
   if (!authLoading && role && role !== "TRANSPORTER") {
     return (
       <div className="p-8 text-center text-neutral-500">

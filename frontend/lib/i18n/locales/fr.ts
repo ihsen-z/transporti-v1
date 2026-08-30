@@ -2132,4 +2132,23 @@ export const fr = {
     removed: "Transporteur retiré de vos favoris.",
     toggleError: "L'action n'a pas abouti. Réessayez.",
   },
+  clientWallet: {
+    title: "Mon portefeuille",
+    subtitle: "Où en est votre argent sur la plateforme.",
+    held: "Séquestré",
+    heldHint:
+      "Bloqué sur des missions en cours. Ni dépensé, ni récupérable pour l'instant.",
+    released: "Versé aux transporteurs",
+    releasedHint: "Libéré après confirmation de livraison.",
+    refunded: "Remboursé",
+    refundedHint: "Annulations et litiges tranchés en votre faveur.",
+    codPending: "À payer en espèces",
+    codPendingHint:
+      "Réservations en espèces pas encore livrées. La plateforme n'a jamais tenu cet argent.",
+    historyTitle: "Mouvements",
+    historyEmpty: "Aucun mouvement pour l'instant.",
+    loadError: "Impossible de charger votre portefeuille. Réessayez.",
+    noTotal:
+      "Ces montants ne s'additionnent pas : ils décrivent des situations différentes.",
+  },
 } as const;

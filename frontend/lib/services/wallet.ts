@@ -50,3 +50,38 @@ export function requestWithdrawal(
     bank_details: coordonneesBancaires,
   });
 }
+
+/* ------------------------------------------------------------------ */
+/*  C5.1 — le portefeuille du CLIENT                                   */
+/* ------------------------------------------------------------------ */
+
+export interface LigneHistoriqueClient {
+  id: number;
+  job_id: number;
+  status: string;
+  amount: number;
+  pickup_governorate: string;
+  dropoff_governorate: string;
+  date: string;
+}
+
+/**
+ * Où en est l'argent d'un client. PAS un solde : il n'a rien à retirer.
+ *
+ * Quatre figures qui ne s'additionnent PAS, et c'est voulu :
+ * `held` (séquestré sur des missions en cours), `released` (versé après
+ * confirmation), `refunded`, et `cod_pending` (ce qu'il paiera en espèces).
+ * Les cumuler donnerait un chiffre sans réalité comptable — le service
+ * backend ne renvoie donc aucun total, et l'écran n'en fabrique pas.
+ */
+export interface PortefeuilleClient {
+  held: number;
+  released: number;
+  refunded: number;
+  cod_pending: number;
+  history: LigneHistoriqueClient[];
+}
+
+export function getClientWallet(): Promise<PortefeuilleClient> {
+  return apiClient.get<PortefeuilleClient>("/api/client/wallet/");
+}

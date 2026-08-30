@@ -111,7 +111,13 @@ export default function AppSidebar() {
 
   let mainItems = [...commonItems];
   if (role === "CLIENT") {
-    mainItems = [...clientItems, ...mainItems, favorisItem, avisItem];
+    mainItems = [
+      ...clientItems,
+      ...mainItems,
+      { href: "/portefeuille", icon: Wallet, label: t.nav.wallet },
+      favorisItem,
+      avisItem,
+    ];
   } else if (role === "TRANSPORTER") {
     mainItems = [...mainItems, ...transporterItems, avisItem];
   }

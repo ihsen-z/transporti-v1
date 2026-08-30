@@ -2,7 +2,7 @@ from django.urls import path
 from .views import (
     InitiatePaymentView, PaymentWebhookView, PaymentStatusView,
     VerifyPaymentView, ConfirmCompletionView,
-    TransporterWalletView, WithdrawalRequestCreateView,
+    TransporterWalletView, ClientWalletView, WithdrawalRequestCreateView,
     AdminEscrowReleaseView, AdminCommissionSettleView,
     AdminEscrowListView, AdminCommissionListView
 )
@@ -19,6 +19,8 @@ urlpatterns = [
 
     # Transporter wallet (Sprint 2 — A2)
     path('wallet/', TransporterWalletView.as_view(), name='transporter_wallet'),
+    # C5.1 — le pendant CLIENT. `wallet/` est reserve au transporteur.
+    path('client/wallet/', ClientWalletView.as_view(), name='client_wallet'),
     path('wallet/withdrawals/', WithdrawalRequestCreateView.as_view(), name='wallet_withdrawal_create'),
     
     # Admin endpoints
