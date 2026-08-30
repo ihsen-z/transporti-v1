@@ -693,8 +693,13 @@ valoriser. La clause a été resserrée.
 | 4.1 Quatre confirmations → `JobDetailDialogs` | ✅ **fait** | `c82edd3` | 29/08/2026 | 1294 → 1198 |
 | 4.1 Panneau client d'un retour → `ReturnTripClientPanel` | ✅ **fait** | `59a529e` | 29/08/2026 | 1198 → 1050 |
 | 4.1 Mission en cours → `MissionInProgressPanel` | ✅ **fait** | `b3cb53f` | 29/08/2026 | 1050 → 939 |
+| 4.1 Mission attribuée → `MissionMatchedPanel` | ✅ **fait** | `b038408` | 29/08/2026 | 939 → 873 |
 | 4.1 Séparation des deux rôles → `/missions/[id]` + `/trajets/[id]` | ⏳ à faire | — | — | La seule étape qui change le routage |
-| 4.2 Couche service : portefeuille, litiges, trust, avis, messagerie | ⏳ à faire | — | — | — |
+| 4.2 Litiges → `lib/services/disputes.ts` | ✅ **fait** | `fd521dc` | 29/08/2026 | 3 appels sortis, 2 règles métier remontées |
+| 4.2 Portefeuille → `lib/services/wallet.ts` | ✅ **fait** | `5598792` | 29/08/2026 | 2 appels sortis |
+| 4.2 Messagerie → `lib/services/messaging.ts` | ✅ **fait** | `b062fe6` | 29/08/2026 | 4 appels, types dédupliqués, ordre prouvé |
+| 4.2 Profils et avis → `lib/services/profiles.ts` | ✅ **fait** | `de32eb7` | 29/08/2026 | 8 appels sortis, 3 défauts corrigés |
+| 4.2 Écrans restants (`compte`, `reservation`, `documents`, `notifications`…) | ⏳ à faire | — | — | 19 fichiers portent encore des appels en ligne |
 
 **`jobs/[id]/page.tsx` : 1517 → 939 lignes**, et plus un seul appel réseau. Parcours repassé vert
 après **chacune** des six étapes, comme le plan l'exige.
@@ -725,6 +730,30 @@ rendues à la page. Aucun écart inexpliqué n'est accepté.
 
 Le troisième est le plus instructif : l'extraction n'a rien cassé, elle a **déplacé le minutage** et
 révélé un défaut de préparation présent depuis le 29/08 au matin.
+
+#### Lot 4.2 — ce que le déplacement a révélé · *29/08/2026*
+
+La cible du plan est mesurable : **aucun appel réseau hors de `lib/`**. Au démarrage, **25 fichiers de
+`app/` en portaient**. Quatre domaines sont traités ; il en reste 19.
+
+Le déplacement n'a jamais été qu'un déplacement. À chaque domaine, un défaut est sorti :
+
+| Domaine | Ce qui n'allait pas |
+|---|---|
+| Litiges | Deux appels typés `any`. Le `?? []` sur une forme inconnue masquait aussi bien une page vide qu'un contrat rompu. Deux **règles métier** traînaient dans l'écran : le choix de l'endpoint selon le rôle, et le filtre sur les statuts éligibles |
+| Portefeuille | Rien de cassé, mais deux règles jamais écrites : les figures d'argent viennent **toutes** du serveur, et le montant d'un retrait part en **chaîne** — un flottant JSON perdrait des centimes sur un `Decimal` |
+| Messagerie | Deux copies du même type de message, une par écran. Le retournement chronologique vivait dans l'écran : l'oublier afficherait une discussion à l'envers **sans rien casser d'autre** |
+| Profils et avis | La page transporteur laissait un échec des **avis** faire tomber tout l'écran — un profil valide s'affichait « introuvable ». Le type d'avis existait en deux versions, dont une **incomplète** (`aspects` et `is_revealed` omis, que le composant d'affichage lit pourtant). Et `userId` pouvait valoir `null` |
+
+**`userId` null est le même motif que `jobId` null au 4.1** : un gabarit de chaîne fabrique
+`/api/…/null/` et attend la réponse du serveur pour l'apprendre. Le typage d'une fonction de service
+le rend visible à la compilation. C'est l'argument le plus concret en faveur de cette couche, avant
+même la testabilité.
+
+**Ces écrans ne sont couverts par aucun parcours.** Leur vérification est faite en chargeant chaque
+page avec une **vraie session**, en observant les appels réseau et la console. Pour la messagerie, où
+un ordre inversé ne casse rien, deux messages ont été postés puis relus : l'API les rend `ZZBB, ZZAA`,
+la page affiche `ZZAA` au-dessus. Ils restent dans la base de développement.
 
 #### Ce que le découpage ne fait pas · *29/08/2026*
 
