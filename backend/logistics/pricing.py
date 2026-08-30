@@ -14,17 +14,25 @@ from decimal import Decimal
 
 logger = logging.getLogger('transporti')
 
-# Fallback pricing grids (used when no PricingGrid in DB)
+# Repli utilise quand aucune PricingGrid active n'existe en base.
+#
+# IMPERATIF : ces valeurs doivent rester alignees sur les grilles servies,
+# telles que recalibrees par les migrations 0016 (TRANSPORT) et 0017 (MOVING).
+# Le repli est un chemin muet — il ne leve rien, ne trace rien de visible pour
+# le client. Une divergence ici fait retomber le budget suggere sur l'ancien
+# tarif MUTUALISE, environ quatre fois trop bas, sans aucun signal. C'est
+# exactement ce qui s'etait produit entre 0016 et 0017 : la grille TRANSPORT
+# etait recalibree en base, ce repli non.
 DEFAULT_GRIDS = {
     'TRANSPORT': {
         'base_rate': 10.0,
-        'per_km_rate': 0.35,
+        'per_km_rate': 1.384,   # aligne sur 0016
         'min_price': 25.0,
         'max_multiplier': 1.5,
     },
     'MOVING': {
-        'base_rate': 30.0,
-        'per_km_rate': 0.50,
+        'base_rate': 100.0,     # aligne sur 0017
+        'per_km_rate': 1.50,    # aligne sur 0017
         'min_price': 80.0,
         'max_multiplier': 2.0,
     },
