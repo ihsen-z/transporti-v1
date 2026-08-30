@@ -180,11 +180,10 @@ test.describe("Parcours C — la negociation converge", () => {
   }) => {
     // Les autres tests du parcours CONSOMMENT les demandes en attente : sans
     // provisionnement, ce test dependait de l'ordre d'execution.
-    const trajetsCouverts = await preparerDemandesEnAttente(request, 2);
-    test.skip(
-      trajetsCouverts < 2,
-      "moins de deux trajets retour publies : la consolidation n'est pas demontrable",
-    );
+    // La preparation LEVE quand elle n'y arrive pas, plutot que de rendre un
+    // compte insuffisant : ce test s'ignorait alors lui-meme, et la suite
+    // paraissait verte sans avoir rien verifie de la consolidation.
+    await preparerDemandesEnAttente(request, 2);
 
     await seConnecter(page, "transporteur");
 

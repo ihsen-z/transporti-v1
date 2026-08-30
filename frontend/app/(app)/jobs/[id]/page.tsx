@@ -6,6 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import type { JobDetail } from "@/lib/types/jobs";
 import { useJobDetail } from "@/hooks/useJobDetail";
+import { TripRequestDialog } from "@/components/jobs/TripRequestDialog";
 import {
   accepterContreProposition,
   annulerDemandeSurTrajet,
@@ -855,202 +856,23 @@ export default function JobDetailsPage() {
             )}
 
             {/* Booking Confirmation Modal */}
-            {showBookingModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-                <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-fade-in-up">
-                  {/* Modal Header */}
-                  <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-5">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
-                        <RotateCcw className="w-5 h-5 text-white" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-bold text-white">
-                          {job.instant_booking
-                            ? t.jobDetail.confirmBooking
-                            : t.jobDetail.sendRequestTitle}
-                        </h3>
-                        <p className="text-sm text-purple-200">
-                          {interpolate(t.jobDetail.returnTripRef, {
-                            id: job.id,
-                          })}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Modal Body */}
-                  <div className="px-6 py-5 space-y-4">
-                    {/* Route summary */}
-                    <div className="bg-neutral-50 rounded-xl p-4">
-                      <div className="flex items-center gap-3 text-sm">
-                        <div className="flex flex-col items-center">
-                          <div className="w-2.5 h-2.5 rounded-full bg-orange-500" />
-                          <div className="w-0.5 h-5 bg-neutral-300 my-0.5" />
-                          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-                        </div>
-                        <div className="space-y-2">
-                          <p className="font-medium text-neutral-900">
-                            {job.pickup_address}
-                          </p>
-                          <p className="font-medium text-neutral-900">
-                            {job.dropoff_address}
-                          </p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* D5 — goods description (structured request mode) */}
-                    {!job.instant_booking && (
-                      <div>
-                        <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
-                          {t.jobDetail.requestDescriptionLabel}
-                        </label>
-                        <textarea
-                          data-testid="demande-marchandise"
-                          value={bookingDescription}
-                          onChange={(e) =>
-                            setBookingDescription(e.target.value)
-                          }
-                          maxLength={1000}
-                          className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all h-20"
-                          placeholder={
-                            t.jobDetail.requestDescriptionPlaceholder
-                          }
-                        />
-                      </div>
-                    )}
-
-                    {/* Price input (negotiable) */}
-                    <div>
-                      <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
-                        {t.jobDetail.proposedPrice}
-                      </label>
-                      <div className="relative">
-                        <input
-                          data-testid="demande-prix"
-                          type="number"
-                          min="1"
-                          step="0.01"
-                          value={bookingPrice}
-                          onChange={(e) => setBookingPrice(e.target.value)}
-                          className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-lg font-bold text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
-                          placeholder={t.jobDetail.priceExample}
-                        />
-                        <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-medium text-neutral-400">
-                          {t.jobsList.tnd}
-                        </span>
-                      </div>
-                      <p className="text-xs text-neutral-500 mt-1">
-                        {interpolate(t.jobDetail.transporterIndicative, {
-                          price: String(job.price_tnd_min || "—"),
-                        })}
-                      </p>
-                    </div>
-
-                    {/* Payment method */}
-                    <div>
-                      <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
-                        {t.jobDetail.paymentMethod}
-                      </label>
-                      <div className="grid grid-cols-2 gap-2">
-                        <button
-                          type="button"
-                          onClick={() => setBookingPayment("DIGITAL")}
-                          className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                            bookingPayment === "DIGITAL"
-                              ? "border-purple-500 bg-purple-50 text-purple-700"
-                              : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                          }`}
-                        >
-                          <CreditCard className="w-4 h-4" />
-                          {t.jobDetail.securePayment}
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => setBookingPayment("COD")}
-                          className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                            bookingPayment === "COD"
-                              ? "border-purple-500 bg-purple-50 text-purple-700"
-                              : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                          }`}
-                        >
-                          <Wallet className="w-4 h-4" />
-                          {t.jobDetail.onDelivery}
-                        </button>
-                      </div>
-                      {bookingPayment === "COD" &&
-                        parseFloat(bookingPrice) > 300 && (
-                          <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
-                            <AlertCircle className="w-3 h-3" />
-                            {t.jobDetail.codMax}
-                          </p>
-                        )}
-                    </div>
-                  </div>
-
-                  {/* Modal Footer */}
-                  <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex gap-3">
-                    <button
-                      onClick={() => setShowBookingModal(false)}
-                      disabled={bookingLoading}
-                      className="flex-1 py-3 border-2 border-neutral-200 text-neutral-700 rounded-xl font-medium hover:bg-neutral-100 transition-colors"
-                    >
-                      {t.common.cancel}
-                    </button>
-                    <button
-                      data-testid="demande-submit"
-                      onClick={
-                        job.instant_booking
-                          ? handleBookReturnTrip
-                          : handleSendTripRequest
-                      }
-                      disabled={
-                        bookingLoading ||
-                        !bookingPrice ||
-                        parseFloat(bookingPrice) <= 0 ||
-                        (!job.instant_booking && !bookingDescription.trim()) ||
-                        (bookingPayment === "COD" &&
-                          parseFloat(bookingPrice) > 300)
-                      }
-                      className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                    >
-                      {bookingLoading ? (
-                        <span className="flex items-center gap-2">
-                          <svg
-                            className="animate-spin h-4 w-4"
-                            viewBox="0 0 24 24"
-                          >
-                            <circle
-                              className="opacity-25"
-                              cx="12"
-                              cy="12"
-                              r="10"
-                              stroke="currentColor"
-                              strokeWidth="4"
-                              fill="none"
-                            />
-                            <path
-                              className="opacity-75"
-                              fill="currentColor"
-                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                            />
-                          </svg>
-                          {t.jobDetail.booking}
-                        </span>
-                      ) : (
-                        <>
-                          <CheckCircle className="w-4 h-4" />
-                          {job.instant_booking
-                            ? t.jobDetail.confirm
-                            : t.jobDetail.sendRequestCta}
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
+            <TripRequestDialog
+              ouvert={showBookingModal}
+              job={job}
+              description={bookingDescription}
+              prix={bookingPrice}
+              paiement={bookingPayment}
+              enCours={bookingLoading}
+              onDescriptionChange={setBookingDescription}
+              onPrixChange={setBookingPrice}
+              onPaiementChange={setBookingPayment}
+              onFermer={() => setShowBookingModal(false)}
+              onValider={
+                job.instant_booking
+                  ? handleBookReturnTrip
+                  : handleSendTripRequest
+              }
+            />
 
             {/* Trust & Security Banner */}
             <div className="bg-white rounded-xl shadow-sm p-4 border border-neutral-200">

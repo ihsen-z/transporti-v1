@@ -298,16 +298,30 @@ export async function preparerDemandesEnAttente(
     ).map((d) => d.job),
   );
 
-  const trajets = await request.get(
-    `${BACKEND_URL}/api/jobs/transporter/?type=owned`,
-    { headers: enTete(jetonTransporteur) },
-  );
-  const publies = (
-    await listeDe<{ status: string; is_return_trip: boolean; id: number }>(
-      trajets,
-      "GET /api/jobs/transporter/?type=owned",
-    )
-  ).filter((t) => t.is_return_trip && t.status === "PUBLISHED");
+  // Les trajets sont lus sur l'endpoint PUBLIC, celui que voit le client.
+  // La liste du transporteur contient aussi ses trajets PERIMES : ils restent
+  // PUBLISHED mais `JobPublicListView` les ecarte, si bien qu'une demande
+  // creee sur l'un d'eux n'apparaissait nulle part. La preparation croyait
+  // avoir couvert deux trajets, le test n'en voyait qu'un, et il s'ignorait.
+  const publies: { id: number }[] = [];
+  for (const depart of [CORRIDOR.depart, CORRIDOR.departSecondaire]) {
+    const parametres = new URLSearchParams({
+      is_return_trip: "true",
+      pickup_governorate: depart,
+      dropoff_governorate: CORRIDOR.arrivee,
+      page_size: "50",
+    });
+    const visibles = await request.get(
+      `${BACKEND_URL}/api/jobs/public/?${parametres.toString()}`,
+      { headers: enTete(jetonClient) },
+    );
+    publies.push(
+      ...(await listeDe<{ id: number }>(
+        visibles,
+        `GET /api/jobs/public/ (${depart} vers ${CORRIDOR.arrivee})`,
+      )),
+    );
+  }
 
   for (const trajet of publies) {
     if (dejaLa.size >= minimum) break;
@@ -325,6 +339,16 @@ export async function preparerDemandesEnAttente(
     );
     // Un refus signifie qu'une demande y est deja en cours : on passe.
     if (creation.ok()) dejaLa.add(trajet.id);
+  }
+
+  if (dejaLa.size < minimum) {
+    // NE PAS rendre un compte insuffisant en silence : l'appelant s'ignorait
+    // alors lui-meme, et la suite paraissait verte sans avoir rien verifie.
+    throw new Error(
+      `Impossible de preparer ${minimum} demandes en attente sur des trajets ` +
+        `distincts : ${dejaLa.size} obtenue(s) sur ${publies.length} trajet(s) ` +
+        "visible(s). Verifier POST /api/jobs/<id>/requests/.",
+    );
   }
   return dejaLa.size;
 }
