@@ -699,7 +699,11 @@ valoriser. La clause a été resserrée.
 | 4.2 Portefeuille → `lib/services/wallet.ts` | ✅ **fait** | `5598792` | 29/08/2026 | 2 appels sortis |
 | 4.2 Messagerie → `lib/services/messaging.ts` | ✅ **fait** | `b062fe6` | 29/08/2026 | 4 appels, types dédupliqués, ordre prouvé |
 | 4.2 Profils et avis → `lib/services/profiles.ts` | ✅ **fait** | `de32eb7` | 29/08/2026 | 8 appels sortis, 3 défauts corrigés |
-| 4.2 Écrans restants (`compte`, `reservation`, `documents`, `notifications`…) | ⏳ à faire | — | — | 19 fichiers portent encore des appels en ligne |
+| 4.2 Compte → `lib/services/account.ts` | ✅ **fait** | `4c80274` | 29/08/2026 | 5 appels, 2 imports morts supprimés |
+| 4.2 Réservation et escrow → `lib/services/bookings.ts` | ✅ **fait** | `5486760` | 29/08/2026 | 4 appels, initiation de paiement dédupliquée |
+| 4.2 Recherche et alertes → `lib/services/search.ts` | ✅ **fait** | `9bea619` | 29/08/2026 | 4 appels, traduction du tri nommée |
+| 4.2 Notifications et vérification → `notifications.ts`, `trust.ts` | ✅ **fait** | `14004c9` | 29/08/2026 | Service existant enfin consommé |
+| 4.2 Écrans restants | ⏳ à faire | — | — | **10 écrans hors admin**, 4 écrans d'admin, 8 composants |
 
 **`jobs/[id]/page.tsx` : 1517 → 939 lignes**, et plus un seul appel réseau. Parcours repassé vert
 après **chacune** des six étapes, comme le plan l'exige.
@@ -743,6 +747,11 @@ Le déplacement n'a jamais été qu'un déplacement. À chaque domaine, un défa
 | Litiges | Deux appels typés `any`. Le `?? []` sur une forme inconnue masquait aussi bien une page vide qu'un contrat rompu. Deux **règles métier** traînaient dans l'écran : le choix de l'endpoint selon le rôle, et le filtre sur les statuts éligibles |
 | Portefeuille | Rien de cassé, mais deux règles jamais écrites : les figures d'argent viennent **toutes** du serveur, et le montant d'un retrait part en **chaîne** — un flottant JSON perdrait des centimes sur un `Decimal` |
 | Messagerie | Deux copies du même type de message, une par écran. Le retournement chronologique vivait dans l'écran : l'oublier afficherait une discussion à l'envers **sans rien casser d'autre** |
+| Compte | Deux **imports morts** (`getAccessToken`, `config`), vestiges d'un `fetch` manuel disparu. Ils laissaient croire que l'écran parlait encore au réseau en direct |
+| Réservation | `BookingData`, `JobData`, `EscrowData` **déclarés puis ignorés** : les appels étaient en `any`. Et l'initiation de paiement existait en **deux versions du même endpoint**, l'une avec `platform: "web"`, l'autre sans, sans que rien ne dise laquelle faisait foi |
+| Recherche | La traduction du tri était une cascade de `if` au milieu du rendu : `newest` devenait `-created_at`, et rien ne le disait ailleurs |
+| Notifications | **`lib/services/notifications.ts` existait déjà**, avec exactement les trois fonctions nécessaires, et l'écran les réimplémentait en ligne. Le pendant exact des endpoints livrés sans interface déjà recensés ici |
+| Vérification | Les appels vivaient dans **deux endroits sans se connaître** : `/documents` lisait, `VerificationUpload` téléversait |
 | Profils et avis | La page transporteur laissait un échec des **avis** faire tomber tout l'écran — un profil valide s'affichait « introuvable ». Le type d'avis existait en deux versions, dont une **incomplète** (`aspects` et `is_revealed` omis, que le composant d'affichage lit pourtant). Et `userId` pouvait valoir `null` |
 
 **`userId` null est le même motif que `jobId` null au 4.1** : un gabarit de chaîne fabrique
