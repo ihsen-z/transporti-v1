@@ -5,6 +5,7 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import type { JobDetail } from "@/lib/types/jobs";
+import { useJobDetail } from "@/hooks/useJobDetail";
 import {
   accepterContreProposition,
   annulerDemandeSurTrajet,
@@ -69,11 +70,9 @@ export default function JobDetailsPage() {
   const router = useRouter();
   const { user } = useAuth();
   const searchParams = useSearchParams();
-  const [job, setJob] = useState<JobDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState<"network" | "not_found" | null>(
-    null,
-  );
+  const jobId = params?.id
+    ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id)
+    : null;
   const [confirming, setConfirming] = useState(false);
   const [cancelling, setCancelling] = useState(false);
   const [completing, setCompleting] = useState(false);
@@ -170,45 +169,15 @@ export default function JobDetailsPage() {
     }
   };
 
-  const jobId = params?.id
-    ? parseInt(Array.isArray(params.id) ? params.id[0] : params.id)
-    : null;
-
-  useEffect(() => {
-    if (jobId) fetchJob();
-  }, [jobId]);
-
-  const fetchJob = async () => {
-    //  vient de l'URL et vaut null si le segment n'est pas un nombre.
-    // L'appel en ligne fabriquait alors `/api/jobs/null/` sans rien signaler ;
-    // le service, lui, est type, et le cas doit etre traite.
-    if (jobId === null) {
-      setFetchError("not_found");
-      setLoading(false);
-      return;
-    }
-    setLoading(true);
-    setFetchError(null);
-    try {
-      const data = await getJobDetail(jobId);
-      setJob(data as JobDetail);
-    } catch (error) {
-      console.error("Error fetching job:", error);
-      // Distinguer "le job n'existe pas / accès refusé" (4xx) d'une panne
-      // réseau ou serveur, pour ne pas afficher un faux "introuvable".
-      if (
-        error instanceof ApiError &&
-        error.status >= 400 &&
-        error.status < 500
-      ) {
-        setFetchError("not_found");
-      } else {
-        setFetchError("network");
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  // Lecture deleguee a useJobDetail : etat, effet de chargement et distinction
+  // des erreurs vivaient jusqu'ici au milieu des douze gestionnaires d'action.
+  // Les noms sont conserves pour que ce commit ne fasse QUE deplacer.
+  const {
+    transport: job,
+    chargement: loading,
+    erreur: fetchError,
+    relire: fetchJob,
+  } = useJobDetail(jobId);
 
   const handleConfirmDelivery = async () => {
     setActiveDialog(null);
