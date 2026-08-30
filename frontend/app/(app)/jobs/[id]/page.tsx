@@ -9,6 +9,7 @@ import { useJobDetail } from "@/hooks/useJobDetail";
 import { TripRequestDialog } from "@/components/jobs/TripRequestDialog";
 import { JobDetailDialogs } from "@/components/jobs/JobDetailDialogs";
 import { ReturnTripClientPanel } from "@/components/jobs/ReturnTripClientPanel";
+import { MissionInProgressPanel } from "@/components/jobs/MissionInProgressPanel";
 import {
   accepterContreProposition,
   annulerDemandeSurTrajet,
@@ -835,130 +836,18 @@ export default function JobDetailsPage() {
 
             {/* In Progress Status */}
             {job.status === "IN_PROGRESS" && (
-              <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-brand-700">
-                <h3 className="font-bold flex items-center gap-2 mb-2">
-                  <Clock className="w-5 h-5" />
-                  {t.jobDetail.missionInProgress}
-                </h3>
-                <p className="text-sm">
-                  {isAssignedTransporter
-                    ? t.jobDetail.assignedToYou
-                    : t.jobDetail.transporterAssignedInfo}
-                </p>
-
-                {/* D2' — mission timeline (visible to both parties) */}
-                {(job.events?.length ?? 0) > 0 && (
-                  <ul className="mt-3 space-y-1 text-xs">
-                    {(job.events ?? []).map((e, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center gap-2 text-brand-700"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
-                        <span>
-                          {(
-                            {
-                              ARRIVED_PICKUP: t.jobDetail.eventArrivedPickup,
-                              LOADED: t.jobDetail.eventLoaded,
-                              DELIVERED: t.jobDetail.eventDelivered,
-                            } as Record<string, string>
-                          )[e.event] || e.event}
-                        </span>
-                        <span className="text-brand-400 ms-auto">
-                          {formatDateTime(e.created_at)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-
-                {/* D7 — the paying client holds the delivery code */}
-                {job.delivery_pin && !isAssignedTransporter && (
-                  <div className="mt-3 p-3 bg-white border-2 border-dashed border-brand-300 rounded-lg text-center">
-                    <p className="text-xs text-neutral-500 mb-1">
-                      {t.jobDetail.deliveryPinLabel}
-                    </p>
-                    <p className="text-2xl font-bold tracking-[0.4em] text-brand-700">
-                      {job.delivery_pin}
-                    </p>
-                    <p className="text-[11px] text-neutral-400 mt-1">
-                      {t.jobDetail.deliveryPinHint}
-                    </p>
-                  </div>
-                )}
-
-                <div className="mt-3 space-y-2">
-                  {/* D2' — next milestone for the assigned transporter */}
-                  {isAssignedTransporter &&
-                    !(job.events ?? []).some(
-                      (e) => e.event === "ARRIVED_PICKUP",
-                    ) && (
-                      <button
-                        onClick={() => handleLogMilestone("ARRIVED_PICKUP")}
-                        disabled={milestoneLoading}
-                        className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        <MapPin className="w-4 h-4" />
-                        {t.jobDetail.milestoneArrived}
-                      </button>
-                    )}
-                  {isAssignedTransporter &&
-                    (job.events ?? []).some(
-                      (e) => e.event === "ARRIVED_PICKUP",
-                    ) &&
-                    !(job.events ?? []).some((e) => e.event === "LOADED") && (
-                      <button
-                        onClick={() => handleLogMilestone("LOADED")}
-                        disabled={milestoneLoading}
-                        className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2 disabled:opacity-50"
-                      >
-                        <Truck className="w-4 h-4" />
-                        {t.jobDetail.milestoneLoaded}
-                      </button>
-                    )}
-                  {/* P0-01: CTA "Marquer comme livré" — Transporteur uniquement */}
-                  {showMarkDelivered && (
-                    <button
-                      onClick={() => setActiveDialog("markDelivered")}
-                      disabled={completing}
-                      className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 hover:shadow-md hover:shadow-emerald-600/20"
-                    >
-                      {completing ? (
-                        <Clock className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <Package className="w-4 h-4" />
-                      )}
-                      {completing
-                        ? t.jobDetail.confirming
-                        : t.jobDetail.markDelivered}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => router.push(`/messages/${job.id}`)}
-                    className="w-full py-2 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 flex items-center justify-center gap-2"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    {t.jobDetail.openMessaging}
-                  </button>
-                  <Link
-                    href={`/reservation/${job.id}`}
-                    className="w-full py-2 border border-brand-600/30 text-brand-700 rounded-lg font-medium hover:bg-brand-600/5 flex items-center justify-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    {t.jobDetail.viewBooking}
-                  </Link>
-                  {/* P2-03: Cancel mutuel — transporteur peut annuler */}
-                  {isAssignedTransporter && (
-                    <button
-                      onClick={() => setActiveDialog("transporterCancel")}
-                      className="w-full py-2 border border-red-300 text-red-600 rounded-lg font-medium hover:bg-red-50 flex items-center justify-center gap-2 text-sm transition-colors"
-                    >
-                      <XCircle className="w-4 h-4" />
-                      {t.jobDetail.cancelMission}
-                    </button>
-                  )}
-                </div>
-              </div>
+              <MissionInProgressPanel
+                job={job}
+                estLeTransporteurAssigne={isAssignedTransporter}
+                peutMarquerLivre={showMarkDelivered}
+                jalonEnCours={milestoneLoading}
+                livraisonEnCours={completing}
+                onEnregistrerJalon={handleLogMilestone}
+                onDemanderLaLivraison={() => setActiveDialog("markDelivered")}
+                onDemanderLAnnulation={() =>
+                  setActiveDialog("transporterCancel")
+                }
+              />
             )}
 
             {/* ============================================ */}
