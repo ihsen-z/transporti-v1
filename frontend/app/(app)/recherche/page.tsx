@@ -5,7 +5,15 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import {
+  createCorridorAlert,
+  deleteCorridorAlert,
+  getCorridorAlerts,
+  searchReturnTrips,
+  type AlerteCorridor,
+} from "@/lib/services/search";
+import type { JobFeedItem } from "@/components/jobs/JobFeedCard";
 import { JobFeedCard } from "@/components/jobs/JobFeedCard";
 import { useToast } from "@/components/ui/Toast";
 import {
@@ -53,7 +61,9 @@ const GOVERNORATES = [
 export default function ReturnTripsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { t } = useAppI18n();
-  const [jobs, setJobs] = useState<any[]>([]);
+  // Type permissif herite de JobFeedItem : le durcir fait tomber une cascade
+  // sur une quinzaine de champs et merite son propre chantier.
+  const [jobs, setJobs] = useState<JobFeedItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [totalCount, setTotalCount] = useState(0);
   const [currentPage, setCurrentPage] = useState(1);
@@ -68,17 +78,14 @@ export default function ReturnTripsPage() {
   const { showToast } = useToast();
   const [alertLoading, setAlertLoading] = useState(false);
   // Sprint 5 — client's active corridor alerts (list + delete)
-  const [myAlerts, setMyAlerts] = useState<
-    { id: number; pickup_governorate: string; dropoff_governorate: string }[]
-  >([]);
+  const [myAlerts, setMyAlerts] = useState<AlerteCorridor[]>([]);
 
   const fetchMyAlerts = async () => {
     if (user?.role?.toUpperCase() !== "CLIENT") return;
     try {
-      const d = await apiClient.get<{ results: typeof myAlerts }>(
-        "/api/corridor-alerts/",
-      );
-      setMyAlerts(d.results ?? []);
+      // Le service rend une liste vide en cas d'echec : le bloc des alertes
+      // est facultatif et ne doit pas priver le client des resultats.
+      setMyAlerts(await getCorridorAlerts());
     } catch (_e) {
       /* silencieux — bloc optionnel */
     }
@@ -91,7 +98,7 @@ export default function ReturnTripsPage() {
 
   const handleDeleteAlert = async (id: number) => {
     try {
-      await apiClient.delete(`/api/corridor-alerts/${id}/`);
+      await deleteCorridorAlert(id);
       setMyAlerts((prev) => prev.filter((a) => a.id !== id));
       showToast("success", t.returnTrips.alertDeleted);
     } catch (_e) {
@@ -103,10 +110,10 @@ export default function ReturnTripsPage() {
   const handleCreateAlert = async () => {
     setAlertLoading(true);
     try {
-      await apiClient.post("/api/corridor-alerts/", {
-        pickup_governorate: filters.pickup_governorate,
-        dropoff_governorate: filters.dropoff_governorate,
-      });
+      await createCorridorAlert(
+        filters.pickup_governorate,
+        filters.dropoff_governorate,
+      );
       showToast("success", t.returnTrips.alertCreated);
       fetchMyAlerts();
     } catch (error) {
@@ -144,39 +151,18 @@ export default function ReturnTripsPage() {
 
     setLoading(true);
     try {
-      const queryParams = new URLSearchParams();
-      queryParams.append("is_return_trip", "true");
-      queryParams.append("page", String(currentPage));
-      queryParams.append("page_size", String(PAGE_SIZE));
-
-      if (filters.pickup_governorate)
-        queryParams.append("pickup_governorate", filters.pickup_governorate);
-      if (filters.dropoff_governorate)
-        queryParams.append("dropoff_governorate", filters.dropoff_governorate);
-
-      if (sortBy === "newest") queryParams.append("ordering", "-created_at");
-      else if (sortBy === "price_asc")
-        queryParams.append("ordering", "price_tnd_min");
-      else if (sortBy === "price_desc")
-        queryParams.append("ordering", "-price_tnd_min");
-
-      const response = await apiClient.get<any>(
-        `/api/jobs/public/?${queryParams.toString()}`,
-      );
+      const resultats = await searchReturnTrips({
+        pickup_governorate: filters.pickup_governorate,
+        dropoff_governorate: filters.dropoff_governorate,
+        page: currentPage,
+        pageSize: PAGE_SIZE,
+        tri: sortBy,
+      });
 
       if (estPerimee()) return;
 
-      if (response.results) {
-        setJobs(response.results);
-        setTotalCount(response.count || response.results.length);
-      } else if (Array.isArray(response)) {
-        const start = (currentPage - 1) * PAGE_SIZE;
-        setJobs(response.slice(start, start + PAGE_SIZE));
-        setTotalCount(response.length);
-      } else {
-        setJobs([]);
-        setTotalCount(0);
-      }
+      setJobs(resultats.trajets);
+      setTotalCount(resultats.total);
     } catch (error) {
       if (estPerimee()) return;
       console.error("Error fetching return trips:", error);
