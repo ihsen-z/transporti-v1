@@ -9,7 +9,8 @@ import {
   ArrowRight,
   Info,
 } from "lucide-react";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { withdrawOffer } from "@/lib/services/offers";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDateTime } from "@/lib/format";
 import { useToast } from "@/components/ui/Toast";
@@ -66,7 +67,7 @@ export function MyOfferCard({ offer, onChanged }: MyOfferCardProps) {
   const handleWithdraw = async () => {
     setWithdrawing(true);
     try {
-      await apiClient.post(`/api/offers/${offer.id}/withdraw/`, {});
+      await withdrawOffer(offer.id);
       showToast("success", t.withdrawSuccess);
       setConfirmOpen(false);
       onChanged();

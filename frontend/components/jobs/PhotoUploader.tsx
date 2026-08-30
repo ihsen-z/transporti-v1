@@ -2,8 +2,13 @@
 
 import React, { useRef, useState, useCallback } from "react";
 import { Camera, ImagePlus, X, Loader2 } from "lucide-react";
-import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
-import { compressImage, validateImageFile, getMediaUrl } from "@/lib/imageUtils";
+import { ApiError, getErrorMessage } from "@/lib/api/client";
+import { uploadPhoto } from "@/lib/services/media";
+import {
+  compressImage,
+  validateImageFile,
+  getMediaUrl,
+} from "@/lib/imageUtils";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 
@@ -79,15 +84,7 @@ export function PhotoUploader({
         const compressed = await compressImage(file);
 
         // Upload
-        const formData = new FormData();
-        formData.append("photo", compressed);
-
-        const result = await apiClient.upload<UploadResponse>(
-          "/api/upload/photo/",
-          formData,
-        );
-
-        newUrls.push(result.url);
+        newUrls.push(await uploadPhoto(compressed));
       }
 
       if (newUrls.length > 0) {
@@ -95,7 +92,11 @@ export function PhotoUploader({
       }
     } catch (err: unknown) {
       console.error("Photo upload error:", err);
-      setError((err instanceof ApiError && err.body?.error) || getErrorMessage(err) || t.jobsComponents.photos.uploadError);
+      setError(
+        (err instanceof ApiError && err.body?.error) ||
+          getErrorMessage(err) ||
+          t.jobsComponents.photos.uploadError,
+      );
     } finally {
       setUploading(false);
       // Reset inputs so the same file can be selected again
@@ -132,7 +133,11 @@ export function PhotoUploader({
     // On desktop: use getUserMedia to access camera
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment", width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+        },
         audio: false,
       });
       setStream(mediaStream);

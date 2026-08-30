@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Send, CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { countActiveOffers, submitOffer } from "@/lib/services/offers";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND } from "@/lib/format";
 
@@ -82,12 +83,7 @@ export function OfferForm({
   useEffect(() => {
     const fetchActiveOffers = async () => {
       try {
-        const data = await apiClient.get<{ count?: number }>(
-          "/api/offers/my/?status=PENDING&page_size=1",
-        );
-        setActiveOfferCount(
-          typeof data?.count === "number" ? data.count : null,
-        );
+        setActiveOfferCount(await countActiveOffers());
       } catch (_err) {
         // Non-blocking: if fetch fails, allow form submission and let backend validate
         setActiveOfferCount(null);
@@ -117,14 +113,12 @@ export function OfferForm({
     try {
       // D1 net garanti: submit the NET amount; the server computes
       // commission and client total (single source of truth).
-      await apiClient.post("/api/offers/", {
-        job: jobId,
-        price_net: parseFloat(net.toFixed(2)),
-        message: message,
-        valid_until: new Date(
-          Date.now() + 3 * 24 * 60 * 60 * 1000,
-        ).toISOString(),
-      });
+      await submitOffer(
+        jobId,
+        parseFloat(net.toFixed(2)),
+        message,
+        new Date(Date.now() + 3 * 24 * 60 * 60 * 1000).toISOString(),
+      );
 
       setFeedback({
         type: "success",

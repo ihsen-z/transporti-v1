@@ -63,3 +63,16 @@ export async function createReturnTrip(
 ): Promise<unknown> {
   return apiClient.post("/api/jobs/return-trip/", data);
 }
+
+/**
+ * Change le statut d'un transport.
+ *
+ * Le serveur reste seul juge des transitions valides : cette fonction ne fait
+ * que transporter l'intention, elle ne verifie rien.
+ */
+export async function updateJobStatus(
+  jobId: number,
+  statut: string,
+): Promise<unknown> {
+  return apiClient.patch(`/api/jobs/${jobId}/status/`, { status: statut });
+}

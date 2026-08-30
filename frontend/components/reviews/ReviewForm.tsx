@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Star, Send, ShieldCheck } from "lucide-react";
-import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
+import { ApiError, getErrorMessage } from "@/lib/api/client";
+import { submitReview } from "@/lib/services/reviews";
 import { useToast } from "@/components/ui/Toast";
 
 interface ReviewFormProps {
@@ -29,19 +30,15 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
     setLoading(true);
 
     try {
-      await apiClient.post("/api/reviews/", {
-        job_id: jobId,
-        rating,
-        comment,
-        aspects,
-      });
+      await submitReview(jobId, rating, comment, aspects);
 
       onReviewSubmitted();
       showToast("success", "Merci pour votre avis !");
     } catch (error: unknown) {
       console.error("Error submitting review:", error);
       const msg =
-        (error instanceof ApiError && (error.body?.non_field_errors as string[] | undefined)?.[0]) ||
+        (error instanceof ApiError &&
+          (error.body?.non_field_errors as string[] | undefined)?.[0]) ||
         (error instanceof ApiError && error.body?.detail) ||
         getErrorMessage(error) ||
         "Erreur lors de l'envoi.";

@@ -13,7 +13,7 @@ import {
   X,
 } from "lucide-react";
 import type { Job } from "@/lib/services/types";
-import { apiClient } from "@/lib/api/client";
+import { updateJobStatus } from "@/lib/services/jobs";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 
@@ -66,9 +66,7 @@ export default function JobActions({
 
       try {
         if (newStatus) {
-          await apiClient.patch(`/api/jobs/${jobId}/status/`, {
-            status: newStatus,
-          });
+          await updateJobStatus(jobId, newStatus);
           onStatusChange(newStatus);
         }
         showFeedback({ type: "success", message: successMessage });
@@ -87,31 +85,19 @@ export default function JobActions({
 
   // Action handlers by status
   const handleAccept = () =>
-    handleAction(
-      "accept",
-      "ACCEPTED",
-      t.jobsComponents.actions.acceptedMsg,
-    );
+    handleAction("accept", "ACCEPTED", t.jobsComponents.actions.acceptedMsg);
 
   const handleRefuse = () =>
     handleAction("refuse", "CANCELLED", t.jobsComponents.actions.refusedMsg);
 
   const handleStartTransport = () =>
-    handleAction(
-      "start",
-      "IN_PROGRESS",
-      t.jobsComponents.actions.startedMsg,
-    );
+    handleAction("start", "IN_PROGRESS", t.jobsComponents.actions.startedMsg);
 
   const handleCancel = () =>
     handleAction("cancel", "CANCELLED", t.jobsComponents.actions.cancelledMsg);
 
   const handleConfirmDelivery = () =>
-    handleAction(
-      "confirm",
-      "COMPLETED",
-      t.jobsComponents.actions.confirmedMsg,
-    );
+    handleAction("confirm", "COMPLETED", t.jobsComponents.actions.confirmedMsg);
 
   const handleReportProblem = () => {
     showFeedback({

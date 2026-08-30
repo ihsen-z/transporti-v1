@@ -11,7 +11,8 @@ import {
   ExternalLink,
   ShieldCheck,
 } from "lucide-react";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { initiatePayment } from "@/lib/services/bookings";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -40,7 +41,11 @@ type PaymentStatus = "idle" | "processing" | "error";
 /*  Component                                                                 */
 /* -------------------------------------------------------------------------- */
 
-export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps) {
+export function PaymentGateway({
+  amount,
+  jobId,
+  onCancel,
+}: PaymentGatewayProps) {
   const { t } = useAppI18n();
   const [status, setStatus] = useState<PaymentStatus>("idle");
   const [errorMessage, setErrorMessage] = useState("");
@@ -51,7 +56,11 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
     icon: React.ElementType;
     desc: string;
   }[] = [
-    { label: t.booking.methodCard, icon: CreditCard, desc: t.booking.methodCardDesc },
+    {
+      label: t.booking.methodCard,
+      icon: CreditCard,
+      desc: t.booking.methodCardDesc,
+    },
     { label: "E-Dinar", icon: Smartphone, desc: t.booking.methodEdinarDesc },
     { label: "Sobflous", icon: Smartphone, desc: t.booking.methodSobflousDesc },
     { label: "D17", icon: Building2, desc: t.booking.methodD17Desc },
@@ -68,13 +77,7 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
     setErrorMessage("");
 
     try {
-      const response = await apiClient.post<{
-        payment_url: string;
-        gateway_ref: string;
-      }>("/api/payments/initiate/", {
-        job_id: jobId,
-        platform: "web",
-      });
+      const response = await initiatePayment(jobId, "web");
 
       if (response.payment_url) {
         // Redirection vers la plateforme de paiement ; le retour arrive sur
@@ -129,7 +132,9 @@ export function PaymentGateway({ amount, jobId, onCancel }: PaymentGatewayProps)
     <div className="space-y-6">
       {/* Amount */}
       <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-center">
-        <p className="text-sm text-brand-600 font-medium">{t.booking.amountToPay}</p>
+        <p className="text-sm text-brand-600 font-medium">
+          {t.booking.amountToPay}
+        </p>
         <p className="text-3xl font-bold text-brand-600 mt-1">
           {formatTND(amount)}
         </p>

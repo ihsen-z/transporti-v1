@@ -63,6 +63,20 @@ export async function getReceivedRequests(
   return Array.isArray(reponse) ? reponse : (reponse.results ?? []);
 }
 
+/**
+ * Les demandes reçues sur UN trajet donné.
+ *
+ * Pendant par-trajet de `getReceivedRequests`, qui est transverse (B-5). Les
+ * deux coexistent : le panneau d'un trajet montre les siennes, la boîte de
+ * réception les agrège toutes.
+ */
+export async function getRequestsForJob(jobId: number): Promise<TripRequest[]> {
+  const reponse = await apiClient.get<
+    PaginatedResponse<TripRequest> | TripRequest[]
+  >(`/api/jobs/${jobId}/requests/`);
+  return Array.isArray(reponse) ? reponse : (reponse.results ?? []);
+}
+
 /** Accepter : ferme le trajet et bascule dans le circuit de paiement. */
 export async function acceptRequest(id: number): Promise<unknown> {
   return apiClient.post(`/api/trip-requests/${id}/respond/`, {

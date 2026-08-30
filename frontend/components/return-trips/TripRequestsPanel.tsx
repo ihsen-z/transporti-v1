@@ -16,7 +16,17 @@ import {
   Loader2,
   Zap,
 } from "lucide-react";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import {
+  acceptRequest,
+  counterRequest,
+  getRequestsForJob,
+  rejectRequest,
+} from "@/lib/services/tripRequests";
+import {
+  unpublishReturnTrip,
+  updateReturnTrip,
+} from "@/lib/services/returnTrips";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDateTime } from "@/lib/format";
 import { useToast } from "@/components/ui/Toast";
@@ -68,10 +78,7 @@ export function TripRequestsPanel({ job, onChanged }: TripRequestsPanelProps) {
   const fetchRequests = useCallback(async () => {
     setLoading(true);
     try {
-      const d = await apiClient.get<{ results: TripRequest[] }>(
-        `/api/jobs/${job.id}/requests/`,
-      );
-      setRequests(d.results ?? []);
+      setRequests(await getRequestsForJob(job.id));
     } catch (_e) {
       setRequests([]);
     } finally {
@@ -90,10 +97,18 @@ export function TripRequestsPanel({ job, onChanged }: TripRequestsPanelProps) {
   ) => {
     setActionLoading(requestId);
     try {
-      await apiClient.post(`/api/trip-requests/${requestId}/respond/`, {
-        action,
-        ...(extra || {}),
-      });
+      // Les trois reponses ont chacune leur fonction nommee dans le service :
+      // ce composant garde son aiguillage generique, mais ne fabrique plus la
+      // charge utile a la main.
+      if (action === "accept") await acceptRequest(requestId);
+      else if (action === "reject")
+        await rejectRequest(requestId, extra?.message as string | undefined);
+      else
+        await counterRequest(
+          requestId,
+          Number(extra?.counter_price),
+          extra?.message as string | undefined,
+        );
       showToast(
         "success",
         action === "accept"
@@ -129,11 +144,13 @@ export function TripRequestsPanel({ job, onChanged }: TripRequestsPanelProps) {
   const handleSaveEdit = async () => {
     setSaving(true);
     try {
-      await apiClient.patch(`/api/jobs/${job.id}/return-trip/`, {
+      // updateReturnTrip existait deja dans returnTrips.ts : ce panneau
+      // refaisait le meme PATCH en ligne.
+      await updateReturnTrip(job.id, {
         available_capacity: editCapacity,
         instant_booking: editInstant,
         ...(editPriceMin ? { price_tnd_min: editPriceMin } : {}),
-      });
+      } as Parameters<typeof updateReturnTrip>[1]);
       showToast("success", t.editSuccess);
       setEditing(false);
       onChanged();
@@ -147,7 +164,7 @@ export function TripRequestsPanel({ job, onChanged }: TripRequestsPanelProps) {
   const handleDelete = async () => {
     setDeleting(true);
     try {
-      await apiClient.delete(`/api/jobs/${job.id}/return-trip/`);
+      await unpublishReturnTrip(job.id);
       showToast("success", t.deleteSuccess);
       setConfirmDelete(false);
       onChanged();

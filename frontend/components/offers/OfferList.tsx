@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { OfferCard } from "./OfferCard";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { acceptOffer, getOffersForJob } from "@/lib/services/offers";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND } from "@/lib/format";
@@ -48,13 +49,7 @@ export function OfferList({
     setLoading(true);
     setFetchError(false);
     try {
-      const response = await apiClient.get<
-        JobOffer[] | { results?: JobOffer[] }
-      >(`/api/jobs/${jobId}/offers/`);
-      const offersData = Array.isArray(response)
-        ? response
-        : (response.results ?? []);
-      setOffers(offersData);
+      setOffers(await getOffersForJob<JobOffer>(jobId));
     } catch (error) {
       console.error("Error fetching offers:", error);
       setFetchError(true);
@@ -74,9 +69,7 @@ export function OfferList({
     setAccepting(true);
 
     try {
-      await apiClient.post(`/api/offers/${selectedOffer.id}/accept/`, {
-        payment_method: paymentMethod,
-      });
+      await acceptOffer(selectedOffer.id, paymentMethod);
       setShowPaymentModal(false);
       showToast(
         "success",
