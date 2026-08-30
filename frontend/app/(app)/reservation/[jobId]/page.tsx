@@ -3,7 +3,16 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import {
+  getBooking,
+  getEscrow,
+  getReservedJob,
+  initiatePayment,
+  type Escrow as EscrowData,
+  type Reservation as BookingData,
+  type TransportReserve as JobData,
+} from "@/lib/services/bookings";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDate as formatDateI18n } from "@/lib/format";
@@ -31,43 +40,6 @@ import {
 /*  Types                                                                     */
 /* -------------------------------------------------------------------------- */
 
-interface BookingData {
-  id: number;
-  job: number;
-  final_price: string;
-  commission_rate: string;
-  payment_method: "DIGITAL" | "COD";
-  cod_allowed: boolean;
-  created_at: string;
-  accepted_offer: number;
-}
-
-interface JobData {
-  id: number;
-  job_type: string;
-  status: string;
-  pickup_address: string;
-  dropoff_address: string;
-  pickup_governorate: string;
-  dropoff_governorate: string;
-  scheduled_date: string;
-  accepted_transporter?: {
-    name: string;
-    phone?: string;
-    total_price: number;
-  };
-  owner?: {
-    id: number;
-  };
-}
-
-interface EscrowData {
-  id: number;
-  status: string;
-  amount: string;
-  created_at: string;
-}
-
 /* -------------------------------------------------------------------------- */
 /*  Booking Page                                                              */
 /* -------------------------------------------------------------------------- */
@@ -93,33 +65,13 @@ export default function BookingPage() {
     setLoading(true);
     try {
       // Fetch job details
-      const jobData = await apiClient.get<any>(`/api/jobs/${jobId}/`);
-      setJob(jobData);
+      setJob(await getReservedJob(Number(jobId)));
 
-      // Fetch booking for this job
-      try {
-        const bookingData = await apiClient.get<any>(
-          `/api/jobs/${jobId}/booking/`,
-        );
-        setBooking(bookingData);
-      } catch {
-        // Booking may not exist yet
-        setBooking(null);
-      }
+      // La reservation et l'escrow peuvent legitimement ne pas exister encore :
+      // le service rend `null` plutot que de lever.
+      setBooking(await getBooking(Number(jobId)));
 
-      // Fetch escrow status
-      try {
-        const escrowData = await apiClient.get<any>(
-          `/api/jobs/${jobId}/escrow/`,
-        );
-        setEscrow(
-          Array.isArray(escrowData) && escrowData.length > 0
-            ? escrowData[0]
-            : escrowData?.results?.[0] || null,
-        );
-      } catch {
-        setEscrow(null);
-      }
+      setEscrow(await getEscrow(Number(jobId)));
     } catch (err) {
       console.error("Error fetching booking data:", err);
     } finally {
@@ -136,9 +88,7 @@ export default function BookingPage() {
     if (!jobId) return;
     setInitiatingPayment(true);
     try {
-      const result = await apiClient.post<any>("/api/payments/initiate/", {
-        job_id: jobId,
-      });
+      const result = await initiatePayment(Number(jobId));
 
       if (result.payment_url) {
         showToast("success", t.booking.redirectingToast);

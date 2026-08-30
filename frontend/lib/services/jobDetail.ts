@@ -14,6 +14,7 @@
 import { apiClient } from "@/lib/api/client";
 import { config } from "@/lib/config";
 import { getAccessToken } from "@/lib/api/tokenManager";
+import { initiatePayment } from "./bookings";
 import type { JobDetail } from "@/lib/types/jobs";
 
 export type MoyenDePaiement = "DIGITAL" | "COD";
@@ -41,13 +42,17 @@ export function verifierPaiement(gatewayRef: string): Promise<unknown> {
   return apiClient.post("/api/payments/verify/", { gateway_ref: gatewayRef });
 }
 
+/**
+ * Demarre un paiement depuis l'ecran de detail.
+ *
+ * Delegue a `bookings.ts`, ou vit la definition unique : le meme endpoint
+ * etait appele ici avec `platform: "web"` et depuis /reservation sans, sans
+ * que rien ne dise laquelle des deux charges utiles faisait foi.
+ */
 export function initierPaiement(
   jobId: number,
 ): Promise<{ payment_url?: string }> {
-  return apiClient.post<{ payment_url: string }>("/api/payments/initiate/", {
-    job_id: jobId,
-    platform: "web",
-  });
+  return initiatePayment(jobId, "web");
 }
 
 export function confirmerLivraisonParLeClient(jobId: number): Promise<unknown> {
