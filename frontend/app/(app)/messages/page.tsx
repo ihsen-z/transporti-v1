@@ -13,7 +13,11 @@ import {
   Inbox,
   ChevronRight,
 } from "lucide-react";
-import { apiClient } from "@/lib/api/client";
+import {
+  getConversations,
+  type Conversation as ConversationItem,
+  type Message as LastMessage,
+} from "@/lib/services/messaging";
 import { formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
@@ -22,30 +26,6 @@ import { interpolate } from "@/lib/i18n/interpolate";
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
 /* -------------------------------------------------------------------------- */
-
-interface LastMessage {
-  id: number;
-  sender: number | null;
-  sender_name: string;
-  content: string;
-  is_system: boolean;
-  is_read: boolean;
-  created_at: string;
-}
-
-interface ConversationItem {
-  id: number;
-  job: number;
-  is_locked: boolean;
-  created_at: string;
-  updated_at: string;
-  last_message: LastMessage | null;
-  message_count: number;
-  unread_count: number;
-  job_title: string;
-  job_status: string;
-  other_party_name: string;
-}
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                    */
@@ -264,13 +244,7 @@ export default function MessagesInboxPage() {
       if (!silent) setLoading(true);
       setError(null);
       try {
-        const data = await apiClient.get<
-          ConversationItem[] | { results: ConversationItem[] }
-        >("/api/conversations/");
-        const items = Array.isArray(data)
-          ? data
-          : (data as { results: ConversationItem[] }).results;
-        setConversations(items);
+        setConversations(await getConversations());
       } catch (err: unknown) {
         const message =
           err instanceof Error ? err.message : t.messages.loadErrorDesc;

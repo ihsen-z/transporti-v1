@@ -6,7 +6,15 @@ import { useAuth } from "@/hooks/useAuth";
 import { MessageBubble } from "@/components/messaging/MessageBubble";
 import { ContactReveal } from "@/components/messaging/ContactReveal";
 import { checkForBypass } from "@/lib/antiBypass";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import {
+  getConversation,
+  sendMessage,
+  type Interlocuteur as OtherParty,
+  type InfosConversation as ConversationInfo,
+  type InfosTransport as JobInfo,
+  type Message as MessageItem,
+} from "@/lib/services/messaging";
 import { formatDate } from "@/lib/format";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
@@ -26,51 +34,6 @@ import {
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
 /* -------------------------------------------------------------------------- */
-
-interface MessageItem {
-  id: number;
-  sender: number | null;
-  sender_name: string;
-  content: string;
-  is_system: boolean;
-  is_read: boolean;
-  created_at: string;
-}
-
-interface JobInfo {
-  id: number;
-  pickup_address: string;
-  dropoff_address: string;
-  status: string;
-  job_type: string;
-}
-
-interface OtherParty {
-  id: number;
-  name: string;
-  role: string;
-  phone: string | null;
-  email: string | null;
-}
-
-interface ConversationInfo {
-  id: number;
-  is_locked: boolean;
-  message_count: number;
-}
-
-interface MessagesResponse {
-  conversation: ConversationInfo | null;
-  messages: MessageItem[];
-  count: number;
-  job: JobInfo;
-  other_party: OtherParty | null;
-}
-
-interface SendMessageResponse {
-  message: string;
-  data: MessageItem;
-}
 
 /* -------------------------------------------------------------------------- */
 /*  Helpers                                                                    */
@@ -156,11 +119,9 @@ export default function MessagingPage() {
       setError(null);
 
       try {
-        const data = await apiClient.get<MessagesResponse>(
-          `/api/jobs/${jobId}/messages/`,
-        );
-        // API returns messages newest-first, reverse for chronological display
-        setMessages([...data.messages].reverse());
+        // Le service rend deja les messages dans l'ordre chronologique.
+        const data = await getConversation(Number(jobId));
+        setMessages(data.messages);
         setJob(data.job);
         setOtherParty(data.other_party);
         setConversation(data.conversation);
@@ -237,13 +198,10 @@ export default function MessagingPage() {
     setBypassWarning(null);
 
     try {
-      const result = await apiClient.post<SendMessageResponse>(
-        `/api/jobs/${jobId}/messages/`,
-        { content: newMessage.trim() },
-      );
+      const envoye = await sendMessage(Number(jobId), newMessage.trim());
 
       // Add the new message from the server response
-      setMessages((prev) => [...prev, result.data]);
+      setMessages((prev) => [...prev, envoye]);
       setNewMessage("");
     } catch (err: unknown) {
       if (err instanceof ApiError && err.body) {
