@@ -17,6 +17,7 @@ import {
   UserCircle,
   Wallet,
   BarChart3,
+  Star,
   Inbox,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -89,6 +90,13 @@ export default function AppSidebar() {
     { href: "/documents", icon: ShieldCheck, label: t.nav.verification },
   ];
 
+  // C5.2 — les avis concernent les DEUX roles : chacun en recoit.
+  const avisItem: NavItemDef = {
+    href: "/mes-avis",
+    icon: Star,
+    label: t.myReviews.title,
+  };
+
   const bottomItems: NavItemDef[] = [
     { href: "/help", icon: HelpCircle, label: t.nav.helpCenter },
     { href: "/compte", icon: Settings, label: t.nav.settings },
@@ -96,9 +104,9 @@ export default function AppSidebar() {
 
   let mainItems = [...commonItems];
   if (role === "CLIENT") {
-    mainItems = [...clientItems, ...mainItems];
+    mainItems = [...clientItems, ...mainItems, avisItem];
   } else if (role === "TRANSPORTER") {
-    mainItems = [...mainItems, ...transporterItems];
+    mainItems = [...mainItems, ...transporterItems, avisItem];
   }
 
   return (

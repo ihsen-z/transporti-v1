@@ -2101,8 +2101,18 @@ export const fr = {
       "Demandes en attente sur vos zones, là où vous n'avez pas encore de retour publié.",
     underservedEmpty:
       "Aucune opportunité à signaler sur vos zones. Déclarez vos gouvernorats dans votre profil pour en recevoir.",
-    underservedCount: "{{count}} demande(s) en attente",
+    underservedCount: "{count} demande(s) en attente",
     publishCta: "Publier un retour sur ce corridor",
     loadError: "Impossible de charger vos performances. Réessayez.",
+  },
+  myReviews: {
+    title: "Mes avis",
+    subtitle: "Ce que vos clients et transporteurs ont dit de vous.",
+    empty: "Aucun avis reçu pour l'instant.",
+    loadError: "Impossible de charger vos avis. Réessayez.",
+    hiddenTitle: "Avis pas encore révélé",
+    hiddenBody:
+      "Il s'affichera quand vous aurez noté à votre tour, ou automatiquement après sept jours. Cette règle protège les deux parties des notes de représailles.",
+    count: "{count} avis reçu(s)",
   },
 } as const;
