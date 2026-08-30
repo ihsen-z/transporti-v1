@@ -27,4 +27,29 @@ export interface TransporterStatsDto {
   /** K12 — `null` quand aucun trajet retour publié. */
   fill_rate: number | null;
   km_transformed: number;
+  /**
+   * B-3b — revenu par paire ORIENTEE de gouvernorats. Livre au lot 1 et
+   * consomme nulle part jusqu'au lot 5 : ni web, ni mobile ne le lisaient.
+   */
+  revenue_by_corridor?: RevenueParCorridorDto[];
+  /** B-3b prospectif : la ou la demande depasse l'offre, dans ses zones. */
+  underserved_corridors?: CorridorSousDesserviDto[];
+}
+
+/** Un aller et un retour sont deux corridors DISTINCTS : la paire est orientee. */
+export interface RevenueParCorridorDto {
+  pickup_governorate: string;
+  dropoff_governorate: string;
+  /** Somme des `price_net`, meme base que K4 (escrow RELEASED). */
+  revenue_net: number;
+  missions: number;
+  km: number;
+  /** Combien de ces missions viennent d'un trajet retour. */
+  return_trip_missions: number;
+}
+
+export interface CorridorSousDesserviDto {
+  pickup_governorate: string;
+  dropoff_governorate: string;
+  demandes: number;
 }

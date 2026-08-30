@@ -2083,4 +2083,26 @@ export const fr = {
     tEarnA2:
       "Depuis votre portefeuille, demandez un retrait par virement. La demande est traitée par notre back-office (statuts : demandé → en traitement → payé).",
   },
+  performance: {
+    title: "Performance",
+    subtitle: "Ce que rapportent vos corridors, et où la demande vous attend.",
+    revenueTitle: "Revenu par corridor",
+    revenueHint:
+      "Revenu net encaissé, escrow libéré. Un aller et un retour sont deux corridors distincts.",
+    revenueEmpty:
+      "Aucune mission payée pour l'instant. Vos corridors apparaîtront ici dès votre première livraison confirmée.",
+    colCorridor: "Corridor",
+    colMissions: "Missions",
+    colReturns: "dont retours",
+    colKm: "Kilomètres",
+    colRevenue: "Revenu net",
+    underservedTitle: "Où la demande vous attend",
+    underservedHint:
+      "Demandes en attente sur vos zones, là où vous n'avez pas encore de retour publié.",
+    underservedEmpty:
+      "Aucune opportunité à signaler sur vos zones. Déclarez vos gouvernorats dans votre profil pour en recevoir.",
+    underservedCount: "{{count}} demande(s) en attente",
+    publishCta: "Publier un retour sur ce corridor",
+    loadError: "Impossible de charger vos performances. Réessayez.",
+  },
 } as const;

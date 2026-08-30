@@ -684,5 +684,12 @@
       "network": "تعذّر الاتصال. تحقّق من شبكتك.",
       "unknown": "حدث خطأ."
     }
+  },
+  "performance": {
+    "revenue_title": "المداخيل حسب المحور",
+    "revenue_empty": "ما فماش مهمة مخلّصة للتو. المحاور متاعك باش تبان هوني كي تكمّل أول توصيل مؤكّد.",
+    "missions_count": "{{count}} مهمة، منها {{returns}} رجوع",
+    "underserved_title": "فين الطلب يستنّى فيك",
+    "underserved_count": "{{count}} طلب في الانتظار"
   }
 }

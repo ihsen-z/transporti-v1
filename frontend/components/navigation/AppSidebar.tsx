@@ -16,6 +16,7 @@ import {
   AlertTriangle,
   UserCircle,
   Wallet,
+  BarChart3,
   Inbox,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
@@ -83,6 +84,8 @@ export default function AppSidebar() {
     { href: "/demandes", icon: Search, label: t.nav.findMission },
     { href: "/mes-offres", icon: FileText, label: t.nav.myOffers },
     { href: "/portefeuille", icon: Wallet, label: t.nav.wallet },
+    // T5.4 — B-3b avait ete livre au lot 1 sans aucun ecran pour le lire.
+    { href: "/performance", icon: BarChart3, label: t.performance.title },
     { href: "/documents", icon: ShieldCheck, label: t.nav.verification },
   ];
 

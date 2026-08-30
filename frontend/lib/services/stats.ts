@@ -9,10 +9,33 @@
  */
 import { apiClient } from "@/lib/api/client";
 
+/** Une paire ORIENTEE de gouvernorats : l'aller et le retour sont distincts. */
+export interface RevenuParCorridor {
+  pickup_governorate: string;
+  dropoff_governorate: string;
+  /** Somme des `price_net`, meme base que K4 (escrow RELEASED). */
+  revenue_net: number;
+  missions: number;
+  km: number;
+  /** Combien de ces missions viennent d'un trajet retour. */
+  return_trip_missions: number;
+}
+
+/** Un corridor ou la demande depasse l'offre, dans les zones du transporteur. */
+export interface CorridorSousDesservi {
+  pickup_governorate: string;
+  dropoff_governorate: string;
+  demandes: number;
+}
+
 export interface StatistiquesTransporteur {
   active_offers: number;
   potential_earnings: number;
   earnings_confirmed: number;
+  /** B-3b — retrospectif. Livre au lot 1, consomme par T5.4 seulement. */
+  revenue_by_corridor?: RevenuParCorridor[];
+  /** B-3b — prospectif : ce qui transforme un bilan en invitation a publier. */
+  underserved_corridors?: CorridorSousDesservi[];
 }
 
 /**

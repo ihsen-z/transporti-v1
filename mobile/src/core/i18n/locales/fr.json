@@ -668,5 +668,12 @@
       "network": "Connexion impossible. Vérifiez votre réseau.",
       "unknown": "Une erreur est survenue."
     }
+  },
+  "performance": {
+    "revenue_title": "Revenu par corridor",
+    "revenue_empty": "Aucune mission payée pour l'instant. Vos corridors apparaîtront ici dès votre première livraison confirmée.",
+    "missions_count": "{{count}} mission(s), dont {{returns}} en retour",
+    "underserved_title": "Où la demande vous attend",
+    "underserved_count": "{{count}} demande(s) en attente"
   }
 }

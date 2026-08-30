@@ -4,6 +4,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useWallet } from '@/features/wallet/api/useWallet';
+import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
+import { CorridorPerformanceCard } from '@/features/stats/components/CorridorPerformanceCard';
 import { WithdrawalSheet } from '@/features/wallet/components/WithdrawalSheet';
 import { WalletHistoryRow } from '@/features/wallet/components/WalletHistoryRow';
 import type { WalletHistoryEntry } from '@/features/wallet/api/dto';
@@ -27,6 +29,10 @@ export default function GainsScreen() {
   const role = useAuthStore((s) => s.user?.role);
   const isTransporter = role === 'TRANSPORTER';
   const wallet = useWallet(isTransporter);
+  // T5.4 — B-3b etait calcule depuis le lot 1 et lu nulle part. La charte
+  // n'ouvre pas de sixieme onglet : la performance par corridor vit sous le
+  // portefeuille, ou le transporteur vient deja voir ce qu'il a gagne.
+  const stats = useTransporterStats(isTransporter);
   const [withdrawOpen, setWithdrawOpen] = useState(false);
 
   const d = wallet.data;
@@ -105,6 +111,13 @@ export default function GainsScreen() {
               </Card>
             )}
           </>
+        )}
+
+        {isTransporter && stats.data && (
+          <CorridorPerformanceCard
+            corridors={stats.data.revenue_by_corridor ?? []}
+            opportunites={stats.data.underserved_corridors ?? []}
+          />
         )}
       </ScrollView>
 
