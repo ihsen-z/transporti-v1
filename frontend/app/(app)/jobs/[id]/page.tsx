@@ -10,6 +10,7 @@ import { TripRequestDialog } from "@/components/jobs/TripRequestDialog";
 import { JobDetailDialogs } from "@/components/jobs/JobDetailDialogs";
 import { ReturnTripClientPanel } from "@/components/jobs/ReturnTripClientPanel";
 import { MissionInProgressPanel } from "@/components/jobs/MissionInProgressPanel";
+import { MissionMatchedPanel } from "@/components/jobs/MissionMatchedPanel";
 import {
   accepterContreProposition,
   annulerDemandeSurTrajet,
@@ -756,82 +757,15 @@ export default function JobDetailsPage() {
 
             {/* D3 — MATCHED: assigned, payment being secured */}
             {job.status === "MATCHED" && (isOwner || isAssignedTransporter) && (
-              <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-amber-800">
-                <h3 className="font-bold flex items-center gap-2 mb-2">
-                  <Clock className="w-5 h-5" />
-                  {t.jobDetail.matchedTitle}
-                </h3>
-                {/* Client + DIGITAL → pay now */}
-                {isOwner && job.booking_payment_method === "DIGITAL" && (
-                  <>
-                    <p className="text-sm mb-3">
-                      {t.jobDetail.matchedClientPay}
-                    </p>
-                    <button
-                      onClick={handlePayNow}
-                      disabled={paying}
-                      className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-semibold hover:bg-brand-700 flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
-                    >
-                      {paying ? (
-                        <Clock className="w-4 h-4 animate-spin" />
-                      ) : (
-                        <FileText className="w-4 h-4" />
-                      )}
-                      {paying ? t.jobDetail.paying : t.jobDetail.payNow}
-                    </button>
-                  </>
-                )}
-                {/* Client + COD → waiting for transporter confirmation */}
-                {isOwner && job.booking_payment_method === "COD" && (
-                  <p className="text-sm">{t.jobDetail.matchedClientCod}</p>
-                )}
-                {/* Transporter + COD → confirm start */}
-                {isAssignedTransporter &&
-                  job.booking_payment_method === "COD" && (
-                    <>
-                      <p className="text-sm mb-3">
-                        {t.jobDetail.matchedTransporterCod}
-                      </p>
-                      <button
-                        onClick={handleConfirmStart}
-                        disabled={confirmingStart}
-                        className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
-                      >
-                        {confirmingStart ? (
-                          <Clock className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <CheckCircle2 className="w-4 h-4" />
-                        )}
-                        {confirmingStart
-                          ? t.jobDetail.confirming
-                          : t.jobDetail.confirmStart}
-                      </button>
-                    </>
-                  )}
-                {/* Transporter + DIGITAL → waiting for client payment */}
-                {isAssignedTransporter &&
-                  job.booking_payment_method === "DIGITAL" && (
-                    <p className="text-sm">
-                      {t.jobDetail.matchedTransporterDigital}
-                    </p>
-                  )}
-                <div className="mt-3 space-y-2">
-                  <button
-                    onClick={() => router.push(`/messages/${job.id}`)}
-                    className="w-full py-2 bg-white border border-amber-300 text-amber-800 rounded-lg font-medium hover:bg-amber-100 flex items-center justify-center gap-2"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                    {t.jobDetail.openMessaging}
-                  </button>
-                  <Link
-                    href={`/reservation/${job.id}`}
-                    className="w-full py-2 border border-amber-300 text-amber-800 rounded-lg font-medium hover:bg-amber-100 flex items-center justify-center gap-2"
-                  >
-                    <FileText className="w-4 h-4" />
-                    {t.jobDetail.viewBooking}
-                  </Link>
-                </div>
-              </div>
+              <MissionMatchedPanel
+                job={job}
+                estLeProprietaire={isOwner}
+                estLeTransporteurAssigne={isAssignedTransporter}
+                paiementEnCours={paying}
+                demarrageEnCours={confirmingStart}
+                onPayer={handlePayNow}
+                onConfirmerLeDemarrage={handleConfirmStart}
+              />
             )}
 
             {/* In Progress Status */}
