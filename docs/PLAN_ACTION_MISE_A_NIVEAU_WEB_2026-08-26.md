@@ -683,7 +683,57 @@ panne silencieuse** que je traque ailleurs. Or les trajets retour n'ont pas de c
 résolution des centroïdes, l'économie aurait été absente sur précisément les trajets qu'elle doit
 valoriser. La clause a été resserrée.
 
-### Lots 4 à 6 · **non démarrés**
+### Lot 4 — Dette architecturale · **en cours** · *29/08/2026*
+
+| Tâche | État | Commit | Date | Preuve |
+|---|---|---|---|---|
+| 4.1 Appels réseau → `lib/services/jobDetail.ts` | ✅ **fait** | `0d5bcff` | 29/08/2026 | 13 appels sortis. 1517 → 1503 lignes |
+| 4.1 Lecture → `hooks/useJobDetail.ts` | ✅ **fait** | `65f174c` | 29/08/2026 | 1503 → 1473 |
+| 4.1 Modale de demande → `TripRequestDialog` | ✅ **fait** | `f0a49bc` | 29/08/2026 | 1473 → 1294 |
+| 4.1 Quatre confirmations → `JobDetailDialogs` | ✅ **fait** | `c82edd3` | 29/08/2026 | 1294 → 1198 |
+| 4.1 Panneau client d'un retour → `ReturnTripClientPanel` | ✅ **fait** | `59a529e` | 29/08/2026 | 1198 → 1050 |
+| 4.1 Mission en cours → `MissionInProgressPanel` | ✅ **fait** | `b3cb53f` | 29/08/2026 | 1050 → 939 |
+| 4.1 Séparation des deux rôles → `/missions/[id]` + `/trajets/[id]` | ⏳ à faire | — | — | La seule étape qui change le routage |
+| 4.2 Couche service : portefeuille, litiges, trust, avis, messagerie | ⏳ à faire | — | — | — |
+
+**`jobs/[id]/page.tsx` : 1517 → 939 lignes**, et plus un seul appel réseau. Parcours repassé vert
+après **chacune** des six étapes, comme le plan l'exige.
+
+#### Une vérification qui ne pouvait pas venir des tests · *29/08/2026*
+
+Les parcours **ne traversent pas** les dialogues de confirmation ni le panneau de mission en cours :
+« marquer livré » et l'annulation côté transporteur n'y figurent pas. **Leur vert ne prouvait donc
+rien** sur ces deux extractions.
+
+La preuve est faite autrement, et elle vaut d'être notée comme méthode : le balisage extrait est
+comparé **ligne à ligne** avec l'original, après avoir rejoué les renommages voulus. Les écarts
+restants sont énumérés et justifiés un par un — reformatages `prettier`, fermetures de condition
+rendues à la page. Aucun écart inexpliqué n'est accepté.
+
+#### Trois pièges du refactoring, tous du même genre · *29/08/2026*
+
+1. **Un remplacement de chaîne trop large a renommé des clés i18n** (`t.jobDetail.cancelling` devenu
+   `annulationEnCours`). `tsc` l'a attrapé. Les transformations ignorent désormais tout identifiant
+   précédé d'un point.
+2. **Une propriété passée sans jamais être lue** (`photoPreuve`) : le champ fichier est non contrôlé.
+   Retirée plutôt que gardée par symétrie.
+3. **Un test s'est mis à s'ignorer** après l'extraction de la modale. `preparerDemandesEnAttente`
+   lisait les trajets sur la liste du *transporteur*, qui contient aussi ses trajets **périmés** —
+   `PUBLISHED` mais écartés par `JobPublicListView`. Une demande créée sur l'un d'eux n'apparaissait
+   nulle part. Elle lit maintenant l'endpoint public et **lève** au lieu de rendre un compte
+   insuffisant.
+
+Le troisième est le plus instructif : l'extraction n'a rien cassé, elle a **déplacé le minutage** et
+révélé un défaut de préparation présent depuis le 29/08 au matin.
+
+#### Ce que le découpage ne fait pas · *29/08/2026*
+
+Aucun de ces six commits ne change un comportement. La baisse de 578 lignes est du **déplacement**,
+pas de la suppression : la complexité est répartie, pas réduite. La cible du plan — *aucun fichier
+`app/` au-dessus de 300 lignes* — reste hors d'atteinte par extraction seule. C'est la séparation des
+deux rôles qui fera le gros du chemin, en coupant le fichier en deux écrans distincts.
+
+### Lots 5 à 6 · **non démarrés**
 
 **Toutes les décisions du plan sont tranchées**, produit comme méthode. Les lots 2 à 6 peuvent
 s'enchaîner sans nouvel arbitrage.
