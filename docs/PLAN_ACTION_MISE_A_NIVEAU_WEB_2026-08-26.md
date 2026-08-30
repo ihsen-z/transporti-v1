@@ -81,7 +81,7 @@ livraisons.
 | `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
 | `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
 
-**30/08/2026** — 25 modification(s) de code, 9 mise(s) à jour du plan
+**30/08/2026** — 26 modification(s) de code, 10 mise(s) à jour du plan
 
 | Commit | Objet |
 |---|---|
@@ -119,6 +119,8 @@ livraisons.
 | `ac59204` | feat(mobile): C5.1 - le portefeuille client, en parite avec le web |
 | `ce79a22` | docs(plan): C5.1 mobile livre, parite retablie |
 | `6870a7e` | feat(backend+web+mobile): T5.5 - les clients fideles du transporteur |
+| `c7e85b3` | docs(plan): T5.5 livre sur les trois couches |
+| `3805582` | feat(backend+web+mobile): T5.3 - le score de confiance dit enfin quoi corriger |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
 
@@ -865,13 +867,13 @@ pas de la suppression : la complexité est répartie, pas réduite. La cible du 
 `app/` au-dessus de 300 lignes* — reste hors d'atteinte par extraction seule. C'est la séparation des
 deux rôles qui fera le gros du chemin, en coupant le fichier en deux écrans distincts.
 
-### Lot 5 — Argent et réputation · **en cours** · *30/08/2026*
+### Lot 5 — Argent et réputation · ✅ **TERMINÉ** · *30/08/2026*
 
 | Tâche | État | Commit | Date | Preuve |
 |---|---|---|---|---|
 | **T5.4** Performance par corridor — **web + mobile** | ✅ **fait** | `f17852f` | 30/08/2026 | Écran `/performance` + carte sous Gains. 147 tests mobile, 50 web |
 | **T5.5** Clients fidèles — **backend + web + mobile** | ✅ **fait** | `6870a7e` | 30/08/2026 | Endpoint `transporter/loyal-clients/` créé, 9 tests backend |
-| **T5.3** Réputation | ⏳ à faire | — | — | — |
+| **T5.3** Réputation — **backend + web + mobile** | ✅ **fait** | `3805582` | 30/08/2026 | Décomposition du score. 7 tests backend, invariant somme = score |
 | **C5.1** Portefeuille client — **web** | ✅ **fait** | `249b11f` | 30/08/2026 | Endpoint `/api/client/wallet/` **créé** : il n'existait pas |
 | **C5.1** Portefeuille client — **mobile** | ✅ **fait** | `ac59204` | 30/08/2026 | Panneau du Profil, 6 tests. Aucun total, vérifié par test |
 | **C5.2** Mes avis — **web** | ✅ **fait** | `116c23a` | 30/08/2026 | Double aveugle respecté, branches masquée et révélée vérifiées |
@@ -1022,6 +1024,49 @@ l'objet d'une requête séparée.
 **Placement** : T5.5 rejoint `/performance` plutôt que d'ouvrir une route — c'est la même question que
 T5.4, *« où est ma valeur »*. Le mobile met la carte sous Gains, au même endroit et pour la même
 raison.
+
+#### T5.3 — et une observation produit que je ne peux pas enterrer · *30/08/2026*
+
+**Vérifié avant d'écrire** (graphify, puis lecture des seules lignes citées) : un transporteur voit
+**déjà** son score, son taux de complétion, son temps de réponse et son nombre d'avis — répartis
+entre son profil et le tableau de bord. L'audit disait « pur assemblage », et il avait raison :
+refaire un écran de réputation aurait surtout dupliqué.
+
+Ce qui manquait vraiment : **ce qui fait baisser le score**. Un transporteur à 62/100 ignorait ce qui
+le retenait.
+
+`get_user_trust_score` est désormais la **somme** de `trust_score_components`. Le détail montré à
+l'utilisateur et le chiffre affiché partout ailleurs viennent du même calcul et ne peuvent plus
+diverger — un test verrouille cet invariant, qui est la seule dérive vraiment coûteuse ici.
+
+**⚠️ Un quart du score ne mesure pas la qualité du service.**
+
+| Composante | Points | Mesure |
+|---|---|---|
+| Missions menées à terme | 30 | Qualité du service |
+| Absence de litiges | 20 | Qualité du service |
+| Commissions réglées | 25 | Qualité du service |
+| **Activité sur l'application** | **15** | **Usage de l'app** |
+| **Connexion récente** | **10** | **Usage de l'app** |
+
+Présenter ces deux dernières comme des leviers revient à dire au transporteur : *« connecte-toi plus
+souvent pour paraître plus fiable »*. C'est une mécanique d'engagement déguisée en signal de
+confiance, et elle pèse **25 points sur 100** — de quoi faire passer un transporteur irréprochable
+mais peu connecté derrière un transporteur médiocre mais assidu.
+
+Elles portent donc `is_service_quality: False`, les deux interfaces les affichent en gris et
+**l'écrivent en clair à l'utilisateur**. Elles ne sont **pas masquées** : masquer deux parts rendrait
+l'addition fausse à l'écran, ce qui est une autre façon de mentir.
+
+**L'arbitrage reste à prendre**, et il est produit, pas technique : ces deux critères ont-ils leur
+place dans un score de confiance montré aux clients ?
+
+L'endpoint est **strictement personnel** — aucun identifiant en paramètre, vérifié par un test.
+Exposer le détail du score d'autrui donnerait une carte pour le contester ou le manipuler ; le total,
+déjà public sur les profils, suffit à décider.
+
+**Placement** : la réputation rejoint `/mes-avis`. Le score est l'agrégat, les avis en sont le détail
+— un seul écran, pas deux. Idem sur mobile, dans le panneau des avis.
 
 ### Lot 6 — Rétention · **non démarré**
 
