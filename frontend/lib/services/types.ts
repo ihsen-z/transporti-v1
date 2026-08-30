@@ -1,19 +1,19 @@
 // Shared service types
 // Production — real API data only
 
-export type DataSource = 'api';
+export type DataSource = "api";
 
 export interface ServiceResult<T> {
-    data: T;
-    source: DataSource;
+  data: T;
+  source: DataSource;
 }
 
 /** DRF PageNumberPagination response wrapper */
 export interface PaginatedResponse<T> {
-    count: number;
-    next: string | null;
-    previous: string | null;
-    results: T[];
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
 }
 
 /* -------------------------------------------------------------------------- */
@@ -21,46 +21,55 @@ export interface PaginatedResponse<T> {
 /* -------------------------------------------------------------------------- */
 
 export interface DashboardStats {
-    totalJobs: number;
-    completedJobs: number;
-    averageRating: number;
-    balance: number;
+  totalJobs: number;
+  completedJobs: number;
+  averageRating: number;
+  balance: number;
 }
 
 export interface Job {
-    id: number;
-    // Real API fields (TransportJobListSerializer)
-    job_type?: 'TRANSPORT' | 'MOVING';
-    status: 'DRAFT' | 'PUBLISHED' | 'MATCHED' | 'IN_PROGRESS' | 'COMPLETED' | 'CANCELLED' | 'DISPUTED' | 'PENDING' | 'ACCEPTED';
-    pickup_address?: string;
-    dropoff_address?: string;
-    pickup_governorate?: string;
-    dropoff_governorate?: string;
-    scheduled_time?: string;
-    offer_count?: number;
-    owner_name?: string;
-    created_at: string;
-    // Extended API fields (TransportJobDetailSerializer)
-    is_return_trip?: boolean;
-    completed_at?: string | null;
-    view_count?: number;
-    price_tnd_min?: number | string;
-    price_tnd_max?: number | string;
-    available_capacity?: string;
-    // Legacy fields (backward compat with existing components)
-    title?: string;
-    pickup?: string;
-    delivery?: string;
-    price?: number;
-    transporter?: string;
+  id: number;
+  // Real API fields (TransportJobListSerializer)
+  job_type?: "TRANSPORT" | "MOVING";
+  status:
+    | "DRAFT"
+    | "PUBLISHED"
+    | "MATCHED"
+    | "IN_PROGRESS"
+    | "COMPLETED"
+    | "CANCELLED"
+    | "DISPUTED"
+    | "PENDING"
+    | "ACCEPTED";
+  pickup_address?: string;
+  dropoff_address?: string;
+  pickup_governorate?: string;
+  dropoff_governorate?: string;
+  scheduled_time?: string;
+  offer_count?: number;
+  owner_name?: string;
+  created_at: string;
+  // Extended API fields (TransportJobDetailSerializer)
+  is_return_trip?: boolean;
+  completed_at?: string | null;
+  view_count?: number;
+  price_tnd_min?: number | string;
+  price_tnd_max?: number | string;
+  available_capacity?: string;
+  // Legacy fields (backward compat with existing components)
+  title?: string;
+  pickup?: string;
+  delivery?: string;
+  price?: number;
+  transporter?: string;
 }
 
 export interface UserProfile {
-    name: string;
-    email: string;
-    role: 'CLIENT' | 'TRANSPORTER';
-    trust_score: number;
-    trust_level: 'VERIFIED' | 'TRUSTED' | 'NEW' | 'SUSPENDED';
+  name: string;
+  email: string;
+  role: "CLIENT" | "TRANSPORTER";
+  trust_score: number;
+  trust_level: "VERIFIED" | "TRUSTED" | "NEW" | "SUSPENDED";
 }
 
 /* -------------------------------------------------------------------------- */
@@ -68,14 +77,14 @@ export interface UserProfile {
 /* -------------------------------------------------------------------------- */
 
 export interface Notification {
-    id: number;
-    category: 'PAYMENT' | 'TRUST' | 'JOB' | 'DISPUTE' | 'REVIEW' | 'SYSTEM';
-    type: string;
-    title: string;
-    message: string;
-    is_read: boolean;
-    created_at: string;
-    metadata?: Record<string, any>;
+  id: number;
+  category: "PAYMENT" | "TRUST" | "JOB" | "DISPUTE" | "REVIEW" | "SYSTEM";
+  type: string;
+  title: string;
+  message: string;
+  is_read: boolean;
+  created_at: string;
+  metadata?: Record<string, any>;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -83,81 +92,93 @@ export interface Notification {
 /* -------------------------------------------------------------------------- */
 
 export interface AdminStats {
-    totalUsers: number;
-    activeUsers: number;
-    totalTransporters: number;
-    verifiedTransporters: number;
-    activeJobs: number;
-    completedJobs: number;
-    pendingJobs: number;
-    cancelledJobs: number;
-    totalEscrow: number;
-    pendingEscrow: number;
-    blockedEscrow: number;
-    releasedEscrow: number;
-    platformRevenue: number;
-    activeDisputes: number;
-    avgTrustScore: number;
+  totalUsers: number;
+  activeUsers: number;
+  totalTransporters: number;
+  verifiedTransporters: number;
+  activeJobs: number;
+  completedJobs: number;
+  pendingJobs: number;
+  cancelledJobs: number;
+  totalEscrow: number;
+  pendingEscrow: number;
+  blockedEscrow: number;
+  releasedEscrow: number;
+  platformRevenue: number;
+  activeDisputes: number;
+  avgTrustScore: number;
 }
 
 export interface AdminJob extends Job {
-    clientName: string;
-    clientEmail: string;
-    transporterName?: string;
-    transporterEmail?: string;
-    escrowStatus: 'PENDING' | 'HELD' | 'RELEASED' | 'REFUNDED' | 'BLOCKED';
-    escrowAmount: number;
-    paymentMethod: 'ESCROW' | 'COD';
-    cityFrom: string;
-    cityTo: string;
-    /** Raw backend passthrough — count of offers on the job (admin list). */
-    offersCount?: number;
+  clientName: string;
+  clientEmail: string;
+  transporterName?: string;
+  transporterEmail?: string;
+  escrowStatus: "PENDING" | "HELD" | "RELEASED" | "REFUNDED" | "BLOCKED";
+  escrowAmount: number;
+  paymentMethod: "ESCROW" | "COD";
+  cityFrom: string;
+  cityTo: string;
+  /** Raw backend passthrough — count of offers on the job (admin list). */
+  offersCount?: number;
 }
 
 export interface AdminUser {
-    id: number;
-    name: string;
-    email: string;
-    role: 'CLIENT' | 'TRANSPORTER';
-    status: 'ACTIVE' | 'SUSPENDED' | 'PENDING_VERIFICATION';
-    trustScore: number;
-    trustLevel: 'VERIFIED' | 'TRUSTED' | 'NEW' | 'BLOCKED';
-    jobsCompleted: number;
-    jobsActive: number;
-    createdAt: string;
-    lastSeenAt: string;
-    totalSpent?: number;
-    totalEarned?: number;
+  id: number;
+  name: string;
+  email: string;
+  role: "CLIENT" | "TRANSPORTER";
+  status: "ACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION";
+  trustScore: number;
+  trustLevel: "VERIFIED" | "TRUSTED" | "NEW" | "BLOCKED";
+  jobsCompleted: number;
+  jobsActive: number;
+  createdAt: string;
+  lastSeenAt: string;
+  totalSpent?: number;
+  totalEarned?: number;
 }
 
 export interface AdminPayment {
-    id: number;
-    jobId: number;
-    clientName: string;
-    transporterName: string;
-    amount: number;
-    type: 'ESCROW' | 'COD';
-    status: 'PENDING' | 'HELD' | 'RELEASED' | 'REFUNDED' | 'BLOCKED';
-    createdAt: string;
-    updatedAt: string;
+  id: number;
+  jobId: number;
+  clientName: string;
+  transporterName: string;
+  amount: number;
+  type: "ESCROW" | "COD";
+  status: "PENDING" | "HELD" | "RELEASED" | "REFUNDED" | "BLOCKED";
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ActivityLog {
-    id: number;
-    type: 'JOB_CREATED' | 'JOB_COMPLETED' | 'ESCROW_RELEASED' | 'DISPUTE_OPENED' | 'USER_REGISTERED' | 'VERIFICATION_APPROVED' | 'TRUST_UPDATED';
-    message: string;
-    userId?: number;
-    userName?: string;
-    timestamp: string;
-    severity: 'INFO' | 'WARNING' | 'ERROR';
+  id: number;
+  type:
+    | "JOB_CREATED"
+    | "JOB_COMPLETED"
+    | "ESCROW_RELEASED"
+    | "DISPUTE_OPENED"
+    | "USER_REGISTERED"
+    | "VERIFICATION_APPROVED"
+    | "TRUST_UPDATED";
+  message: string;
+  userId?: number;
+  userName?: string;
+  timestamp: string;
+  severity: "INFO" | "WARNING" | "ERROR";
 }
 
 export interface SystemAlert {
-    id: number;
-    type: 'STUCK_ESCROW' | 'HIGH_DISPUTE_RATE' | 'LOW_TRUST_USER' | 'PAYMENT_FAILURE' | 'SYSTEM_WARNING';
-    title: string;
-    description: string;
-    severity: 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
-    createdAt: string;
-    isRead: boolean;
+  id: number;
+  type:
+    | "STUCK_ESCROW"
+    | "HIGH_DISPUTE_RATE"
+    | "LOW_TRUST_USER"
+    | "PAYMENT_FAILURE"
+    | "SYSTEM_WARNING";
+  title: string;
+  description: string;
+  severity: "LOW" | "MEDIUM" | "HIGH" | "CRITICAL";
+  createdAt: string;
+  isRead: boolean;
 }

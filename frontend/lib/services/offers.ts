@@ -21,11 +21,6 @@ export interface OffreEnvoyee {
   created_at: string;
 }
 
-export interface IndicateursDuTransporteur {
-  active_offers: number;
-  potential_earnings: number;
-}
-
 export async function getMyOffers(): Promise<OffreEnvoyee[]> {
   const reponse = await apiClient.get<
     OffreEnvoyee[] | { results?: OffreEnvoyee[] }
@@ -34,21 +29,14 @@ export async function getMyOffers(): Promise<OffreEnvoyee[]> {
 }
 
 /**
- * Indicateurs affichés en tête de l'écran, ou `null`.
+ * Indicateurs affiches en tete de l'ecran, ou `null`.
  *
- * CONTRAT `stats.py` : toute figure montrée à un transporteur vient du
- * serveur, jamais d'un calcul dans l'écran. Le `null` distingue « indicateurs
- * indisponibles » de « zéro offre active » — deux messages différents.
+ * Delegue a `stats.ts`, seul point d'entree vers `/api/transporter/stats/` :
+ * l'endpoint etait appele depuis deux ecrans, chacun ne declarant que les
+ * champs qui l'interessaient.
  */
-export async function getTransporterKpis(): Promise<IndicateursDuTransporteur | null> {
-  try {
-    return await apiClient.get<IndicateursDuTransporteur>(
-      "/api/transporter/stats/",
-    );
-  } catch {
-    return null;
-  }
-}
+export { getTransporterStats as getTransporterKpis } from "./stats";
+export type { StatistiquesTransporteur as IndicateursDuTransporteur } from "./stats";
 
 export function withdrawOffer(offerId: number): Promise<unknown> {
   return apiClient.post(`/api/offers/${offerId}/withdraw/`, {});

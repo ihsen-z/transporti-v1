@@ -386,9 +386,7 @@ export async function activateUser(
   return apiClient.patch(`/api/admin/users/${userId}/activate/`, {});
 }
 
-export async function resetUserPassword(
-  userId: number,
-): Promise<{
+export async function resetUserPassword(userId: number): Promise<{
   message: string;
   userId: number;
   temporaryPassword: string;

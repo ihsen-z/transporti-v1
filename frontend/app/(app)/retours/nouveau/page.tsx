@@ -3,7 +3,8 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import { publishReturnTrip } from "@/lib/services/returnTrips";
 import { useToast } from "@/components/ui/Toast";
 import {
   RotateCcw,
@@ -277,10 +278,8 @@ export default function ReturnTripPage() {
       if (form.price_tnd_min)
         payload.price_tnd_min = parseFloat(form.price_tnd_min);
 
-      const created = await apiClient.post<{
-        matching_requests_count?: number;
-        matching_requests?: typeof matchingRequests;
-      }>("/api/jobs/return-trip/", payload);
+      const created =
+        await publishReturnTrip<(typeof matchingRequests)[number]>(payload);
       setSuccess(true);
       showToast("success", t.successMsg);
 

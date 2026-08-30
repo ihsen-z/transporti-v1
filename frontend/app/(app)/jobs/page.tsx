@@ -31,7 +31,8 @@ import { useJobs } from "@/hooks/useJobs";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
-import { apiClient } from "@/lib/api/client";
+import { getTransporterMissions } from "@/lib/services/jobs";
+import { getTransporterStats } from "@/lib/services/stats";
 import { useToast } from "@/components/ui/Toast";
 import LoadingState from "@/components/ui/LoadingState";
 import Pagination, { paginateArray } from "@/components/ui/Pagination";
@@ -374,16 +375,13 @@ function TransporterMissionsView() {
     async (silent = false) => {
       try {
         if (!silent) setRefreshing(true);
-        const data = await apiClient.get<
-          TransporterMission[] | { results: TransporterMission[] }
-        >("/api/jobs/transporter/");
-        const list = Array.isArray(data) ? data : (data.results ?? []);
-        setMissions(list);
-        // K4 from the canonical stats endpoint (non-blocking)
-        apiClient
-          .get<{ earnings_confirmed: number }>("/api/transporter/stats/")
-          .then((s) => setConfirmedEarnings(s.earnings_confirmed))
-          .catch(() => setConfirmedEarnings(null));
+        // getTransporterMissions existait dans lib/services/jobs.ts sans
+        // aucun appelant : cet ecran refaisait l'appel en ligne.
+        setMissions((await getTransporterMissions()).data);
+        // K4 vient de l'endpoint canonique (contrat stats.py), non bloquant.
+        void getTransporterStats().then((s) =>
+          setConfirmedEarnings(s ? s.earnings_confirmed : null),
+        );
       } catch (e) {
         console.error("Failed to fetch missions:", e);
         if (!silent) showToast("error", t.jobsList.loadError);

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api/client";
+import { getDashboardSummary } from "@/lib/services/dashboard";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -581,7 +581,7 @@ export default function DashboardPage() {
     const fetchDashboardData = async () => {
       try {
         // Use the new dedicated dashboard stats endpoint
-        const data = await apiClient.get<any>("/api/auth/dashboard/");
+        const data = await getDashboardSummary();
 
         if (data.stats) {
           if (data.role === "CLIENT") {

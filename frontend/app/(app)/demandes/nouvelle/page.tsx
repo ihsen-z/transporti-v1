@@ -13,7 +13,12 @@ import {
   MapPin,
   Truck,
 } from "lucide-react";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import {
+  countMatchingReturnTrips,
+  estimatePrice,
+  publishJob,
+} from "@/lib/services/returnTrips";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -116,12 +121,9 @@ export default function NewJobPage() {
     }
     let cancelled = false;
     const timer = setTimeout(() => {
-      apiClient
-        .get<{ count: number }>(
-          `/api/return-trips/match/?pickup_governorate=${encodeURIComponent(pg)}&dropoff_governorate=${encodeURIComponent(dg)}${formData.scheduled_time ? `&date=${encodeURIComponent(formData.scheduled_time)}` : ""}`,
-        )
-        .then((d) => {
-          if (!cancelled) setMatchCount(d.count ?? 0);
+      countMatchingReturnTrips(pg, dg, formData.scheduled_time || undefined)
+        .then((compte) => {
+          if (!cancelled) setMatchCount(compte);
         })
         .catch(() => {
           if (!cancelled) setMatchCount(null);
@@ -210,24 +212,10 @@ export default function NewJobPage() {
       const fetchEstimate = async () => {
         setEstimateLoading(true);
         try {
-          const result = await apiClient.post<{
-            min: number;
-            max: number;
-            distance_km: number;
-            grid_source: string;
-          }>("/api/jobs/estimate-price/", {
-            pickup_lat,
-            pickup_lng,
-            dropoff_lat,
-            dropoff_lng,
+          const estimate = await estimatePrice(
+            { pickup_lat, pickup_lng, dropoff_lat, dropoff_lng },
             job_type,
-          });
-          const estimate = result as {
-            min: number;
-            max: number;
-            distance_km: number;
-            grid_source: string;
-          };
+          );
           setPriceEstimate(estimate);
           // Pre-fill budget if empty
           if (!formData.price_tnd_min && !formData.price_tnd_max) {
@@ -342,12 +330,8 @@ export default function NewJobPage() {
       if (payload.dropoff_lat == null) delete payload.dropoff_lat;
       if (payload.dropoff_lng == null) delete payload.dropoff_lng;
 
-      // Use different endpoint for return trips
-      const endpoint = isReturnTrip ? "/api/jobs/return-trip/" : "/api/jobs/";
-      const data = await apiClient.post<{
-        message: string;
-        job: { id: number };
-      }>(endpoint, payload);
+      // Le choix de l'endpoint selon le type d'annonce vit dans le service.
+      const data = await publishJob(isReturnTrip, payload);
 
       if (data && data.job) {
         // Publication réussie : le brouillon n'a plus de raison d'être.

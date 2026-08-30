@@ -19,6 +19,14 @@ const ORDERING: Record<TriDesResultats, string> = {
 };
 
 export interface CriteresDeRecherche {
+  /**
+   * `true` pour les trajets retour, `false` pour les annonces classiques.
+   * ABSENT = aucun filtre : l'API renvoie alors les deux, ce dont depend
+   * l'ecran /demandes. Ne pas le remplacer par `false` par symetrie.
+   */
+  retoursSeulement?: boolean;
+  /** Filtre par type de prestation (TRANSPORT / MOVING). */
+  job_type?: string;
   pickup_governorate?: string;
   dropoff_governorate?: string;
   page: number;
@@ -41,15 +49,17 @@ export interface ResultatsDeRecherche {
  * L'API peut répondre une page paginée ou un tableau nu. Dans le second cas,
  * la pagination est faite ici, comme le faisait l'écran.
  */
-export async function searchReturnTrips(
+export async function searchPublicJobs(
   criteres: CriteresDeRecherche,
 ): Promise<ResultatsDeRecherche> {
   const parametres = new URLSearchParams({
-    is_return_trip: "true",
     page: String(criteres.page),
     page_size: String(criteres.pageSize),
     ordering: ORDERING[criteres.tri],
   });
+  if (criteres.retoursSeulement !== undefined)
+    parametres.append("is_return_trip", String(criteres.retoursSeulement));
+  if (criteres.job_type) parametres.append("job_type", criteres.job_type);
   if (criteres.pickup_governorate)
     parametres.append("pickup_governorate", criteres.pickup_governorate);
   if (criteres.dropoff_governorate)
@@ -106,4 +116,11 @@ export function createCorridorAlert(
 
 export function deleteCorridorAlert(id: number): Promise<unknown> {
   return apiClient.delete(`/api/corridor-alerts/${id}/`);
+}
+
+/** Raccourci historique : les trajets retour uniquement. */
+export function searchReturnTrips(
+  criteres: Omit<CriteresDeRecherche, "retoursSeulement">,
+): Promise<ResultatsDeRecherche> {
+  return searchPublicJobs({ ...criteres, retoursSeulement: true });
 }

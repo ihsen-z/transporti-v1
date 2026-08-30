@@ -27,7 +27,12 @@ export interface TransportReserve {
   dropoff_address: string;
   pickup_governorate: string;
   dropoff_governorate: string;
-  scheduled_date: string;
+  /**
+   * DATE DU TRANSPORT. Le champ s'appelle `scheduled_time` cote API ; l'ecran
+   * de reservation declarait `scheduled_date`, qui n'existe pas, et n'a donc
+   * JAMAIS affiche la date — le bloc conditionnel etait toujours faux.
+   */
+  scheduled_time: string;
   accepted_transporter?: {
     name: string;
     phone?: string;
@@ -45,8 +50,17 @@ export interface Escrow {
   created_at: string;
 }
 
-export function getReservedJob(jobId: number): Promise<TransportReserve> {
-  return apiClient.get<TransportReserve>(`/api/jobs/${jobId}/`);
+/**
+ * Le transport, pour les ecrans de reservation et de paiement.
+ *
+ * Generique : l'ecran /jobs/<id>/book en lit davantage de champs. Unifier les
+ * deux formes est un chantier a part — elles decrivent le meme endpoint et
+ * divergeaient deja sur le nom de la date.
+ */
+export function getReservedJob<T = TransportReserve>(
+  jobId: number,
+): Promise<T> {
+  return apiClient.get<T>(`/api/jobs/${jobId}/`);
 }
 
 /**
@@ -94,4 +108,43 @@ export function initiatePayment(
     job_id: jobId,
     ...(plateforme ? { platform: plateforme } : {}),
   });
+}
+
+/** Confirme la reservation : c'est elle qui engage le paiement. */
+export function createBooking(
+  jobId: number,
+  offerId: number | undefined,
+  moyenDePaiement: "DIGITAL" | "COD",
+): Promise<unknown> {
+  return apiClient.post("/api/bookings/", {
+    job_id: jobId,
+    offer_id: offerId,
+    payment_method: moyenDePaiement,
+  });
+}
+
+/**
+ * L'offre d'un trajet, lue dans la LISTE des offres.
+ *
+ * Il n'existe PAS de route de detail `/api/jobs/<id>/offers/<offerId>/` : la
+ * version precedente l'appelait quand meme, recevait un 404 et l'avalait —
+ * l'ecran de paiement affichait « introuvable » sans dire pourquoi, et le
+ * client qui venait d'accepter une contre-proposition ne pouvait jamais payer.
+ *
+ * Leve quand l'offre demandee n'appartient pas au trajet : c'est une
+ * incoherence, pas une absence.
+ */
+export async function getJobOffer<T extends { id: number }>(
+  jobId: number,
+  offerId: number,
+): Promise<T> {
+  const reponse = await apiClient.get<T[] | { results: T[] }>(
+    `/api/jobs/${jobId}/offers/`,
+  );
+  const liste = Array.isArray(reponse) ? reponse : reponse.results;
+  const trouvee = liste.find((o) => o.id === offerId);
+  if (!trouvee) {
+    throw new Error(`L'offre ${offerId} n'appartient pas au trajet ${jobId}.`);
+  }
+  return trouvee;
 }

@@ -4,7 +4,11 @@ import React, { useState, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api/client";
+import {
+  createBooking,
+  getJobOffer,
+  getReservedJob,
+} from "@/lib/services/bookings";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDate } from "@/lib/format";
 import { BookingSummary } from "@/components/booking/BookingSummary";
@@ -77,26 +81,12 @@ export default function BookingPage() {
     async function fetchData() {
       try {
         setErreur(null);
-        const jobData = await apiClient.get<JobData>(`/api/jobs/${jobId}/`);
-        setJob(jobData);
+        setJob(await getReservedJob(jobId));
 
         if (offerId) {
-          // L'offre est lue dans la LISTE des offres du trajet : il n'existe
-          // pas de route de detail `/api/jobs/<id>/offers/<offerId>/`. La
-          // version precedente l'appelait quand meme, recevait un 404, et
-          // l'avalait — l'ecran affichait « introuvable » sans dire pourquoi.
-          // Consequence : le client qui acceptait une contre-proposition
-          // arrivait sur un ecran de paiement qui ne chargeait jamais.
-          const offres = await apiClient.get<
-            OfferData[] | { results: OfferData[] }
-          >(`/api/jobs/${jobId}/offers/`);
-          const liste = Array.isArray(offres) ? offres : offres.results;
-          const trouvee = liste.find((o) => o.id === offerId) ?? null;
-          if (!trouvee) {
-            throw new Error(
-              `L'offre ${offerId} n'appartient pas au trajet ${jobId}.`,
-            );
-          }
+          // La lecture de l'offre, et la raison pour laquelle elle passe par
+          // la LISTE et non par une route de detail, vivent dans le service.
+          const trouvee = await getJobOffer<OfferData>(jobId, offerId);
           // DRF serialise les decimaux en CHAINE ("95.00"). Le type OfferData
           // annonce `number` : la difference n'avait jamais ete exercee, cet
           // ecran ne chargeant jamais. Des qu'il a charge, `totalPrice
@@ -126,11 +116,7 @@ export default function BookingPage() {
   async function handleConfirmBooking() {
     setIsSubmitting(true);
     try {
-      await apiClient.post(`/api/bookings/`, {
-        job_id: jobId,
-        offer_id: offerId,
-        payment_method: paymentMethod,
-      });
+      await createBooking(jobId, offerId, paymentMethod);
       setStep("success");
     } catch (error) {
       console.error("Booking failed:", error);

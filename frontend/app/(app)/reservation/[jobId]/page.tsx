@@ -274,10 +274,10 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {job.scheduled_date && (
+            {job.scheduled_time && (
               <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center gap-2 text-sm text-neutral-600">
                 <Clock className="w-4 h-4 text-neutral-400" />
-                {formatDate(job.scheduled_date)}
+                {formatDate(job.scheduled_time)}
               </div>
             )}
           </div>

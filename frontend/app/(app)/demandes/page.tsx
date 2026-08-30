@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient } from "@/lib/api/client";
+import { searchPublicJobs } from "@/lib/services/search";
 import { JobFilters } from "@/components/jobs/JobFilters";
 import { JobFeedCard } from "@/components/jobs/JobFeedCard";
 import {
@@ -50,43 +50,21 @@ export default function JobBrowsePage() {
     setLoading(true);
     setFetchError(false);
     try {
-      const queryParams = new URLSearchParams();
-      if (filters.job_type) queryParams.append("job_type", filters.job_type);
-      if (filters.pickup_governorate)
-        queryParams.append("pickup_governorate", filters.pickup_governorate);
-      if (filters.dropoff_governorate)
-        queryParams.append("dropoff_governorate", filters.dropoff_governorate);
+      // Pas de filtre is_return_trip : cet ecran montre les DEUX, et le
+      // service ne l'ajoute que s'il est explicitement demande.
+      const resultats = await searchPublicJobs({
+        job_type: filters.job_type || undefined,
+        pickup_governorate: filters.pickup_governorate,
+        dropoff_governorate: filters.dropoff_governorate,
+        page: currentPage,
+        pageSize: PAGE_SIZE,
+        tri: sortBy,
+      });
 
-      // Pagination
-      queryParams.append("page", String(currentPage));
-      queryParams.append("page_size", String(PAGE_SIZE));
+      if (fetchId !== fetchIdRef.current) return; // reponse obsolete
 
-      // Sort
-      if (sortBy === "newest") queryParams.append("ordering", "-created_at");
-      else if (sortBy === "price_asc")
-        queryParams.append("ordering", "price_tnd_min");
-      else if (sortBy === "price_desc")
-        queryParams.append("ordering", "-price_tnd_min");
-
-      const response = await apiClient.get<any>(
-        `/api/jobs/public/?${queryParams.toString()}`,
-      );
-
-      if (fetchId !== fetchIdRef.current) return; // réponse obsolète
-
-      if (response.results) {
-        // Paginated (DRF pagination)
-        setJobs(response.results);
-        setTotalCount(response.count || response.results.length);
-      } else if (Array.isArray(response)) {
-        // Non-paginated fallback
-        const start = (currentPage - 1) * PAGE_SIZE;
-        setJobs(response.slice(start, start + PAGE_SIZE));
-        setTotalCount(response.length);
-      } else {
-        setJobs([]);
-        setTotalCount(0);
-      }
+      setJobs(resultats.trajets);
+      setTotalCount(resultats.total);
     } catch (error) {
       if (fetchId !== fetchIdRef.current) return;
       console.error("Error fetching jobs:", error);

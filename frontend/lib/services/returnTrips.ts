@@ -145,3 +145,87 @@ export function daysUntilExpiry(trajet: ReturnTrip): number {
   const ecart = new Date(trajet.scheduled_time).getTime() - Date.now();
   return Math.ceil(ecart / millisecondesParJour);
 }
+
+/**
+ * Estimation de prix a partir de coordonnees.
+ *
+ * `estimate_price` cote backend n'accepte QUE des coordonnees, jamais des
+ * gouvernorats : la resolution des centroides se fait avant l'appel.
+ */
+export interface EstimationDePrix {
+  min: number;
+  max: number;
+  distance_km: number;
+  grid_source: string;
+}
+
+export function estimatePrice(
+  coordonnees: {
+    pickup_lat: number;
+    pickup_lng: number;
+    dropoff_lat: number;
+    dropoff_lng: number;
+  },
+  jobType: string,
+): Promise<EstimationDePrix> {
+  return apiClient.post<EstimationDePrix>("/api/jobs/estimate-price/", {
+    ...coordonnees,
+    job_type: jobType,
+  });
+}
+
+/**
+ * Publie une annonce : trajet retour ou demande classique.
+ *
+ * L'endpoint DIFFERE selon le cas, et c'est la seule chose qui change. Le
+ * choix vivait dans l'ecran, en une ligne facile a manquer.
+ */
+export async function publishJob(
+  estUnTrajetRetour: boolean,
+  charge: Record<string, unknown>,
+): Promise<{ message: string; job: { id: number } }> {
+  return apiClient.post<{ message: string; job: { id: number } }>(
+    estUnTrajetRetour ? "/api/jobs/return-trip/" : "/api/jobs/",
+    charge,
+  );
+}
+
+/**
+ * Publie un trajet retour et rend les demandes ouvertes du corridor.
+ *
+ * Le backend repond avec `matching_requests` : ce sont les demandes deja en
+ * attente sur ce corridor, que le transporteur peut monetiser tout de suite.
+ * C'est le rapprochement inverse du Sprint 5 — le rendre au meme moment que
+ * la publication est ce qui lui donne sa valeur.
+ */
+export async function publishReturnTrip<TDemande>(
+  charge: Record<string, unknown>,
+): Promise<{
+  matching_requests_count?: number;
+  matching_requests?: TDemande[];
+}> {
+  return apiClient.post(`/api/jobs/return-trip/`, charge);
+}
+
+/**
+ * Combien de trajets retour couvrent ce corridor.
+ *
+ * Sert a dire au client, AVANT qu'il publie, qu'un retour existe deja sur son
+ * trajet — c'est la promesse du pivot prise a l'endroit ou elle compte.
+ * La date est facultative : sans elle, le compte porte sur tout le corridor.
+ */
+export async function countMatchingReturnTrips(
+  depart: string,
+  arrivee: string,
+  date?: string,
+): Promise<number> {
+  const parametres = new URLSearchParams({
+    pickup_governorate: depart,
+    dropoff_governorate: arrivee,
+  });
+  if (date) parametres.append("date", date);
+  const reponse = await apiClient.get<{ count: number }>(
+    `/api/return-trips/match/?${parametres.toString()}`,
+  );
+  return reponse.count ?? 0;
+}
