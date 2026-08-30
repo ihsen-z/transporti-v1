@@ -3,7 +3,14 @@
 import React, { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient, ApiError } from "@/lib/api/client";
+import { ApiError } from "@/lib/api/client";
+import {
+  createDispute,
+  getDisputableJobs,
+  getMyDisputes,
+  type Dispute,
+  type TransportEligible as UserJob,
+} from "@/lib/services/disputes";
 import { useToast } from "@/components/ui/Toast";
 import { formatDate as formatDateI18n } from "@/lib/format";
 import {
@@ -26,41 +33,6 @@ import {
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
 
 type DisputesT = AppTranslationKeys["disputes"];
-
-/* -------------------------------------------------------------------------- */
-/*  Types                                                                     */
-/* -------------------------------------------------------------------------- */
-
-interface Dispute {
-  id: number;
-  job: number;
-  reason: string;
-  description: string;
-  status: string;
-  resolution_notes: string | null;
-  opened_by_name: string;
-  job_summary: {
-    id: number;
-    type: string;
-    status: string;
-    pickup?: string;
-    dropoff?: string;
-  };
-  created_at: string;
-  updated_at: string;
-  resolved_at: string | null;
-}
-
-interface UserJob {
-  id: number;
-  job_type: string;
-  status: string;
-  pickup_address: string;
-  dropoff_address: string;
-  pickup_governorate?: string;
-  dropoff_governorate?: string;
-  created_at: string;
-}
 
 /* -------------------------------------------------------------------------- */
 /*  Status helpers                                                            */
@@ -148,18 +120,11 @@ function CreateDisputeModal({
     const fetchUserJobs = async () => {
       setLoadingJobs(true);
       try {
-        const isTransporter = userRole?.toUpperCase() === "TRANSPORTER";
-        const endpoint = isTransporter
-          ? "/api/jobs/transporter/"
-          : "/api/jobs/my/";
-        const data = await apiClient.get<any>(endpoint);
-        const jobs = data.results ?? (Array.isArray(data) ? data : []);
-
-        // Only show jobs that can have disputes (IN_PROGRESS or COMPLETED)
-        const eligibleJobs = jobs.filter((j: UserJob) =>
-          ["IN_PROGRESS", "COMPLETED", "CONFIRMED"].includes(j.status),
+        // Le choix de l'endpoint selon le role et le filtre sur les statuts
+        // eligibles sont des regles metier : ils vivent dans le service.
+        setUserJobs(
+          await getDisputableJobs(userRole?.toUpperCase() === "TRANSPORTER"),
         );
-        setUserJobs(eligibleJobs);
       } catch (err) {
         console.error("Failed to fetch jobs:", err);
       } finally {
@@ -181,11 +146,11 @@ function CreateDisputeModal({
     try {
       // ✅ P0-01: Send job_id (not job)
       // ✅ P0-02: reason codes aligned with backend
-      await apiClient.post("/api/disputes/", {
-        job_id: parseInt(selectedJobId, 10),
+      await createDispute(
+        parseInt(selectedJobId, 10),
         reason,
-        description: description.trim(),
-      });
+        description.trim(),
+      );
       showToast("success", t.disputeCreated);
       onCreated();
       onClose();
@@ -391,9 +356,7 @@ export default function DisputesPage() {
   const fetchDisputes = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await apiClient.get<any>("/api/disputes/my/");
-      const list = data.results ?? (Array.isArray(data) ? data : []);
-      setDisputes(list);
+      setDisputes(await getMyDisputes());
     } catch (err) {
       console.error("Error fetching disputes:", err);
     } finally {
