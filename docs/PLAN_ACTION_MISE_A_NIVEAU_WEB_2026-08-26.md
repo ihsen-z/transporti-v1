@@ -81,7 +81,7 @@ livraisons.
 | `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
 | `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
 
-**30/08/2026** — 20 modification(s) de code, 5 mise(s) à jour du plan
+**30/08/2026** — 22 modification(s) de code, 6 mise(s) à jour du plan
 
 | Commit | Objet |
 |---|---|
@@ -110,6 +110,9 @@ livraisons.
 | `6151df7` | refactor(web): Sort le reseau des ecrans d administration (lot 4.2) |
 | `fb166ce` | docs(plan): Lot 4.2 termine, chronologie du 30/08 datee |
 | `f17852f` | feat(web+mobile): T5.4 - la performance par corridor a enfin une interface |
+| `7f177cc` | docs(plan): Lot 5 demarre avec T5.4, chronologie du 30/08 completee |
+| `116c23a` | feat(web): C5.2 - mes avis, et corrige un placeholder livre casse |
+| `32b3b20` | feat(web+mobile): C5.3 - les transporteurs favoris ont enfin une interface |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
 
@@ -864,8 +867,9 @@ deux rôles qui fera le gros du chemin, en coupant le fichier en deux écrans di
 | **T5.5** Clients fidèles (B-4, favoris inversés) | ⏳ à faire | — | — | Endpoint à écrire |
 | **T5.3** Réputation | ⏳ à faire | — | — | — |
 | **C5.1** Portefeuille client | ⏳ à faire | — | — | — |
-| **C5.2** Mes avis | ⏳ à faire | — | — | `reviews/my/` livré sans interface |
-| **C5.3** Favoris | ⏳ à faire | — | — | `favorites/` + `favorites/toggle/` livrés sans interface |
+| **C5.2** Mes avis — **web** | ✅ **fait** | `116c23a` | 30/08/2026 | Double aveugle respecté, branches masquée et révélée vérifiées |
+| **C5.2** Mes avis — **mobile** | ✅ **déjà livré** | — | — | `useMyReviews` + `ReviewsPanel` existaient — voir ci-dessous |
+| **C5.3** Favoris — **web + mobile** | ✅ **fait** | `32b3b20` | 30/08/2026 | Cycle complet vérifié, 7 tests mobile |
 
 #### T5.4 — le septième cas de code livré sans lecteur · *30/08/2026*
 
@@ -896,6 +900,40 @@ autorise.
    du retour dans celui de l'aller — c'est le fondement même du pivot.
 3. `null` signifie *indisponible*, jamais *zéro corridor*. Afficher un tableau vide ferait croire à
    un transporteur qu'il n'a rien gagné.
+
+#### C5.2 et C5.3 — et une correction sur mon propre compte · *30/08/2026*
+
+**C5.2 était orphelin côté WEB seulement.** Le mobile consommait déjà `reviews/my/` —
+`useMyReviews` alimente `ReviewsPanel`, ouvert depuis le Profil, et le double aveugle y est
+correctement traité. Mon message de commit a annoncé « huitième endpoint livré sans lecteur » :
+c'était **trop large**, et je le corrige ici. L'endpoint avait un lecteur, sur une seule plateforme.
+C5.2 mobile est donc **déjà livré**, comme T4.1 mobile l'était.
+
+**C5.3, en revanche, était orphelin sur les deux.** Vérifié avant d'écrire : `favorites/` et
+`favorites/toggle/` existaient depuis P2-09 sans aucun appelant, ni web ni mobile.
+
+**Une règle, écrite des deux côtés et tenue par des tests** : l'état du favori vient du **serveur**,
+jamais d'une inversion locale. L'endpoint crée ou supprime selon ce qu'il trouve et renvoie
+`is_favorite` ; deux appuis rapides désynchroniseraient sinon l'affichage de la base.
+
+**Un refus, testé lui aussi** : `total_jobs_completed` est **absent** quand le transporteur n'a pas
+de profil de confiance. On n'affiche alors rien — pas « 0 mission ». Dévaloriser quelqu'un sur une
+donnée manquante est pire que se taire. Un zéro *déclaré*, lui, est une information et s'affiche.
+
+#### Un défaut que j'ai livré, puis trouvé · *30/08/2026*
+
+Les libellés du web s'interpolent avec `{clé}` ; le mobile utilise `{{clé}}` (i18next). J'ai appliqué
+la syntaxe mobile côté web en écrivant T5.4.
+
+**Conséquence** : le compteur d'opportunités de `/performance` aurait affiché
+« `{{count}} demande(s) en attente` ». Le défaut est passé ma propre vérification parce que le
+transporteur de test n'a **aucune zone déclarée**, donc aucune opportunité à afficher — la ligne
+fautive n'était jamais rendue. Il est sorti en vérifiant C5.2, où le même motif était visible.
+
+**Ce que ça dit de la méthode** : vérifier qu'un écran « charge sans erreur » ne vaut que pour les
+branches réellement rendues. C'est pour cette raison que C5.2 a été vérifié en **créant de vrais
+avis par l'API** — d'abord un seul, pour voir la branche masquée, puis l'avis en retour, pour voir la
+révélation — et C5.3 en parcourant le cycle entier : vide, ajout, liste, retrait, vide.
 
 ### Lot 6 — Rétention · **non démarré**
 
