@@ -81,7 +81,7 @@ livraisons.
 | `8bfe13e` | fix(pricing): Recalibre la grille sur le prix d un transport dedie |
 | `648a0d3` | docs(plan): Lot 3 termine, C1.2 s affiche, diagnostic corrige |
 
-**30/08/2026** — 22 modification(s) de code, 6 mise(s) à jour du plan
+**30/08/2026** — 23 modification(s) de code, 7 mise(s) à jour du plan
 
 | Commit | Objet |
 |---|---|
@@ -113,6 +113,8 @@ livraisons.
 | `7f177cc` | docs(plan): Lot 5 demarre avec T5.4, chronologie du 30/08 completee |
 | `116c23a` | feat(web): C5.2 - mes avis, et corrige un placeholder livre casse |
 | `32b3b20` | feat(web+mobile): C5.3 - les transporteurs favoris ont enfin une interface |
+| `c7a9426` | docs(plan): C5.2 et C5.3 livres, et je corrige une affirmation trop large |
+| `249b11f` | feat(web): C5.1 - le portefeuille client, et l endpoint qui manquait |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
 
@@ -866,7 +868,8 @@ deux rôles qui fera le gros du chemin, en coupant le fichier en deux écrans di
 | **T5.4** Performance par corridor — **web + mobile** | ✅ **fait** | `f17852f` | 30/08/2026 | Écran `/performance` + carte sous Gains. 147 tests mobile, 50 web |
 | **T5.5** Clients fidèles (B-4, favoris inversés) | ⏳ à faire | — | — | Endpoint à écrire |
 | **T5.3** Réputation | ⏳ à faire | — | — | — |
-| **C5.1** Portefeuille client | ⏳ à faire | — | — | — |
+| **C5.1** Portefeuille client — **web** | ✅ **fait** | `249b11f` | 30/08/2026 | Endpoint `/api/client/wallet/` **créé** : il n'existait pas |
+| **C5.1** Portefeuille client — **mobile** | ⏳ à faire | — | — | Décision 6 : à transposer |
 | **C5.2** Mes avis — **web** | ✅ **fait** | `116c23a` | 30/08/2026 | Double aveugle respecté, branches masquée et révélée vérifiées |
 | **C5.2** Mes avis — **mobile** | ✅ **déjà livré** | — | — | `useMyReviews` + `ReviewsPanel` existaient — voir ci-dessous |
 | **C5.3** Favoris — **web + mobile** | ✅ **fait** | `32b3b20` | 30/08/2026 | Cycle complet vérifié, 7 tests mobile |
@@ -934,6 +937,39 @@ fautive n'était jamais rendue. Il est sorti en vérifiant C5.2, où le même mo
 branches réellement rendues. C'est pour cette raison que C5.2 a été vérifié en **créant de vrais
 avis par l'API** — d'abord un seul, pour voir la branche masquée, puis l'avis en retour, pour voir la
 révélation — et C5.3 en parcourant le cycle entier : vide, ajout, liste, retrait, vide.
+
+#### C5.1 — l'audit annonçait un lien de menu, il manquait un endpoint · *30/08/2026*
+
+Le tableau d'audit de ce plan portait, pour C5.1 : *« `wallet/` existe, absent de la navigation
+client »*. **C'est faux**, et vérifié avant d'écrire une ligne : `TransporterWalletView` porte
+`RequireRole('TRANSPORTER')` et répond **403** à un client. Il manquait donc un endpoint, pas une
+entrée de menu — C5.1 n'était pas une tâche d'interface.
+
+C'est le pendant exact du motif inverse rencontré neuf fois dans ce chantier. Là où le plan
+sous-estimait l'existant (« à créer » alors que c'était déjà là), il le **surestime** ici. Les deux
+erreurs ont la même cause : une ligne d'audit écrite sans exécuter l'appel.
+
+**Un client n'a pas de solde.** Il n'a rien à retirer. Ce qui le concerne est *où en est son argent*,
+et les quatre figures **ne s'additionnent pas** :
+
+| Figure | Ce qu'elle dit |
+|---|---|
+| `held` | Séquestré sur des missions en cours. Ni dépensé, ni récupérable — c'est exactement ce que l'escrow promet, et le montrer est le sujet |
+| `released` | Versé aux transporteurs après confirmation de livraison |
+| `refunded` | Annulations et litiges tranchés en sa faveur |
+| `cod_pending` | Réservations en espèces non livrées. La plateforme n'a jamais tenu cet argent ; l'omettre laisserait croire au client qu'il ne doit rien |
+
+**Aucun total n'est renvoyé, et un test le verrouille.** Cumuler un escrow détenu, un escrow versé et
+une dette en espèces donnerait un chiffre qui ne correspond à aucune réalité comptable. L'écran le
+dit au lecteur, en toutes lettres, plutôt que de le laisser faire l'addition lui-même.
+
+Le statut d'un mouvement est affiché **tel que le serveur l'envoie** (`HELD`, `RELEASED`, `REFUNDED`).
+Le traduire en « payé » ou « en attente » inventerait une lecture que la machine à états de l'escrow
+ne garantit pas.
+
+**Un défaut introduit puis corrigé dans le même commit** : les hooks React s'exécutent **avant** la
+bifurcation de rôle, si bien qu'un client déclenchait `/api/wallet/` — réservé au transporteur — et
+récoltait deux 403 en console avant même de voir son écran. Trouvé en vérifiant, pas en relisant.
 
 ### Lot 6 — Rétention · **non démarré**
 
