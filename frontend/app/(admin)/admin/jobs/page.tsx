@@ -23,7 +23,7 @@ import { JobStatusBadge } from "@/components/admin/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { type AdminJob } from "@/lib/services/types";
 import { cancelJob, forceJobStatus } from "@/lib/services/admin";
-import { apiClient } from "@/lib/api/client";
+import { getAdminJobsPage } from "@/lib/services/admin";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
 type StatusFilter =
@@ -61,18 +61,15 @@ export default function AdminJobsPage() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      params.set("page", String(page));
-      params.set("page_size", String(PAGE_SIZE));
-      if (filter !== "ALL") params.set("status", filter);
-      if (searchQuery.trim()) params.set("search", searchQuery.trim());
-
-      const response = await apiClient.get<{ results?: AdminJob[]; totalPages?: number; count?: number }>(
-        `/api/admin/jobs/?${params.toString()}`,
-      );
-      setAllJobs(response.results || []);
-      setTotalPages(response.totalPages || 1);
-      setTotalCount(response.count || 0);
+      const page_ = await getAdminJobsPage<AdminJob>({
+        page,
+        pageSize: PAGE_SIZE,
+        status: filter !== "ALL" ? filter : undefined,
+        search: searchQuery.trim() || undefined,
+      });
+      setAllJobs(page_.items);
+      setTotalPages(page_.totalPages);
+      setTotalCount(page_.count);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Erreur de chargement"));
     } finally {

@@ -23,7 +23,7 @@ import {
 } from "@/components/admin/StatusBadge";
 import StatusBadge from "@/components/admin/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/format";
-import { apiClient } from "@/lib/api/client";
+import { getAdminJobDetail } from "@/lib/services/admin";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -122,10 +122,13 @@ export default function AdminJobDetailPage() {
 
     async function fetchJob() {
       try {
-        const data = await apiClient.get<JobDetail>(
-          `/api/admin/jobs/${jobId}/`,
+        // `jobId` vient du segment d'URL et peut etre un tableau : on prend
+        // la premiere valeur, comme le fait le reste de l'ecran.
+        setJob(
+          await getAdminJobDetail<JobDetail>(
+            Array.isArray(jobId) ? jobId[0] : jobId,
+          ),
         );
-        setJob(data);
       } catch (err) {
         setError(
           err instanceof Error

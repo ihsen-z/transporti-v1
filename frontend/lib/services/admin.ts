@@ -470,3 +470,90 @@ export async function editUser(
 }> {
   return apiClient.patch(`/api/admin/users/${userId}/edit/`, data);
 }
+
+/* -------------------------------------------------------------------------- */
+/*  Listes paginées et filtrées — lot 4.2                                     */
+/* -------------------------------------------------------------------------- */
+
+/**
+ * Les quatre écrans d'administration construisaient leurs `URLSearchParams`
+ * à la main. `getAdminJobs()` et `getAdminUsers()` existaient déjà mais SANS
+ * pagination ni filtre : les écrans ne pouvaient pas s'en servir et
+ * rappelaient l'endpoint eux-mêmes. Les deux formes coexistent désormais,
+ * chacune nommée pour ce qu'elle fait.
+ */
+export interface PageAdmin<T> {
+  items: T[];
+  totalPages: number;
+  count: number;
+}
+
+async function pageAdmin<T>(chemin: string): Promise<PageAdmin<T>> {
+  const reponse = await apiClient.get<{
+    results?: T[];
+    totalPages?: number;
+    count?: number;
+  }>(chemin);
+  return {
+    items: reponse.results ?? [],
+    totalPages: reponse.totalPages ?? 1,
+    count: reponse.count ?? 0,
+  };
+}
+
+export function getAdminUsersPage<T>(criteres: {
+  page: number;
+  pageSize: number;
+  role?: string;
+  search?: string;
+}): Promise<PageAdmin<T>> {
+  const parametres = new URLSearchParams({
+    page: String(criteres.page),
+    page_size: String(criteres.pageSize),
+  });
+  if (criteres.role) parametres.set("role", criteres.role);
+  if (criteres.search) parametres.set("search", criteres.search);
+  return pageAdmin<T>(`/api/admin/users/?${parametres.toString()}`);
+}
+
+export function getAdminJobsPage<T>(criteres: {
+  page: number;
+  pageSize: number;
+  status?: string;
+  search?: string;
+}): Promise<PageAdmin<T>> {
+  const parametres = new URLSearchParams({
+    page: String(criteres.page),
+    page_size: String(criteres.pageSize),
+  });
+  if (criteres.status) parametres.set("status", criteres.status);
+  if (criteres.search) parametres.set("search", criteres.search);
+  return pageAdmin<T>(`/api/admin/jobs/?${parametres.toString()}`);
+}
+
+export function getAdminUserDetail<T>(userId: number): Promise<T> {
+  return apiClient.get<T>(`/api/admin/users/${userId}/`);
+}
+
+export function getAdminJobDetail<T>(jobId: number | string): Promise<T> {
+  return apiClient.get<T>(`/api/admin/jobs/${jobId}/`);
+}
+
+/**
+ * Journal d'audit.
+ *
+ * `limit` est plafonné par l'appelant, pas ici : c'est une décision
+ * d'affichage. `action` filtre côté serveur.
+ */
+export function getAuditLog<T>(criteres: {
+  days: number | string;
+  limit: number;
+  action?: string;
+}): Promise<T> {
+  const parametres = new URLSearchParams({
+    days: String(criteres.days),
+    limit: String(criteres.limit),
+  });
+  if (criteres.action) parametres.set("action", criteres.action);
+  return apiClient.get<T>(`/api/admin/audit-log/?${parametres.toString()}`);
+}

@@ -9,11 +9,7 @@ import {
   TrustBadge,
 } from "@/components/admin/StatusBadge";
 import { useAdminUsers } from "@/hooks/useAdminData";
-import {
-  formatDate,
-  formatTimeAgoShort,
-  formatCurrency,
-} from "@/lib/format";
+import { formatDate, formatTimeAgoShort, formatCurrency } from "@/lib/format";
 import { type AdminUser } from "@/lib/services/types";
 import {
   suspendUser,
@@ -42,7 +38,8 @@ import {
   Square,
   MinusSquare,
 } from "lucide-react";
-import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
+import { ApiError, getErrorMessage } from "@/lib/api/client";
+import { getAdminUserDetail, getAdminUsersPage } from "@/lib/services/admin";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
 type RoleFilter = "ALL" | "CLIENT" | "TRANSPORTER";
@@ -262,7 +259,12 @@ function UserDetailDrawer({
   const [detail, setDetail] = useState<UserDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ first_name: "", last_name: "", phone: "", role: "" });
+  const [editForm, setEditForm] = useState({
+    first_name: "",
+    last_name: "",
+    phone: "",
+    role: "",
+  });
   const [editLoading, setEditLoading] = useState(false);
   const [editSuccess, setEditSuccess] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
@@ -270,8 +272,7 @@ function UserDetailDrawer({
   useEffect(() => {
     if (!userId) return;
     setLoading(true);
-    apiClient
-      .get<UserDetail>(`/api/admin/users/${userId}/`)
+    getAdminUserDetail<UserDetail>(userId)
       .then((data) => setDetail(data))
       .catch(() => setDetail(null))
       .finally(() => setLoading(false));
@@ -374,38 +375,54 @@ function UserDetailDrawer({
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Prénom</label>
+                    <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+                      Prénom
+                    </label>
                     <input
                       type="text"
                       value={editForm.first_name}
-                      onChange={(e) => setEditForm({ ...editForm, first_name: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, first_name: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Nom</label>
+                    <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+                      Nom
+                    </label>
                     <input
                       type="text"
                       value={editForm.last_name}
-                      onChange={(e) => setEditForm({ ...editForm, last_name: e.target.value })}
+                      onChange={(e) =>
+                        setEditForm({ ...editForm, last_name: e.target.value })
+                      }
                       className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Téléphone</label>
+                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+                    Téléphone
+                  </label>
                   <input
                     type="text"
                     value={editForm.phone}
-                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, phone: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">Rôle</label>
+                  <label className="block text-xs font-medium text-neutral-600 dark:text-neutral-400 mb-1">
+                    Rôle
+                  </label>
                   <select
                     value={editForm.role}
-                    onChange={(e) => setEditForm({ ...editForm, role: e.target.value })}
+                    onChange={(e) =>
+                      setEditForm({ ...editForm, role: e.target.value })
+                    }
                     className="w-full px-3 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:ring-2 focus:ring-brand-500"
                   >
                     <option value="CLIENT">Client</option>
@@ -413,14 +430,21 @@ function UserDetailDrawer({
                   </select>
                 </div>
                 {editError && (
-                  <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg p-2">{editError}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
+                    {editError}
+                  </p>
                 )}
                 {editSuccess && (
-                  <p className="text-xs text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg p-2">{editSuccess}</p>
+                  <p className="text-xs text-green-700 dark:text-green-400 bg-green-50 dark:bg-green-900/20 rounded-lg p-2">
+                    {editSuccess}
+                  </p>
                 )}
                 <div className="flex items-center justify-end gap-2 pt-1">
                   <button
-                    onClick={() => { setIsEditing(false); setEditError(null); }}
+                    onClick={() => {
+                      setIsEditing(false);
+                      setEditError(null);
+                    }}
                     disabled={editLoading}
                     className="px-3 py-1.5 text-xs font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"
                   >
@@ -435,11 +459,16 @@ function UserDetailDrawer({
                         setEditSuccess(result.message);
                         setIsEditing(false);
                         // Refresh detail
-                        const refreshed = await apiClient.get<UserDetail>(`/api/admin/users/${detail.id}/`);
+                        const refreshed = await getAdminUserDetail<UserDetail>(
+                          detail.id,
+                        );
                         setDetail(refreshed);
                         onUserUpdated?.();
                       } catch (err: unknown) {
-                        setEditError(getErrorMessage(err) || "Erreur lors de la modification");
+                        setEditError(
+                          getErrorMessage(err) ||
+                            "Erreur lors de la modification",
+                        );
                       } finally {
                         setEditLoading(false);
                       }
@@ -447,13 +476,16 @@ function UserDetailDrawer({
                     disabled={editLoading}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-brand-600 text-white text-xs font-semibold rounded-lg hover:bg-brand-700 transition-colors disabled:opacity-50"
                   >
-                    {editLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
+                    {editLoading ? (
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                    ) : (
+                      <Save className="w-3.5 h-3.5" />
+                    )}
                     Enregistrer
                   </button>
                 </div>
               </div>
             )}
-
 
             {/* Info Grid */}
             <div className="grid grid-cols-2 gap-4">
@@ -634,18 +666,15 @@ export default function AdminUsersPage() {
     setLoading(true);
     setError(null);
     try {
-      const params = new URLSearchParams();
-      params.set("page", String(page));
-      params.set("page_size", String(PAGE_SIZE));
-      if (filter !== "ALL") params.set("role", filter);
-      if (searchQuery.trim()) params.set("search", searchQuery.trim());
-
-      const response = await apiClient.get<any>(
-        `/api/admin/users/?${params.toString()}`,
-      );
-      setAllUsers(response.results || []);
-      setTotalPages(response.totalPages || 1);
-      setTotalCount(response.count || 0);
+      const page_ = await getAdminUsersPage<AdminUser>({
+        page,
+        pageSize: PAGE_SIZE,
+        role: filter !== "ALL" ? filter : undefined,
+        search: searchQuery.trim() || undefined,
+      });
+      setAllUsers(page_.items);
+      setTotalPages(page_.totalPages);
+      setTotalCount(page_.count);
     } catch (err) {
       setError(err instanceof Error ? err : new Error("Erreur de chargement"));
     } finally {
@@ -780,7 +809,9 @@ export default function AdminUsersPage() {
       refetch();
     } catch (err: unknown) {
       const msg =
-        (err instanceof ApiError && err.body?.error) || getErrorMessage(err) || "Une erreur est survenue.";
+        (err instanceof ApiError && err.body?.error) ||
+        getErrorMessage(err) ||
+        "Une erreur est survenue.";
       setErrorBanner(msg);
       setModalAction(null);
     } finally {
@@ -798,7 +829,11 @@ export default function AdminUsersPage() {
             toggleSelectAll();
           }}
           className="p-0.5 text-neutral-400 hover:text-brand-600 transition-colors"
-          title={selectedIds.size === filteredUsers.length ? "Tout désélectionner" : "Tout sélectionner"}
+          title={
+            selectedIds.size === filteredUsers.length
+              ? "Tout désélectionner"
+              : "Tout sélectionner"
+          }
         >
           {selectedIds.size === 0 ? (
             <Square className="w-4 h-4" />
@@ -996,7 +1031,10 @@ export default function AdminUsersPage() {
                   return;
                 }
                 const baseUrl =
-                  process.env.NEXT_PUBLIC_API_URL || (process.env.NODE_ENV === 'production' ? 'https://transporti-v1.onrender.com' : 'http://localhost:8000');
+                  process.env.NEXT_PUBLIC_API_URL ||
+                  (process.env.NODE_ENV === "production"
+                    ? "https://transporti-v1.onrender.com"
+                    : "http://localhost:8000");
                 const res = await fetch(`${baseUrl}/api/admin/users/export/`, {
                   headers: { Authorization: `Bearer ${token}` },
                 });
@@ -1192,7 +1230,11 @@ export default function AdminUsersPage() {
                 disabled={bulkLoading}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50"
               >
-                {bulkLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Ban className="w-3.5 h-3.5" />}
+                {bulkLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Ban className="w-3.5 h-3.5" />
+                )}
                 Suspendre
               </button>
               <button
@@ -1200,7 +1242,11 @@ export default function AdminUsersPage() {
                 disabled={bulkLoading}
                 className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg text-sm font-medium hover:bg-green-100 dark:hover:bg-green-900/40 transition-colors disabled:opacity-50"
               >
-                {bulkLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <CheckCircle className="w-3.5 h-3.5" />}
+                {bulkLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <CheckCircle className="w-3.5 h-3.5" />
+                )}
                 Activer
               </button>
               <button

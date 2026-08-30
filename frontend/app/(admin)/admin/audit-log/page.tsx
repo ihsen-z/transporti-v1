@@ -20,7 +20,8 @@ import {
   EyeOff,
   Clock,
 } from "lucide-react";
-import { apiClient, ApiError, getErrorMessage } from "@/lib/api/client";
+import { ApiError, getErrorMessage } from "@/lib/api/client";
+import { getAuditLog } from "@/lib/services/admin";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
 interface AuditEntry {
@@ -120,10 +121,13 @@ export default function AdminAuditLogPage() {
     setLoading(true);
     setError(null);
     try {
-      let url = `/api/admin/audit-log/?days=${daysFilter}&limit=200`;
-      if (actionFilter) url += `&action=${actionFilter}`;
-      const result = await apiClient.get<AuditResponse>(url);
-      setData(result);
+      setData(
+        await getAuditLog<AuditResponse>({
+          days: daysFilter,
+          limit: 200,
+          action: actionFilter || undefined,
+        }),
+      );
     } catch (err: unknown) {
       setError(getErrorMessage(err) || "Erreur de chargement");
     } finally {
@@ -160,8 +164,17 @@ export default function AdminAuditLogPage() {
           <button
             onClick={() => {
               if (!entries.length) return;
-              const headers = ["Date", "Admin", "Email", "Action", "Cible", "ID Cible", "Détails", "IP"];
-              const rows = entries.map(e => [
+              const headers = [
+                "Date",
+                "Admin",
+                "Email",
+                "Action",
+                "Cible",
+                "ID Cible",
+                "Détails",
+                "IP",
+              ];
+              const rows = entries.map((e) => [
                 formatDateTime(e.createdAt),
                 e.adminName,
                 e.adminEmail,
@@ -171,8 +184,14 @@ export default function AdminAuditLogPage() {
                 JSON.stringify(e.details || {}),
                 e.ipAddress || "",
               ]);
-              const csv = [headers, ...rows].map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
-              const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+              const csv = [headers, ...rows]
+                .map((r) =>
+                  r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(","),
+                )
+                .join("\n");
+              const blob = new Blob(["\uFEFF" + csv], {
+                type: "text/csv;charset=utf-8;",
+              });
               const url = URL.createObjectURL(blob);
               const a = document.createElement("a");
               a.href = url;
@@ -183,7 +202,19 @@ export default function AdminAuditLogPage() {
             disabled={!entries.length}
             className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            <svg
+              className="w-4 h-4"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+              />
+            </svg>
             Export CSV
           </button>
           {data && (
