@@ -5,6 +5,22 @@ import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 import { apiClient, ApiError } from "@/lib/api/client";
 import type { JobDetail } from "@/lib/types/jobs";
+import {
+  accepterContreProposition,
+  annulerDemandeSurTrajet,
+  annulerParLeClient,
+  annulerParLeTransporteur,
+  confirmerDemarrage,
+  confirmerLivraisonParLeClient,
+  enregistrerJalon,
+  envoyerDemandeSurTrajet,
+  getJobDetail,
+  initierPaiement,
+  marquerLivre,
+  reserverTrajetRetour,
+  televerserPhotoPreuve,
+  verifierPaiement,
+} from "@/lib/services/jobDetail";
 import { JobPreview } from "@/components/jobs/JobPreview";
 import { OfferForm } from "@/components/offers/OfferForm";
 import { MyOfferCard } from "@/components/offers/MyOfferCard";
@@ -95,9 +111,7 @@ export default function JobDetailsPage() {
       (async () => {
         try {
           if (gatewayRef) {
-            await apiClient.post("/api/payments/verify/", {
-              gateway_ref: gatewayRef,
-            });
+            await verifierPaiement(gatewayRef);
           }
           showToast("success", t.jobDetail.paymentSuccess);
         } catch (_e) {
@@ -121,10 +135,7 @@ export default function JobDetailsPage() {
     if (!jobId) return;
     setPaying(true);
     try {
-      const res = await apiClient.post<{ payment_url: string }>(
-        "/api/payments/initiate/",
-        { job_id: jobId, platform: "web" },
-      );
+      const res = await initierPaiement(jobId);
       if (res?.payment_url) {
         window.location.href = res.payment_url;
         return;
@@ -145,7 +156,7 @@ export default function JobDetailsPage() {
     if (!jobId) return;
     setConfirmingStart(true);
     try {
-      await apiClient.post(`/api/jobs/${jobId}/confirm-start/`, {});
+      await confirmerDemarrage(jobId);
       showToast("success", t.jobDetail.startConfirmed);
       fetchJob();
     } catch (error) {
@@ -168,10 +179,18 @@ export default function JobDetailsPage() {
   }, [jobId]);
 
   const fetchJob = async () => {
+    //  vient de l'URL et vaut null si le segment n'est pas un nombre.
+    // L'appel en ligne fabriquait alors `/api/jobs/null/` sans rien signaler ;
+    // le service, lui, est type, et le cas doit etre traite.
+    if (jobId === null) {
+      setFetchError("not_found");
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     setFetchError(null);
     try {
-      const data = await apiClient.get<JobDetail>(`/api/jobs/${jobId}/`);
+      const data = await getJobDetail(jobId);
       setJob(data as JobDetail);
     } catch (error) {
       console.error("Error fetching job:", error);
@@ -195,9 +214,7 @@ export default function JobDetailsPage() {
     setActiveDialog(null);
     setConfirming(true);
     try {
-      await apiClient.post("/api/payments/confirm-completion/", {
-        job_id: job!.id,
-      });
+      await confirmerLivraisonParLeClient(job!.id);
       showToast("success", t.jobDetail.deliveryConfirmed);
       fetchJob();
     } catch (error) {
@@ -218,10 +235,7 @@ export default function JobDetailsPage() {
     }
     setBookingLoading(true);
     try {
-      await apiClient.post(`/api/jobs/${job!.id}/book-return/`, {
-        proposed_price: bookingPrice,
-        payment_method: bookingPayment,
-      });
+      await reserverTrajetRetour(job!.id, bookingPrice, bookingPayment);
       showToast("success", t.jobDetail.returnBooked);
       setShowBookingModal(false);
       fetchJob();
@@ -248,11 +262,12 @@ export default function JobDetailsPage() {
     }
     setBookingLoading(true);
     try {
-      await apiClient.post(`/api/jobs/${job!.id}/requests/`, {
-        description: bookingDescription.trim(),
-        proposed_price: bookingPrice,
-        payment_method: bookingPayment,
-      });
+      await envoyerDemandeSurTrajet(
+        job!.id,
+        bookingDescription.trim(),
+        bookingPrice,
+        bookingPayment,
+      );
       showToast("success", t.jobDetail.requestSent);
       setShowBookingModal(false);
       setBookingDescription("");
@@ -278,9 +293,7 @@ export default function JobDetailsPage() {
     if (!reqId) return;
     setCounterActionLoading(true);
     try {
-      const resultat = await apiClient.post<{
-        job?: { accepted_transporter?: { offer_id?: number } | null };
-      }>(`/api/trip-requests/${reqId}/accept-counter/`, {});
+      const resultat = await accepterContreProposition(reqId);
       showToast("success", t.jobDetail.counterAccepted);
       // C2.1 — accepter une contre-proposition CREE la reservation : le
       // paiement est l'etape suivante et immediate. Sans cette redirection, le
@@ -321,7 +334,7 @@ export default function JobDetailsPage() {
     if (!reqId) return;
     setCounterActionLoading(true);
     try {
-      await apiClient.post(`/api/trip-requests/${reqId}/cancel/`, {});
+      await annulerDemandeSurTrajet(reqId);
       showToast("success", t.jobDetail.requestCancelled);
       fetchJob();
     } catch (error) {
@@ -335,7 +348,7 @@ export default function JobDetailsPage() {
     setActiveDialog(null);
     setCancelling(true);
     try {
-      await apiClient.post(`/api/jobs/${job!.id}/cancel/`, {});
+      await annulerParLeClient(job!.id);
       showToast("success", t.jobDetail.cancelSuccess);
       fetchJob();
     } catch (error) {
@@ -363,35 +376,10 @@ export default function JobDetailsPage() {
     setActiveDialog(null);
     setCompleting(true);
     try {
-      // Optional POD photo — multipart via fetch natif (apiClient est JSON-only)
-      let podPhotoUrl = "";
-      if (podFile) {
-        try {
-          const fd = new FormData();
-          fd.append("photo", podFile);
-          const apiBase =
-            process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-          const token = localStorage.getItem("transporti_access_token");
-          const upResp = await fetch(`${apiBase}/api/upload/photo/`, {
-            method: "POST",
-            headers: token ? { Authorization: `Bearer ${token}` } : undefined,
-            body: fd,
-          });
-          if (upResp.ok) {
-            const up = (await upResp.json()) as {
-              url?: string;
-              photo_url?: string;
-            };
-            podPhotoUrl = up?.url || up?.photo_url || "";
-          }
-        } catch (_e) {
-          /* photo optionnelle — ne bloque pas la livraison */
-        }
-      }
-      await apiClient.post(`/api/jobs/${job!.id}/complete/`, {
-        pin: deliveryPin.trim(),
-        pod_photo_url: podPhotoUrl,
-      });
+      // La photo de preuve est optionnelle : le service rend une chaine vide
+      // quand elle echoue, et la livraison s'enregistre quand meme.
+      const podPhotoUrl = podFile ? await televerserPhotoPreuve(podFile) : "";
+      await marquerLivre(job!.id, deliveryPin.trim(), podPhotoUrl);
       showToast("success", t.jobDetail.markedDelivered);
       setDeliveryPin("");
       setPodFile(null);
@@ -411,7 +399,7 @@ export default function JobDetailsPage() {
   const handleLogMilestone = async (event: "ARRIVED_PICKUP" | "LOADED") => {
     setMilestoneLoading(true);
     try {
-      await apiClient.post(`/api/jobs/${job!.id}/events/`, { event });
+      await enregistrerJalon(job!.id, event);
       showToast("success", t.jobDetail.milestoneSaved);
       fetchJob();
     } catch (err) {
@@ -429,9 +417,7 @@ export default function JobDetailsPage() {
     if (!cancelReason.trim()) return;
     setTransporterCancelling(true);
     try {
-      await apiClient.post(`/api/jobs/${job!.id}/transporter-cancel/`, {
-        reason: cancelReason.trim(),
-      });
+      await annulerParLeTransporteur(job!.id, cancelReason.trim());
       setActiveDialog(null);
       setCancelReason("");
       showToast("success", t.jobDetail.transporterCancelSuccess);
