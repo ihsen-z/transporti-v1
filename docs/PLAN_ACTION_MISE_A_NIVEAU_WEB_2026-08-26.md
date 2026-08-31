@@ -122,6 +122,9 @@ livraisons.
 | `c7e85b3` | docs(plan): T5.5 livre sur les trois couches |
 | `3805582` | feat(backend+web+mobile): T5.3 - le score de confiance dit enfin quoi corriger |
 | `5c37896` | docs(plan): Lot 5 termine, et un arbitrage produit a prendre sur T5.3 |
+| `0ee494f` | fix(backend): Le budget suggere pour un demenagement etait 4x trop bas |
+| `a8381e1` | feat(backend): La nature d un job voyage avec chaque lien qui y mene |
+| `50f9c8d` | feat(web+backend): Le detail d un job a une URL qui dit ce qu on regarde |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -693,9 +696,33 @@ Sousse → Tunis (115,6 km) vaut **170 DT**.
 **Limites, dites franchement.** C'est **un** point d'ancrage, pas une étude de marché. Les deux
 transactions dédiées de la base donnent des ratios contradictoires (1,21 et 4,09) : le coefficient ne
 se déduit pas des données. La grille reste éditable depuis l'admin Django sans déploiement.
-**MOVING n'est pas touché** — aucune valeur de référence pour le déménagement, et l'extrapoler depuis
-le transport n'aurait aucun fondement. Le budget suggéré au client y reste donc probablement trop bas :
-**c'est la prochaine valeur à demander.**
+**MOVING n'était pas touché** — aucune valeur de référence pour le déménagement, et l'extrapoler
+depuis le transport n'aurait eu aucun fondement. **C'est fait au 31/08/2026, voir ci-dessous.**
+
+#### ✅ MOVING recalibré · *31/08/2026* · `0ee494f`
+
+La valeur de référence a été donnée par le porteur du produit : **100 DT de forfait de prise en charge
++ 1,500 DT/km** (migration `0017_recalibrer_grille_moving`). Le forfait couvre l'équipe et la
+manutention, indépendants du trajet.
+
+| Corridor | Distance | Ancienne estimation | Nouvelle estimation | Fourchette affichée |
+|---|---|---|---|---|
+| Sousse → Tunis | 115,6 km | 88 DT | **273,37 DT** | 219 – 547 DT |
+
+Vérifié par appel réel sur `/api/jobs/estimate-price/`, pas par lecture de la migration.
+
+**Un défaut invisible trouvé au passage, et corrigé.** `logistics/pricing.py` porte un repli codé en
+dur, `DEFAULT_GRIDS`, utilisé dès qu'aucune `PricingGrid` active n'existe. Il était resté à
+**0,350 DT/km pour TRANSPORT** : la valeur mutualisée d'avant `0016`. Ce chemin ne lève rien et ne
+trace rien de visible pour le client. Une simple désactivation depuis l'admin annulait donc le
+recalibrage de `0016` **en silence**, et rendait au client le budget quatre fois trop bas que cette
+migration existait pour supprimer. Les deux entrées sont réalignées, et un test verrouille
+l'alignement repli / base **paramètre par paramètre** — comparer le prix final laisserait passer deux
+écarts qui se compensent.
+
+**Limite qui subsiste, dite franchement** : le volume du déménagement (m³, étage, ascenseur) n'entre
+toujours pas dans le calcul. La grille est purement kilométrique. C'est une limite du modèle, pas un
+oubli du recalibrage.
 
 **Reste à faire, non bloquant** : `savings_basis` devrait dire *laquelle* des deux bases il emploie
 — « estimation » aujourd'hui, « médiane constatée sur N trajets » dès qu'il y aura du volume — et
@@ -749,7 +776,7 @@ valoriser. La clause a été resserrée.
 | 4.2 Six écrans restants + `stats.ts` | ✅ **fait** | `7cfb28f` | 30/08/2026 | Défaut produit corrigé : date jamais affichée |
 | 4.2 Composants partagés | ✅ **fait** | `557e5ed` | 30/08/2026 | 8 composants, 3 duplications supprimées |
 | 4.2 Écrans d'administration | ✅ **fait** | `6151df7` | 30/08/2026 | **Cible atteinte : 0 appel hors `lib/`** |
-| 4.1 Séparation des deux rôles → `/missions/[id]` + `/trajets/[id]` | ⛔ **bloqué** | — | — | Décision de routage requise, voir ci-dessous |
+| 4.1 Séparation du détail par **nature** → `/demandes/[id]` + `/trajets/[id]` | ✅ **fait** | `50f9c8d` | 31/08/2026 | Décision prise : par nature, pas par rôle. Voir ci-dessous |
 
 **`jobs/[id]/page.tsx` : 1517 → 939 lignes**, et plus un seul appel réseau. Parcours repassé vert
 après **chacune** des six étapes, comme le plan l'exige.
@@ -850,17 +877,64 @@ confiance aussi sûrement qu'une qui n'en produit aucun.
 de compte administrateur dans les sessions de test. Seuls `tsc` et la suite les couvrent. C'est la
 zone la moins prouvée du lot.
 
-#### ⛔ La séparation des rôles attend une décision · *30/08/2026*
+#### ✅ La séparation est faite, et pas comme demandé · *31/08/2026* · `a8381e1` + `50f9c8d`
 
-C'est la dernière tâche du 4.1, et elle est **volontairement repoussée**. Mêler un découpage de
-composants et un changement d'URL rendrait une régression invisible : les parcours assertent des URLs
-`/jobs/<id>`. Elle mérite un commit où **seul le routage change**.
+**La décision demandée était « rediriger selon le rôle ». Elle n'était pas réalisable telle quelle**,
+et c'est une contrainte du dépôt, pas une préférence : le jeton JWT vit dans `localStorage`
+(`lib/api/tokenManager.ts`), il n'y a pas de `middleware.ts`, et `GET /api/jobs/<id>/` répond **401**
+sans jeton. Ni un middleware ni un composant serveur ne peut donc savoir qui regarde — c'est
+exactement pourquoi les 11 redirections existantes sont des `308` statiques. Une redirection par rôle
+aurait imposé un aller-retour côté client, avec écran d'attente, **à chaque ouverture d'un job**.
 
-Reste une question de conception qui n'est pas technique : **`/jobs/[id]` doit-il rediriger selon le
-rôle, ou rester une route unique avec deux compositions ?** Les 11 redirections actuelles sont des
-`308` statiques, qui ne connaissent pas l'utilisateur — une redirection par rôle serait donc
-forcément côté client, avec le clignotement que cela implique. Les deux lectures donnent des travaux
-et des URLs très différents, et c'est visible par l'utilisateur.
+**Le découpage retenu est donc PAR NATURE** : `/demandes/<id>` pour une demande classique publiée par
+un client, `/trajets/<id>` pour un trajet retour publié par un transporteur. L'URL décrit *ce qu'on
+regarde*, jamais *qui regarde*. Chaque route garde ses deux compositions — propriétaire et visiteur —
+et l'URL reste **identique pour les deux rôles**, donc partageable. Un test l'asserte en ouvrant le
+même job depuis les deux comptes.
+
+Ce choix supprime la redirection au lieu de l'organiser : les appelants construisent l'URL eux-mêmes,
+depuis la nature que leur charge utile porte déjà. Les 24 liens internes passent par `urlJob()`
+(`lib/routes/jobs.ts`), source unique.
+
+**Le prix à payer, et il a été payé** : cinq charges utiles pointaient vers un job avec son seul id,
+sans sa nature — litiges, portefeuille transporteur, portefeuille client, offres, notifications. Plus
+le tableau de bord, trouvé ensuite. Toutes portent désormais `is_return_trip`, sans une requête
+supplémentaire par ligne (les jointures étaient déjà `select_related`, et le tableau de bord passe par
+un `.values()`). C'est ce qui supprime **tout** écran d'attente au lieu de le déplacer.
+
+**Les notifications sont le cas particulier.** `metadata` est un blob JSON figé à l'émission : écrire
+la nature à la création n'aurait corrigé que les notifications **futures**, et le front aurait
+construit pour toutes les anciennes une URL muettement fausse. La nature est donc résolue **à la
+lecture**, en une requête pour la page entière — un test `assertNumQueries(1)` le verrouille, car une
+résolution par notification passerait tous les tests fonctionnels en restant un N+1. Le champ vaut
+`None`, **jamais `False`**, quand la nature est inconnue : `False` voudrait dire « demande classique »
+et enverrait le lecteur sur la mauvaise route sans aucun signal.
+
+`/jobs/<id>` survit en **route de résolution** : elle charge le job puis remplace l'URL. Elle couvre
+les liens déjà envoyés à des utilisateurs et l'appelant qui ignore la nature. `replace` et non
+`push` — un test vérifie que le retour arrière ne reboucle pas. Un garde-fou corrige aussi
+`/trajets/<id>` ouvert sur une demande classique, plutôt que d'afficher une page dont l'adresse mentit.
+
+`/jobs/<id>/book` **ne bouge pas** : c'est une étape de paiement, pas une vue du job. La dupliquer par
+nature clonerait 477 lignes sans qu'une seule diffère.
+
+**Deux hypothèses fausses corrigées par la vérification**, et elles auraient mal aiguillé de vrais
+utilisateurs :
+- `/demandes/nouvelle` publie **aussi** des trajets retour (variable `isReturnTrip`) — supposer une
+  demande classique aurait envoyé chaque retour publié sur `/demandes/<id>` ;
+- les `matching_requests` de `/retours/nouveau` sont filtrées `is_return_trip=False` côté backend
+  (`logistics/views/return_trips.py:38`) : ce sont des **demandes classiques**, exactement l'inverse
+  de ce que leur emplacement suggère.
+
+**Deux défauts de test trouvés en chemin :**
+- `e2e/parcours-b-recherche.spec.ts` assertait `/trajets/<id>` **ou** `/jobs/<id>`, une alternation
+  posée en anticipation du découpage. La garder aurait laissé passer un retour servi par la route de
+  résolution. Resserrée ;
+- le nouveau fichier de test ne correspondait à aucun `testMatch` de `playwright.config.ts` : il
+  aurait été **ignoré en silence**. Renommé en `parcours-*`.
+
+**Vérifié** : `tsc` propre sur les 3 projets · playwright **55 passed / 1 skipped** (était 50) ·
+mobile jest 170 OK · backend **255 OK**.
 
 #### Ce que le découpage ne fait pas · *29/08/2026*
 
@@ -1060,8 +1134,15 @@ Elles portent donc `is_service_quality: False`, les deux interfaces les affichen
 **l'écrivent en clair à l'utilisateur**. Elles ne sont **pas masquées** : masquer deux parts rendrait
 l'addition fausse à l'écran, ce qui est une autre façon de mentir.
 
-**L'arbitrage reste à prendre**, et il est produit, pas technique : ces deux critères ont-ils leur
-place dans un score de confiance montré aux clients ?
+**Arbitrage tranché le 31/08/2026 : classé sans suite.** Le porteur du produit indique que ces
+scores servent à **éprouver la technologie**, pas à arbitrer une vraie réputation. Aucun changement
+n'est donc apporté aux pondérations. Les deux composantes restent affichées en gris avec leur
+avertissement et `is_service_quality:False` — ce qui reste la bonne présentation pour une mesure
+d'usage, quelle que soit sa destination.
+
+À rouvrir si le score devait un jour être montré à de vrais clients pour comparer de vrais
+transporteurs : la question de fond — 25 points sur 100 mesurent l'assiduité, pas la qualité du
+service — n'est pas résolue, seulement mise de côté.
 
 L'endpoint est **strictement personnel** — aucun identifiant en paramètre, vérifié par un test.
 Exposer le détail du score d'autrui donnerait une carte pour le contester ou le manipuler ; le total,
@@ -1121,16 +1202,20 @@ c'est un chantier à part.
 
 **Toutes les décisions du plan sont tranchées**, produit comme méthode.
 
-**Deux valeurs métier restent en attente**, et elles bloquent des livrables :
+**Les trois arbitrages en attente ont été tranchés le 31/08/2026.** Aucune valeur métier ne bloque
+plus de livrable.
 
-- **La grille `MOVING`.** Le transport a été recalibré sur un ancrage (170 DT pour Sousse → Tunis) ;
-  le déménagement ne l'a pas été, faute de référence. Le budget suggéré au client y reste donc
-  probablement trop bas, avec la même conséquence qu'avant le recalibrage du transport : une annonce
-  publiée à ce prix ne trouve pas preneur.
-- **Le routage de la séparation des rôles** (lot 4.1). `/jobs/[id]` doit-il rediriger selon le rôle —
-  côté client, puisque les 11 redirections actuelles sont des `308` statiques qui ne connaissent pas
-  l'utilisateur — ou rester une route unique à deux compositions ? Les deux lectures donnent des
-  travaux et des URLs très différents, et c'est visible par l'utilisateur.
+- **La grille `MOVING`** → recalibrée à **100 DT + 1,500 DT/km** (`0ee494f`, migration `0017`).
+  Sousse → Tunis passe de 88 à 273 DT. A révélé un repli codé en dur qui pouvait annuler le
+  recalibrage du transport en silence — corrigé et verrouillé par un test.
+- **Le routage de la séparation** (lot 4.1) → découpage **par nature** et non par rôle :
+  `/demandes/[id]` et `/trajets/[id]` (`a8381e1` + `50f9c8d`). La redirection par rôle demandée
+  n'était pas réalisable — le jeton vit dans `localStorage` et le détail d'un job répond `401` sans
+  lui, donc le serveur ne peut savoir ni qui regarde ni ce qu'il regarde. Le découpage par nature
+  **supprime** la redirection au lieu de l'organiser.
+- **Le score de confiance** (T5.3) → **classé sans suite** : ces scores servent à éprouver la
+  technologie, pas à arbitrer une vraie réputation. À rouvrir s'ils devaient être montrés à de vrais
+  clients.
 
 ---
 
