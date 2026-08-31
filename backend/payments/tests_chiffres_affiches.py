@@ -1,5 +1,5 @@
 """
-Les taux de commission ANNONCES au public correspondent a ceux PRELEVES.
+Les chiffres ANNONCES au public correspondent a ceux APPLIQUES.
 
 La page publique « Devenir transporteur » affiche « 8 % sur un trajet retour ».
 Elle ne peut pas les lire depuis l'API : aucun endpoint ne les expose, et la
@@ -27,9 +27,9 @@ from django.conf import settings
 from django.test import SimpleTestCase
 
 # backend/payments/ -> backend/ -> racine du depot -> frontend/lib/
-FICHIER_FRONT = (
-    Path(__file__).resolve().parent.parent.parent / 'frontend' / 'lib' / 'commissions.ts'
-)
+_LIB_FRONT = Path(__file__).resolve().parent.parent.parent / 'frontend' / 'lib'
+FICHIER_FRONT = _LIB_FRONT / 'commissions.ts'
+FICHIER_GARANTIES = _LIB_FRONT / 'garanties.ts'
 
 # `RETURN_TRIP: 0.08,` — on capture le nom et la valeur.
 MOTIF = re.compile(r'^\s*(?:/\*\*.*)?(\w+):\s*([0-9]*\.?[0-9]+),', re.MULTILINE)
@@ -96,3 +96,60 @@ class TauxAffichesTests(SimpleTestCase):
                 f"({preleves[nom]}) : la page « Devenir transporteur » promet "
                 f"une commission reduite qui n'existe plus.",
             )
+
+
+class GarantiesAffichesTests(SimpleTestCase):
+    """
+    Meme garde-fou pour la page « Confiance et securite ».
+
+    Elle promet « 48 heures » avant le versement automatique et « score d'au
+    moins 50 » pour l'encaissement en especes. Les deux viennent de reglages
+    modifiables par variable d'environnement : la recopie cote front peut donc
+    diverger sans qu'aucune erreur ne le signale.
+    """
+
+    def _garanties_du_front(self):
+        contenu = FICHIER_GARANTIES.read_text(encoding='utf-8')
+        debut = contenu.index('GARANTIES_AFFICHEES = {')
+        fin = contenu.index('} as const;', debut)
+        bloc = contenu[debut:fin]
+        return {nom: Decimal(valeur) for nom, valeur in MOTIF.findall(bloc)}
+
+    def test_le_fichier_front_existe_et_est_lisible(self):
+        self.assertTrue(
+            FICHIER_GARANTIES.is_file(),
+            f"{FICHIER_GARANTIES} est introuvable. Si le fichier a ete deplace, "
+            f"mettre a jour ce test — ne pas le supprimer.",
+        )
+        self.assertEqual(len(self._garanties_du_front()), 2)
+
+    def test_le_delai_de_liberation_annonce_est_celui_applique(self):
+        affiche = self._garanties_du_front()['ESCROW_AUTO_RELEASE_HOURS']
+        applique = Decimal(str(settings.ESCROW_AUTO_RELEASE_HOURS))
+
+        self.assertEqual(
+            affiche, applique,
+            f"La page « Confiance » annonce {affiche} h avant le versement "
+            f"automatique, la plateforme en applique {applique}. Realigner "
+            f"frontend/lib/garanties.ts.",
+        )
+
+    def test_le_score_minimum_especes_annonce_est_celui_applique(self):
+        """
+        A NOTER : `COD_MIN_TRUST_SCORE` n'est PAS declare dans settings.py. La
+        regle ne vit que comme valeur de repli d'un `getattr` dans
+        `payments/services.py`. Ce test compare donc la valeur EFFECTIVE — la
+        seule qui s'applique aux clients — et non une valeur configuree.
+
+        Il n'est pas vide pour autant : le jour ou quelqu'un declare
+        `COD_MIN_TRUST_SCORE = 60` dans les reglages, la page continuerait
+        d'annoncer 50 et ce test le dirait.
+        """
+        affiche = self._garanties_du_front()['COD_MIN_TRUST_SCORE']
+        applique = Decimal(str(getattr(settings, 'COD_MIN_TRUST_SCORE', 50)))
+
+        self.assertEqual(
+            affiche, applique,
+            f"La page « Confiance » annonce un score minimum de {affiche} pour "
+            f"l'encaissement en especes, la plateforme exige {applique}.",
+        )

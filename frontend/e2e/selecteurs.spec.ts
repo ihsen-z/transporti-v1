@@ -203,3 +203,88 @@ test.describe("P4 — page publique « Devenir transporteur »", () => {
     await expect(page.locator("main")).not.toContainText("becomeTransporter.");
   });
 });
+
+test.describe("P3 — page publique « Confiance et securite »", () => {
+  /**
+   * Elle repond a l'objection n°1 du persona client. La page d'accueil affirme
+   * « paiement securise par escrow » et « transporteurs verifies » sans jamais
+   * dire ce que ces mots recouvrent : une affirmation non etayee ne leve pas
+   * une objection, elle la deplace.
+   */
+
+  test("la page porte son propre titre", async ({ page }) => {
+    await page.goto("/confiance");
+
+    await expect(page).toHaveTitle("Confiance et sécurité | Transporti");
+  });
+
+  test("les trois mecanismes sont rendus, sans nom de cle a l'ecran", async ({
+    page,
+  }) => {
+    await page.goto("/confiance");
+
+    for (const section of [
+      "confiance-escrow",
+      "confiance-verification",
+      "confiance-litiges",
+      "confiance-faq",
+    ]) {
+      await expect(page.getByTestId(section)).toBeVisible({ timeout: 15_000 });
+    }
+
+    await expect(page.locator("main")).not.toContainText("trustPage.");
+  });
+
+  test("le delai de versement automatique est ANNONCE, pas tu", async ({
+    page,
+  }) => {
+    // Le seul fait de la page qui puisse jouer contre le client : sans
+    // confirmation de sa part, l'argent part au bout de 48 h. Une page de
+    // confiance qui tait la seule chose susceptible de surprendre ne merite
+    // pas son nom. Ce test interdit de le retirer discretement.
+    await page.goto("/confiance");
+
+    const encart = page.getByTestId("confiance-delai");
+    await expect(encart).toBeVisible();
+    await expect(encart).toContainText("48");
+    // Et il ne doit jamais paraitre seul : c'est le litige qui le rend
+    // acceptable. Annoncer le delai sans son garde-fou serait pire que se
+    // taire.
+    await expect(encart).toContainText("litige");
+  });
+
+  test("les interpolations sont resolues, pas rendues brutes", async ({
+    page,
+  }) => {
+    // `{heures}` et `{score}` non remplaces s'afficheraient tels quels. Les
+    // testID ne le verraient pas.
+    await page.goto("/confiance");
+
+    await expect(page.locator("main")).not.toContainText("{heures}");
+    await expect(page.locator("main")).not.toContainText("{score}");
+    await expect(page.getByTestId("confiance-verification")).toContainText(
+      "50",
+    );
+  });
+
+  test("l'entree est visible dans l'en-tete", async ({ page }) => {
+    await page.goto("/");
+
+    const entree = page.getByRole("link", { name: "Confiance et sécurité" });
+    await expect(entree.first()).toBeVisible({ timeout: 15_000 });
+  });
+
+  test("la page bascule en arabe", async ({ page }) => {
+    await page.goto("/confiance");
+    const avant = await page.locator("main").innerText();
+
+    await page.getByRole("button", { name: "Switch language" }).click();
+
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.locator("main")).not.toHaveText(avant);
+    await expect(page.locator("main")).not.toContainText("trustPage.");
+    // Les chiffres doivent survivre a la traduction : une interpolation
+    // oubliee dans le dictionnaire arabe ne se verrait pas autrement.
+    await expect(page.locator("main")).not.toContainText("{heures}");
+  });
+});

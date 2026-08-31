@@ -23,6 +23,7 @@ export default function Header() {
     { href: "/", label: h.home },
     { href: "/#services", label: h.services },
     { href: "/#pourquoi", label: h.why },
+    { href: "/confiance", label: h.trust },
     { href: "/help", label: h.help },
   ];
 

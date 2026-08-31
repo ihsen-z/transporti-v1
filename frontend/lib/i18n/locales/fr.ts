@@ -49,6 +49,7 @@ export const fr = {
     services: "Services",
     why: "Pourquoi nous",
     help: "Aide",
+    trust: "Confiance et sécurité",
     becomeTransporter: "Devenir transporteur",
     login: "Se connecter",
     register: "Créer un compte",
@@ -1726,6 +1727,83 @@ export const fr = {
       "Créez votre compte, publiez le trajet que vous alliez faire, et voyez ce qui arrive.",
     finalCta: "Créer mon compte transporteur",
   },
+  trustPage: {
+    heroBadge: "Confiance et sécurité",
+    heroTitle1: "Votre argent n'est jamais",
+    heroTitle2: "entre les mains du transporteur.",
+    heroDesc:
+      "Il est retenu par la plateforme, et n'est versé qu'une fois la livraison confirmée. Voici exactement comment cela fonctionne — y compris ce qui pourrait vous surprendre.",
+
+    escrowTitle: "Le paiement sécurisé, étape par étape",
+    escrowStep1Title: "Vous payez à la réservation",
+    escrowStep1Desc:
+      "Le montant quitte votre moyen de paiement, mais ne va pas au transporteur : la plateforme le retient.",
+    escrowStep2Title: "L'argent est retenu pendant le transport",
+    escrowStep2Desc:
+      "Ni vous ni le transporteur n'y avez accès. C'est ce que garantit le séquestre, et il est visible dans votre portefeuille.",
+    escrowStep3Title: "La livraison se prouve",
+    escrowStep3Desc:
+      "Le transporteur saisit un code à 4 chiffres que vous seul détenez, et joint une photo. Sans les deux, la mission n'est pas marquée livrée.",
+    escrowStep4Title: "Le transporteur est payé",
+    escrowStep4Desc:
+      "Une fois la réception confirmée, la somme lui est versée, commission déduite.",
+
+    escrowDelayTitle: "Ce qu'il faut savoir sur le délai",
+    escrowDelayDesc:
+      "Si vous ne confirmez pas la réception, la somme est versée automatiquement au transporteur au bout de {heures} heures. Sans ce délai, un client injoignable bloquerait indéfiniment le paiement d'une livraison pourtant faite.",
+    escrowDelayGuard:
+      "Mais ouvrir un litige suspend ce versement : tant qu'il est en cours d'examen, l'argent ne bouge pas.",
+
+    verifTitle: "Qui sont les transporteurs",
+    verifDesc:
+      "Un transporteur ne peut pas simplement s'inscrire et accepter votre annonce. Tant que sa vérification n'est pas obtenue, aucune de ses offres ne peut être acceptée.",
+    verifDocsTitle: "Les pièces exigées",
+    verifDocsList:
+      "Carte d'identité, permis de conduire, carte grise du véhicule et attestation d'assurance — recto et verso pour chacune.",
+    verifBadgeTitle: "Ce que vous voyez avant de choisir",
+    verifBadgeDesc:
+      "Le badge « Vérifié », le score de confiance, le nombre de missions menées à bien et les avis laissés par d'autres clients.",
+    verifCodTitle: "Pour un paiement en espèces",
+    verifCodDesc:
+      "L'encaissement à la livraison est réservé aux transporteurs dont le score de confiance atteint au moins {score} sur 100.",
+
+    disputeTitle: "Si quelque chose se passe mal",
+    disputeDesc:
+      "Un litige s'ouvre depuis la mission concernée, par vous comme par le transporteur.",
+    disputeReasonsTitle: "Les motifs prévus",
+    disputeReasons:
+      "Objets endommagés, transporteur absent, problème de paiement, retard de livraison, comportement inapproprié, soupçon de fraude, ou autre.",
+    disputeFreezeTitle: "L'argent est gelé pendant l'examen",
+    disputeFreezeDesc:
+      "Un litige ouvert bloque tout versement au transporteur, y compris le versement automatique. C'est la garantie qui rend le délai acceptable.",
+    disputeOutcomeTitle: "Trois issues possibles",
+    disputeOutcomeDesc:
+      "Remboursement intégral, versement au transporteur, ou partage. Le mouvement d'argent est déclenché par la décision elle-même, pas par une opération séparée qui pourrait être oubliée.",
+
+    faqTitle: "Questions fréquentes",
+    faqQ1: "Que se passe-t-il si le transporteur ne vient pas ?",
+    faqA1:
+      "Ouvrez un litige pour « transporteur absent » depuis la mission. Le versement est immédiatement suspendu le temps de l'examen, et l'issue peut être un remboursement intégral.",
+    faqQ2: "Puis-je payer en espèces à la livraison ?",
+    faqA2:
+      "Oui, si le transporteur y est éligible. Dans ce cas la plateforme ne détient jamais votre argent : vous payez directement à la livraison, et la protection du séquestre ne s'applique pas.",
+    faqQ3: "Qui voit mes coordonnées ?",
+    faqA3:
+      "Votre adresse complète et votre téléphone ne sont transmis qu'au transporteur retenu, une fois la réservation faite. Avant cela, une annonce ne montre que les gouvernorats de départ et d'arrivée.",
+    faqQ4: "Et si je ne confirme pas la réception ?",
+    faqA4:
+      "Le versement est automatique après {heures} heures — sauf si un litige est ouvert, auquel cas rien ne bouge tant qu'il n'est pas tranché.",
+    faqQ5: "Le score de confiance, c'est quoi ?",
+    faqA5:
+      "Une note sur 100 calculée à partir de l'activité réelle du transporteur : missions menées à bien, litiges, fiabilité de paiement. Elle est affichée sur son profil, avec le détail de ce qui la compose.",
+
+    finalTitle: "Publiez votre annonce l'esprit tranquille",
+    finalDesc:
+      "Le paiement sécurisé est appliqué par défaut sur toute réservation en ligne.",
+    finalCta: "Publier une annonce",
+    finalSecondary: "Chercher un trajet retour",
+  },
+
   onboarding: {
     welcome: "Bienvenue sur Transporti",
     welcomeNamed: "Bienvenue sur Transporti, {prenom} !",
