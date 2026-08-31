@@ -103,3 +103,87 @@ test.describe("Acquisition transporteur — pre-selection du role", () => {
     );
   });
 });
+
+test.describe("P4 — page publique « Devenir transporteur »", () => {
+  /**
+   * L'audit du 14/07 notait l'entree transporteur comme « enfouie », et
+   * c'etait encore vrai : « Devenir transporteur » etait le DERNIER lien de la
+   * DERNIERE section de la page d'accueil, et il menait droit au formulaire
+   * d'inscription — aucune page ne faisait l'argumentaire.
+   *
+   * Ces tests verrouillent l'entonnoir entier, pas seulement l'existence de la
+   * page : l'entree visible, la page, puis l'inscription avec le bon role.
+   */
+
+  test("l'entree est visible dans l'en-tete de la page d'accueil", async ({
+    page,
+  }) => {
+    await page.goto("/");
+
+    const entree = page.getByTestId("header-devenir-transporteur");
+    // `toBeVisible` et non `toBeAttached` : « enfouie » etait le probleme.
+    await expect(entree).toBeVisible({ timeout: 15_000 });
+    await expect(entree).toHaveAttribute("href", "/devenir-transporteur");
+  });
+
+  test("la page rend ses sections, sans nom de cle a l'ecran", async ({
+    page,
+  }) => {
+    await page.goto("/devenir-transporteur");
+
+    for (const section of [
+      "devenir-transporteur-commission",
+      "devenir-transporteur-etapes",
+      "devenir-transporteur-confiance",
+      "devenir-transporteur-faq",
+    ]) {
+      await expect(page.getByTestId(section)).toBeVisible({ timeout: 15_000 });
+    }
+
+    // Une cle i18n manquante s'affiche telle quelle. Les autres assertions
+    // visent des testID et ne le verraient pas.
+    await expect(page.locator("main")).not.toContainText("becomeTransporter.");
+  });
+
+  test("les taux affiches sont ceux de la plateforme", async ({ page }) => {
+    // Un test backend (payments/tests_commission_affichee.py) garantit que ces
+    // valeurs correspondent a settings.COMMISSION_RATES. Ici on verifie
+    // seulement qu'elles atteignent bien l'ecran — une page qui n'affiche
+    // aucun taux passerait le test backend sans rien promettre.
+    await page.goto("/devenir-transporteur");
+
+    await expect(page.getByTestId("commission-retour")).toContainText("8");
+    await expect(page.getByTestId("commission-transport")).toContainText("12");
+    await expect(page.getByTestId("commission-demenagement")).toContainText(
+      "15",
+    );
+  });
+
+  test("le CTA mene a l'inscription AVEC le role transporteur", async ({
+    page,
+  }) => {
+    // Le bout de l'entonnoir. Sans cette assertion, la page pourrait etre
+    // parfaite et continuer a creer des comptes client.
+    await page.goto("/devenir-transporteur");
+    await page.getByTestId("devenir-transporteur-cta-principal").click();
+
+    await expect(page).toHaveURL(/\/register\?role=transporter/);
+    await expect(page.getByTestId("register-role-transporter")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("la page bascule en arabe depuis l'en-tete public", async ({ page }) => {
+    // Le selecteur de langue n'existait QUE dans l'en-tete authentifie : la
+    // traduction arabe de cette page aurait ete inatteignable, donc inerte.
+    await page.goto("/devenir-transporteur");
+
+    const avant = await page.locator("main").innerText();
+    await page.getByRole("button", { name: "Switch language" }).click();
+
+    await expect(page.locator("html")).toHaveAttribute("dir", "rtl");
+    await expect(page.locator("main")).not.toHaveText(avant);
+    await expect(page.locator("main")).not.toContainText("becomeTransporter.");
+  });
+});

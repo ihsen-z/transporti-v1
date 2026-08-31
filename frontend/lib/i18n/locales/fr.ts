@@ -37,6 +37,25 @@ export const fr = {
   },
 
   // Header
+  /**
+   * En-tete PUBLIC (pages non authentifiees). Ses libelles etaient ecrits en
+   * francais en dur dans `components/layout/Header.tsx` : un visiteur
+   * arabophone lisait une navigation francaise sur un site passe en RTL. Meme
+   * defaut, et meme cause, que l'assistant d'onboarding — un ecran qui ne
+   * sollicite jamais le dictionnaire echappe au controle de parite.
+   */
+  publicHeader: {
+    home: "Accueil",
+    services: "Services",
+    why: "Pourquoi nous",
+    help: "Aide",
+    becomeTransporter: "Devenir transporteur",
+    login: "Se connecter",
+    register: "Créer un compte",
+    openMenu: "Ouvrir le menu",
+    closeMenu: "Fermer le menu",
+  },
+
   header: {
     pageTitles: {
       dashboard: "Tableau de bord",
@@ -1635,6 +1654,82 @@ export const fr = {
   },
 
   // Notifications page
+  becomeTransporter: {
+    metaTitle: "Devenir transporteur — Transporti",
+    metaDescription:
+      "Transformez vos retours à vide en kilomètres payés. Commission réduite à 8 % sur les trajets retour, paiement sécurisé, inscription gratuite.",
+
+    heroBadge: "Pour les transporteurs",
+    heroTitle1: "Vous rentrez à vide.",
+    heroTitle2: "Faites-vous payer le retour.",
+    heroDesc:
+      "Vous connaissez déjà vos trajets. Publiez le retour que vous alliez faire de toute façon, et laissez les clients du corridor vous trouver.",
+    heroCta: "Créer mon compte transporteur",
+    heroSecondary: "J'ai déjà un compte",
+    heroNote: "Inscription gratuite · Aucune carte bancaire",
+
+    // — Le seul chiffre mis en avant, parce que c'est le seul qui soit une
+    //   règle de la plateforme et non une projection.
+    commissionTitle: "Une commission réduite sur les retours",
+    commissionDesc:
+      "Parce qu'un trajet retour valorise un déplacement qui avait déjà lieu, sa commission est plus basse que celle d'une mission classique.",
+    commissionReturn: "sur un trajet retour",
+    commissionTransport: "sur un transport classique",
+    commissionMoving: "sur un déménagement",
+    commissionFootnote:
+      "La commission est prélevée sur le prix payé par le client ; le montant net vous est annoncé avant que vous acceptiez.",
+
+    howTitle: "Comment ça marche, de votre côté",
+    howStep1Title: "Publiez votre trajet retour",
+    howStep1Desc:
+      "Le corridor, la date et la capacité disponible. Votre véhicule est déjà enregistré : la publication prend quelques secondes.",
+    howStep2Title: "Recevez les demandes du corridor",
+    howStep2Desc:
+      "Les clients qui expédient sur votre itinéraire voient votre trajet et vous envoient une demande chiffrée.",
+    howStep3Title: "Acceptez, refusez ou contre-proposez",
+    howStep3Desc:
+      "Vous gardez la main sur le prix. Une contre-proposition repart vers le client, qui l'accepte ou non.",
+    howStep4Title: "Livrez, et soyez payé",
+    howStep4Desc:
+      "La livraison se confirme par un code et une photo. L'argent, séquestré depuis la réservation, vous est alors versé.",
+
+    trustTitle: "Ce que la vérification débloque",
+    trustDesc:
+      "La vérification n'est pas une formalité : c'est ce qui rend votre compte opérationnel.",
+    trustOffers: "Vos offres deviennent acceptables",
+    trustOffersDesc:
+      "Sans vérification, aucune de vos offres ne peut être acceptée par un client. C'est un blocage, pas un malus.",
+    trustEscrow: "Le paiement sécurisé s'ouvre",
+    trustEscrowDesc:
+      "L'argent du client est séquestré dès la réservation et libéré à la livraison confirmée. Vous ne dépendez plus de sa bonne volonté.",
+    trustBadge: "Votre profil porte un badge « Vérifié »",
+    trustBadgeDesc:
+      "Visible par chaque client avant qu'il vous choisisse, à côté de vos avis et de votre taux de missions menées à bien.",
+    trustCod:
+      "Le paiement en espèces à la livraison demande en plus un score de confiance d'au moins 50 sur 100.",
+
+    faqTitle: "Questions fréquentes",
+    faqQ1: "Combien ça coûte de s'inscrire ?",
+    faqA1:
+      "Rien. L'inscription et la publication de trajets sont gratuites. La plateforme ne prélève sa commission que sur une mission effectivement réalisée.",
+    faqQ2: "Puis-je publier un trajet avant d'être vérifié ?",
+    faqA2:
+      "Oui. La publication est ouverte dès l'inscription, et votre trajet indique alors que votre vérification est en cours. En revanche, une offre ne peut être acceptée qu'une fois la vérification obtenue.",
+    faqQ3: "Quels documents faut-il fournir ?",
+    faqA3:
+      "Une pièce d'identité et les documents de votre véhicule. Le dépôt se fait depuis l'application, et l'état de chaque document est visible dans votre espace.",
+    faqQ4: "Qui fixe le prix ?",
+    faqA4:
+      "Vous. Le client propose un montant, vous l'acceptez, le refusez ou contre-proposez. Aucun prix ne vous est imposé.",
+    faqQ5: "Et si le client ne paie pas ?",
+    faqA5:
+      "En paiement sécurisé, il a déjà payé : l'argent est séquestré par la plateforme dès la réservation et vous est versé à la livraison confirmée. En espèces, vous encaissez directement à la livraison.",
+
+    finalTitle: "Votre prochain retour peut être payé",
+    finalDesc:
+      "Créez votre compte, publiez le trajet que vous alliez faire, et voyez ce qui arrive.",
+    finalCta: "Créer mon compte transporteur",
+  },
   onboarding: {
     welcome: "Bienvenue sur Transporti",
     welcomeNamed: "Bienvenue sur Transporti, {prenom} !",
