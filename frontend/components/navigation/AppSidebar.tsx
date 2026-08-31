@@ -146,10 +146,10 @@ export default function AppSidebar() {
           <NavItem key={item.href} {...item} />
         ))}
         {/* Le sélecteur de thème a été retiré des écrans métier le 26/08/2026 :
-            app/(app) et app/(marketing) ne portent aucun style `dark:`, donc
-            activer le thème sombre y produisait une interface hybride (barre
-            latérale sombre, contenu clair). Le mode sombre reste actif et
-            réellement stylé en zone d'administration. Voir
+            app/(app) ne porte aucun style `dark:`, donc activer le thème sombre
+            y produisait une interface hybride (barre latérale sombre, contenu
+            clair). Le mode sombre reste actif et réellement stylé en zone
+            d'administration. Voir
             docs/PLAN_ACTION_MISE_A_NIVEAU_WEB_2026-08-26.md, lot 0.3. */}
       </div>
 
