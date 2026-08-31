@@ -142,6 +142,7 @@ livraisons.
 | `9571860` | fix(web): La barre de navigation debordait, et deux liens ne menaient nulle part |
 | `e873fd1` | feat(backend): Le carnet d adresses, socle de C5.9 |
 | `7aff8e5` | feat(web): C5.9 - le carnet d adresses, et son emploi dans la publication |
+| `c7681ae` | feat(mobile): C5.9 - le carnet d adresses, et son emploi a la publication |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -770,7 +771,11 @@ panne silencieuse** que je traque ailleurs. Or les trajets retour n'ont pas de c
 résolution des centroïdes, l'économie aurait été absente sur précisément les trajets qu'elle doit
 valoriser. La clause a été resserrée.
 
-### Lot 4 — Dette architecturale · **en cours** · *29/08/2026*
+### Lot 4 — Dette architecturale · ✅ **TERMINÉ** · *29/08 → 31/08/2026*
+
+> Le dernier item — la séparation des rôles sur `/jobs/[id]` — a été livré le 31/08/2026
+> (`50f9c8d`), par un découpage **par nature** et non par rôle. L'en-tête indiquait encore
+> « en cours » alors qu'aucune tâche du lot n'était ouverte.
 
 | Tâche | État | Commit | Date | Preuve |
 |---|---|---|---|---|
@@ -1168,7 +1173,7 @@ déjà public sur les profils, suffit à décider.
 **Placement** : la réputation rejoint `/mes-avis`. Le score est l'agrégat, les avis en sont le détail
 — un seul écran, pas deux. Idem sur mobile, dans le panneau des avis.
 
-### Lot 6 — Rétention · **en cours** · *30/08/2026*
+### Lot 6 — Rétention · ✅ **TERMINÉ** · *30/08 → 01/09/2026*
 
 | Tâche | État | Commit | Date | Preuve |
 |---|---|---|---|---|
@@ -1317,6 +1322,27 @@ traduction arabe de cette page aurait été **inatteignable, donc inerte**.
 
 **Suite donnée le 31/08/2026 — `app/(marketing)/` est supprimé** (`9e9bb50`), et le ménage a montré
 mieux que du code mort. Voir ci-dessous.
+
+#### C5.9 sur mobile · *01/09/2026* · `c7681ae`
+
+**L'écart a été mesuré avant d'être comblé**, et non supposé : le formulaire de publication mobile
+envoie `pickup_address` / `dropoff_address` saisis à la main — exactement la friction que le carnet
+supprime côté web. Le socle backend, exposé sur les deux surfaces API, existait déjà : rien de
+nouveau côté serveur.
+
+Même architecture que le web, y compris le point qui compte : le sélecteur est posé **au-dessus** des
+champs d'adresse, et remplit gouvernorat **et** adresse ensemble. Le hook de formulaire expose un
+*gestionnaire* plutôt que `setValue` brut, pour que la section de route ne puisse pas n'en remplir
+qu'un.
+
+**Deux arbitrages différents entre les deux écrans, et c'est voulu** : le sélecteur traite un échec
+de lecture comme un carnet vide — le formulaire reste utilisable à la main, et une erreur sur un
+confort optionnel détournerait de la saisie en cours. Le panneau de gestion, lui, **remonte** ses
+erreurs : « carnet vide » et « lecture impossible » ne veulent pas dire la même chose.
+
+**Réserve** : l'application n'a pas pu être exécutée (aucun appareil disponible ; l'export web échoue
+sur un import natif de `react-native-maps`, antérieur et sans rapport). La recette visuelle reste à
+faire sur appareil.
 
 #### C5.9 — le carnet d'adresses, et son réemploi · *01/09/2026* · `e873fd1` + `7aff8e5`
 
@@ -1510,6 +1536,46 @@ c'est un chantier à part.
 
 
 **Toutes les décisions du plan sont tranchées**, produit comme méthode.
+
+## ✅ Les sept lots sont livrés · *01/09/2026*
+
+**Lots 0 à 6 : terminés.** Le plan couvrait sept lots sur douze semaines ; ils sont tous marqués
+livrés, réserves comprises (recette visuelle AR du lot 0, `fixme` C1.7 du lot 3).
+
+**État vérifié le 01/09/2026** — par exécution, pas par lecture :
+
+| Suite | Résultat |
+|---|---|
+| Backend (`logistics`, `payments`, `users`) | **245 OK** |
+| Playwright (web) | **84 passés / 1 ignoré** — le `fixme` C1.7 documenté |
+| Jest (mobile) | **206 OK / 32 suites** |
+| `tsc --noEmit` | propre sur les trois projets |
+| `eslint --max-warnings=0` (mobile) | propre |
+
+### ⚠️ Une question du plan n'a jamais été tranchée, et il faut le dire
+
+Le §1bis se termine sur : *« faut-il un lot 7 “rattrapage mobile” qui porte les cinq écrans manquants
+après le lot 6, ou bien chaque écran est-il livré sur les deux plateformes au sein de son lot ?
+**Question ouverte, à trancher avant le lot 1.** »*
+
+**Elle ne l'a pas été.** Les lots 1 à 6 ont avancé côté web, avec du travail mobile fait au cas par
+cas (T0.1/T0.4, C5.1, C5.2, C5.3, C5.9). Le résultat est meilleur que ce que la question laissait
+craindre — le remesurage du 01/09 montre que **les cinq écrans existent tous sur mobile** — mais la
+règle, elle, n'a jamais été posée. Chaque écran a été porté ou non selon le jugement du moment.
+
+**Ce qui reste à décider pour la suite**, maintenant que le plan web est épuisé :
+
+1. **Une règle explicite de parité**, plutôt que du cas par cas : tout nouvel écran est-il livré sur
+   les deux plateformes dans le même lot ?
+2. **La recette mobile sur appareil.** Trois livraisons portent la même réserve (T0.4, C5.9 mobile,
+   et le guide de démarrage) : les tests et les appels réels valident la logique, mais
+   **l'application n'a jamais été exécutée** — aucun appareil disponible, et l'export web échoue sur
+   un import natif de `react-native-maps`. C'est la zone la moins prouvée de l'ensemble.
+3. **Le pied de page**, entièrement non traduit — troisième écran dans ce cas, toujours pour la même
+   raison : la parité fr/ar est vérifiée à la compilation, mais un écran qui ne sollicite jamais le
+   dictionnaire y échappe.
+
+---
 
 **Les trois arbitrages en attente ont été tranchés le 31/08/2026.** Aucune valeur métier ne bloque
 plus de livrable. **T0.4, P4 et P3 ont été livrés le 31/08/2026, et C5.9 le 01/09/2026 : le lot 6
@@ -2038,8 +2104,29 @@ seul consommateur.** B-1 (véhicule et unités), B-2 (capacité structurée), B-
 faire au titre du web est efficace ; ne planifier que l'écran web qui les consomme laisse le mobile
 en attente sans que ce soit écrit nulle part.
 
-**M-2 — Cinq écrans du pivot manquent sur les deux applications.** Mesuré sur `mobile/app` et
-`mobile/src` :
+**M-2 — Cinq écrans du pivot manquaient sur les deux applications.** Mesuré sur `mobile/app` et
+`mobile/src` le 26/08/2026 :
+
+> ### ⚠️ Ce tableau est PÉRIMÉ — remesuré le 01/09/2026
+>
+> **Les cinq écrans existent désormais sur mobile**, ainsi que trois autres livrés depuis (C5.1
+> portefeuille client, C5.2 mes avis, T0.4 guide de démarrage). Vérifié par recherche réelle dans
+> `mobile/src` et `mobile/app`, pas par lecture de ce document :
+>
+> | Écran | Mobile, au 01/09/2026 |
+> |---|---|
+> | T4.4 Amorce de retour | ✅ `ReturnPromptBanner` |
+> | T1.3 Inventaire des retours | ✅ `mes-retours` |
+> | T5.4 Performance retours | ✅ `CorridorPerformanceCard` |
+> | C1.2 Économie estimée | ✅ |
+> | T5.5 / C5.3 Favoris et clients fidèles | ✅ `FavoritesPanel`, `LoyalClientsCard` |
+> | C5.9 Carnet d'adresses | ✅ livré le 01/09/2026 (`c7681ae`) |
+>
+> **Le seul écart restant est sans objet** : P3 et P4 sont des pages **publiques**, et le mobile n'a
+> pas de surface publique (uniquement `(app)` et `(auth)`). L'acquisition passe par le web et les
+> magasins d'applications.
+>
+> Le tableau d'origine est conservé ci-dessous comme trace de l'état du 26/08.
 
 | Écran du delta | Web | Mobile |
 |---|---|---|
