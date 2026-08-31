@@ -131,6 +131,9 @@ livraisons.
 | `12fbe0e` | fix(web): Le guide de demarrage parlait francais aux arabophones |
 | `0df8ca3` | docs(plan): T0.4 livre, et deux defauts que seule la verification a montres |
 | `284df5c` | fix(mobile): Deux cles de traduction s affichaient brutes a l ecran |
+| `7dda68d` | docs(plan): La recette mobile en direct est possible, et elle a paye |
+| `50044d4` | fix(web+mobile): Le seul CTA Devenir transporteur creait des comptes client |
+| `fce3aa4` | feat(web): P4 - une page qui fait l argumentaire transporteur |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1163,7 +1166,7 @@ déjà public sur les profils, suffit à décider.
 |---|---|---|---|---|
 | **T0.1** Onboarding — étape « zones de service » | ✅ **fait** | `a4be7c0` | 30/08/2026 | Destination corrigée, étape conditionnelle, boucle T5.4 fermée |
 | **T0.4** Onboarding transporteur complet — **mobile** | ✅ **fait** | `8889c6b` + `135d561` | 31/08/2026 | Chantier neuf. A impose de livrer d'abord l'éditeur de zones — voir ci-dessous |
-| **P4** Devenir transporteur | ⏳ à faire | — | — | Acquisition |
+| **P4** Devenir transporteur | ✅ **fait** | `50044d4` + `fce3aa4` | 31/08/2026 | `/devenir-transporteur` + entrée dans l'en-tête. Deux défauts du tunnel corrigés avant — voir ci-dessous |
 | **P3** Confiance et sécurité | ⏳ à faire | — | — | Lève l'objection n°1 du persona client |
 | **C5.6** Carnet d'adresses | ⏳ à faire | — | — | Confort |
 
@@ -1215,6 +1218,50 @@ testait le chargement avant l'erreur) ; et mon premier test de mutation laissait
 **Cette réserve est levée le 31/08/2026** — voir la section suivante. Elle disait que l'application
 mobile n'avait pas pu être exécutée, faute d'appareil, et que la recette visuelle restait à faire.
 Elle a été faite.
+
+#### P4 — le tunnel d'acquisition créait des comptes client · *31/08/2026* · `50044d4` + `fce3aa4`
+
+**L'audit du 14/07 avait raison, et son constat tenait encore.** « Devenir transporteur » était le
+**dernier lien de la dernière section** de la page d'accueil. Vérifié en ouvrant la page, pas en
+relisant l'audit.
+
+**Deux défauts sur le tunnel lui-même, trouvés avant d'écrire la page :**
+
+1. **`/register?role=transporter` ignorait son paramètre.** C'est la destination de ce seul CTA. Le
+   formulaire s'ouvrait sur « Client » : un transporteur qui cliquait « Devenir transporteur »
+   créait un compte **client** — lequel ne peut pas publier de trajet retour. Constaté dans le
+   navigateur avant correction, revérifié après. Livrer une page d'acquisition sans ce correctif
+   aurait industrialisé le défaut.
+2. **« La vérification augmente votre score de confiance de +20 points » était FAUX.**
+   `trust_score_components` compte cinq composantes — achèvement 30, litiges 20, paiement 25,
+   engagement 15, récence 10 — et **aucune n'est la vérification**. Vérifié par exécution : le
+   transporteur de test, VÉRIFIÉ, score 33/100. La phrase énonce désormais ce que la vérification
+   fait réellement, et qui est appliqué par le code : sans elle, aucune offre ne peut être acceptée
+   (`require_verified=True`) et l'escrow numérique est indisponible. **J'avais traduit cette
+   promesse en arabe la veille : je l'avais propagée.**
+
+**La page.** `/devenir-transporteur`, publique, cinq sections. Tous les faits ont été vérifiés dans
+le code : commissions 8 / 12 / 15 %, vérification exigée à l'acceptation d'une offre, score minimum
+de 50 pour le paiement en espèces, livraison confirmée par PIN et photo.
+
+**Aucune promesse de gain chiffrée**, et c'est délibéré : la plateforme n'a pas le volume qui
+permettrait de l'étayer. L'inventer serait exactement le défaut qui a coûté la grille MOVING.
+
+Les taux vivent dans `lib/commissions.ts`, et **un test backend lit ce fichier** et échoue si une
+valeur diverge de `settings.COMMISSION_RATES` — vérifié par l'absurde. Il refuse aussi que
+`RETURN_TRIP` cesse d'être le taux le plus bas : la page promet une commission réduite, et des
+chiffres exacts mais mal ordonnés la feraient mentir sans qu'une égalité le voie. Même motif que le
+repli `DEFAULT_GRIDS`.
+
+**Deux manques dont la page dépendait, corrigés ici** : l'en-tête public portait ses libellés en
+français **en dur** (même cause que l'assistant d'onboarding — un écran qui ne sollicite jamais le
+dictionnaire échappe au contrôle de parité) ; et **le sélecteur de langue n'existait que dans
+l'en-tête authentifié**. Tout le site public était donc en français pour un nouveau visiteur, et la
+traduction arabe de cette page aurait été **inatteignable, donc inerte**.
+
+**Signalé, non traité** : `app/(marketing)/` est du **code mort** — 226 lignes qui dupliquent la page
+d'accueil sans jamais s'afficher (`app/page.tsx` est servi ; la signature SVG de `(marketing)` est
+absente du rendu). Chantier à part.
 
 #### La recette mobile en direct, et ce qu'elle a montré · *31/08/2026* · `284df5c`
 
@@ -1309,7 +1356,7 @@ c'est un chantier à part.
 **Toutes les décisions du plan sont tranchées**, produit comme méthode.
 
 **Les trois arbitrages en attente ont été tranchés le 31/08/2026.** Aucune valeur métier ne bloque
-plus de livrable. **T0.4 est livré le 31/08/2026** ; il reste P4, P3 et C5.6 au lot 6.
+plus de livrable. **T0.4 et P4 sont livrés le 31/08/2026** ; il reste P3 et C5.6 au lot 6.
 
 - **La grille `MOVING`** → recalibrée à **100 DT + 1,500 DT/km** (`0ee494f`, migration `0017`).
   Sousse → Tunis passe de 88 à 273 DT. A révélé un repli codé en dur qui pouvait annuler le
