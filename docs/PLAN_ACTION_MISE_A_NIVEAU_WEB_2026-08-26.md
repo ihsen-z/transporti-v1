@@ -140,6 +140,8 @@ livraisons.
 | `91d8ce6` | feat(web): P3 - la page qui dit ce que paiement securise veut dire |
 | `9e9bb50` | refactor(web): Retire app/(marketing), une page cassee d avant le pivot |
 | `9571860` | fix(web): La barre de navigation debordait, et deux liens ne menaient nulle part |
+| `e873fd1` | feat(backend): Le carnet d adresses, socle de C5.9 |
+| `7aff8e5` | feat(web): C5.9 - le carnet d adresses, et son emploi dans la publication |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1174,7 +1176,7 @@ déjà public sur les profils, suffit à décider.
 | **T0.4** Onboarding transporteur complet — **mobile** | ✅ **fait** | `8889c6b` + `135d561` | 31/08/2026 | Chantier neuf. A impose de livrer d'abord l'éditeur de zones — voir ci-dessous |
 | **P4** Devenir transporteur | ✅ **fait** | `50044d4` + `fce3aa4` | 31/08/2026 | `/devenir-transporteur` + entrée dans l'en-tête. Deux défauts du tunnel corrigés avant — voir ci-dessous |
 | **P3** Confiance et sécurité | ✅ **fait** | `91d8ce6` | 31/08/2026 | `/confiance` + entrée dans la navigation. Le délai de 48 h est annoncé, pas tu — voir ci-dessous |
-| **C5.6** Carnet d'adresses | ⏳ à faire | — | — | Confort |
+| **C5.9** Carnet d'adresses | ✅ **fait** | `e873fd1` + `7aff8e5` | 01/09/2026 | `/compte/adresses` + réemploi dans la publication. **Le plan le numérotait C5.6 à tort** — voir ci-dessous |
 
 #### T0.4 — le mobile n'avait aucun onboarding, et il manquait une brique avant · *31/08/2026*
 
@@ -1315,6 +1317,43 @@ traduction arabe de cette page aurait été **inatteignable, donc inerte**.
 
 **Suite donnée le 31/08/2026 — `app/(marketing)/` est supprimé** (`9e9bb50`), et le ménage a montré
 mieux que du code mort. Voir ci-dessous.
+
+#### C5.9 — le carnet d'adresses, et son réemploi · *01/09/2026* · `e873fd1` + `7aff8e5`
+
+**Deux écarts de documentation, signalés plutôt que tus :**
+
+1. **Le plan numérotait cet écran « C5.6 ».** La cartographie dit que C5.6 est *Notifications*
+   (déjà livré ✅) et que le carnet d'adresses est **C5.9**, route `/compte/adresses`. C'est C5.9
+   qui a été livré.
+2. **Le plan le classait en « Confort » sans mentionner de travail backend.** Or **rien n'existait** :
+   ni modèle, ni endpoint. `Profile.address_summary` est un simple champ texte, pas un carnet. La
+   tâche était full-stack, pas « pur frontend ».
+
+**Ouvert aux deux rôles**, à dessein. La cartographie le range parmi les écrans client, mais un
+transporteur saisit exactement les mêmes champs en publiant un trajet retour. Le réserver au client
+aurait créé une asymétrie sans justification : le modèle est porté par `user`, donc déjà cloisonné.
+
+**Le cloisonnement est le point le plus grave** — un carnet contient des adresses de domicile. Il vit
+dans **un seul** endroit, le `get_queryset` partagé par les deux vues, plutôt que recopié dans
+chacune. Une adresse appartenant à autrui rend **404 et non 403** : un 403 confirmerait qu'elle
+existe. Quatre tests le verrouillent, et un appel réel entre deux comptes le confirme.
+
+**La valeur n'est pas dans la page de gestion, mais dans le réemploi.** Une page d'adresses que rien
+ne consomme serait un écran de plus à entretenir et zéro friction supprimée — exactement le défaut de
+la moitié prospective de T5.4, livrée puis inerte faute de zones déclarées. Le sélecteur est donc
+posé **au-dessus** du champ d'adresse dans le formulaire de publication : le proposer après, c'est le
+proposer une fois la saisie faite.
+
+Il remplit les **quatre** champs d'un coup — adresse, gouvernorat et les deux coordonnées. N'en
+remplir qu'une partie laisserait un gouvernorat incohérent avec l'adresse affichée, et l'estimation
+de prix porterait sur le mauvais corridor **sans aucun signal**. Le parcours qui l'asserte a été
+**vérifié par l'absurde** : retirer le gouvernorat du remplissage le fait échouer.
+
+**Une latitude sans longitude est refusée** côté backend. Elle ne situe rien, passerait sans bruit,
+et l'estimation retomberait silencieusement sur le centroïde en croyant utiliser un point précis.
+
+La liste des 24 gouvernorats est extraite dans `lib/governorates.ts` : elle vivait en constante
+locale non exportée, et la recopier aurait créé deux listes divergeant en silence.
 
 #### La barre de navigation débordait, et je l'avais cassée · *31/08/2026* · `9571860`
 
@@ -1473,8 +1512,8 @@ c'est un chantier à part.
 **Toutes les décisions du plan sont tranchées**, produit comme méthode.
 
 **Les trois arbitrages en attente ont été tranchés le 31/08/2026.** Aucune valeur métier ne bloque
-plus de livrable. **T0.4, P4 et P3 sont livrés le 31/08/2026** ; il ne reste que **C5.6 (carnet
-d'adresses)** au lot 6.
+plus de livrable. **T0.4, P4 et P3 ont été livrés le 31/08/2026, et C5.9 le 01/09/2026 : le lot 6
+est terminé.**
 
 - **La grille `MOVING`** → recalibrée à **100 DT + 1,500 DT/km** (`0ee494f`, migration `0017`).
   Sousse → Tunis passe de 88 à 273 DT. A révélé un repli codé en dur qui pouvait annuler le
