@@ -129,6 +129,8 @@ livraisons.
 | `8889c6b` | feat(mobile): Un transporteur peut enfin declarer ses zones de service |
 | `135d561` | feat(mobile): T0.4 - un guide de demarrage pour le transporteur |
 | `12fbe0e` | fix(web): Le guide de demarrage parlait francais aux arabophones |
+| `0df8ca3` | docs(plan): T0.4 livre, et deux defauts que seule la verification a montres |
+| `284df5c` | fix(mobile): Deux cles de traduction s affichaient brutes a l ecran |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1210,11 +1212,46 @@ Deux autres défauts de mon propre code, tous deux trouvés par les tests et non
 testait le chargement avant l'erreur) ; et mon premier test de mutation laissait fuir un worker jest
 — la logique de cache vit maintenant dans une fonction exportée, testable sans moteur de rendu.
 
-**Réserve nette, et elle compte** : l'application mobile n'a **pas** pu être exécutée. Aucun appareil
-n'est disponible dans la session, et l'export web échoue sur un import natif de `react-native-maps`
-(antérieur, sans rapport). La vérification tient donc aux tests, aux appels réels aux endpoints, et
-au contrôle que les trois champs lus existent avec leurs vraies valeurs. **La recette visuelle reste
-à faire sur appareil.**
+**Cette réserve est levée le 31/08/2026** — voir la section suivante. Elle disait que l'application
+mobile n'avait pas pu être exécutée, faute d'appareil, et que la recette visuelle restait à faire.
+Elle a été faite.
+
+#### La recette mobile en direct, et ce qu'elle a montré · *31/08/2026* · `284df5c`
+
+**L'émulateur Android Studio est désormais utilisable pour la recette.** Le SDK n'est pas dans le
+`PATH` et `ANDROID_HOME` n'est pas défini ; l'AVD `Pixel_7_API_35` démarre en ~110 s. Point qui fait
+gagner le plus de temps : **l'APK de debug de `mobile/android/app/build/outputs/` n'a pas besoin
+d'être reconstruit** — c'est un *dev build*, il charge le JS depuis Metro et sert donc le code
+courant. Aucun changement natif depuis sa construction, vérifié par `git log` sur `package.json`,
+`app.json`, `app.config.js` et `android/`. Le backend est déjà câblé : `mobile/.env` pointe
+`10.0.2.2:8000`, l'alias de l'hôte vu depuis l'AVD.
+
+**T0.4 vérifié en conditions réelles, et juste sur tous les points testés à l'aveugle** : « Il reste
+**1** étape » au singulier, et la seule étape affichée est celle des zones — l'identité étant
+vérifiée et 72 retours publiés, les deux autres avaient bien disparu. Le panneau des zones s'ouvre,
+les 24 gouvernorats basculent, le compteur passe au pluriel, l'avertissement « sans aucune zone »
+apparaît puis disparaît, l'enregistrement persiste (`['Tunis','Sousse','Sfax']` relu par l'API) et
+**le guide s'efface** puisque sa dernière étape est accomplie.
+
+Cette dernière observation est la **preuve directe du correctif de cache** décrit plus haut : le
+guide a relu la réponse du PATCH, et non la valeur périmée du cache serveur de 120 s. Avec
+l'`invalidateQueries` de ma première version, l'étape serait restée affichée.
+
+**Deux défauts trouvés par ce simple fait de regarder l'écran**, et invisibles autrement : l'Accueil
+du transporteur affichait littéralement **`trips.hub.expires_in_days`** au lieu de « expire dans
+2 j ». La cause est systématique : l'i18n mobile est configurée `compatibilityJSON: 'v3'`, qui attend
+une clé de base plus `_plural` (ou `_0`..`_5` en arabe), mais ces clés étaient écrites au format
+**v4** (`_one` / `_other`). Sans clé de base, i18next rend le nom de la clé. Le dictionnaire
+mélangeait les deux conventions. La seconde clé cassée, `trips.inventory.expires_in`, était sur
+l'écran d'inventaire — **celle-là, personne ne l'avait vue**.
+
+Rien ne pouvait les attraper : `tsc` ne lit pas les fichiers de traduction comme des clés, et les
+tests d'écran visent des `testID`, pas le texte. Un test balaie désormais les deux dictionnaires.
+
+**Une leçon de méthode, à ajouter aux trois précédentes** : les trois défauts invisibles des sessions
+antérieures ont été trouvés en *faisant exister la donnée*. Ces deux-ci ont été trouvés en
+*regardant l'écran avec de vraies données* — ce que ni les tests ni la relecture ne remplacent. Les
+deux pratiques sont complémentaires, pas interchangeables.
 
 #### Le guide web parlait français aux arabophones · *31/08/2026* · `12fbe0e`
 
