@@ -138,6 +138,7 @@ livraisons.
 | `1bb2dc4` | chore(mcp): Declare Context7 et le SDK Android pour mobile-mcp |
 | `353f631` | fix(web): La page d acquisition n avait pas de titre a elle |
 | `91d8ce6` | feat(web): P3 - la page qui dit ce que paiement securise veut dire |
+| `9e9bb50` | refactor(web): Retire app/(marketing), une page cassee d avant le pivot |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1311,9 +1312,31 @@ dictionnaire échappe au contrôle de parité) ; et **le sélecteur de langue n'
 l'en-tête authentifié**. Tout le site public était donc en français pour un nouveau visiteur, et la
 traduction arabe de cette page aurait été **inatteignable, donc inerte**.
 
-**Signalé, non traité** : `app/(marketing)/` est du **code mort** — 226 lignes qui dupliquent la page
-d'accueil sans jamais s'afficher (`app/page.tsx` est servi ; la signature SVG de `(marketing)` est
-absente du rendu). Chantier à part.
+**Suite donnée le 31/08/2026 — `app/(marketing)/` est supprimé** (`9e9bb50`), et le ménage a montré
+mieux que du code mort. Voir ci-dessous.
+
+#### `app/(marketing)` n'était pas un doublon, mais une page cassée · *31/08/2026* · `9e9bb50`
+
+Le rendre visible pour le montrer a révélé le vrai défaut : c'est un composant **serveur** sans
+directive `"use client"` qui contient un `<button onClick={...}>`. Toute tentative de rendu échoue
+sur *« Event handlers cannot be passed to Client Component props »*. Il n'a rendu qu'après ajout
+d'un `"use client"` sur une copie temporaire.
+
+Son contenu datait d'**avant le pivot** : hero « La logistique réinventée. Simple, rapide,
+fiable. », promesse purement client, et le titre « Pourquoi choisir **Transporti V1** ? ». Textes en
+français en dur.
+
+**Next 14 n'émettait aucun avertissement** alors que deux pages résolvaient vers `/` — vérifié dans
+le journal du serveur de dev. C'est exactement pourquoi personne ne l'a vu, et une raison de plus de
+la retirer : si une version de Next changeait cette résolution, c'est la page cassée qui serait
+servie en page d'accueil.
+
+**Un constat révélé par ce ménage, écrit dans le code plutôt que tu** : `ForceLightTheme` n'était
+monté que dans `app/(app)/layout` et dans ce layout mort. La protection que son propre commentaire
+annonçait pour la zone publique **n'a donc jamais tourné**. Sans conséquence aujourd'hui — le seul
+lien sortant de l'administration mène à `/dashboard`, qui est protégé — mais le commentaire
+promettait plus que le montage ne tenait. Les deux commentaires concernés sont réalignés, et disent
+à quelle condition il faudra monter le composant côté public.
 
 #### La recette mobile en direct, et ce qu'elle a montré · *31/08/2026* · `284df5c`
 
