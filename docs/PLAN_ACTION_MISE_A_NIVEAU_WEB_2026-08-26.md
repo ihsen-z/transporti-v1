@@ -139,6 +139,7 @@ livraisons.
 | `353f631` | fix(web): La page d acquisition n avait pas de titre a elle |
 | `91d8ce6` | feat(web): P3 - la page qui dit ce que paiement securise veut dire |
 | `9e9bb50` | refactor(web): Retire app/(marketing), une page cassee d avant le pivot |
+| `9571860` | fix(web): La barre de navigation debordait, et deux liens ne menaient nulle part |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1314,6 +1315,47 @@ traduction arabe de cette page aurait été **inatteignable, donc inerte**.
 
 **Suite donnée le 31/08/2026 — `app/(marketing)/` est supprimé** (`9e9bb50`), et le ménage a montré
 mieux que du code mort. Voir ci-dessous.
+
+#### La barre de navigation débordait, et je l'avais cassée · *31/08/2026* · `9571860`
+
+**Défaut que j'ai causé.** En livrant P4 puis P3, j'ai ajouté le sélecteur de langue,
+« Devenir transporteur » et « Confiance » à une barre qui portait déjà cinq liens et deux boutons de
+compte. Mesures constatées :
+
+| Largeur | Constat avant correction |
+|---|---|
+| 1280 px | Les libellés se coupaient sur **deux lignes** dans une hauteur de 64 px |
+| 1024 px | 14 px de débordement |
+| 820 px | Le contenu occupait **1044 px dans une boîte de 757** — près de 300 px hors champ |
+
+**Aucun de ces défauts ne produisait de signal** : pas d'erreur console, pas de test rouge, pas de
+défilement horizontal de la page. Seule une **mesure** pouvait les voir, et c'est ainsi qu'ils ont
+été trouvés — pas en regardant une capture d'écran.
+
+Trois corrections :
+
+1. **La navigation ne garde que des destinations.** « Services » et « Pourquoi nous » pointaient vers
+   `/#services` et `/#pourquoi` — deux ancres qui **n'ont jamais existé** dans la page d'accueil
+   (`getElementById` rend `null` pour les deux, vérifié en direct). Ces liens ne menaient nulle part
+   **depuis le début, avant mon travail**. Même réparées, ces ancres auraient renvoyé un visiteur de
+   `/confiance` vers l'accueil.
+2. **Le seuil de bascule passe de `md` (768) à `xl` (1280)**, avec le motif écrit dans le code pour
+   que personne ne le rabaisse sans remesurer. Le menu compact porte **exactement** les mêmes
+   entrées — un parcours l'exige, sinon remonter le seuil aurait escamoté l'entrée d'acquisition de
+   P4 sous 1280 px.
+3. **Troisième occurrence du défaut du matin**, trouvée par un parcours et non par relecture : le
+   lien « Devenir transporteur » du **pied de page** menait à `/register` sans rôle, donc créait des
+   comptes client. J'avais corrigé les deux autres emplacements et manqué celui-là. Un test vérifie
+   désormais **tous** les liens portant ce libellé — c'est le seul contrôle qui attrapera le
+   quatrième.
+
+Sept largeurs sont mesurées par les parcours, de 375 à 1440 px.
+
+**Signalé, non traité** : `components/layout/Footer.tsx` porte **tous** ses libellés en français en
+dur (`grep -c useAppI18n` rend 0). Troisième écran dans ce cas après l'assistant d'onboarding et
+l'en-tête, et toujours la même cause — la parité fr/ar est vérifiée à la compilation, mais elle ne
+voit que les clés du dictionnaire ; un écran qui ne le sollicite jamais y échappe. Le pied de page
+contient aussi un lien vers `/litiges`, route authentifiée, depuis des pages publiques.
 
 #### `app/(marketing)` n'était pas un doublon, mais une page cassée · *31/08/2026* · `9e9bb50`
 
