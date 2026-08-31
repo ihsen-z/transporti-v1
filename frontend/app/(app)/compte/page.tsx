@@ -348,6 +348,26 @@ export default function SettingsPage() {
                 </Link>
               </div>
 
+              {/* C5.9 — l'entree du carnet d'adresses. Sans elle, la page
+                  /compte/adresses existerait sans etre atteignable : le carnet
+                  se remplit depuis ici, et se CONSOMME dans le formulaire de
+                  publication. */}
+              <Link
+                href="/compte/adresses"
+                data-testid="compte-lien-adresses"
+                className="flex items-center gap-3 rounded-xl border border-neutral-200 p-4 hover:border-brand-600/40 transition-colors"
+              >
+                <MapPin className="w-5 h-5 text-brand-600 flex-shrink-0" />
+                <div className="min-w-0 flex-1">
+                  <p className="font-semibold text-neutral-900">
+                    {t.addressBook.title}
+                  </p>
+                  <p className="text-sm text-neutral-500">
+                    {t.addressBook.subtitle}
+                  </p>
+                </div>
+              </Link>
+
               {loading ? (
                 <div className="flex items-center justify-center py-12">
                   <Loader2 className="w-6 h-6 animate-spin text-brand-600" />

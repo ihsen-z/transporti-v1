@@ -1725,6 +1725,40 @@ export const fr = {
       "Créez votre compte, publiez le trajet que vous alliez faire, et voyez ce qui arrive.",
     finalCta: "Créer mon compte transporteur",
   },
+  addressBook: {
+    title: "Mes adresses",
+    subtitle:
+      "Les lieux que vous réutilisez. Ils vous sont proposés au moment de publier une annonce, pour ne plus les ressaisir.",
+    empty: "Votre carnet est vide.",
+    emptyHint:
+      "Ajoutez un lieu que vous utilisez souvent : votre domicile, un entrepôt, un point de retrait.",
+    add: "Ajouter une adresse",
+    edit: "Modifier",
+    remove: "Supprimer",
+    save: "Enregistrer",
+    cancel: "Annuler",
+    labelField: "Nom du lieu",
+    labelPlaceholder: "Domicile, Entrepôt Sfax…",
+    addressField: "Adresse",
+    addressPlaceholder: "Rue, numéro, indications",
+    governorateField: "Gouvernorat",
+    count: "{n} adresse enregistrée",
+    countPlural: "{n} adresses enregistrées",
+    limitReached:
+      "Votre carnet est plein ({max} adresses). Supprimez-en une pour en ajouter une nouvelle.",
+    confirmRemove: "Supprimer « {label} » de votre carnet ?",
+    confirmRemoveHint:
+      "Vos annonces déjà publiées ne changent pas : elles ont copié l'adresse au moment de leur création.",
+    loadError: "Impossible de lire votre carnet d'adresses.",
+    saveError: "L'enregistrement a échoué.",
+    retry: "Réessayer",
+
+    // Sélecteur, affiché dans le formulaire de publication.
+    pickTitle: "Utiliser une adresse enregistrée",
+    pickNone: "Aucune adresse enregistrée pour l'instant.",
+    pickManage: "Gérer mes adresses",
+  },
+
   trustPage: {
     heroBadge: "Confiance et sécurité",
     heroTitle1: "Votre argent n'est jamais",

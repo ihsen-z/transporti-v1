@@ -15,36 +15,13 @@ import {
 } from "lucide-react";
 
 /* -------------- Governorate list (Tunisia) -------------- */
-const GOVERNORATES = [
-  "Tunis",
-  "Ariana",
-  "Ben Arous",
-  "Manouba",
-  "Nabeul",
-  "Zaghouan",
-  "Bizerte",
-  "Béja",
-  "Jendouba",
-  "Kef",
-  "Siliana",
-  "Sousse",
-  "Monastir",
-  "Mahdia",
-  "Sfax",
-  "Kairouan",
-  "Kasserine",
-  "Sidi Bouzid",
-  "Gabès",
-  "Medenine",
-  "Tataouine",
-  "Gafsa",
-  "Tozeur",
-  "Kebili",
-];
+import { GOVERNORATES } from "@/lib/governorates";
 
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 import type { JobFormData } from "@/lib/types/jobs";
+
+import { SavedAddressPicker } from "@/components/addresses/SavedAddressPicker";
 
 interface LocationPickerProps {
   data: JobFormData;
@@ -264,6 +241,25 @@ export function LocationPicker({ data, onChange }: LocationPickerProps) {
             </a>
           </div>
         )}
+
+        {/* C5.9 — le carnet, place AVANT le champ : le proposer apres, c'est
+            le proposer une fois la saisie faite. Il ne rend rien quand le
+            carnet est vide. */}
+        <SavedAddressPicker
+          cible={target}
+          onChoisir={(adresse) => {
+            // On remplit les QUATRE champs d'un coup, pas seulement l'adresse.
+            // N'en remplir qu'une partie laisserait un gouvernorat incoherent
+            // avec l'adresse affichee, et l'estimation de prix porterait sur le
+            // mauvais corridor sans que rien ne le signale.
+            onChange({
+              [addressField]: adresse.address,
+              [govField]: adresse.governorate,
+              [latField]: adresse.lat === null ? null : Number(adresse.lat),
+              [lngField]: adresse.lng === null ? null : Number(adresse.lng),
+            } as Partial<JobFormData>);
+          }}
+        />
 
         <div className="space-y-3">
           <div>
