@@ -1635,6 +1635,44 @@ export const fr = {
   },
 
   // Notifications page
+  onboarding: {
+    welcome: "Bienvenue sur Transporti",
+    welcomeNamed: "Bienvenue sur Transporti, {prenom} !",
+    subtitleTransporter: "Commencez à recevoir des missions en 3 étapes",
+    subtitleClient: "Trouvez un transporteur fiable en 3 étapes",
+    dismiss: "Masquer le guide",
+    stepCounter: "Étape {courante}/{total}",
+    skip: "Passer",
+    understood: "J'ai compris !",
+    client: {
+      publishTitle: "Publiez votre première annonce",
+      publishDesc:
+        "Décrivez votre besoin de transport et recevez des offres de professionnels vérifiés.",
+      publishCta: "Publier une annonce",
+      browseTitle: "Explorez les transporteurs",
+      browseDesc:
+        "Consultez les profils, avis et scores de confiance avant de choisir.",
+      browseCta: "Voir les transporteurs",
+      profileTitle: "Complétez votre profil",
+      profileDesc:
+        "Un profil complet inspire confiance et aide les transporteurs à mieux vous servir.",
+      profileCta: "Mon profil",
+    },
+    transporter: {
+      verifyTitle: "Vérifiez votre identité",
+      verifyDesc:
+        "La vérification augmente votre score de confiance de +20 points et débloque les paiements digitaux.",
+      verifyCta: "Lancer la vérification",
+      jobsTitle: "Trouvez votre première mission",
+      jobsDesc:
+        "Parcourez les annonces disponibles dans votre zone et soumettez des offres compétitives.",
+      jobsCta: "Voir les missions",
+      zonesTitle: "Déclarez vos zones de service",
+      zonesDesc:
+        "Sans elles, la plateforme ne peut pas vous signaler les corridors où la demande dépasse l'offre — et vous ne voyez aucune opportunité sur votre écran Performance.",
+      zonesCta: "Déclarer mes zones",
+    },
+  },
   notifications: {
     pageTitle: "Notifications",
     pageSubtitle: "Restez informé de toutes vos activités sur Transporti",

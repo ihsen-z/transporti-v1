@@ -1518,6 +1518,40 @@ export const ar = {
     jobTypeDelivery: "توصيل",
   },
 
+  onboarding: {
+    welcome: "مرحبا بيك في Transporti",
+    welcomeNamed: "مرحبا بيك في Transporti، {prenom} !",
+    subtitleTransporter: "ابدا تقبل مهام في 3 خطوات",
+    subtitleClient: "لقى ناقل موثوق في 3 خطوات",
+    dismiss: "خبّي الدليل",
+    stepCounter: "الخطوة {courante}/{total}",
+    skip: "تجاوز",
+    understood: "فهمت !",
+    client: {
+      publishTitle: "انشر أول إعلان متاعك",
+      publishDesc: "وصّف شنوّة تحتاج تنقل، وتوصلك عروض من مهنيين مؤكّدين.",
+      publishCta: "انشر إعلان",
+      browseTitle: "شوف الناقلين",
+      browseDesc: "شوف الملفات، التقييمات ونقاط الثقة قبل ما تختار.",
+      browseCta: "شوف الناقلين",
+      profileTitle: "كمّل ملفك",
+      profileDesc: "ملف كامل يعطي ثقة ويعاون الناقلين يخدمولك أحسن.",
+      profileCta: "ملفي",
+    },
+    transporter: {
+      verifyTitle: "أكّد هويتك",
+      verifyDesc:
+        "التأكيد يزيد 20 نقطة في نقاط الثقة متاعك ويفتحلك الدفع الرقمي.",
+      verifyCta: "ابدا التأكيد",
+      jobsTitle: "لقى أول مهمة متاعك",
+      jobsDesc: "شوف الإعلانات الموجودة في منطقتك وقدّم عروض تنافسية.",
+      jobsCta: "شوف المهام",
+      zonesTitle: "حدّد مناطق خدمتك",
+      zonesDesc:
+        "بلاشها، المنصة ما تنجّمش تنبّهك بالممرات اللي فيها طلب أكثر من العرض — وما تشوفش حتى فرصة في شاشة الأداء.",
+      zonesCta: "حدّد مناطقي",
+    },
+  },
   notifications: {
     pageTitle: "الإشعارات",
     pageSubtitle: "ابقَ مطلّع على كل الخدمات متاعك في Transporti",
