@@ -16,6 +16,7 @@ import { FavoritesPanel } from '@/features/favorites/components/FavoritesPanel';
 import { ClientWalletPanel } from '@/features/wallet/components/ClientWalletPanel';
 import { TrustPanel } from '@/features/trust/components/TrustPanel';
 import { ServiceAreasPanel } from '@/features/profiles/components/ServiceAreasPanel';
+import { AddressBookPanel } from '@/features/addresses/components/AddressBookPanel';
 import { EditProfilePanel } from '@/features/auth/components/EditProfilePanel';
 import { ChangePasswordPanel } from '@/features/auth/components/ChangePasswordPanel';
 import { NotificationPrefsPanel } from '@/features/notifications/components/NotificationPrefsPanel';
@@ -37,6 +38,7 @@ export default function ProfileScreen() {
   const [portefeuilleOpen, setPortefeuilleOpen] = useState(false);
   const [trustOpen, setTrustOpen] = useState(false);
   const [zonesOpen, setZonesOpen] = useState(false);
+  const [adressesOpen, setAdressesOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -186,6 +188,17 @@ export default function ProfileScreen() {
           ) : null}
 
           <Pressable
+            testID="profile-adresses"
+            style={styles.link}
+            onPress={() => setAdressesOpen(true)}
+            accessibilityRole="button"
+          >
+            <Icon name="map-pin" size={22} color={colors.brand[600]} />
+            <Txt style={styles.linkText}>{t('address_book.title')}</Txt>
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
+          </Pressable>
+
+          <Pressable
             testID="profile-about"
             style={styles.link}
             onPress={() => setAboutOpen(true)}
@@ -216,6 +229,10 @@ export default function ProfileScreen() {
         onClose={() => setPortefeuilleOpen(false)}
       />
       <TrustPanel visible={trustOpen} onClose={() => setTrustOpen(false)} />
+      <AddressBookPanel
+        visible={adressesOpen}
+        onClose={() => setAdressesOpen(false)}
+      />
       <ServiceAreasPanel
         visible={zonesOpen}
         onClose={() => setZonesOpen(false)}

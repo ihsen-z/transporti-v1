@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useLocalSearchParams } from 'expo-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -168,9 +168,33 @@ export function usePublishTripForm() {
     ? t(`trips.errors.${publish.error.kind === 'validation' ? 'validation' : publish.error.kind === 'forbidden' ? 'forbidden' : 'network'}`)
     : null;
 
+  // C5.9 — remplissage depuis le carnet d'adresses. Le hook expose un
+  // GESTIONNAIRE plutot que `setValue` brut : la section de route n'a pas a
+  // connaitre les noms des champs du formulaire, et les deux champs sont
+  // toujours poses ensemble.
+  //
+  // `shouldValidate` : sans lui, une erreur de validation affichee avant le
+  // choix resterait a l'ecran alors que le champ est desormais rempli.
+  const onChoisirAdresse = useCallback(
+    (
+      cible: 'pickup' | 'dropoff',
+      valeurs: { gouvernorat: string; adresse: string },
+    ) => {
+      if (cible === 'pickup') {
+        setValue('pickupGov', valeurs.gouvernorat, { shouldValidate: true });
+        setValue('pickupAddress', valeurs.adresse, { shouldValidate: true });
+      } else {
+        setValue('dropoffGov', valeurs.gouvernorat, { shouldValidate: true });
+        setValue('dropoffAddress', valeurs.adresse, { shouldValidate: true });
+      }
+    },
+    [setValue],
+  );
+
   return {
     control,
     errors,
+    onChoisirAdresse,
     jobTypeOptions,
     govOptions,
     dayOptions,

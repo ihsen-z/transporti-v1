@@ -5,16 +5,33 @@ import { TextField } from '@/shared/ui/TextField';
 import { Select } from '@/shared/ui/Select';
 import { publishStyles as s } from './publishStyles';
 import type { FormOption, PublishFormValues } from './publishSchema';
+import { SavedAddressPicker } from '@/features/addresses/components/SavedAddressPicker';
 
 interface Props {
   control: Control<PublishFormValues>;
   errors: FieldErrors<PublishFormValues>;
   jobTypeOptions: FormOption[];
   govOptions: FormOption[];
+  /**
+   * C5.9 — remplit gouvernorat ET adresse depuis le carnet. Les deux ensemble,
+   * jamais l'un sans l'autre : un gouvernorat incohérent avec l'adresse
+   * affichée ferait porter l'estimation de prix sur le mauvais corridor, sans
+   * aucun signal.
+   */
+  onChoisirAdresse: (
+    cible: 'pickup' | 'dropoff',
+    valeurs: { gouvernorat: string; adresse: string },
+  ) => void;
 }
 
 // Type de trajet + gouvernorat/adresse de départ et d'arrivée.
-export function RouteSection({ control, errors, jobTypeOptions, govOptions }: Props) {
+export function RouteSection({
+  control,
+  errors,
+  jobTypeOptions,
+  govOptions,
+  onChoisirAdresse,
+}: Props) {
   const { t } = useTranslation();
 
   return (
@@ -37,6 +54,15 @@ export function RouteSection({ control, errors, jobTypeOptions, govOptions }: Pr
 
       {/* Départ */}
       <Text style={s.section}>{t('trips.pickup')}</Text>
+      <SavedAddressPicker
+        cible="pickup"
+        onChoisir={(a) =>
+          onChoisirAdresse('pickup', {
+            gouvernorat: a.governorate,
+            adresse: a.address,
+          })
+        }
+      />
       <Controller
         control={control}
         name="pickupGov"
@@ -71,6 +97,15 @@ export function RouteSection({ control, errors, jobTypeOptions, govOptions }: Pr
 
       {/* Arrivée */}
       <Text style={s.section}>{t('trips.dropoff')}</Text>
+      <SavedAddressPicker
+        cible="dropoff"
+        onChoisir={(a) =>
+          onChoisirAdresse('dropoff', {
+            gouvernorat: a.governorate,
+            adresse: a.address,
+          })
+        }
+      />
       <Controller
         control={control}
         name="dropoffGov"

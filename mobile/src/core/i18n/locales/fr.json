@@ -1,4 +1,26 @@
 {
+  "address_book": {
+    "title": "Mes adresses",
+    "subtitle": "Les lieux que vous réutilisez. Ils vous sont proposés au moment de publier, pour ne plus les ressaisir.",
+    "empty": "Votre carnet est vide.",
+    "empty_hint": "Ajoutez un lieu que vous utilisez souvent : votre domicile, un entrepôt, un point de retrait.",
+    "add": "Ajouter une adresse",
+    "edit": "Modifier",
+    "remove": "Supprimer",
+    "cancel": "Annuler",
+    "label_field": "Nom du lieu",
+    "label_placeholder": "Domicile, Entrepôt Sfax…",
+    "address_field": "Adresse",
+    "address_placeholder": "Rue, numéro, indications",
+    "governorate_field": "Gouvernorat",
+    "governorate_placeholder": "Choisir un gouvernorat",
+    "limit_reached": "Votre carnet est plein ({{max}} adresses). Supprimez-en une pour en ajouter une nouvelle.",
+    "confirm_remove": "Supprimer « {{label}} » ?",
+    "confirm_remove_hint": "Vos annonces déjà publiées ne changent pas : elles ont copié l'adresse au moment de leur création.",
+    "load_error": "Impossible de lire votre carnet d'adresses.",
+    "save_error": "L'enregistrement a échoué. Ce nom est peut-être déjà utilisé.",
+    "pick_title": "Utiliser une adresse enregistrée"
+  },
   "app": {
     "name": "Transporti",
     "tagline": "La marketplace des trajets retour"

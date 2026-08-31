@@ -40,6 +40,7 @@ export function PublishReturnForm() {
         errors={f.errors}
         jobTypeOptions={f.jobTypeOptions}
         govOptions={f.govOptions}
+        onChoisirAdresse={f.onChoisirAdresse}
       />
       <ScheduleSection
         control={f.control}
