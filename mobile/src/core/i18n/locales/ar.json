@@ -212,8 +212,6 @@
       "title": "رحلات العودة المنشورة",
       "subtitle": "الرحلة المنتهية تختفي من بحث العملاء.",
       "expired": "منتهية — غير ظاهرة في البحث",
-      "expires_in_one": "تنتهي خلال يوم {{count}}",
-      "expires_in_other": "تنتهي خلال {{count}} أيام",
       "extend": "التمديد أسبوعا",
       "duplicate": "نسخ",
       "unpublish": "إلغاء النشر",
@@ -224,7 +222,13 @@
       "empty_title": "ليس لديك أي رحلة عودة منشورة.",
       "empty_hint": "انشر الرحلة التي تقوم بها أصلا: سيراها عملاء المسار.",
       "publish_first": "انشر أول رحلة عودة",
-      "see_mine": "عرض رحلاتي المنشورة"
+      "see_mine": "عرض رحلاتي المنشورة",
+      "expires_in_0": "تنتهي خلال {{count}} أيام",
+      "expires_in_1": "تنتهي خلال يوم {{count}}",
+      "expires_in_2": "تنتهي خلال {{count}} أيام",
+      "expires_in_3": "تنتهي خلال {{count}} أيام",
+      "expires_in_4": "تنتهي خلال {{count}} أيام",
+      "expires_in_5": "تنتهي خلال {{count}} أيام"
     },
     "prompt": {
       "title": "هل تعود إلى {{vers}} فارغا؟",
@@ -237,9 +241,13 @@
       "km_valued": "{{km}} كلم من العودة الفارغة تم استثمارها",
       "fill_rate": "{{rate}} ٪ من رحلات عودتك تجد عميلا",
       "none_online": "لا توجد رحلة عودة منشورة. انشر الرحلة التي تقوم بها أصلا.",
-      "expires_in_days_one": "تنتهي خلال {{count}} يوم",
-      "expires_in_days_other": "تنتهي خلال {{count}} أيام",
-      "manage": "إدارة رحلات عودتي"
+      "manage": "إدارة رحلات عودتي",
+      "expires_in_days_0": "تنتهي خلال {{count}} أيام",
+      "expires_in_days_1": "تنتهي خلال {{count}} يوم",
+      "expires_in_days_2": "تنتهي خلال {{count}} أيام",
+      "expires_in_days_3": "تنتهي خلال {{count}} أيام",
+      "expires_in_days_4": "تنتهي خلال {{count}} أيام",
+      "expires_in_days_5": "تنتهي خلال {{count}} أيام"
     }
   },
   "requests": {

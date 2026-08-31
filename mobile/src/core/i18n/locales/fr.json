@@ -208,8 +208,6 @@
       "title": "Mes retours publiés",
       "subtitle": "Un trajet expiré disparaît de la recherche client.",
       "expired": "Expiré — invisible dans la recherche",
-      "expires_in_one": "Expire dans {{count}} jour",
-      "expires_in_other": "Expire dans {{count}} jours",
       "extend": "Prolonger d'une semaine",
       "duplicate": "Dupliquer",
       "unpublish": "Dépublier",
@@ -220,7 +218,9 @@
       "empty_title": "Vous n'avez aucun retour en ligne.",
       "empty_hint": "Publiez le trajet que vous faites déjà : les clients du corridor le verront.",
       "publish_first": "Publier mon premier retour",
-      "see_mine": "Voir mes retours publiés"
+      "see_mine": "Voir mes retours publiés",
+      "expires_in": "Expire dans {{count}} jour",
+      "expires_in_plural": "Expire dans {{count}} jours"
     },
     "prompt": {
       "title": "Vous rentrez à {{vers}} à vide ?",
@@ -233,9 +233,9 @@
       "km_valued": "{{km}} km de retour à vide valorisés",
       "fill_rate": "{{rate}} % de vos retours trouvent un client",
       "none_online": "Aucun retour en ligne. Publiez le trajet que vous faites déjà.",
-      "expires_in_days_one": "expire dans {{count}} j",
-      "expires_in_days_other": "expire dans {{count}} j",
-      "manage": "Gérer mes retours"
+      "manage": "Gérer mes retours",
+      "expires_in_days": "expire dans {{count}} j",
+      "expires_in_days_plural": "expire dans {{count}} j"
     }
   },
   "requests": {
