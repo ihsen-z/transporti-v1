@@ -125,6 +125,10 @@ livraisons.
 | `0ee494f` | fix(backend): Le budget suggere pour un demenagement etait 4x trop bas |
 | `a8381e1` | feat(backend): La nature d un job voyage avec chaque lien qui y mene |
 | `50f9c8d` | feat(web+backend): Le detail d un job a une URL qui dit ce qu on regarde |
+| `eacd66a` | docs(plan): Les trois arbitrages en attente sont tranches |
+| `8889c6b` | feat(mobile): Un transporteur peut enfin declarer ses zones de service |
+| `135d561` | feat(mobile): T0.4 - un guide de demarrage pour le transporteur |
+| `12fbe0e` | fix(web): Le guide de demarrage parlait francais aux arabophones |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1156,10 +1160,75 @@ déjà public sur les profils, suffit à décider.
 | Tâche | État | Commit | Date | Preuve |
 |---|---|---|---|---|
 | **T0.1** Onboarding — étape « zones de service » | ✅ **fait** | `a4be7c0` | 30/08/2026 | Destination corrigée, étape conditionnelle, boucle T5.4 fermée |
-| **T0.4** Onboarding transporteur complet — **mobile** | ⏳ à faire | — | — | **Le mobile n'a AUCUN onboarding** — chantier à part |
+| **T0.4** Onboarding transporteur complet — **mobile** | ✅ **fait** | `8889c6b` + `135d561` | 31/08/2026 | Chantier neuf. A impose de livrer d'abord l'éditeur de zones — voir ci-dessous |
 | **P4** Devenir transporteur | ⏳ à faire | — | — | Acquisition |
 | **P3** Confiance et sécurité | ⏳ à faire | — | — | Lève l'objection n°1 du persona client |
 | **C5.6** Carnet d'adresses | ⏳ à faire | — | — | Confort |
+
+#### T0.4 — le mobile n'avait aucun onboarding, et il manquait une brique avant · *31/08/2026*
+
+**Le plan avait raison sur ce point** : aucune trace d'onboarding dans `mobile/`. Vérifié, et non
+supposé — mes premières correspondances de recherche venaient du mot « welcome », pas d'un guide.
+
+**La règle qui a gouverné l'écran : une étape n'existe que si sa destination existe.** C'est
+l'inverse exact du défaut de T0.1 côté web, corrigé la veille. Chaque destination a donc été
+vérifiée, et deux constats en sont sortis :
+
+1. **Le mobile ne pouvait pas écrire `service_areas`.** Il le *lisait* dans le DTO du profil, mais
+   n'avait aucun écran pour l'éditer — seul le web le permettait. Or c'est la seule donnée qui
+   alimente `underserved_corridors`, donc les opportunités de corridor : un transporteur mobile
+   voyait une liste vide **par construction**, sans aucun moyen d'y remédier. L'éditeur a donc été
+   livré d'abord (`8889c6b`), en panneau ouvert depuis le Profil. L'endpoint est
+   `PATCH transporter/profile/me/` — **distinct** de `PUT auth/profile/` que le mobile utilisait
+   déjà, qui ne porte que l'identité. Vérifié par appel réel sur `/api/` **et** `/api/v1/`.
+2. **Aucun champ « corridors habituels » n'existe côté backend.** Le plan nommait « identité, zone
+   d'activité, corridors habituels » ; `TrustProfile.service_areas` est le seul concept de zone, et
+   c'est bien lui qui alimente le matching inversé. Aucune migration inventée.
+
+**Un écart de comportement assumé avec le web, et il n'est pas cosmétique.** Le web propose
+« Trouvez votre première mission », vers la liste des annonces ouvertes. Le transporteur mobile n'a
+pas cet écran : la charte lui donne `home / requests / messages / gains` plus le bouton « publier »,
+et `search` appartient au client. L'étape est donc « publiez votre premier retour », ce qui est aussi
+l'action première du pivot. **Aligner le web sur cette lecture est un chantier à part, à décider.**
+
+**Un piège évité, et c'est la vérification qui l'a montré** : `user.isVerified` du store mobile vaut
+`is_phone_verified` — la confirmation du **numéro**, pas de l'identité. S'en servir aurait masqué
+l'étape « vérifiez votre identité » à quiconque a confirmé son téléphone. La source correcte est
+`is_verified` du profil transporteur (`verification_status == VERIFIED`).
+
+#### Le défaut que seule « faire exister la donnée » pouvait révéler · *31/08/2026*
+
+En écrivant puis relisant les zones par appel réel, la lecture rendait encore l'**ancienne** valeur :
+c'est le cache serveur de 120 s (`CACHE_TTL_PROFILE`), déjà connu et documenté. Mais la conséquence
+ne l'était pas : mon `invalidateQueries` allait donc **chercher** la valeur périmée. En rouvrant le
+panneau dans les deux minutes, le transporteur aurait vu ses anciennes zones et, en enregistrant,
+**annulé sa propre modification** — sans erreur, sans signal. La réponse du PATCH est désormais
+écrite dans le cache, et le profil n'est plus invalidé.
+
+Deux autres défauts de mon propre code, tous deux trouvés par les tests et non à l'œil : l'échec de
+**lecture** des zones affichait un chargement infini au lieu d'une erreur (l'ordre des branches
+testait le chargement avant l'erreur) ; et mon premier test de mutation laissait fuir un worker jest
+— la logique de cache vit maintenant dans une fonction exportée, testable sans moteur de rendu.
+
+**Réserve nette, et elle compte** : l'application mobile n'a **pas** pu être exécutée. Aucun appareil
+n'est disponible dans la session, et l'export web échoue sur un import natif de `react-native-maps`
+(antérieur, sans rapport). La vérification tient donc aux tests, aux appels réels aux endpoints, et
+au contrôle que les trois champs lus existent avec leurs vraies valeurs. **La recette visuelle reste
+à faire sur appareil.**
+
+#### Le guide web parlait français aux arabophones · *31/08/2026* · `12fbe0e`
+
+Trouvé en construisant l'équivalent mobile. `OnboardingWizard.tsx` portait ses 18 libellés en
+français **en dur** — les seuls de l'application à l'être.
+
+**Pourquoi le garde-fou ne l'a pas vu** : la parité fr/ar est vérifiée à la compilation
+(`lib/i18n/parity.ts`), mais elle ne voit que les clés du dictionnaire. Un écran qui ne sollicite
+jamais le dictionnaire y échappe entièrement. Le tableau de bord basculait donc en RTL autour d'un
+texte français, sur le **premier** écran suivant l'inscription — celui qui doit mettre en confiance.
+
+Un parcours E2E fixe le comportement, et **il a été vérifié qu'il échoue** si on réintroduit la
+régression. C'était nécessaire : asserter le texte français seul passait avant comme après, puisque
+c'est le même texte. Le test bascule donc la langue et exige que le guide change avec elle.
 
 #### T0.1 — le guide envoyait vers un écran sans le champ promis · *30/08/2026*
 
@@ -1203,7 +1272,7 @@ c'est un chantier à part.
 **Toutes les décisions du plan sont tranchées**, produit comme méthode.
 
 **Les trois arbitrages en attente ont été tranchés le 31/08/2026.** Aucune valeur métier ne bloque
-plus de livrable.
+plus de livrable. **T0.4 est livré le 31/08/2026** ; il reste P4, P3 et C5.6 au lot 6.
 
 - **La grille `MOVING`** → recalibrée à **100 DT + 1,500 DT/km** (`0ee494f`, migration `0017`).
   Sousse → Tunis passe de 88 à 273 DT. A révélé un repli codé en dur qui pouvait annuler le
