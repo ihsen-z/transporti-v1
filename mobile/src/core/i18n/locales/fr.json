@@ -686,7 +686,7 @@
       "steps": {
         "verifier": {
           "title": "Vérifiez votre identité",
-          "body": "La vérification débloque les paiements sécurisés et augmente votre score de confiance."
+          "body": "Sans vérification, aucune de vos offres ne peut être acceptée, et le paiement sécurisé est indisponible."
         },
         "publier": {
           "title": "Publiez votre premier retour",

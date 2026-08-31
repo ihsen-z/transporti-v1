@@ -1660,8 +1660,13 @@ export const fr = {
     },
     transporter: {
       verifyTitle: "Vérifiez votre identité",
+      // Cette phrase annoncait « +20 points de score de confiance ». C'etait
+      // FAUX : le score n'a aucune composante de verification (achevement 30,
+      // litiges 20, paiement 25, engagement 15, recence 10 = 100), et un
+      // transporteur verifie peut scorer 33/100. On enonce desormais ce que la
+      // verification fait REELLEMENT, et qui est applique par le code.
       verifyDesc:
-        "La vérification augmente votre score de confiance de +20 points et débloque les paiements digitaux.",
+        "Sans vérification, aucune de vos offres ne peut être acceptée, et le paiement sécurisé est indisponible.",
       verifyCta: "Lancer la vérification",
       jobsTitle: "Trouvez votre première mission",
       jobsDesc:

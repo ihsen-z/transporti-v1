@@ -52,3 +52,54 @@ test.describe("Selecteurs — espace retours", () => {
     });
   }
 });
+
+test.describe("Acquisition transporteur — pre-selection du role", () => {
+  /**
+   * `/register?role=transporter` est la destination du CTA « Devenir
+   * transporteur », la SEULE entree d'acquisition transporteur du site.
+   *
+   * Le parametre etait ignore : le formulaire s'ouvrait sur « Client », et un
+   * transporteur qui cliquait « Devenir transporteur » creait un compte CLIENT
+   * sans que rien ne le signale. Constate dans le navigateur avant correction.
+   */
+  test("le parametre ?role=transporter pre-selectionne bien le transporteur", async ({
+    page,
+  }) => {
+    await page.goto("/register?role=transporter");
+
+    await expect(page.getByTestId("register-role-transporter")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.getByTestId("register-role-client")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
+  test("sans parametre, le client reste le defaut", async ({ page }) => {
+    // Le defaut ne doit pas basculer au passage : la majorite des inscriptions
+    // reste cote client.
+    await page.goto("/register");
+
+    await expect(page.getByTestId("register-role-client")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+  });
+
+  test("un role fabrique retombe sur le client, sans etat intermediaire", async ({
+    page,
+  }) => {
+    await page.goto("/register?role=nimportequoi");
+
+    await expect(page.getByTestId("register-role-client")).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
+    await expect(page.getByTestId("register-role-transporter")).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+});

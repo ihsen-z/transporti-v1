@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   User,
   Truck,
@@ -21,6 +21,22 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 type RegisterRole = "client" | "transporter";
 
+/**
+ * Rôle pré-sélectionné depuis l'URL : `/register?role=transporter`.
+ *
+ * C'est la destination du CTA « Devenir transporteur » de la page d'accueil —
+ * la SEULE entrée d'acquisition transporteur du site. Le paramètre était
+ * ignoré : le formulaire s'ouvrait sur « Client », et un transporteur qui
+ * cliquait « Devenir transporteur » créait un compte CLIENT sans que rien ne
+ * le signale. Vérifié dans le navigateur avant correction.
+ *
+ * Toute valeur autre que `transporter` retombe sur `client` : un paramètre
+ * fabriqué ne doit pas produire d'état intermédiaire.
+ */
+function roleDepuisUrl(valeur: string | null): RegisterRole {
+  return valeur === "transporter" ? "transporter" : "client";
+}
+
 const roleOptions: {
   value: RegisterRole;
   icon: typeof User;
@@ -36,7 +52,12 @@ const roleOptions: {
 ];
 
 export default function RegisterPage() {
-  const [selectedRole, setSelectedRole] = useState<RegisterRole>("client");
+  const searchParams = useSearchParams();
+  // `useState` avec valeur initiale, et non un `useEffect` de synchronisation :
+  // le rôle est juste dès le PREMIER rendu, sans étape où « Client » clignote.
+  const [selectedRole, setSelectedRole] = useState<RegisterRole>(() =>
+    roleDepuisUrl(searchParams?.get("role") ?? null),
+  );
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -133,6 +154,11 @@ export default function RegisterPage() {
                 <button
                   key={value}
                   type="button"
+                  data-testid={`register-role-${value}`}
+                  // `aria-pressed` porte l'etat de selection : sans lui, un
+                  // test ne peut lire le role choisi que par ses classes CSS,
+                  // qui changent au moindre ajustement de style.
+                  aria-pressed={selectedRole === value}
                   onClick={() => setSelectedRole(value)}
                   className={`
                                             flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-center
