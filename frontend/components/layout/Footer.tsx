@@ -57,8 +57,14 @@ export default function Footer() {
                 </Link>
               </li>
               <li>
+                {/* Le parametre de role est OBLIGATOIRE ici : sans lui, le
+                    formulaire s'ouvre sur « Client », et ce lien creerait des
+                    comptes client. C'est la troisieme occurrence du meme
+                    defaut — les deux autres (page d'accueil, en-tete) ont ete
+                    corrigees le 31/08/2026, celle-ci avait ete manquee et un
+                    parcours l'a fait apparaitre. */}
                 <Link
-                  href="/register"
+                  href="/register?role=transporter"
                   className="hover:text-white transition-colors"
                 >
                   Devenir transporteur

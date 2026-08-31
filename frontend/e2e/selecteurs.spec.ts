@@ -270,7 +270,8 @@ test.describe("P3 — page publique « Confiance et securite »", () => {
   test("l'entree est visible dans l'en-tete", async ({ page }) => {
     await page.goto("/");
 
-    const entree = page.getByRole("link", { name: "Confiance et sécurité" });
+    // Le libelle de NAVIGATION est court ; le titre de la page reste complet.
+    const entree = page.getByRole("link", { name: "Confiance", exact: true });
     await expect(entree.first()).toBeVisible({ timeout: 15_000 });
   });
 
@@ -286,5 +287,192 @@ test.describe("P3 — page publique « Confiance et securite »", () => {
     // Les chiffres doivent survivre a la traduction : une interpolation
     // oubliee dans le dictionnaire arabe ne se verrait pas autrement.
     await expect(page.locator("main")).not.toContainText("{heures}");
+  });
+});
+
+test.describe("En-tete public — tenue a toutes les largeurs", () => {
+  /**
+   * La barre s'est retrouvee surchargee le 31/08/2026 : le selecteur de langue,
+   * « Devenir transporteur » et « Confiance » y ont ete ajoutes le meme jour,
+   * sur une barre qui portait deja cinq liens et deux boutons de compte.
+   *
+   * Mesures constatees AVANT correction :
+   *  - a 1280 px, les libelles se coupaient sur DEUX LIGNES dans une hauteur
+   *    de 64 px ;
+   *  - a 820 px, le contenu occupait 1044 px dans une boite de 757 — pres de
+   *    300 px hors champ, sans que la page ne defile horizontalement, donc
+   *    sans aucun signal.
+   *
+   * Ces tests MESURENT, ils ne regardent pas : un debordement d'en-tete ne
+   * casse rien de visible et ne produit aucune erreur console.
+   *
+   * `waitForSelector` n'est pas decoratif : la page est rendue cote client, et
+   * sans lui `document.querySelector("header")` rend `null` au moment de la
+   * mesure. C'est ce que disaient les premiers echecs de ces tests.
+   */
+
+  const LARGEURS_BUREAU = [1440, 1280];
+  const LARGEURS_COMPACTES = [1279, 1024, 820, 768, 375];
+
+  for (const largeur of LARGEURS_BUREAU) {
+    test(`a ${largeur}px la barre tient sur une ligne, sans debordement`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: largeur, height: 800 });
+      await page.goto("/");
+      await page.waitForSelector("header nav", { timeout: 15_000 });
+
+      const mesure = await page.evaluate(() => {
+        const entete = document.querySelector("header")!;
+        const interieur = entete.querySelector("div > div")!;
+        const elements = Array.from(
+          entete.querySelectorAll("a, button"),
+        ).filter((e) => (e as HTMLElement).offsetParent !== null);
+        return {
+          debordement: interieur.scrollWidth > interieur.clientWidth,
+          // Un libelle qui se coupe double sa hauteur. Les liens de navigation
+          // n'ont aucun rembourrage vertical : 24 px = une ligne.
+          hauteursLiens: Array.from(
+            new Set(
+              elements
+                .filter((e) => e.tagName === "A" && e.closest("nav") !== null)
+                .map((e) => Math.round(e.getBoundingClientRect().height)),
+            ),
+          ),
+          nombreVisible: elements.length,
+        };
+      });
+
+      expect(mesure.debordement, "l'en-tete deborde de sa largeur utile").toBe(
+        false,
+      );
+      expect(
+        mesure.hauteursLiens,
+        "un libelle de navigation se coupe sur deux lignes",
+      ).toEqual([24]);
+      // Logo + 3 liens + langue + transporteur + 2 boutons de compte.
+      expect(mesure.nombreVisible).toBe(8);
+    });
+  }
+
+  for (const largeur of LARGEURS_COMPACTES) {
+    test(`a ${largeur}px la barre bascule sur le menu, sans debordement`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: largeur, height: 800 });
+      await page.goto("/");
+      await page.waitForSelector("header", { timeout: 15_000 });
+
+      const mesure = await page.evaluate(() => {
+        const entete = document.querySelector("header")!;
+        const interieur = entete.querySelector("div > div")!;
+        return {
+          debordement: interieur.scrollWidth > interieur.clientWidth,
+          debordementPage:
+            document.documentElement.scrollWidth > window.innerWidth,
+        };
+      });
+
+      expect(mesure.debordement, "l'en-tete deborde de sa largeur utile").toBe(
+        false,
+      );
+      expect(mesure.debordementPage).toBe(false);
+    });
+  }
+
+  test("le menu compact porte TOUTES les entrees de la barre", async ({
+    page,
+  }) => {
+    // Le point qui compte : basculer sur un menu ne doit rien faire perdre.
+    // Sans cette assertion, remonter le seuil de bascule aurait pu escamoter
+    // « Devenir transporteur » — l'entree d'acquisition de P4 — sur toutes les
+    // largeurs sous 1280 px.
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto("/");
+
+    await page
+      .getByRole("button", { name: "Ouvrir le menu" })
+      .click({ timeout: 15_000 });
+
+    for (const libelle of [
+      "Accueil",
+      "Confiance",
+      "Aide",
+      "Devenir transporteur",
+      "Se connecter",
+      "Créer un compte",
+    ]) {
+      // Limite a l'en-tete : la page d'accueil et le pied de page portent
+      // aussi « Devenir transporteur », et ce test-ci parle de la barre.
+      await expect(
+        page
+          .locator("header")
+          .getByRole("link", { name: libelle, exact: true }),
+      ).toBeVisible();
+    }
+    // Le selecteur de langue aussi : sans lui, un arabophone sur telephone ne
+    // peut changer de langue nulle part sur le site public.
+    await expect(
+      page.getByRole("button", { name: "Switch language" }),
+    ).toBeVisible();
+  });
+
+  test("TOUT lien « Devenir transporteur » porte le role dans son URL", async ({
+    page,
+  }) => {
+    // Le defaut a ete corrige trois fois, sur trois emplacements differents :
+    // page d'accueil, en-tete, puis pied de page — ce dernier decouvert par un
+    // parcours, pas par relecture. Un lien « Devenir transporteur » sans
+    // `?role=transporter` ouvre le formulaire sur « Client » et cree un compte
+    // client, qui ne peut pas publier de trajet retour.
+    //
+    // On verifie donc TOUS les liens de la page portant ce libelle, plutot
+    // qu'un emplacement connu : c'est le seul controle qui attrape le
+    // quatrieme.
+    await page.goto("/");
+    await page.waitForSelector("header", { timeout: 15_000 });
+
+    const cibles = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("a"))
+        .filter((a) => a.textContent?.trim() === "Devenir transporteur")
+        .map((a) => a.getAttribute("href") ?? ""),
+    );
+
+    expect(
+      cibles.length,
+      "aucun lien trouve : le libelle a change ?",
+    ).toBeGreaterThan(0);
+    for (const href of cibles) {
+      // Soit il mene a la page d'argumentaire, soit directement a
+      // l'inscription — mais alors avec le role.
+      const valide =
+        href.startsWith("/devenir-transporteur") ||
+        href.includes("role=transporter");
+      expect(valide, `« Devenir transporteur » mene a ${href}`).toBe(true);
+    }
+  });
+
+  test("aucun lien de navigation ne pointe vers une ancre inexistante", async ({
+    page,
+  }) => {
+    // Deux entrees visaient `/#services` et `/#pourquoi`, deux ancres qui
+    // n'ont JAMAIS existe dans la page d'accueil. Elles sont retirees ; ce test
+    // empeche d'en reintroduire.
+    await page.goto("/");
+    await page.waitForSelector("header", { timeout: 15_000 });
+
+    const ancres = await page.evaluate(() =>
+      Array.from(document.querySelectorAll("header a"))
+        .map((a) => a.getAttribute("href") ?? "")
+        .filter((h) => h.includes("#"))
+        .map((h) => h.slice(h.indexOf("#") + 1)),
+    );
+
+    for (const id of ancres) {
+      expect(
+        await page.locator(`#${id}`).count(),
+        `l'en-tete pointe vers #${id}, qui n'existe pas`,
+      ).toBeGreaterThan(0);
+    }
   });
 });

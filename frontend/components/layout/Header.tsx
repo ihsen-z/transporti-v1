@@ -19,10 +19,29 @@ export default function Header() {
 
   // Les libelles etaient une constante de module en francais en dur. Ils
   // dependent de la langue : ils sont donc construits au rendu.
+  //
+  // SEUIL DE BASCULE : `xl` (1280 px), et non `md` (768 px) comme avant.
+  // Mesure a l'appui — a 820 px, le contenu de la barre occupait 1044 px dans
+  // une boite de 757 : pres de 300 px etaient hors champ. A 1024 px il
+  // depassait encore de 14 px. En dessous de 1280, le menu hamburger prend le
+  // relais ; il porte exactement les memes entrees, aucune n'est perdue.
+  // Ne pas rabaisser ce seuil sans remesurer : la barre porte le selecteur de
+  // langue, l'entree transporteur et deux boutons de compte.
+  //
+  // UN EN-TETE GLOBAL PORTE DES DESTINATIONS, PAS DES SECTIONS D'UNE PAGE.
+  // « Services » et « Pourquoi nous » pointaient vers `/#services` et
+  // `/#pourquoi` — deux ancres qui N'EXISTENT PAS dans la page d'accueil
+  // (verifie : `document.getElementById` rend `null` pour les deux). Les liens
+  // ne menaient donc nulle part. Meme reparees, ces ancres auraient renvoye un
+  // visiteur de `/confiance` vers l'accueil, ce qui n'est pas ce qu'un lien de
+  // navigation doit faire. Les sections restent la, atteintes en faisant
+  // defiler la page d'accueil.
+  //
+  // Leur retrait resout aussi l'encombrement : avec elles, la barre depassait
+  // sa largeur utile et les libelles se coupaient sur DEUX LIGNES dans une
+  // hauteur de 64 px.
   const navLinks = [
     { href: "/", label: h.home },
-    { href: "/#services", label: h.services },
-    { href: "/#pourquoi", label: h.why },
     { href: "/confiance", label: h.trust },
     { href: "/help", label: h.help },
   ];
@@ -37,12 +56,12 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden xl:flex items-center gap-8">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-neutral-700 hover:text-brand-600 font-medium transition-colors"
+                className="whitespace-nowrap text-neutral-700 hover:text-brand-600 font-medium transition-colors"
               >
                 {link.label}
               </Link>
@@ -50,7 +69,7 @@ export default function Header() {
           </nav>
 
           {/* Desktop Auth Buttons */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden xl:flex items-center gap-3">
             {/* Le selecteur de langue n'existait QUE dans l'en-tete
                 authentifie : tout le site public — accueil, inscription, et
                 cette page « Devenir transporteur » — etait en francais pour un
@@ -64,19 +83,19 @@ export default function Header() {
             <Link
               href="/devenir-transporteur"
               data-testid="header-devenir-transporteur"
-              className="text-primary-700 hover:text-primary-800 font-medium px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors"
+              className="whitespace-nowrap text-primary-700 hover:text-primary-800 font-medium px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors"
             >
               {h.becomeTransporter}
             </Link>
             <Link
               href="/login"
-              className="text-brand-600 hover:text-brand-700 font-medium px-4 py-2 rounded-lg hover:bg-brand-600/5 transition-colors"
+              className="whitespace-nowrap text-brand-600 hover:text-brand-700 font-medium px-4 py-2 rounded-lg hover:bg-brand-600/5 transition-colors"
             >
               {h.login}
             </Link>
             <Link
               href="/register"
-              className="bg-accent-500 hover:bg-accent-600 text-white font-medium px-6 py-2 rounded-lg transition-colors shadow-sm"
+              className="whitespace-nowrap bg-accent-500 hover:bg-accent-600 text-white font-medium px-6 py-2 rounded-lg transition-colors shadow-sm"
             >
               {h.register}
             </Link>
@@ -85,7 +104,7 @@ export default function Header() {
           {/* Hamburger Button (mobile) */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="md:hidden p-2 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors"
+            className="xl:hidden p-2 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors"
             aria-label={mobileOpen ? h.closeMenu : h.openMenu}
           >
             {mobileOpen ? (
@@ -99,7 +118,7 @@ export default function Header() {
 
       {/* Mobile Menu Overlay */}
       {mobileOpen && (
-        <div className="md:hidden border-t border-neutral-100 bg-white shadow-lg">
+        <div className="xl:hidden border-t border-neutral-100 bg-white shadow-lg">
           <nav className="px-4 py-4 space-y-1">
             {navLinks.map((link) => (
               <Link

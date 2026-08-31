@@ -46,10 +46,8 @@ export const fr = {
    */
   publicHeader: {
     home: "Accueil",
-    services: "Services",
-    why: "Pourquoi nous",
     help: "Aide",
-    trust: "Confiance et sécurité",
+    trust: "Confiance",
     becomeTransporter: "Devenir transporteur",
     login: "Se connecter",
     register: "Créer un compte",

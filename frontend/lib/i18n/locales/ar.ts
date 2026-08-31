@@ -35,10 +35,8 @@ export const ar = {
 
   publicHeader: {
     home: "الرئيسية",
-    services: "الخدمات",
-    why: "علاش نحنا",
     help: "مساعدة",
-    trust: "الثقة والأمان",
+    trust: "الثقة",
     becomeTransporter: "ولّي ناقل",
     login: "دخول",
     register: "أعمل حساب",
