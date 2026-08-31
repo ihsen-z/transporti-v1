@@ -12,6 +12,7 @@ import { ReturnPromptBanner } from '@/features/trips/components/ReturnPromptBann
 import { ReturnsHubSection } from '@/features/trips/components/ReturnsHubSection';
 import { Button } from '@/shared/ui/Button';
 import { GradientCard } from '@/shared/ui/GradientCard';
+import { TransporterOnboardingGuide } from '@/features/onboarding/components/TransporterOnboardingGuide';
 import { Txt } from '@/shared/ui/Txt';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -78,6 +79,13 @@ export default function HomeScreen() {
         {/* T4.4 — l'amorce de retour a vide, en premiere position : a cet
             instant, c'est l'action la plus rentable de l'ecran. */}
         {isTransporter ? <ReturnPromptBanner /> : null}
+        {/* T0.4 — le guide de demarrage, APRES l'amorce de retour et non avant.
+            L'amorce ne parait qu'apres une livraison et vise l'instant precis
+            ou la publication est evidente ; le guide, lui, reste tant qu'il
+            reste une etape. Le mettre en premier repousserait l'action la plus
+            rentable de l'ecran sous une liste de taches. Il se masque de
+            lui-meme quand les trois etapes sont faites. */}
+        {isTransporter ? <TransporterOnboardingGuide /> : null}
         {/* T1.1 — le hub passe de « mes missions » a « mes retours » : le
             retour est la racine du transporteur (IA-2). */}
         {isTransporter ? <ReturnsHubSection /> : null}

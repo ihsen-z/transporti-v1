@@ -36,7 +36,7 @@ export function ServiceAreasPanel({ visible, onClose, userId }: Props) {
   const estArabe = i18n.language?.startsWith('ar') ?? false;
 
   const profil = useTransporterProfile(visible ? userId : null);
-  const enregistrer = useUpdateServiceAreas();
+  const enregistrer = useUpdateServiceAreas(userId);
 
   // `null` = pas encore chargé. Distinct de `[]`, qui veut dire « chargé, et
   // aucune zone déclarée » — les deux états n'affichent pas la même chose.

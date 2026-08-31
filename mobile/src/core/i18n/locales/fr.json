@@ -677,6 +677,28 @@
       "unknown": "Une erreur est survenue."
     }
   },
+  "onboarding": {
+    "transporter": {
+      "title": "Vos premiers pas",
+      "dismiss": "Masquer le guide",
+      "remaining": "Il reste {{count}} étape",
+      "remaining_plural": "Il reste {{count}} étapes",
+      "steps": {
+        "verifier": {
+          "title": "Vérifiez votre identité",
+          "body": "La vérification débloque les paiements sécurisés et augmente votre score de confiance."
+        },
+        "publier": {
+          "title": "Publiez votre premier retour",
+          "body": "Un trajet retour publié se transforme en kilomètres payés au lieu de rouler à vide."
+        },
+        "zones": {
+          "title": "Déclarez vos zones de service",
+          "body": "Sans elles, la plateforme ne peut pas vous signaler les corridors où la demande dépasse l'offre."
+        }
+      }
+    }
+  },
   "performance": {
     "revenue_title": "Revenu par corridor",
     "revenue_empty": "Aucune mission payée pour l'instant. Vos corridors apparaîtront ici dès votre première livraison confirmée.",
