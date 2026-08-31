@@ -1655,10 +1655,6 @@ export const fr = {
 
   // Notifications page
   becomeTransporter: {
-    metaTitle: "Devenir transporteur — Transporti",
-    metaDescription:
-      "Transformez vos retours à vide en kilomètres payés. Commission réduite à 8 % sur les trajets retour, paiement sécurisé, inscription gratuite.",
-
     heroBadge: "Pour les transporteurs",
     heroTitle1: "Vous rentrez à vide.",
     heroTitle2: "Faites-vous payer le retour.",

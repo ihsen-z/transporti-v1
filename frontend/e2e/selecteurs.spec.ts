@@ -126,6 +126,22 @@ test.describe("P4 — page publique « Devenir transporteur »", () => {
     await expect(entree).toHaveAttribute("href", "/devenir-transporteur");
   });
 
+  test("la page porte son propre titre, pas celui du site", async ({
+    page,
+  }) => {
+    // Une page d'acquisition heritait du titre generique
+    // « Transporti — La logistique reinventee » : le seul ecran dont la raison
+    // d'etre est d'etre trouve n'avait pas de titre a lui.
+    //
+    // `metadata` ne peut etre exporte que d'un composant SERVEUR ; la page est
+    // `"use client"` (elle lit le dictionnaire via un hook), d'ou le
+    // `layout.tsx` du segment. Ce test verrouille ce montage : si quelqu'un
+    // deplacait le metadata dans la page, il disparaitrait en silence.
+    await page.goto("/devenir-transporteur");
+
+    await expect(page).toHaveTitle("Devenir transporteur | Transporti");
+  });
+
   test("la page rend ses sections, sans nom de cle a l'ecran", async ({
     page,
   }) => {

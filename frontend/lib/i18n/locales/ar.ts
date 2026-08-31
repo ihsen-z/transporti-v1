@@ -1531,10 +1531,6 @@ export const ar = {
   },
 
   becomeTransporter: {
-    metaTitle: "ولّي ناقل — Transporti",
-    metaDescription:
-      "حوّل رحلات الرجوع الفارغة متاعك لكيلومترات مدفوعة. عمولة مخفّضة لـ 8 % على رحلات الرجوع، دفع مضمون، تسجيل بلاش.",
-
     heroBadge: "للناقلين",
     heroTitle1: "راك ترجع فارغ.",
     heroTitle2: "خلّيهم يدفعولك الرجوع.",
