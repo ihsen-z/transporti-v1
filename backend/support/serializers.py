@@ -45,6 +45,11 @@ class DisputeListSerializer(serializers.ModelSerializer):
             'status': obj.job.status,
             'pickup': getattr(obj.job, 'pickup_address', ''),
             'dropoff': getattr(obj.job, 'dropoff_address', ''),
+            # Nature du job. Le front en a besoin pour construire l'URL
+            # canonique du job (/demandes/<id> ou /trajets/<id>) SANS avoir a
+            # le recharger : sans ce champ il devait passer par une route de
+            # resolution qui affiche un ecran d'attente avant de rediriger.
+            'is_return_trip': obj.job.is_return_trip,
         }
 
 
@@ -82,6 +87,9 @@ class DisputeDetailSerializer(serializers.ModelSerializer):
             'status': obj.job.status,
             'pickup': obj.job.pickup_address,
             'dropoff': obj.job.dropoff_address,
+            # Voir DisputeListSerializer.get_job_summary : sert a construire
+            # l'URL canonique du job sans rechargement.
+            'is_return_trip': obj.job.is_return_trip,
         }
 
 

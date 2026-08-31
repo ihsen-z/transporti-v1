@@ -474,6 +474,12 @@ class OfferListSerializer(serializers.ModelSerializer):
     job_dropoff = serializers.CharField(source='job.dropoff_address', read_only=True)
     job_type = serializers.CharField(source='job.job_type', read_only=True)
     job_date = serializers.DateTimeField(source='job.scheduled_time', read_only=True)
+    # Nature du job. Le front construit l'URL canonique du job
+    # (/demandes/<id> ou /trajets/<id>) depuis cette ligne d'offre, sans
+    # avoir a recharger le job pour la connaitre.
+    job_is_return_trip = serializers.BooleanField(
+        source='job.is_return_trip', read_only=True
+    )
     client_name = serializers.SerializerMethodField()
 
     class Meta:
@@ -482,6 +488,7 @@ class OfferListSerializer(serializers.ModelSerializer):
             'id', 'job', 'status', 'total_price', 'price_net',
             'commission_amount', 'message',
             'job_pickup', 'job_dropoff', 'job_type', 'job_date',
+            'job_is_return_trip',
             'client_name',
             'transporter_id', 'transporter_name', 'transporter_rating',
             'transporter_verified', 'transporter_jobs_count',

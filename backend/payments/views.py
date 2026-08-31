@@ -500,6 +500,10 @@ class ClientWalletView(APIView):
                 'amount': e.amount,
                 'pickup_governorate': job.pickup_governorate,
                 'dropoff_governorate': job.dropoff_governorate,
+                # Nature du job : le front construit l'URL canonique
+                # (/demandes/<id> ou /trajets/<id>) directement depuis
+                # cette ligne, sans recharger le job.
+                'is_return_trip': job.is_return_trip,
                 'date': e.updated_at,
             })
 
@@ -539,6 +543,7 @@ class TransporterWalletView(APIView):
                 'kind': 'ESCROW',
                 'status': e.status,
                 'job_id': e.booking_reference_id,
+                'is_return_trip': offer.job.is_return_trip,
                 'gross': float(e.amount),
                 'net': float(offer.price_net),
                 'date': e.updated_at.isoformat(),
@@ -570,6 +575,7 @@ class TransporterWalletView(APIView):
                 'kind': 'COD',
                 'status': 'COLLECTED',
                 'job_id': b.job_id,
+                'is_return_trip': b.job.is_return_trip,
                 'gross': float(b.final_price),
                 'net': float(offer.price_net),
                 'date': b.job.updated_at.isoformat(),
@@ -591,7 +597,11 @@ class TransporterWalletView(APIView):
             'cod_debt': float(summary['cod_debt']),
             'withdrawals_total': float(summary['withdrawals_total']),
             'cod_debts': [
-                {'job_id': c.job_reference_id, 'amount': float(c.amount)}
+                {
+                    'job_id': c.job_reference_id,
+                    'is_return_trip': c.job_reference.is_return_trip,
+                    'amount': float(c.amount),
+                }
                 for c in cod_unsettled
             ],
             'history': history[:50],
