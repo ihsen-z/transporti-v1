@@ -28,6 +28,7 @@ import { LocationPicker } from "@/components/jobs/LocationPicker";
 import { TransportDetailsForm } from "@/components/jobs/TransportDetailsForm";
 import { MovingDetailsForm } from "@/components/jobs/MovingDetailsForm";
 import { JobPreview } from "@/components/jobs/JobPreview";
+import { urlJob } from "@/lib/routes/jobs";
 
 const STEPS = [
   { id: "type" },
@@ -338,7 +339,7 @@ export default function NewJobPage() {
         try {
           localStorage.removeItem(DRAFT_KEY);
         } catch {}
-        router.push(`/jobs/${data.job.id}`);
+        router.push(urlJob(data.job.id, isReturnTrip));
       } else {
         try {
           localStorage.removeItem(DRAFT_KEY);

@@ -22,6 +22,7 @@ import {
   Wallet,
   Loader2,
 } from "lucide-react";
+import { urlJob } from "@/lib/routes/jobs";
 
 /* -------------------------------------------------------------------------- */
 /*  OfferStatusCard — Premium card for transporter's offer tracking (V4)      */
@@ -36,6 +37,8 @@ interface OfferStatusCardProps {
     job_dropoff: string;
     job_type: "TRANSPORT" | "MOVING" | "DELIVERY";
     job_date: string;
+    /** Nature du job — construit son URL canonique sans le recharger. */
+    job_is_return_trip?: boolean;
     price: number;
     price_net: number;
     commission_amount: number;
@@ -304,7 +307,7 @@ function OfferStatusCardInner({
         {/* Action Buttons */}
         <div className="flex gap-1.5">
           <Link
-            href={`/jobs/${offer.job_id}`}
+            href={urlJob(offer.job_id, offer.job_is_return_trip)}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-white hover:bg-brand-600 px-3 py-1.5 rounded-lg transition-all duration-200 border border-brand-600/20 hover:border-brand-600"
           >
             <Eye className="w-3.5 h-3.5" />

@@ -30,6 +30,7 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDateTime } from "@/lib/format";
 import { useToast } from "@/components/ui/Toast";
 import { ClientWalletView } from "@/components/wallet/ClientWalletView";
+import { urlJob } from "@/lib/routes/jobs";
 
 export default function WalletPage() {
   const { user, isLoading: authLoading } = useAuth();
@@ -281,7 +282,7 @@ export default function WalletPage() {
                     {h.kind === "ESCROW" ? (
                       <>
                         <Link
-                          href={`/jobs/${h.job_id}`}
+                          href={urlJob(h.job_id!, h.is_return_trip)}
                           className="text-sm font-medium text-neutral-900 hover:text-brand-600"
                         >
                           {t.mission} #{h.job_id}
@@ -345,7 +346,10 @@ export default function WalletPage() {
           <ul className="text-sm text-amber-700 space-y-1">
             {data.cod_debts.map((c) => (
               <li key={c.job_id} className="flex justify-between">
-                <Link href={`/jobs/${c.job_id}`} className="hover:underline">
+                <Link
+                  href={urlJob(c.job_id, c.is_return_trip)}
+                  className="hover:underline"
+                >
                   {t.mission} #{c.job_id}
                 </Link>
                 <span className="font-semibold">{formatTND(c.amount)}</span>

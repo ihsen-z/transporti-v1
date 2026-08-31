@@ -31,6 +31,7 @@ import {
   MessageCircle,
 } from "lucide-react";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
+import { urlJob } from "@/lib/routes/jobs";
 
 type DisputesT = AppTranslationKeys["disputes"];
 
@@ -513,7 +514,10 @@ export default function DisputesPage() {
                       {/* ✅ P1-02: Clickable job link + P2-04: Show addresses */}
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         <Link
-                          href={`/jobs/${dispute.job}`}
+                          href={urlJob(
+                            dispute.job,
+                            dispute.job_summary?.is_return_trip,
+                          )}
                           className="text-xs text-brand-600 hover:text-brand-700 font-medium hover:underline"
                         >
                           {t.missionLabel} #{dispute.job}
@@ -572,7 +576,10 @@ export default function DisputesPage() {
 
                   {/* ✅ P1-02: Link to job detail */}
                   <Link
-                    href={`/jobs/${dispute.job}`}
+                    href={urlJob(
+                      dispute.job,
+                      dispute.job_summary?.is_return_trip,
+                    )}
                     className="flex-shrink-0 p-2 text-neutral-300 hover:text-brand-600 hover:bg-brand-600/5 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
                     title={t.seeMission}
                   >

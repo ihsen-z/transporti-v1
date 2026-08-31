@@ -54,7 +54,10 @@ test.describe("Parcours B — la recherche sans impasse", () => {
       .first()
       .getByTestId("job-card-ouvrir")
       .click();
-    await expect(page).toHaveURL(/\/trajets\/\d+|\/jobs\/\d+/);
+    // Alternation retiree : elle anticipait la separation par nature, qui est
+    // desormais faite. La garder laisserait passer un retour sous /jobs/<id>,
+    // c'est-a-dire par la route de resolution et son ecran d'attente.
+    await expect(page).toHaveURL(/\/trajets\/\d+/);
 
     await page.getByTestId("trajet-envoyer-demande").click();
     await expect(page.getByTestId("demande-marchandise")).toBeVisible();

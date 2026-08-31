@@ -9,6 +9,7 @@ import {
   getClientWallet,
   type PortefeuilleClient,
 } from "@/lib/services/wallet";
+import { urlJob } from "@/lib/routes/jobs";
 
 /**
  * C5.1 — le portefeuille du CLIENT.
@@ -156,7 +157,7 @@ export function ClientWalletView() {
               >
                 <div>
                   <Link
-                    href={`/jobs/${ligne.job_id}`}
+                    href={urlJob(ligne.job_id, ligne.is_return_trip)}
                     className="font-medium text-neutral-900 hover:underline"
                   >
                     {ligne.pickup_governorate} &rarr;{" "}

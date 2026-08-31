@@ -43,6 +43,8 @@ export interface MappedOffer {
   job_dropoff: string;
   job_type: "TRANSPORT" | "MOVING" | "DELIVERY";
   job_date: string;
+  /** Nature du job — construit son URL canonique sans le recharger. */
+  job_is_return_trip?: boolean;
   price: number;
   price_net: number;
   commission_amount: number;
@@ -101,6 +103,7 @@ function mapApiOffer(o: ApiOffer): MappedOffer {
     job_dropoff: o.job_dropoff || "—",
     job_type: jobType,
     job_date: o.job_date || o.created_at,
+    job_is_return_trip: o.job_is_return_trip,
     price: totalPrice,
     // FIX #5: Map price_net and commission_amount directly from API
     price_net: priceNet,

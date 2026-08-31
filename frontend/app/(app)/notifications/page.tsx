@@ -26,6 +26,7 @@ import type { Notification } from "@/lib/services/types";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDate } from "@/lib/format";
+import { urlJob } from "@/lib/routes/jobs";
 
 type NotificationsT = AppTranslationKeys["notifications"];
 
@@ -122,12 +123,21 @@ function getActionLink(
       notification.category === "JOB" ||
       notification.category === "PAYMENT"
     ) {
-      return { href: `/jobs/${m.job_id}`, label: t.actionSeeMission };
+      return {
+        href: urlJob(m.job_id, notification.job_is_return_trip),
+        label: t.actionSeeMission,
+      };
     }
     if (notification.category === "DISPUTE") {
-      return { href: `/jobs/${m.job_id}`, label: t.actionSeeDispute };
+      return {
+        href: urlJob(m.job_id, notification.job_is_return_trip),
+        label: t.actionSeeDispute,
+      };
     }
-    return { href: `/jobs/${m.job_id}`, label: t.actionSeeDetails };
+    return {
+      href: urlJob(m.job_id, notification.job_is_return_trip),
+      label: t.actionSeeDetails,
+    };
   }
   if (notification.category === "REVIEW" && m.review_id) {
     const targetId = m.target_id || "";
@@ -217,7 +227,10 @@ const NotificationItem = React.memo(function NotificationItemInner({
                   )}
                   {notification.metadata.job_id && (
                     <Link
-                      href={`/jobs/${notification.metadata.job_id}`}
+                      href={urlJob(
+                        notification.metadata.job_id,
+                        notification.job_is_return_trip,
+                      )}
                       className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-neutral-100 text-neutral-700 hover:bg-brand-50 hover:text-brand-700 transition-colors border border-neutral-200"
                     >
                       Mission #{notification.metadata.job_id}

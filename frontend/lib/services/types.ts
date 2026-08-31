@@ -85,6 +85,15 @@ export interface Notification {
   is_read: boolean;
   created_at: string;
   metadata?: Record<string, any>;
+  /**
+   * Nature du job vise par `metadata.job_id`, resolue par le backend A LA
+   * LECTURE. Sert a construire l'URL canonique du job sans le recharger.
+   *
+   * `null` — et non `false` — quand elle est inconnue (notification sans
+   * job_id, ou job supprime depuis) : `false` voudrait dire « demande
+   * classique » et enverrait le lecteur sur la mauvaise route.
+   */
+  job_is_return_trip?: boolean | null;
 }
 
 /* -------------------------------------------------------------------------- */

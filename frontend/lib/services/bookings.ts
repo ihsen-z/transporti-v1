@@ -22,6 +22,12 @@ export interface Reservation {
 export interface TransportReserve {
   id: number;
   job_type: string;
+  /**
+   * Nature du job. Deja renvoyee par /api/jobs/<id>/ (que `getReservedJob`
+   * interroge) mais absente de ce type : le lien de retour vers le job ne
+   * pouvait pas construire son URL canonique.
+   */
+  is_return_trip?: boolean;
   status: string;
   pickup_address: string;
   dropoff_address: string;

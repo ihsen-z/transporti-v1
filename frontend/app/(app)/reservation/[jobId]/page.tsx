@@ -35,6 +35,7 @@ import {
   FileText,
   ExternalLink,
 } from "lucide-react";
+import { urlJob } from "@/lib/routes/jobs";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -212,7 +213,9 @@ export default function BookingPage() {
       <div className="max-w-3xl mx-auto">
         {/* Back link */}
         <Link
-          href={`/jobs/${jobId}`}
+          // `jobId ?? ""` suit la convention du libelle juste en dessous :
+          // un segment d'URL non numerique laisse `jobId` a null.
+          href={urlJob(job?.id ?? jobId ?? "", job?.is_return_trip)}
           className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-600 mb-6 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />

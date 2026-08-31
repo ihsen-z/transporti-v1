@@ -23,6 +23,7 @@ import {
   PartyPopper,
   MessageSquare,
 } from "lucide-react";
+import { urlJob } from "@/lib/routes/jobs";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -31,6 +32,8 @@ import {
 interface JobData {
   id: number;
   job_type: "TRANSPORT" | "MOVING";
+  /** Nature du job — construit l'URL canonique du lien de retour. */
+  is_return_trip?: boolean;
   pickup_address: string;
   dropoff_address: string;
   scheduled_time: string;
@@ -200,7 +203,7 @@ export default function BookingPage() {
               {t.bookingPage.contactTransporter}
             </Link>
             <Link
-              href={`/jobs/${job.id}`}
+              href={urlJob(job.id, job.is_return_trip)}
               className="inline-flex items-center justify-center gap-2 bg-neutral-100 text-neutral-700 px-6 py-3 rounded-xl font-semibold hover:bg-neutral-200 transition-colors"
             >
               {t.bookingPage.trackMission}

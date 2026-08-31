@@ -61,11 +61,13 @@ test.describe("Parcours A — le retour a vide capte", () => {
   }) => {
     await seConnecter(page, "transporteur");
 
-    // Le detail de mission vit encore sous /jobs/[id] : cette route porte deux
-    // roles (trajet vu par un client, mission vue par un transporteur) et sa
-    // separation en /missions/[id] releve du lot 4. Le test suivra le
-    // renommage, sans changer ce qu'il verifie.
-    await page.goto("/jobs/1");
+    // Le detail d'un job est desormais separe PAR NATURE : /demandes/<id> pour
+    // une demande classique, /trajets/<id> pour un trajet retour. Le job 1 est
+    // une demande classique, vue ici par le transporteur qui en a la mission —
+    // chaque route porte toujours ses deux compositions, proprietaire et
+    // visiteur. /jobs/1 fonctionne encore, mais via la route de resolution :
+    // l'utiliser ici testerait la resolution au lieu de l'ecran.
+    await page.goto("/demandes/1");
 
     const amorce = page.getByTestId("mission-amorce-retour");
     await expect(amorce).toBeVisible();
@@ -98,7 +100,7 @@ test.describe("Parcours A — le retour a vide capte", () => {
     // relance publicitaire. Sans elle, le transporteur la desactive
     // mentalement des la deuxieme apparition.
     await seConnecter(page, "transporteur");
-    await page.goto("/jobs/1");
+    await page.goto("/demandes/1");
 
     await page.getByTestId("mission-amorce-plus-tard").click();
     await expect(page.getByTestId("mission-amorce-retour")).toBeHidden();

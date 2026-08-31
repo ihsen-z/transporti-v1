@@ -16,6 +16,7 @@ import {
 import { formatDate } from "@/lib/format";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
+import { urlJob } from "@/lib/routes/jobs";
 
 /**
  * Le sous-ensemble reellement lu par cette carte. Typage explicite plutot que
@@ -225,7 +226,7 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
             // cliquable. Les parcours ciblaient la carte entiere et le clic
             // tombait a cote, sans erreur ni navigation.
             data-testid="job-card-ouvrir"
-            href={`/jobs/${job.id}`}
+            href={urlJob(job.id, job.is_return_trip)}
             className="px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-800 transition-colors"
           >
             {t.common.viewOffer}

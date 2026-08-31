@@ -22,6 +22,7 @@ import {
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { useVehiclePrefill, libelleCapacite } from "@/hooks/useVehiclePrefill";
+import { urlJob } from "@/lib/routes/jobs";
 
 /* ------------------------------------------------------------------ */
 /*  24 Gouvernorats de Tunisie                                         */
@@ -342,7 +343,7 @@ export default function ReturnTripPage() {
                 {matchingRequests.map((r) => (
                   <li key={r.id}>
                     <Link
-                      href={`/jobs/${r.id}`}
+                      href={urlJob(r.id, false)}
                       className="block bg-white rounded-xl p-3 border border-purple-100 hover:border-purple-300 transition-colors"
                     >
                       <p className="text-sm font-medium text-neutral-900 truncate">

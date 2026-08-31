@@ -261,7 +261,10 @@ class DashboardStatsView(APIView):
 
             recent_jobs = list(jobs.order_by('-created_at')[:5].values(
                 'id', 'job_type', 'status', 'pickup_address',
-                'dropoff_address', 'scheduled_time'
+                # `is_return_trip` : le front construit l'URL canonique du job
+                # (/demandes/<id> ou /trajets/<id>) depuis cette ligne, sans
+                # avoir a le recharger. Gratuit dans un `.values()`.
+                'dropoff_address', 'scheduled_time', 'is_return_trip'
             ))
             # Add offer_count
             for rj in recent_jobs:
@@ -291,7 +294,9 @@ class DashboardStatsView(APIView):
             ).distinct()
             recent_missions = list(assigned_jobs.order_by('-created_at')[:5].values(
                 'id', 'job_type', 'status', 'pickup_address',
-                'dropoff_address', 'scheduled_time'
+                # Voir le bloc CLIENT ci-dessus : sert a construire l'URL
+                # canonique du job sans rechargement.
+                'dropoff_address', 'scheduled_time', 'is_return_trip'
             ))
 
             return Response({

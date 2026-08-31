@@ -6,6 +6,7 @@ import Link from "next/link";
 import { formatTimeAgo } from "@/lib/format";
 import StatusBadge from "@/components/ui/StatusBadge";
 import type { Job } from "@/lib/services/types";
+import { urlJob } from "@/lib/routes/jobs";
 
 interface JobCardProps {
   job: Job;
@@ -21,7 +22,7 @@ function JobCard({ job }: JobCardProps) {
   const timeAgo = job.created_at ? formatTimeAgo(job.created_at) : "";
 
   return (
-    <Link href={`/jobs/${job.id}`}>
+    <Link href={urlJob(job.id, job.is_return_trip)}>
       <div className="bg-white rounded-xl border border-neutral-200 px-5 py-4 hover:shadow-md hover:border-brand-600/20 transition-all cursor-pointer flex items-center gap-4">
         {/* Job type icon */}
         <div

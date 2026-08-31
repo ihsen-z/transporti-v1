@@ -10,9 +10,14 @@
 import { apiClient } from "@/lib/api/client";
 
 export interface LigneHistoriquePortefeuille {
-  kind: "ESCROW" | "WITHDRAWAL";
+  // `COD` manquait a cette union alors que /api/wallet/ en emet : la ligne
+  // d'une mission payee en especes etait typee a tort comme un ESCROW ou un
+  // retrait. Le type mentait, sans erreur de compilation.
+  kind: "ESCROW" | "WITHDRAWAL" | "COD";
   status: string;
   job_id?: number;
+  /** Nature du job — construit son URL canonique sans le recharger. */
+  is_return_trip?: boolean;
   id?: number;
   gross?: number;
   net?: number;
@@ -27,7 +32,7 @@ export interface Portefeuille {
   released_net: number;
   cod_debt: number;
   withdrawals_total: number;
-  cod_debts: { job_id: number; amount: number }[];
+  cod_debts: { job_id: number; is_return_trip?: boolean; amount: number }[];
   history: LigneHistoriquePortefeuille[];
 }
 
@@ -58,6 +63,8 @@ export function requestWithdrawal(
 export interface LigneHistoriqueClient {
   id: number;
   job_id: number;
+  /** Nature du job — construit son URL canonique sans le recharger. */
+  is_return_trip?: boolean;
   status: string;
   amount: number;
   pickup_governorate: string;

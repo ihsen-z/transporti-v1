@@ -16,6 +16,8 @@ export interface OffreEnvoyee {
   job_dropoff: string;
   job_type: string;
   job_date: string;
+  /** Nature du job — construit son URL canonique sans le recharger. */
+  job_is_return_trip?: boolean;
   client_name: string;
   valid_until: string;
   created_at: string;

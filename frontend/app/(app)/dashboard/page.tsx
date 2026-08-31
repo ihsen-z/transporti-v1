@@ -31,6 +31,7 @@ import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import ReturnsHubSection from "@/components/dashboard/ReturnsHubSection";
 import { RETURN_TRIPS_FIRST } from "@/lib/flags";
+import { urlJob } from "@/lib/routes/jobs";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -72,6 +73,8 @@ interface RecentJob {
   dropoff_address: string;
   scheduled_time: string;
   offer_count?: number;
+  /** Nature du job — construit son URL canonique sans le recharger. */
+  is_return_trip?: boolean;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -232,7 +235,7 @@ function ClientDashboard({
             recentJobs.map((job) => (
               <Link
                 key={job.id}
-                href={`/jobs/${job.id}`}
+                href={urlJob(job.id, job.is_return_trip)}
                 className="flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors"
               >
                 <div className="flex items-center gap-4 min-w-0">
@@ -503,7 +506,7 @@ function TransporterDashboard({
               recentJobs.map((job) => (
                 <Link
                   key={job.id}
-                  href={`/jobs/${job.id}`}
+                  href={urlJob(job.id, job.is_return_trip)}
                   className="flex items-center justify-between px-6 py-4 hover:bg-neutral-50 transition-colors"
                 >
                   <div className="flex items-center gap-4 min-w-0">

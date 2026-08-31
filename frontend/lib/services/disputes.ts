@@ -32,6 +32,8 @@ export interface Dispute {
     status: string;
     pickup?: string;
     dropoff?: string;
+    /** Nature du job — construit son URL canonique sans le recharger. */
+    is_return_trip?: boolean;
   };
   created_at: string;
   updated_at: string;

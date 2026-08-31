@@ -43,6 +43,7 @@ import {
   type OngletExpedition,
   type TripRequest,
 } from "@/lib/services/tripRequests";
+import { urlJob } from "@/lib/routes/jobs";
 
 /* -------------------------------------------------------------------------- */
 /*  Types & Helpers                                                            */
@@ -331,7 +332,7 @@ const MissionCard = React.memo(function MissionCardInner({
       {/* Footer: Actions */}
       <div className="flex items-center justify-end gap-1.5">
         <Link
-          href={`/jobs/${mission.id}`}
+          href={urlJob(mission.id, mission.is_return_trip)}
           className="inline-flex items-center gap-1.5 text-xs font-semibold text-brand-600 hover:text-white hover:bg-brand-600 px-3 py-1.5 rounded-lg transition-all duration-200 border border-brand-600/20 hover:border-brand-600"
         >
           <Eye className="w-3.5 h-3.5" />
@@ -812,7 +813,7 @@ function ClientJobsView() {
           {demandesDeLOnglet.map((demande) => (
             <Link
               key={`req-${demande.id}`}
-              href={`/jobs/${demande.job}`}
+              href={urlJob(demande.job, true)}
               data-testid="expeditions-ligne"
               className="block bg-white rounded-xl border border-neutral-200 p-4 hover:border-brand-600/40 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none"
             >
