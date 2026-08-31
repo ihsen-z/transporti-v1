@@ -545,6 +545,14 @@
     }
   },
   "profiles": {
+    "service_areas": {
+      "title": "Mes zones de service",
+      "why": "Les gouvernorats que vous desservez. C'est la seule donnée qui permet à la plateforme de vous signaler les corridors où la demande dépasse l'offre : sans elle, votre écran Performance n'affiche aucune opportunité.",
+      "count": "{{count}} zone sélectionnée",
+      "count_plural": "{{count}} zones sélectionnées",
+      "none_warning": "Sans aucune zone, vous ne recevrez aucune opportunité de corridor.",
+      "load_error": "Impossible de lire vos zones actuelles."
+    },
     "title": "Profil transporteur",
     "active_trips": "{{count}} retour actif",
     "active_trips_plural": "{{count}} retours actifs",

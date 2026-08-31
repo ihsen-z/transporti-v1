@@ -15,6 +15,7 @@ import { ReviewsPanel } from '@/features/reviews/components/ReviewsPanel';
 import { FavoritesPanel } from '@/features/favorites/components/FavoritesPanel';
 import { ClientWalletPanel } from '@/features/wallet/components/ClientWalletPanel';
 import { TrustPanel } from '@/features/trust/components/TrustPanel';
+import { ServiceAreasPanel } from '@/features/profiles/components/ServiceAreasPanel';
 import { EditProfilePanel } from '@/features/auth/components/EditProfilePanel';
 import { ChangePasswordPanel } from '@/features/auth/components/ChangePasswordPanel';
 import { NotificationPrefsPanel } from '@/features/notifications/components/NotificationPrefsPanel';
@@ -35,6 +36,7 @@ export default function ProfileScreen() {
   // `client/wallet/` a ete ecrit pour ce lot.
   const [portefeuilleOpen, setPortefeuilleOpen] = useState(false);
   const [trustOpen, setTrustOpen] = useState(false);
+  const [zonesOpen, setZonesOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -168,6 +170,21 @@ export default function ProfileScreen() {
             </Pressable>
           ) : null}
 
+          {isTransporter ? (
+            <Pressable
+              testID="profile-service-areas"
+              style={styles.link}
+              onPress={() => setZonesOpen(true)}
+              accessibilityRole="button"
+            >
+              <Icon name="map-pin" size={22} color={colors.brand[600]} />
+              <Txt style={styles.linkText}>
+                {t('profiles.service_areas.title')}
+              </Txt>
+              <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
+            </Pressable>
+          ) : null}
+
           <Pressable
             testID="profile-about"
             style={styles.link}
@@ -199,6 +216,11 @@ export default function ProfileScreen() {
         onClose={() => setPortefeuilleOpen(false)}
       />
       <TrustPanel visible={trustOpen} onClose={() => setTrustOpen(false)} />
+      <ServiceAreasPanel
+        visible={zonesOpen}
+        onClose={() => setZonesOpen(false)}
+        userId={user?.id ?? null}
+      />
       <AboutPanel visible={aboutOpen} onClose={() => setAboutOpen(false)} />
     </SafeAreaView>
   );
