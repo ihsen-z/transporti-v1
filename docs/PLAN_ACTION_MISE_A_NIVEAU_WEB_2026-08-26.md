@@ -134,6 +134,10 @@ livraisons.
 | `7dda68d` | docs(plan): La recette mobile en direct est possible, et elle a paye |
 | `50044d4` | fix(web+mobile): Le seul CTA Devenir transporteur creait des comptes client |
 | `fce3aa4` | feat(web): P4 - une page qui fait l argumentaire transporteur |
+| `c922d44` | docs(plan): P4 livre, et le tunnel d acquisition qui creait des comptes client |
+| `1bb2dc4` | chore(mcp): Declare Context7 et le SDK Android pour mobile-mcp |
+| `353f631` | fix(web): La page d acquisition n avait pas de titre a elle |
+| `91d8ce6` | feat(web): P3 - la page qui dit ce que paiement securise veut dire |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1167,7 +1171,7 @@ déjà public sur les profils, suffit à décider.
 | **T0.1** Onboarding — étape « zones de service » | ✅ **fait** | `a4be7c0` | 30/08/2026 | Destination corrigée, étape conditionnelle, boucle T5.4 fermée |
 | **T0.4** Onboarding transporteur complet — **mobile** | ✅ **fait** | `8889c6b` + `135d561` | 31/08/2026 | Chantier neuf. A impose de livrer d'abord l'éditeur de zones — voir ci-dessous |
 | **P4** Devenir transporteur | ✅ **fait** | `50044d4` + `fce3aa4` | 31/08/2026 | `/devenir-transporteur` + entrée dans l'en-tête. Deux défauts du tunnel corrigés avant — voir ci-dessous |
-| **P3** Confiance et sécurité | ⏳ à faire | — | — | Lève l'objection n°1 du persona client |
+| **P3** Confiance et sécurité | ✅ **fait** | `91d8ce6` | 31/08/2026 | `/confiance` + entrée dans la navigation. Le délai de 48 h est annoncé, pas tu — voir ci-dessous |
 | **C5.6** Carnet d'adresses | ⏳ à faire | — | — | Confort |
 
 #### T0.4 — le mobile n'avait aucun onboarding, et il manquait une brique avant · *31/08/2026*
@@ -1218,6 +1222,54 @@ testait le chargement avant l'erreur) ; et mon premier test de mutation laissait
 **Cette réserve est levée le 31/08/2026** — voir la section suivante. Elle disait que l'application
 mobile n'avait pas pu être exécutée, faute d'appareil, et que la recette visuelle restait à faire.
 Elle a été faite.
+
+#### P3 — dire ce que « paiement sécurisé » veut dire · *31/08/2026* · `91d8ce6`
+
+La page d'accueil affirme « paiement sécurisé par escrow » et « transporteurs vérifiés » **sans
+jamais dire ce que ces mots recouvrent**. Une affirmation non étayée ne lève pas une objection, elle
+la déplace. `/confiance` décrit donc les trois mécanismes réels, chacun vérifié dans le code avant
+d'être écrit :
+
+- **le séquestre**, en quatre étapes qui suivent la machine à états d'`EscrowTransaction`, avec la
+  preuve de livraison telle qu'elle est réellement exigée : un PIN à 4 chiffres que seul le client
+  détient, **plus** une photo ;
+- **la vérification**, avec la liste exacte des pièces (`DocumentType` : identité, permis, carte
+  grise, assurance — recto et verso). Un client qui hésite veut savoir ce qui a été contrôlé ;
+- **le litige**, ouvrable par **les deux** parties (`DisputeCreateView`), ses motifs réels, et le
+  fait que sa résolution déclenche le mouvement d'argent **dans la même transaction** — donc qu'une
+  décision favorable ne peut pas être prise puis oubliée.
+
+**Le délai de 48 h est ANNONCÉ, pas tu.** C'est le seul fait de la page qui puisse jouer contre le
+client : sans confirmation de sa part, l'argent part automatiquement au transporteur. Une page de
+confiance qui tait la seule chose susceptible de surprendre ne mérite pas son nom — et le client le
+découvrirait de toute façon, au pire moment. Il est donc énoncé avec sa raison d'être (un client
+injoignable bloquerait un paiement légitime) et avec le garde-fou qui le rend acceptable : un litige
+ouvert suspend le versement, ce qui est vrai — `get_escrow_eligible_for_auto_release` exclut les
+litiges OPEN/INVESTIGATING. **Un parcours interdit de retirer l'un sans l'autre.**
+
+Les deux chiffres (48 h, score minimum de 50 pour les espèces) vivent dans `lib/garanties.ts`, et le
+test backend qui gardait déjà les taux de commission couvre désormais les deux fichiers. Il est
+renommé `tests_chiffres_affiches.py`, son ancien nom ne décrivant plus son périmètre.
+
+**Trouvé en écrivant ce test** : `COD_MIN_TRUST_SCORE` n'est **pas déclaré** dans `settings.py`. La
+règle qui conditionne le paiement en espèces ne vit que comme valeur de repli d'un `getattr` dans
+`payments/services.py`. Le test compare donc la valeur *effective* — la seule qui s'applique — et le
+dit explicitement plutôt que de laisser croire à un réglage.
+
+#### Un défaut de P4, trouvé le lendemain · *31/08/2026* · `353f631`
+
+J'avais ajouté des clés `metaTitle` / `metaDescription` au dictionnaire, et elles n'étaient **jamais
+lues**. `/devenir-transporteur` héritait donc du titre générique du site, alors que le seul but de
+cette page est d'être trouvée.
+
+La cause est une contrainte du framework, vérifiée dans la documentation Next.js 14 via **Context7**
+(désormais déclaré dans `.mcp.json`, commit `1bb2dc4` — l'outil était jusqu'ici absent de la
+session) : `metadata` ne peut être exporté que d'un composant **serveur**, et la page est
+`"use client"`. Les balises vivent donc dans un `layout.tsx` de segment.
+
+Les deux clés i18n sont **supprimées** plutôt que branchées : elles ne peuvent pas servir, la langue
+vivant dans le `localStorage` que le serveur ignore au moment de rendre le `<head>`. Les garder
+aurait laissé croire que ce titre est traduit.
 
 #### P4 — le tunnel d'acquisition créait des comptes client · *31/08/2026* · `50044d4` + `fce3aa4`
 
@@ -1356,7 +1408,8 @@ c'est un chantier à part.
 **Toutes les décisions du plan sont tranchées**, produit comme méthode.
 
 **Les trois arbitrages en attente ont été tranchés le 31/08/2026.** Aucune valeur métier ne bloque
-plus de livrable. **T0.4 et P4 sont livrés le 31/08/2026** ; il reste P3 et C5.6 au lot 6.
+plus de livrable. **T0.4, P4 et P3 sont livrés le 31/08/2026** ; il ne reste que **C5.6 (carnet
+d'adresses)** au lot 6.
 
 - **La grille `MOVING`** → recalibrée à **100 DT + 1,500 DT/km** (`0ee494f`, migration `0017`).
   Sousse → Tunis passe de 88 à 273 DT. A révélé un repli codé en dur qui pouvait annuler le
