@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import (
+    SavedAddressListCreateView, SavedAddressDetailView,
     JobCreateView, JobMyListView, JobPublicListView, JobDetailView, JobOffersView,
     OfferCreateView, OfferMyListView, OfferAcceptView,
     JobUpdateView, JobPublishView, JobCancelView, JobCompleteView, TransporterCancelView,
@@ -88,6 +89,12 @@ urlpatterns = [
     path('transporter/stats/', TransporterStatsView.as_view(), name='transporter_stats'),
     # T5.5 — le pendant transporteur de C5.3 (favoris cote client).
     path('transporter/loyal-clients/', LoyalClientsView.as_view(), name='loyal_clients'),
+
+    # C5.9 — carnet d'adresses. Declare ICI, donc expose sur les DEUX surfaces
+    # (`/api/` et `/api/v1/`) : la configuration racine inclut `logistics.urls`
+    # deux fois. Un test le verifie plutot que de s'y fier.
+    path('addresses/', SavedAddressListCreateView.as_view(), name='saved_addresses'),
+    path('addresses/<int:pk>/', SavedAddressDetailView.as_view(), name='saved_address_detail'),
 
     # Counter-Offers (P2-05)
     path('offers/<int:offer_id>/counter/', CounterOfferCreateView.as_view(), name='counter_offer_create'),

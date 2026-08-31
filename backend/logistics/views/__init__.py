@@ -29,6 +29,7 @@ from .misc import (
     TransporterStatsView,
     LoyalClientsView,
 )
+from .addresses import SavedAddressListCreateView, SavedAddressDetailView
 from .corridors import (
     ReturnTripMatchView, CorridorAlertListCreateView, CorridorAlertDeleteView,
 )
@@ -54,4 +55,6 @@ __all__ = [
     'LoyalClientsView',
     # corridors (Sprint 4)
     'ReturnTripMatchView', 'CorridorAlertListCreateView', 'CorridorAlertDeleteView',
+    # C5.9 — carnet d'adresses
+    'SavedAddressListCreateView', 'SavedAddressDetailView',
 ]

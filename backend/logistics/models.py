@@ -434,3 +434,66 @@ class JobEvent(models.Model):
 
     def __str__(self):
         return f"JobEvent #{self.id} job={self.job_id} {self.event}"
+
+
+class SavedAddress(models.Model):
+    """
+    C5.9 — le carnet d'adresses : les lieux qu'un utilisateur réutilise.
+
+    Pourquoi ce modèle existe. Publier une demande ou un trajet retour impose
+    de ressaisir à chaque fois l'adresse, son gouvernorat et ses coordonnées.
+    Un expéditeur régulier retape le même entrepôt à chaque annonce. C'est la
+    friction que ce carnet supprime.
+
+    OUVERT AUX DEUX RÔLES, à dessein. La cartographie le range parmi les écrans
+    client, mais un transporteur saisit exactement les mêmes champs en publiant
+    un trajet retour. Le réserver au client aurait créé une asymétrie sans
+    justification technique : le modèle est de toute façon porté par
+    `user`, donc cloisonné par utilisateur.
+
+    Les coordonnées sont NULLABLES parce qu'elles le sont déjà sur
+    `TransportJob` : un lieu peut n'être connu que par son gouvernorat, et
+    l'estimation de prix retombe alors sur les centroïdes. Exiger des
+    coordonnées ici rendrait inutilisable une adresse pourtant valide.
+    """
+
+    # Un carnet n'est utile que s'il reste lisible. Au-delà, ce n'est plus un
+    # carnet mais un historique, et le sélecteur devient plus lent à parcourir
+    # que la saisie qu'il remplace. La limite est appliquée par le sérialiseur,
+    # avec un message explicite plutôt qu'un refus muet.
+    MAXIMUM_PAR_UTILISATEUR = 20
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='saved_addresses',
+    )
+    label = models.CharField(
+        max_length=60,
+        help_text="Nom donné par l'utilisateur : « Domicile », « Entrepôt Sfax »",
+    )
+    address = models.CharField(max_length=255)
+    governorate = models.CharField(max_length=50, db_index=True)
+    lat = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True)
+    lng = models.DecimalField(
+        max_digits=9, decimal_places=6, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "Adresse enregistrée"
+        verbose_name_plural = "Adresses enregistrées"
+        ordering = ['label']
+        constraints = [
+            # Deux « Domicile » dans un même carnet rendent le sélecteur
+            # ambigu : l'utilisateur ne peut plus les distinguer au moment
+            # précis où il doit choisir.
+            models.UniqueConstraint(
+                fields=['user', 'label'],
+                name='unique_label_par_utilisateur',
+            ),
+        ]
+
+    def __str__(self):
+        return f"{self.label} ({self.governorate})"
