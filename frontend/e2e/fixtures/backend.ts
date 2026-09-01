@@ -390,6 +390,100 @@ export async function libererDemandesDuClient(
 }
 
 /**
+ * Libere les missions APPARIEES que les executions passees ont laissees.
+ *
+ * LE PENDANT MANQUANT DE `libererDemandesDuClient`. Le commentaire de
+ * `garantirTrajetsRetourPublies` reconnait deja que les parcours CONSOMMENT
+ * l'inventaire : accepter une contre-proposition retire le trajet de la
+ * recherche. Mais rien ne liberait ensuite les trajets consommes, et la boucle
+ * ne se refermait pas :
+ *
+ *   1. la fixture compte l'inventaire VISIBLE via `/api/jobs/public/`, qui ne
+ *      rend que les trajets PUBLISHED ;
+ *   2. un parcours fait accepter une demande -> le trajet passe MATCHED ;
+ *   3. un trajet MATCHED n'est plus PUBLISHED : il disparait du comptage ;
+ *   4. l'execution suivante croit l'inventaire insuffisant et republie.
+ *
+ * Chaque passage laissait donc des missions derriere lui. Constate le
+ * 01/09/2026 : **66 missions Sfax -> Tunis identiques** accumulees sur quatre
+ * jours, contre 10 trajets reellement visibles. Ce n'est pas un defaut du
+ * produit, mais pendant une recette manuelle 66 cartes identiques peuvent
+ * MASQUER un vrai defaut — c'est arrive.
+ *
+ * On annule par `transporter-cancel/`, le chemin qu'un vrai transporteur
+ * emprunte, et non par la depublication : celle-ci passerait le trajet en
+ * CANCELLED en laissant l'offre ACCEPTEE orpheline et l'escrow intact. Le
+ * chemin reel, lui, traite les consequences.
+ *
+ * FILTRE D'AGE, et il est essentiel : on n'annule QUE les missions creees il y
+ * a plus d'une heure. Les restes des executions passees le sont toujours ; ce
+ * qu'un parcours vient de creer dans l'execution EN COURS a quelques minutes.
+ * Sans ce filtre, un parcours anterieur de la meme suite se ferait annuler sa
+ * mission sous les pieds.
+ *
+ * Rend le detail plutot qu'un booleen : le plafond par appel ne doit pas etre
+ * silencieux.
+ */
+export async function libererMissionsApparieesDuTransporteur(
+  request: APIRequestContext,
+  depart: string,
+  arrivee: string,
+  /** Borne la duree d'un passage. Le reste part a l'execution suivante. */
+  maximum = 40,
+): Promise<{ annulees: number; restantes: number }> {
+  const enTete = { Authorization: `Bearer ${jetonDe("transporteur")}` };
+  const ageMinimumMs = 60 * 60 * 1000;
+  const maintenant = Date.now();
+
+  interface TrajetPossede {
+    id: number;
+    status: string;
+    is_return_trip?: boolean;
+    created_at: string;
+    pickup_governorate?: string;
+    dropoff_governorate?: string;
+  }
+
+  // La liste est paginee et le serveur plafonne `page_size` : on suit `next`.
+  const candidats: TrajetPossede[] = [];
+  let url: string | null = `${BACKEND_URL}/api/jobs/transporter/?type=owned`;
+  while (url !== null && candidats.length < maximum * 3) {
+    const reponse = await request.get(url, { headers: enTete });
+    if (!reponse.ok()) break;
+    const corps = (await reponse.json()) as {
+      results?: TrajetPossede[];
+      next?: string | null;
+    };
+    const page = Array.isArray(corps) ? corps : (corps.results ?? []);
+    candidats.push(...page);
+    url = Array.isArray(corps) ? null : (corps.next ?? null);
+  }
+
+  const aLiberer = candidats.filter(
+    (t) =>
+      t.is_return_trip === true &&
+      t.status === "MATCHED" &&
+      (t.pickup_governorate ?? "").toLowerCase() === depart.toLowerCase() &&
+      (t.dropoff_governorate ?? "").toLowerCase() === arrivee.toLowerCase() &&
+      maintenant - new Date(t.created_at).getTime() > ageMinimumMs,
+  );
+
+  let annulees = 0;
+  for (const trajet of aLiberer.slice(0, maximum)) {
+    const reponse = await request.post(
+      `${BACKEND_URL}/api/jobs/${trajet.id}/transporter-cancel/`,
+      {
+        headers: enTete,
+        data: { reason: "Nettoyage automatique du jeu de donnees de recette." },
+      },
+    );
+    if (reponse.ok()) annulees += 1;
+  }
+
+  return { annulees, restantes: Math.max(0, aLiberer.length - annulees) };
+}
+
+/**
  * Garantit qu'au moins `minimum` trajets retour PUBLIES existent sur le
  * corridor, en en publiant au besoin.
  *
@@ -420,6 +514,11 @@ export async function garantirTrajetsRetourPublies(
   exigerUnPrix = false,
 ): Promise<number> {
   const enTete = { Authorization: `Bearer ${jetonDe("transporteur")}` };
+
+  // On libere d'abord les missions appariees des executions PASSEES. Sans
+  // cela, chaque passage republie par-dessus les restes et le jeu de donnees
+  // grossit indefiniment — 66 missions identiques accumulees au 01/09/2026.
+  await libererMissionsApparieesDuTransporteur(request, depart, arrivee);
 
   // On interroge l'endpoint que la RECHERCHE utilise, avec le jeton du client
   // — pas la liste du transporteur.
