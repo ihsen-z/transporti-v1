@@ -144,6 +144,7 @@ livraisons.
 | `7aff8e5` | feat(web): C5.9 - le carnet d adresses, et son emploi dans la publication |
 | `c7681ae` | feat(mobile): C5.9 - le carnet d adresses, et son emploi a la publication |
 | `aa350ca` | fix(mobile): L ecran Profil ne defilait pas, et masquait une entree entiere |
+| `8cf4d47` | test(e2e): Les parcours accumulaient des missions sans jamais les liberer |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1590,29 +1591,40 @@ Reste non vu à l'œil : le guide *affiché* avec ses étapes (il faudrait un co
 l'éditeur de zones. Les deux sont couverts par des tests, et l'enjeu est mineur devant ce qui
 précède.
 
-#### Un défaut trouvé en marge de la recette : le KPI du pivot peut afficher 0 à tort · *01/09/2026*
+#### Deux constats sur le jeu de données, dont une correction de ma part · *01/09/2026* · `8cf4d47`
 
-**Signalé, non corrigé** — la correction touche un KPI et relève d'un arbitrage produit.
+**1. Les parcours E2E accumulaient des missions sans jamais les libérer.** Trouvé parce que la
+recette manuelle affichait **66 missions Sfax → Tunis identiques**, accumulées sur quatre jours. Ce
+n'est pas un défaut du produit — mais 66 cartes identiques peuvent **masquer un vrai défaut** pendant
+une recette, et c'est ce qui a failli arriver.
 
-`km_transformed` (affiché « X km à vide → chargés », le chiffre qui porte toute la promesse du pivot)
-somme `distance_km` des trajets retour au statut COMPLETED. Or :
+La boucle ne se refermait pas : la fixture compte l'inventaire *visible* (`PUBLISHED`), un parcours
+fait passer un trajet en `MATCHED`, celui-ci disparaît du comptage, et l'exécution suivante republie.
+Le commentaire de `garantirTrajetsRetourPublies` reconnaissait déjà la consommation d'inventaire, mais
+rien ne libérait les trajets consommés.
 
-1. `distance_km` n'est **jamais posé à la création** d'un trajet retour ; la seule écriture est dans
-   la commande `backfill_routes` ;
-2. cette commande **n'est pas dans `SCHEDULED_TASKS`** — elle ne tourne que sur invocation manuelle.
+`libererMissionsApparieesDuTransporteur` est le **pendant manquant** de `libererDemandesDuClient`. Il
+annule par `transporter-cancel/`, le chemin qu'un vrai transporteur emprunte — et non par la
+dépublication, qui laisserait l'offre acceptée orpheline et l'escrow intact. Un **filtre d'âge d'une
+heure** évite qu'un parcours de la même suite se fasse annuler sa mission sous les pieds.
 
-**Conséquence** : un retour livré avant un passage du remplissage contribue **0 km**, et le tableau
-de bord affiche « 0 km » sans que rien ne distingue « rien n'a encore été transformé » de « la
-distance n'a jamais été calculée ». C'est le motif que la règle d'or n°2 interdit : un 0 qui mente.
+Effet mesuré après nettoyage des 66 lignes : missions attribuées **70 → 5**, MATCHED Sfax→Tunis
+**66 → 0**, inventaire PUBLISHED **10 → 76**. Et le taux de remplissage affiché passe de **84,8 % à
+2,4 %** — c'est le chiffre *honnête* : presque aucun retour publié n'est réellement rempli. Les
+84,8 % étaient l'artefact de l'accumulation.
 
-**Mesuré en base** : 79 trajets retour, tous sans coordonnées (cas normal, saisie par corridor) ; 77
-ont bien une distance — le repli sur les centroïdes fonctionne — mais **2 sont à NULL**, dont un déjà
-**MATCHED**, donc susceptible d'être livré.
+**2. Correction d'un diagnostic que j'avais donné trop large.** J'avais conclu que `distance_km`
+n'était jamais posé à la création d'un trajet retour et dépendait d'une commande de remplissage non
+planifiée, mettant `km_transformed` en danger. **C'était inexact** :
+`ReturnTripCreateSerializer.create` appelle `annotate_distance_and_route`, qui pose la distance —
+depuis le routeur, ou par estimation sur les centroïdes s'il ne répond pas. La publication réelle est
+correcte.
 
-Trois pistes, dont la troisième est un choix produit : calculer la distance à la publication (le
-correctif de fond) ; planifier le remplissage (réduit la fenêtre sans la fermer) ; ou rendre le KPI
-honnête en distinguant « 0 km » de « inconnu », comme `fill_rate` et `completion_rate` le font déjà
-avec `None` affiché « — ».
+Le vrai défaut est bien plus étroit : **2 trajets retour du seed** ont `distance_km` NULL et
+`route_polyline` vide, parce que `seed_test_data.py` les crée **directement par l'ORM** en contournant
+le sérialiseur. Si l'un des deux est livré, il comptera 0 km. L'un est déjà MATCHED. Signalé, non
+corrigé — et la question de fond reste ouverte : `km_transformed` doit-il rendre `None` (affiché
+« — », comme `fill_rate` et `completion_rate`) quand une distance manque ? C'est un choix produit.
 
 ### ⚠️ Une question du plan n'a jamais été tranchée, et il faut le dire
 
@@ -1629,9 +1641,9 @@ règle, elle, n'a jamais été posée. Chaque écran a été porté ou non selon
 
 1. **Une règle explicite de parité**, plutôt que du cas par cas : tout nouvel écran est-il livré sur
    les deux plateformes dans le même lot ?
-2. **`km_transformed` peut afficher 0 à tort** — le KPI qui porte la promesse du pivot. Défaut trouvé
-   en marge de la recette mobile, signalé et non corrigé : la correction touche un KPI et demande un
-   arbitrage. Voir la section du 01/09/2026.
+2. **Le seed crée 2 trajets retour sans distance** — en contournant l'annotation du sérialiseur. S'ils
+   sont livrés, ils compteront 0 km dans `km_transformed`. Signalé, non corrigé. La question de fond
+   — faut-il afficher « — » plutôt que 0 quand une distance manque ? — est un choix produit.
 
    *La recette mobile, elle, est faite* : l'application a été exécutée sur émulateur, un défaut
    bloquant en est sorti (`aa350ca`), et les écrans client comme transporteur sont vérifiés.
