@@ -143,6 +143,7 @@ livraisons.
 | `e873fd1` | feat(backend): Le carnet d adresses, socle de C5.9 |
 | `7aff8e5` | feat(web): C5.9 - le carnet d adresses, et son emploi dans la publication |
 | `c7681ae` | feat(mobile): C5.9 - le carnet d adresses, et son emploi a la publication |
+| `aa350ca` | fix(mobile): L ecran Profil ne defilait pas, et masquait une entree entiere |
 | `a4be7c0` | fix(web+mobile): T0.1 - le guide envoyait vers un ecran sans le champ promis |
 
 ### Lot 0 — Fondations et filet de sécurité · ✅ **5 tâches sur 6** · *27/08/2026*
@@ -1552,6 +1553,35 @@ livrés, réserves comprises (recette visuelle AR du lot 0, `fixme` C1.7 du lot 
 | `tsc --noEmit` | propre sur les trois projets |
 | `eslint --max-warnings=0` (mobile) | propre |
 
+### ✅ La recette mobile a eu lieu · *01/09/2026* · `aa350ca`
+
+**L'application a été exécutée sur émulateur** (AVD `Pixel_7_API_35`, APK de développement + Metro,
+donc le code courant). La réserve qui pesait sur trois livraisons est levée en partie — et elle a
+immédiatement payé.
+
+**Un défaut trouvé, que rien d'autre ne pouvait voir.** L'écran Profil ne défilait pas : son
+conteneur était une `View` sans `ScrollView`. Le contenu débordait sous le bouton de déconnexion,
+posé en pied de page hors de ce conteneur. Le constat était cosmétique tant que seul « À propos »
+était à moitié coupé ; il est devenu **bloquant** en ajoutant « Mes adresses », entièrement
+recouverte donc **inatteignable**. La fonctionnalité était livrée, testée, et inaccessible.
+
+Ni les tests, ni `tsc`, ni la relecture ne pouvaient le voir : l'arbre d'accessibilité **contenait**
+l'entrée, elle était seulement invisible.
+
+**Vérifié sur l'appareil après correction** : la liste défile, « Mes adresses » apparaît entre « Mes
+litiges » et « À propos », le bouton ne recouvre plus rien, et le panneau s'ouvre — titre,
+explication, état vide et bouton d'ajout rendus, la lecture API répondant un carnet vide et non une
+erreur. Constaté sur un compte **client**, ce qui confirme au passage que le carnet n'est pas
+réservé au transporteur.
+
+**Ce qui reste non vérifié sur appareil, et pourquoi.** Le sélecteur d'adresses dans le formulaire de
+publication, ainsi que le guide de démarrage T0.4 et l'éditeur de zones, demandent une session
+**transporteur**. La connexion n'a pas pu être automatisée : le focus ne passe pas au champ mot de
+passe, quelles que soient les coordonnées utilisées — les positions de l'arbre d'accessibilité et
+celles de l'écran divergent dès que le clavier s'ouvre. **C'est une limite du pilotage de
+l'émulateur, pas un défaut du produit**, mais elle laisse ces trois écrans couverts par les seuls
+tests. Une recette manuelle de quelques minutes suffirait à la lever.
+
 ### ⚠️ Une question du plan n'a jamais été tranchée, et il faut le dire
 
 Le §1bis se termine sur : *« faut-il un lot 7 “rattrapage mobile” qui porte les cinq écrans manquants
@@ -1567,10 +1597,11 @@ règle, elle, n'a jamais été posée. Chaque écran a été porté ou non selon
 
 1. **Une règle explicite de parité**, plutôt que du cas par cas : tout nouvel écran est-il livré sur
    les deux plateformes dans le même lot ?
-2. **La recette mobile sur appareil.** Trois livraisons portent la même réserve (T0.4, C5.9 mobile,
-   et le guide de démarrage) : les tests et les appels réels valident la logique, mais
-   **l'application n'a jamais été exécutée** — aucun appareil disponible, et l'export web échoue sur
-   un import natif de `react-native-maps`. C'est la zone la moins prouvée de l'ensemble.
+2. **La recette mobile sur appareil — partiellement faite le 01/09/2026.** L'application a été
+   exécutée sur émulateur et un défaut bloquant en est sorti (`aa350ca`). Restent les écrans
+   **transporteur** : le sélecteur d'adresses à la publication, le guide de démarrage et l'éditeur de
+   zones. La connexion transporteur n'a pas pu être automatisée (focus du champ mot de passe) ; une
+   recette manuelle de quelques minutes la lèverait.
 3. **Le pied de page**, entièrement non traduit — troisième écran dans ce cas, toujours pour la même
    raison : la parité fr/ar est vérifiée à la compilation, mais un écran qui ne sollicite jamais le
    dictionnaire y échappe.
