@@ -1574,13 +1574,45 @@ explication, état vide et bouton d'ajout rendus, la lecture API répondant un c
 erreur. Constaté sur un compte **client**, ce qui confirme au passage que le carnet n'est pas
 réservé au transporteur.
 
-**Ce qui reste non vérifié sur appareil, et pourquoi.** Le sélecteur d'adresses dans le formulaire de
-publication, ainsi que le guide de démarrage T0.4 et l'éditeur de zones, demandent une session
-**transporteur**. La connexion n'a pas pu être automatisée : le focus ne passe pas au champ mot de
-passe, quelles que soient les coordonnées utilisées — les positions de l'arbre d'accessibilité et
-celles de l'écran divergent dès que le clavier s'ouvre. **C'est une limite du pilotage de
-l'émulateur, pas un défaut du produit**, mais elle laisse ces trois écrans couverts par les seuls
-tests. Une recette manuelle de quelques minutes suffirait à la lever.
+**Les écrans transporteur sont vérifiés eux aussi.** La session transporteur a pu être atteinte, et
+les deux comportements qui comptaient sont constatés sur l'appareil :
+
+- **le sélecteur d'adresses est présent sur les DEUX blocs** du formulaire de publication (départ et
+  arrivée), posé au-dessus des champs. Un seul appui sur « Depot Monastir » a rempli
+  **gouvernorat *et* adresse ensemble** — « Monastir » et « Avenue de la gare » — et le bloc arrivée
+  est resté intact, ce qui prouve l'indépendance des deux cibles. C'est le point même de la
+  fonctionnalité, et il fonctionne ;
+- **le guide de démarrage T0.4 est absent** pour ce compte, dont les trois étapes sont accomplies
+  (identité vérifiée, zones déclarées, retours publiés). C'est exactement la branche « disparaît
+  entièrement quand tout est fait » que le test unitaire couvrait.
+
+Reste non vu à l'œil : le guide *affiché* avec ses étapes (il faudrait un compte incomplet) et
+l'éditeur de zones. Les deux sont couverts par des tests, et l'enjeu est mineur devant ce qui
+précède.
+
+#### Un défaut trouvé en marge de la recette : le KPI du pivot peut afficher 0 à tort · *01/09/2026*
+
+**Signalé, non corrigé** — la correction touche un KPI et relève d'un arbitrage produit.
+
+`km_transformed` (affiché « X km à vide → chargés », le chiffre qui porte toute la promesse du pivot)
+somme `distance_km` des trajets retour au statut COMPLETED. Or :
+
+1. `distance_km` n'est **jamais posé à la création** d'un trajet retour ; la seule écriture est dans
+   la commande `backfill_routes` ;
+2. cette commande **n'est pas dans `SCHEDULED_TASKS`** — elle ne tourne que sur invocation manuelle.
+
+**Conséquence** : un retour livré avant un passage du remplissage contribue **0 km**, et le tableau
+de bord affiche « 0 km » sans que rien ne distingue « rien n'a encore été transformé » de « la
+distance n'a jamais été calculée ». C'est le motif que la règle d'or n°2 interdit : un 0 qui mente.
+
+**Mesuré en base** : 79 trajets retour, tous sans coordonnées (cas normal, saisie par corridor) ; 77
+ont bien une distance — le repli sur les centroïdes fonctionne — mais **2 sont à NULL**, dont un déjà
+**MATCHED**, donc susceptible d'être livré.
+
+Trois pistes, dont la troisième est un choix produit : calculer la distance à la publication (le
+correctif de fond) ; planifier le remplissage (réduit la fenêtre sans la fermer) ; ou rendre le KPI
+honnête en distinguant « 0 km » de « inconnu », comme `fill_rate` et `completion_rate` le font déjà
+avec `None` affiché « — ».
 
 ### ⚠️ Une question du plan n'a jamais été tranchée, et il faut le dire
 
@@ -1597,11 +1629,12 @@ règle, elle, n'a jamais été posée. Chaque écran a été porté ou non selon
 
 1. **Une règle explicite de parité**, plutôt que du cas par cas : tout nouvel écran est-il livré sur
    les deux plateformes dans le même lot ?
-2. **La recette mobile sur appareil — partiellement faite le 01/09/2026.** L'application a été
-   exécutée sur émulateur et un défaut bloquant en est sorti (`aa350ca`). Restent les écrans
-   **transporteur** : le sélecteur d'adresses à la publication, le guide de démarrage et l'éditeur de
-   zones. La connexion transporteur n'a pas pu être automatisée (focus du champ mot de passe) ; une
-   recette manuelle de quelques minutes la lèverait.
+2. **`km_transformed` peut afficher 0 à tort** — le KPI qui porte la promesse du pivot. Défaut trouvé
+   en marge de la recette mobile, signalé et non corrigé : la correction touche un KPI et demande un
+   arbitrage. Voir la section du 01/09/2026.
+
+   *La recette mobile, elle, est faite* : l'application a été exécutée sur émulateur, un défaut
+   bloquant en est sorti (`aa350ca`), et les écrans client comme transporteur sont vérifiés.
 3. **Le pied de page**, entièrement non traduit — troisième écran dans ce cas, toujours pour la même
    raison : la parité fr/ar est vérifiée à la compilation, mais un écran qui ne sollicite jamais le
    dictionnaire y échappe.
