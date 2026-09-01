@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, StyleSheet, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
@@ -58,7 +58,20 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.body}>
+      {/* DÉFILEMENT OBLIGATOIRE. C'était une `View` : la liste débordait
+          simplement sous le pied de page. Le constat était cosmétique tant que
+          seul « À propos » était coupé — il est devenu bloquant en ajoutant
+          « Mes adresses », qui se retrouvait ENTIÈREMENT masquée par le bouton
+          de déconnexion, donc inatteignable.
+
+          Trouvé en exécutant l'application sur émulateur. Ni les tests, ni
+          `tsc`, ni la relecture ne pouvaient le voir : l'arbre d'accessibilité
+          contenait bien l'entrée, elle était seulement invisible. */}
+      <ScrollView
+        style={styles.body}
+        contentContainerStyle={styles.bodyContent}
+        showsVerticalScrollIndicator={false}
+      >
         <Txt style={styles.title}>{t('profile.title')}</Txt>
 
         {user ? (
@@ -209,7 +222,7 @@ export default function ProfileScreen() {
             <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
         </Card>
-      </View>
+      </ScrollView>
 
       <View style={styles.footer}>
         <Button testID="profile-logout" label={t('profile.logout')} onPress={confirmLogout} />
@@ -245,7 +258,10 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.neutral[50], padding: spacing.xl },
-  body: { flex: 1, gap: spacing.lg, paddingTop: spacing.lg },
+  body: { flex: 1 },
+  // L'espacement vit dans le conteneur de contenu : sur un ScrollView,
+  // `gap` posé sur le style extérieur n'a aucun effet.
+  bodyContent: { gap: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.lg },
   title: {
     fontSize: fontSize['2xl'],
     fontWeight: '800',
