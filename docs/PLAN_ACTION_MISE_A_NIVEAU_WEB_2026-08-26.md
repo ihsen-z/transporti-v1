@@ -1620,11 +1620,50 @@ planifiée, mettant `km_transformed` en danger. **C'était inexact** :
 depuis le routeur, ou par estimation sur les centroïdes s'il ne répond pas. La publication réelle est
 correcte.
 
-Le vrai défaut est bien plus étroit : **2 trajets retour du seed** ont `distance_km` NULL et
-`route_polyline` vide, parce que `seed_test_data.py` les crée **directement par l'ORM** en contournant
-le sérialiseur. Si l'un des deux est livré, il comptera 0 km. L'un est déjà MATCHED. Signalé, non
-corrigé — et la question de fond reste ouverte : `km_transformed` doit-il rendre `None` (affiché
-« — », comme `fill_rate` et `completion_rate`) quand une distance manque ? C'est un choix produit.
+Le vrai défaut était côté seed : `seed_test_data.py` crée ses jobs **directement par l'ORM**, donc
+sans l'annotation du sérialiseur.
+
+### 02/09/2026 — Corrigé, avec un périmètre plus large que le constat, et un défaut trouvé dans
+l'outil de réparation
+
+**Mon propre constat était encore trop étroit.** Vérifié par requête avant de coder, comme la règle
+l'exige : ce n'était pas 2 trajets retour mais **9 jobs** — les ids 1 à 9, donc les 7 demandes
+classiques comprises. Le bloc de volumétrie, lui, annotait déjà sa distance.
+
+Ce que la lacune coûtait, et qui ne se voyait sur aucun écran : `km_transformed` agrège
+`Sum('distance_km')` sur les trajets retour livrés. **`Sum` ignore les NULL** — ces jobs comptaient
+donc pour zéro kilomètre, et zéro est une valeur d'apparence normale. Rien ne distinguait « ce trajet
+n'a rien transformé » de « on ne sait pas quelle distance il faisait ».
+
+`_creer_job` réutilise `annotate_distance_and_route`, la **même** fonction que le chemin réel, plutôt
+que de recopier le calcul : deux estimations parallèles finiraient par diverger. Elle n'annote qu'à la
+**création**, pour qu'un seed rejoué n'écrase pas une distance corrigée depuis.
+
+**Un défaut trouvé dans l'outil avant de s'en servir.** `backfill_routes` existait déjà et
+mutualisait ses appels par couple de gouvernorats — faux, puisque `resolve_route_for_job` part des
+coordonnées précises quand il en a. Les jobs 2, 3 et 4 ont un gouvernorat **vide** et des coordonnées
+distinctes : ils tombaient tous dans la même entrée de cache et héritaient du tracé du premier. Sur
+données réelles, la correction rend **144,8 / 15,7 / 16,7 km** au lieu de 144,8 pour les trois. Sans
+elle, la « réparation » aurait écrit trois fausses distances.
+
+État final mesuré : **0 job sans distance, 0 sans tracé** (12 lignes routées, 10 appels au routeur).
+Suite backend : **251 tests OK** (245 + 6). Les 4 tests qui portent sur les deux défauts échouent bien
+quand on les remet — vérifié.
+
+**Divergence assumée :** le bloc de volumétrie garde son estimation par centroïdes sans tracé. Router
+500 jobs rendrait le seed inutilisable, et `distance_km` suffit à la NSM.
+
+**Question produit, toujours ouverte** — et plus fine que je ne l'avais posée. Puisque `Sum` ignore
+les NULL, une lacune *partielle* sous-compte silencieusement ; rendre `None` pour tout le KPI
+masquerait à l'inverse des données valides. Trois options, à trancher par le porteur :
+1. garder la somme telle quelle (statu quo : sous-comptage muet) ;
+2. rendre `None` — affiché « — », comme `fill_rate` et `completion_rate` — dès qu'un trajet retour
+   livré manque de distance ;
+3. rendre la somme **et** le nombre de trajets non mesurés, pour afficher « 1 240 km (2 trajets non
+   mesurés) ».
+
+C'est l'option 3 que je recommanderais : elle ne masque rien et ne ment pas. Mais c'est un choix
+d'affichage, donc pas le mien.
 
 ### ⚠️ Une question du plan n'a jamais été tranchée, et il faut le dire
 
@@ -1641,9 +1680,10 @@ règle, elle, n'a jamais été posée. Chaque écran a été porté ou non selon
 
 1. **Une règle explicite de parité**, plutôt que du cas par cas : tout nouvel écran est-il livré sur
    les deux plateformes dans le même lot ?
-2. **Le seed crée 2 trajets retour sans distance** — en contournant l'annotation du sérialiseur. S'ils
-   sont livrés, ils compteront 0 km dans `km_transformed`. Signalé, non corrigé. La question de fond
-   — faut-il afficher « — » plutôt que 0 quand une distance manque ? — est un choix produit.
+2. ~~**Le seed crée 2 trajets retour sans distance**~~ — **corrigé le 02/09/2026**, et le périmètre
+   réel était de 9 jobs, pas 2. Reste **la seule question produit** : que doit afficher
+   `km_transformed` quand un trajet retour livré n'a pas de distance ? Trois options détaillées
+   ci-dessus ; recommandation = afficher la somme *et* le nombre de trajets non mesurés.
 
    *La recette mobile, elle, est faite* : l'application a été exécutée sur émulateur, un défaut
    bloquant en est sorti (`aa350ca`), et les écrans client comme transporteur sont vérifiés.
