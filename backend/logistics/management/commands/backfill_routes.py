@@ -78,9 +78,11 @@ class Command(BaseCommand):
 
         self.stdout.write(f'{total} job(s) without a route, processing {len(jobs)}.')
 
-        # Le routeur renvoie le meme trace pour un meme couple de gouvernorats :
-        # on met en cache par corridor pour ne pas payer 50 appels identiques.
+        # Le routeur renvoie le meme trace pour un meme couple de gouvernorats,
+        # A CONDITION que le trace soit calcule depuis les centroides. On met en
+        # cache par corridor pour ne pas payer 50 appels identiques.
         cache = {}
+        appels = 0  # appels reellement passes au routeur, cache deduit
         updated = 0
         failed = 0
 
@@ -90,8 +92,20 @@ class Command(BaseCommand):
                 (job.dropoff_governorate or '').strip().lower(),
             )
 
-            if corridor in cache:
-                route = cache[corridor]
+            # MUTUALISER SERAIT FAUX pour un job qui porte des coordonnees
+            # precises : `resolve_route_for_job` part des coordonnees quand il
+            # en a, et ne retombe sur les centroides du corridor qu'a defaut.
+            # Deux jobs du meme corridor -- ou de corridor VIDE, comme les jobs
+            # du seed connus par leur seul point GPS -- n'ont alors pas le meme
+            # trace. Sans cette distinction, le premier job route imposait sa
+            # polyligne et sa distance a tous les suivants, sans aucun signal.
+            routable_au_point = None not in (
+                job.pickup_lat, job.pickup_lng, job.dropoff_lat, job.dropoff_lng,
+            )
+            cle = None if routable_au_point else corridor
+
+            if cle is not None and cle in cache:
+                route = cache[cle]
             else:
                 route = resolve_route_for_job(
                     job.pickup_lat, job.pickup_lng,
@@ -99,7 +113,9 @@ class Command(BaseCommand):
                     job.pickup_governorate, job.dropoff_governorate,
                     timeout=options['timeout'],
                 )
-                cache[corridor] = route
+                appels += 1
+                if cle is not None:
+                    cache[cle] = route
                 if pause > 0:
                     time.sleep(pause)
 
@@ -124,5 +140,5 @@ class Command(BaseCommand):
         prefix = '[dry-run] ' if dry_run else ''
         self.stdout.write(self.style.SUCCESS(
             f'{prefix}{updated} job(s) routed, {failed} failed, '
-            f'{len(cache)} distinct corridor(s) queried.'
+            f'{appels} router call(s) for {len(jobs)} job(s).'
         ))

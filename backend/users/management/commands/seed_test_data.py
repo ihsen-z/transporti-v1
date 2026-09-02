@@ -216,6 +216,35 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.SUCCESS('   ✓ 6 users created'))
 
+    def _creer_job(self, job_id, defaults):
+        """
+        Cree un job du jeu fixe, distance et trace compris.
+
+        Les jobs ecrits a la main ici contournent le serializer, donc aussi
+        l'annotation que `JobCreateSerializer.create` et
+        `ReturnTripCreateSerializer.create` appliquent a toute publication
+        reelle. Neuf jobs se retrouvaient sans `distance_km` : la NSM (km a
+        vide transformes) les comptait pour zero, et aucun ecran ne le
+        signalait puisque zero est une valeur d'apparence normale.
+
+        On reutilise `annotate_distance_and_route` -- la MEME fonction que le
+        chemin reel -- plutot que de recopier le calcul : deux estimations
+        parallelles finiraient par diverger.
+
+        L'annotation n'a lieu qu'a la CREATION. Un `get_or_create` qui
+        retrouve la ligne ne doit pas payer un appel reseau pour rien, et
+        surtout ne doit pas ecraser une distance corrigee depuis (par
+        `backfill_routes`, par exemple).
+        """
+        from logistics.routing import annotate_distance_and_route
+
+        existant = TransportJob.objects.filter(id=job_id).first()
+        if existant is not None:
+            return existant
+
+        annotate_distance_and_route(defaults)
+        return TransportJob.objects.create(id=job_id, **defaults)
+
     def seed_jobs(self):
         """Create test jobs in various states."""
         self.stdout.write('📦 Seeding jobs...')
@@ -229,9 +258,7 @@ class Command(BaseCommand):
         # « mission livree -> publication du retour » reste intestable.
         # Corridor choisi different de Tunis->Tunis pour que le retour inverse
         # ait un sens.
-        self.job_1, _ = TransportJob.objects.get_or_create(
-            id=1,
-            defaults={
+        self.job_1 = self._creer_job(1, {
                 'owner': self.client_1,
                 'job_type': 'TRANSPORT',
                 'status': 'COMPLETED',
@@ -249,9 +276,7 @@ class Command(BaseCommand):
         )
         
         # Job 2: IN_PROGRESS (Moving - Full apartment)
-        self.job_2, _ = TransportJob.objects.get_or_create(
-            id=2,
-            defaults={
+        self.job_2 = self._creer_job(2, {
                 'owner': self.client_2,
                 'job_type': 'MOVING',
                 'status': 'IN_PROGRESS',
@@ -273,9 +298,7 @@ class Command(BaseCommand):
         )
         
         # Job 3: PUBLISHED (Transport - Awaiting offers)
-        self.job_3, _ = TransportJob.objects.get_or_create(
-            id=3,
-            defaults={
+        self.job_3 = self._creer_job(3, {
                 'owner': self.client_1,
                 'job_type': 'TRANSPORT',
                 'status': 'PUBLISHED',
@@ -291,9 +314,7 @@ class Command(BaseCommand):
         )
         
         # Job 4: DISPUTED (Transport - Damaged items)
-        self.job_4, _ = TransportJob.objects.get_or_create(
-            id=4,
-            defaults={
+        self.job_4 = self._creer_job(4, {
                 'owner': self.client_1,
                 'job_type': 'TRANSPORT',
                 'status': 'DISPUTED',
@@ -309,9 +330,7 @@ class Command(BaseCommand):
         )
         
         # Job 5: DRAFT (client is still writing it)
-        self.job_5, _ = TransportJob.objects.get_or_create(
-            id=5,
-            defaults={
+        self.job_5 = self._creer_job(5, {
                 'owner': self.client_2,
                 'job_type': 'TRANSPORT',
                 'status': 'DRAFT',
@@ -325,9 +344,7 @@ class Command(BaseCommand):
         )
 
         # Job 6: CANCELLED (client cancelled before assignment)
-        self.job_6, _ = TransportJob.objects.get_or_create(
-            id=6,
-            defaults={
+        self.job_6 = self._creer_job(6, {
                 'owner': self.client_1,
                 'job_type': 'TRANSPORT',
                 'status': 'CANCELLED',
@@ -341,9 +358,7 @@ class Command(BaseCommand):
         )
 
         # Job 7: MATCHED (offer accepted, payment being set up — D3 flow)
-        self.job_7, _ = TransportJob.objects.get_or_create(
-            id=7,
-            defaults={
+        self.job_7 = self._creer_job(7, {
                 'owner': self.client_2,
                 'job_type': 'TRANSPORT',
                 'status': 'MATCHED',
@@ -363,9 +378,7 @@ class Command(BaseCommand):
         self.stdout.write('🔄 Seeding return trips...')
 
         # Return trip 1: PUBLISHED, future date
-        self.return_trip_1, _ = TransportJob.objects.get_or_create(
-            id=8,
-            defaults={
+        self.return_trip_1 = self._creer_job(8, {
                 'owner': self.transporter_1,
                 'job_type': 'TRANSPORT',
                 'status': 'PUBLISHED',
@@ -383,9 +396,7 @@ class Command(BaseCommand):
         )
 
         # Return trip 2: date passed (expiration scenario, REC-F5)
-        self.return_trip_2, _ = TransportJob.objects.get_or_create(
-            id=9,
-            defaults={
+        self.return_trip_2 = self._creer_job(9, {
                 'owner': self.transporter_1,
                 'job_type': 'TRANSPORT',
                 'status': 'PUBLISHED',
