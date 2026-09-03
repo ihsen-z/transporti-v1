@@ -8,6 +8,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from django.conf import settings as django_settings
 
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
+from .services_account_closure import ClotureImpossible, cloturer_compte
 from transporti_core.throttling import AuthRateThrottle
 
 logger = logging.getLogger('transporti')
@@ -237,6 +238,42 @@ class ChangePasswordView(APIView):
         logger.info(f"PASSWORD_CHANGED: user_id={request.user.id}")
 
         return Response({'message': 'Mot de passe modifié avec succès.'})
+
+
+class DeleteAccountView(APIView):
+    """
+    DELETE /api/auth/account/ — l'utilisateur clôture son propre compte.
+
+    Exigence de recevabilité des stores (Google Play, App Store) : toute
+    application permettant de créer un compte doit permettre de le supprimer
+    depuis l'application. La logique vit dans `services_account_closure` : le
+    compte est anonymisé, pas détruit, pour que les missions et les écritures
+    comptables survivent.
+
+    Le mot de passe est redemandé : c'est une action irréversible, et une
+    session volée ne doit pas pouvoir l'exécuter.
+    """
+
+    def delete(self, request):
+        password = request.data.get('password', '')
+        if not password:
+            return Response(
+                {'password': 'Confirmez votre mot de passe pour supprimer le compte.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        if not request.user.check_password(password):
+            return Response(
+                {'password': 'Mot de passe incorrect.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            cloturer_compte(request.user)
+        except ClotureImpossible as exc:
+            # Le message porte la cause ET ce qu'il faut faire pour débloquer.
+            return Response({'error': exc.message}, status=status.HTTP_400_BAD_REQUEST)
+
+        return Response({'message': 'Votre compte a été supprimé.'})
 
 
 class DashboardStatsView(APIView):
