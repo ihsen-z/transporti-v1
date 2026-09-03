@@ -306,12 +306,12 @@ const s = StyleSheet.create({
   formulaire: { marginTop: spacing.lg, gap: spacing.md },
   avertissement: {
     fontSize: fontSize.sm,
-    color: colors.warning,
+    color: colors.text.warning,
     marginTop: spacing.lg,
   },
   erreur: {
     fontSize: fontSize.sm,
-    color: colors.error,
+    color: colors.text.error,
     marginBottom: spacing.sm,
   },
 });

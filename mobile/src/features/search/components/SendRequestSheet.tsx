@@ -165,12 +165,12 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   title: { fontSize: fontSize.xl, fontWeight: '800', color: colors.neutral[900] },
-  error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  error: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   successBox: { gap: spacing.lg, paddingVertical: spacing.lg },
   successText: {
     fontSize: fontSize.lg,
     fontWeight: '800',
-    color: colors.green[700],
+    color: colors.text.green,
     textAlign: 'center',
   },
 });

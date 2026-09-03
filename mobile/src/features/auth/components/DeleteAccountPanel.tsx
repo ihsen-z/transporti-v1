@@ -138,7 +138,7 @@ const s = StyleSheet.create({
   avertissementTitre: {
     fontSize: fontSize.md,
     fontWeight: '800',
-    color: colors.error,
+    color: colors.text.error,
   },
   avertissementTexte: { fontSize: fontSize.sm, color: colors.neutral[700] },
   conserve: { fontSize: fontSize.sm, color: colors.neutral[500] },

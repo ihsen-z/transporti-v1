@@ -138,5 +138,5 @@ const styles = StyleSheet.create({
   block: { gap: spacing.sm, marginTop: spacing.md },
   counter: { fontSize: fontSize.md, fontWeight: '800', color: colors.brand[500] },
   payment: { fontSize: fontSize.sm, color: colors.neutral[700] },
-  error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  error: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
 });

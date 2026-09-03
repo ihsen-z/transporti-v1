@@ -120,5 +120,5 @@ const styles = StyleSheet.create({
     color: colors.neutral[900],
     fontSize: fontSize.md,
   },
-  error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  error: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
 });

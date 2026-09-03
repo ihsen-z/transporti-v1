@@ -120,5 +120,5 @@ const styles = StyleSheet.create({
     borderRadius: radii.input + focusRing.width,
     backgroundColor: focusRing.color,
   },
-  error: { fontSize: fontSize.sm, color: colors.error },
+  error: { fontSize: fontSize.sm, color: colors.text.error },
 });

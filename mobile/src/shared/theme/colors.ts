@@ -45,6 +45,34 @@ export const colors = {
   // Neutres additionnels pour tags/slate
   slate: '#475569',
   tagBg: '#f1f4f7',
+
+  // ── Variantes TEXTE ──────────────────────────────────────────────────
+  // Les couleurs ci-dessus restent celles des fonds, des liserés et des
+  // icônes. Mais sous 18 px, cinq d'entre elles passaient sous le seuil AA
+  // de WCAG 2.1 (4,5:1) — et c'étaient précisément les blocs qui portent la
+  // promesse commerciale, mesurés en recette du 03/09 :
+  //
+  //   amorce de retour à vide   cta[600] sur cta[50]      3,35:1
+  //   économie estimée          green[700] sur green[50]  3,60:1
+  //   km à vide valorisés       green[700] sur green[50]  3,60:1
+  //   expiration urgente        warning sur blanc         2,15:1
+  //   « Expiré », « Dépublier » error sur blanc           3,76:1
+  //
+  // Un chiffre d'économie qu'on ne lit pas au soleil, dans une cabine, ne
+  // convertit pas. Ces quatre valeurs sont le même ton un cran plus foncé :
+  // la teinte ne change pas, l'identité de la charte est préservée.
+  //
+  // Ratios obtenus (garde-fou vérifié par colors.test.ts) :
+  //   green   5,24 sur green[50]  ·  5,48 sur blanc
+  //   cta     4,88 sur cta[50]
+  //   warning 5,02 sur blanc
+  //   error   4,83 sur blanc      ·  4,62 sur neutral[50]
+  text: {
+    green: '#047857',
+    cta: '#c2410c',
+    warning: '#b45309',
+    error: '#dc2626',
+  },
 } as const;
 
 // Dégradés (expo-linear-gradient). Tuples de couleurs.

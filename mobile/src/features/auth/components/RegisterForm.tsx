@@ -253,6 +253,6 @@ const styles = StyleSheet.create({
   segTextActive: { color: colors.neutral[0] },
   row: { flexDirection: 'row', gap: spacing.md },
   rowItem: { flex: 1 },
-  serverError: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  serverError: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   submit: { marginTop: spacing.sm },
 });

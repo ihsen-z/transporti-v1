@@ -152,6 +152,6 @@ export function ChangePasswordForm({ onDone }: Props) {
 
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
-  serverError: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  serverError: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   submit: { marginTop: spacing.sm },
 });

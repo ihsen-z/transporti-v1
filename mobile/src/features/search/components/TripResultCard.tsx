@@ -104,7 +104,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.lg,
     gap: spacing.md,
   },
-  price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.green[700] },
+  price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.text.green },
   economie: {
     marginTop: spacing.sm,
     paddingVertical: spacing.sm,
@@ -118,7 +118,7 @@ const styles = StyleSheet.create({
   economieMontant: {
     fontSize: fontSize.md,
     fontWeight: '800',
-    color: colors.green[700],
+    color: colors.text.green,
   },
-  economieBase: { fontSize: fontSize.sm, color: colors.green[700] },
+  economieBase: { fontSize: fontSize.sm, color: colors.text.green },
 });

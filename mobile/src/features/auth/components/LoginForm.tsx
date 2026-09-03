@@ -108,7 +108,7 @@ export function LoginForm() {
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
   serverError: {
-    color: colors.error,
+    color: colors.text.error,
     fontSize: fontSize.sm,
     fontWeight: '600',
   },

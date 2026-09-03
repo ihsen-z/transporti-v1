@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   title: { fontSize: fontSize.xl, fontWeight: '800', color: colors.neutral[900] },
   available: { fontSize: fontSize.md, color: colors.neutral[700] },
   delay: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  error: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   successBox: { gap: spacing.lg, paddingVertical: spacing.lg },
   successText: { fontSize: fontSize.md, color: colors.neutral[900], textAlign: 'center' },
 });

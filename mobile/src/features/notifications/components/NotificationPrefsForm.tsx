@@ -103,6 +103,6 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
   },
   rowLabel: { flex: 1, fontSize: fontSize.md, color: colors.neutral[900] },
-  serverError: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600', marginTop: spacing.sm },
+  serverError: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600', marginTop: spacing.sm },
   submit: { marginTop: spacing.lg },
 });

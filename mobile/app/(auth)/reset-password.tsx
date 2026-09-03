@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
   titleBlock: { gap: spacing.xs },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
   subtitle: { fontSize: fontSize.md, color: colors.neutral[500] },
-  invalid: { fontSize: fontSize.md, color: colors.error, fontWeight: '600', textAlign: 'center' },
+  invalid: { fontSize: fontSize.md, color: colors.text.error, fontWeight: '600', textAlign: 'center' },
   footer: { alignItems: 'center' },
   footerLink: { fontSize: fontSize.md, fontWeight: '700', color: colors.brand[600] },
 });

@@ -116,7 +116,7 @@ const styles = StyleSheet.create({
   fieldError: { borderColor: colors.error },
   value: { fontSize: fontSize.md, color: colors.neutral[900], flex: 1 },
   placeholder: { color: colors.neutral[400] },
-  error: { fontSize: fontSize.sm, color: colors.error },
+  error: { fontSize: fontSize.sm, color: colors.text.error },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

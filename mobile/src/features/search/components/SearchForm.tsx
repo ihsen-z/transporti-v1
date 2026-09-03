@@ -88,5 +88,5 @@ export function SearchForm({ onSearch, loading }: Props) {
 
 const styles = StyleSheet.create({
   form: { gap: spacing.md },
-  error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  error: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
 });

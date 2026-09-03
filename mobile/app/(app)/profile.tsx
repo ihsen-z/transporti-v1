@@ -347,6 +347,6 @@ const styles = StyleSheet.create({
     borderTopColor: colors.neutral[200],
   },
   linkText: { flex: 1, fontSize: fontSize.md, fontWeight: '600', color: colors.neutral[900] },
-  linkDanger: { color: colors.error },
+  linkDanger: { color: colors.text.error },
   footer: { paddingTop: spacing.lg },
 });

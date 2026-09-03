@@ -175,13 +175,13 @@ const styles = StyleSheet.create({
   },
   earnings: { marginTop: spacing.md, gap: 2 },
   // VERT = la valeur : c'est le net perçu, pas le montant facturé au client.
-  earningsNet: { fontSize: fontSize.lg, fontWeight: '800', color: colors.green[700] },
+  earningsNet: { fontSize: fontSize.lg, fontWeight: '800', color: colors.text.green },
   earningsDetail: { fontSize: fontSize.sm, color: colors.neutral[500] },
   route: { marginTop: spacing.md },
   when: { fontSize: fontSize.sm, color: colors.neutral[500] },
   action: { gap: spacing.sm, marginTop: spacing.md },
   hint: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  error: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   dispute: {
     color: colors.neutral[500],
     fontSize: fontSize.sm,
@@ -190,7 +190,7 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs,
   },
   cancel: {
-    color: colors.error,
+    color: colors.text.error,
     fontSize: fontSize.sm,
     fontWeight: '600',
     textAlign: 'center',

@@ -16,7 +16,7 @@ export const publishStyles = StyleSheet.create({
   estimate: {
     fontSize: fontSize.md,
     fontWeight: '800',
-    color: colors.green[700],
+    color: colors.text.green,
   },
   hint: { fontSize: fontSize.sm, color: colors.neutral[500] },
   switchRow: {
@@ -63,7 +63,7 @@ export const publishStyles = StyleSheet.create({
   },
   partLabelActive: { color: colors.brand[600] },
 
-  error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  error: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   submit: { marginTop: spacing.sm },
   successBox: {
     backgroundColor: colors.brand[50],
@@ -74,7 +74,7 @@ export const publishStyles = StyleSheet.create({
   successText: {
     fontSize: fontSize.lg,
     fontWeight: '800',
-    color: colors.green[700],
+    color: colors.text.green,
     textAlign: 'center',
   },
 });

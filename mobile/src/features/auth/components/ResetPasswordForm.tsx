@@ -129,8 +129,8 @@ export function ResetPasswordForm({ uid, token }: Props) {
 
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
-  sent: { fontSize: fontSize.md, color: colors.green[700], fontWeight: '600', lineHeight: 22 },
-  serverError: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  sent: { fontSize: fontSize.md, color: colors.text.green, fontWeight: '600', lineHeight: 22 },
+  serverError: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   submit: { marginTop: spacing.sm },
   link: { fontSize: fontSize.md, fontWeight: '700', color: colors.brand[600], textAlign: 'center' },
 });

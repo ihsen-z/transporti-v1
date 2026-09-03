@@ -64,6 +64,6 @@ const styles = StyleSheet.create({
   kind: { fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
   meta: { fontSize: fontSize.sm, color: colors.neutral[500] },
   amount: { fontSize: fontSize.md, fontWeight: '800', color: colors.neutral[700] },
-  credit: { color: colors.green[700] },
+  credit: { color: colors.text.green },
   debit: { color: colors.neutral[700] },
 });

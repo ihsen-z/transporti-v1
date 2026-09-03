@@ -88,7 +88,7 @@ export function ForgotPasswordForm() {
 
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
-  sent: { fontSize: fontSize.md, color: colors.green[700], fontWeight: '600', lineHeight: 22 },
-  serverError: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  sent: { fontSize: fontSize.md, color: colors.text.green, fontWeight: '600', lineHeight: 22 },
+  serverError: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   submit: { marginTop: spacing.sm },
 });
