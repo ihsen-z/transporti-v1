@@ -36,8 +36,13 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
     onClose();
   };
 
+  // Les trois refus connus (déjà noté, mission non terminée,
+  // non-participant) gardent leur message localisé, plus clair que le
+  // texte serveur ; `serverMessage` ne remonte que sur un refus non classé.
   const serverError = create.error
-    ? t(`reviews.errors.${create.error.kind}`)
+    ? (create.error.kind === 'unknown'
+        ? (create.error.serverMessage ?? t('reviews.errors.unknown'))
+        : t(`reviews.errors.${create.error.kind}`))
     : null;
 
   return (

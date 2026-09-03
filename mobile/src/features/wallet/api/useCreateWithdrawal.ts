@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { apiClient } from '@/core/api/client';
+import { extractServerMessage } from '@/core/api/serverMessage';
 import { walletKey } from './useWallet';
 import type { WithdrawalResponse } from './dto';
 
@@ -24,15 +25,6 @@ interface Args {
   bankDetails: string;
 }
 
-function firstFieldError(data: unknown): string | undefined {
-  if (typeof data !== 'object' || data === null) return undefined;
-  for (const value of Object.values(data as Record<string, unknown>)) {
-    if (Array.isArray(value) && typeof value[0] === 'string') return value[0];
-    if (typeof value === 'string') return value;
-  }
-  return undefined;
-}
-
 // POST /api/v1/wallet/withdrawals/ — demande de virement, traitée en
 // back-office (décision D4 : aucun paiement automatique sortant).
 async function postWithdrawal({ amount, bankDetails }: Args): Promise<WithdrawalResponse> {
@@ -45,7 +37,10 @@ async function postWithdrawal({ amount, bankDetails }: Args): Promise<Withdrawal
   } catch (err) {
     if (isAxiosError(err)) {
       if (err.response?.status === 400) {
-        throw new WithdrawalError('validation', firstFieldError(err.response.data));
+        throw new WithdrawalError(
+          'validation',
+          extractServerMessage(err.response.data) ?? undefined,
+        );
       }
       if (err.response?.status === 403) throw new WithdrawalError('forbidden');
       if (!err.response) throw new WithdrawalError('network');

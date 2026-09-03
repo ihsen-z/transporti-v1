@@ -373,8 +373,8 @@
       "method": "Paiement",
       "method_digital": "Digital",
       "method_cod": "À la livraison (≤ 300 TND)",
-      "description": "Message (optionnel)",
-      "description_ph": "Ce que vous voulez transporter…",
+      "description": "Ce que vous expédiez",
+      "description_ph": "Ex. deux palettes de carrelage, 800 kg",
       "submit": "Envoyer",
       "success": "Demande envoyée ! Le transporteur va répondre."
     },
@@ -382,8 +382,14 @@
       "route_required": "Choisissez départ et arrivée.",
       "same": "Le départ et l'arrivée doivent être différents.",
       "price": "Montant invalide",
-      "validation": "Demande impossible. Vérifiez le montant (COD ≤ 300 TND) ou une demande est déjà en cours.",
-      "network": "Connexion au serveur impossible. Réessayez."
+      "network": "Connexion au serveur impossible. Réessayez.",
+      "description_required": "Décrivez ce que vous expédiez.",
+      "unknown": "Demande impossible. Réessayez dans un instant.",
+      "field": {
+        "description": "Décrivez ce que vous expédiez : le transporteur décide sur cette information.",
+        "proposed_price": "Montant refusé. Vérifiez le prix proposé.",
+        "payment_method": "Ce mode de paiement n'est pas accepté pour ce montant."
+      }
     },
     "alerts": {
       "title": "Mes alertes corridor",

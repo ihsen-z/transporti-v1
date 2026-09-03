@@ -1,12 +1,18 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { apiClient } from '@/core/api/client';
+import { extractServerMessage } from '@/core/api/serverMessage';
 import type { CreateDisputeBody } from './dto';
 
 export type CreateDisputeErrorKind = 'validation' | 'forbidden' | 'network' | 'unknown';
 
 export class CreateDisputeError extends Error {
-  constructor(public readonly kind: CreateDisputeErrorKind) {
+  // `serverMessage` porte le texte exact du backend, déjà rédigé en
+  // français. Le reformuler ici ferait deux sources pour une même règle.
+  constructor(
+    public readonly kind: CreateDisputeErrorKind,
+    public readonly serverMessage?: string,
+  ) {
     super(kind);
     this.name = 'CreateDisputeError';
   }
@@ -18,9 +24,11 @@ async function postDispute(body: CreateDisputeBody): Promise<void> {
     await apiClient.post('disputes/', body);
   } catch (err) {
     if (isAxiosError(err)) {
-      if (err.response?.status === 400) throw new CreateDisputeError('validation');
+      if (err.response?.status === 400) {
+        throw new CreateDisputeError('validation', extractServerMessage(err.response.data) ?? undefined);
+      }
       if (err.response?.status === 403 || err.response?.status === 404) {
-        throw new CreateDisputeError('forbidden');
+        throw new CreateDisputeError('forbidden', extractServerMessage(err.response.data) ?? undefined);
       }
       if (!err.response) throw new CreateDisputeError('network');
     }

@@ -7,11 +7,18 @@ import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { PaymentMethod, TripResultDto } from '../api/dto';
 import { useSendTripRequest } from '../api/useSendTripRequest';
+import { PREFERER_MESSAGE_SERVEUR, type SendRequestField } from '../api/requestError';
 
 interface Props {
   trip: TripResultDto | null;
   onClose: () => void;
 }
+
+// Champs dont l'erreur s'affiche SOUS le champ, là où se trouve la correction.
+// `payment_method` est un Select sans emplacement d'erreur : son refus part
+// dans le message général, qui porte alors le texte du serveur (précis, il
+// cite le plafond).
+const CHAMPS_INLINE: readonly SendRequestField[] = ['description', 'proposed_price'];
 
 export function SendRequestSheet({ trip, onClose }: Props) {
   const { t } = useTranslation();
@@ -20,6 +27,7 @@ export function SendRequestSheet({ trip, onClose }: Props) {
   const [method, setMethod] = useState<PaymentMethod>('DIGITAL');
   const [description, setDescription] = useState('');
   const [priceError, setPriceError] = useState<string | null>(null);
+  const [descriptionError, setDescriptionError] = useState<string | null>(null);
 
   const methodOptions = [
     { value: 'DIGITAL' as const, label: t('search.request.method_digital') },
@@ -29,20 +37,44 @@ export function SendRequestSheet({ trip, onClose }: Props) {
   const submit = () => {
     if (!trip) return;
     const n = Number(price);
-    if (!price || Number.isNaN(n) || n <= 0) {
-      setPriceError(t('search.errors.price'));
-      return;
-    }
-    setPriceError(null);
+    const texte = description.trim();
+
+    // La description est REQUISE côté serveur (`ReturnTripRequest.description`
+    // n'est pas `blank=True`) et c'est la seule information sur laquelle le
+    // transporteur décide. On la valide donc ici plutôt que de laisser le
+    // serveur refuser une demande que l'écran présentait comme complète.
+    const prixInvalide = !price || Number.isNaN(n) || n <= 0;
+    setPriceError(prixInvalide ? t('search.errors.price') : null);
+    setDescriptionError(texte ? null : t('search.errors.description_required'));
+    if (prixInvalide || !texte) return;
+
     send.mutate({
       jobId: trip.id,
-      body: { proposed_price: n, payment_method: method, description },
+      body: { proposed_price: n, payment_method: method, description: texte },
     });
   };
 
-  const errorMsg = send.error
-    ? t(`search.errors.${send.error.kind === 'network' ? 'network' : 'validation'}`)
-    : null;
+  const failure = send.error?.failure ?? null;
+
+  // Erreur de champ renvoyée par le serveur, rattachée à son champ.
+  const erreurServeurChamp = (champ: SendRequestField): string | undefined => {
+    if (!failure || failure.field !== champ) return undefined;
+    if (PREFERER_MESSAGE_SERVEUR[champ] && failure.serverMessage) {
+      return failure.serverMessage;
+    }
+    return t(`search.errors.field.${champ}`);
+  };
+
+  // Ce qui ne se rattache à aucun champ affichable : règle métier de la vue
+  // (« Vous avez déjà une demande en cours sur ce trajet »), réseau, ou repli.
+  const erreurGenerale = (() => {
+    if (!failure) return null;
+    if (failure.field && CHAMPS_INLINE.includes(failure.field)) return null;
+    if (failure.kind === 'network') return t('search.errors.network');
+    if (failure.serverMessage) return failure.serverMessage;
+    if (failure.field === 'payment_method') return t('search.errors.field.payment_method');
+    return t('search.errors.unknown');
+  })();
 
   const close = () => {
     // Réinitialise pour la prochaine ouverture.
@@ -50,6 +82,7 @@ export function SendRequestSheet({ trip, onClose }: Props) {
     setMethod('DIGITAL');
     setDescription('');
     setPriceError(null);
+    setDescriptionError(null);
     send.reset();
     onClose();
   };
@@ -83,7 +116,7 @@ export function SendRequestSheet({ trip, onClose }: Props) {
                 value={price}
                 onChangeText={setPrice}
                 keyboardType="numeric"
-                error={priceError ?? undefined}
+                error={priceError ?? erreurServeurChamp('proposed_price')}
               />
               <Select
                 testID="send-request-method"
@@ -100,10 +133,11 @@ export function SendRequestSheet({ trip, onClose }: Props) {
                 value={description}
                 onChangeText={setDescription}
                 autoCapitalize="sentences"
+                error={descriptionError ?? erreurServeurChamp('description')}
               />
-              {errorMsg ? (
+              {erreurGenerale ? (
                 <Text testID="send-request-error" style={styles.error}>
-                  {errorMsg}
+                  {erreurGenerale}
                 </Text>
               ) : null}
               <Button

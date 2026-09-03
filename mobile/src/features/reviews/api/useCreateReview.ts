@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { apiClient } from '@/core/api/client';
+import { extractServerMessage } from '@/core/api/serverMessage';
 import type { CreateReviewBody } from './dto';
 
 export type CreateReviewErrorKind =
@@ -11,7 +12,14 @@ export type CreateReviewErrorKind =
   | 'unknown';
 
 export class CreateReviewError extends Error {
-  constructor(public readonly kind: CreateReviewErrorKind) {
+  // `serverMessage` porte le texte du backend pour les refus que la
+  // classification ci-dessous ne sait pas nommer. Les trois cas connus
+  // (déjà noté, mission non terminée, non-participant) gardent leur
+  // message localisé : ils sont plus clairs que le texte serveur.
+  constructor(
+    public readonly kind: CreateReviewErrorKind,
+    public readonly serverMessage?: string,
+  ) {
     super(kind);
     this.name = 'CreateReviewError';
   }
@@ -43,7 +51,7 @@ async function postReview(body: CreateReviewBody): Promise<void> {
         if (nonField.toLowerCase().includes('participant')) {
           throw new CreateReviewError('not_participant');
         }
-        throw new CreateReviewError('unknown');
+        throw new CreateReviewError('unknown', extractServerMessage(err.response.data) ?? undefined);
       }
       if (!err.response) throw new CreateReviewError('network');
     }

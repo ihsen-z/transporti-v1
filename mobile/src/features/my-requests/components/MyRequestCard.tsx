@@ -38,10 +38,18 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
       ? 'state'
       : accept.error.kind
     : null;
+  // Texte du serveur d'abord : il dit pourquoi la contre-offre ou le
+  // retrait est refusé (statut déjà changé, délai dépassé).
+  const errMsg = accept.error
+    ? (accept.error.serverMessage ?? t(`my_requests.errors.${errKey}`))
+    : null;
   const cancelErrKey = cancel.error
     ? cancel.error.kind === 'unknown' || cancel.error.kind === 'network'
       ? 'network'
       : 'state'
+    : null;
+  const cancelErrMsg = cancel.error
+    ? (cancel.error.serverMessage ?? t(`my_requests.errors.${cancelErrKey}`))
     : null;
 
   const confirmWithdraw = () => {
@@ -74,7 +82,7 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
             variant="cta"
             loading={accept.isPending}
           />
-          {errKey ? <Text style={styles.error}>{t(`my_requests.errors.${errKey}`)}</Text> : null}
+          {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
         </View>
       ) : null}
 
@@ -87,8 +95,8 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
             variant="ghost"
             loading={cancel.isPending}
           />
-          {cancelErrKey ? (
-            <Text style={styles.error}>{t(`my_requests.errors.${cancelErrKey}`)}</Text>
+          {cancelErrMsg ? (
+            <Text style={styles.error}>{cancelErrMsg}</Text>
           ) : null}
         </View>
       ) : null}

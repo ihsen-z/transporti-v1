@@ -56,8 +56,11 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
     onClose();
   };
 
+  // Texte du serveur d'abord (il nomme la cause exacte du refus), message
+  // localisé en repli.
   const serverError = create.error
-    ? t(`disputes.errors.${create.error.kind === 'forbidden' ? 'forbidden' : create.error.kind === 'network' ? 'network' : 'validation'}`)
+    ? (create.error.serverMessage ??
+       t(`disputes.errors.${create.error.kind === 'forbidden' ? 'forbidden' : create.error.kind === 'network' ? 'network' : 'validation'}`))
     : null;
 
   return (

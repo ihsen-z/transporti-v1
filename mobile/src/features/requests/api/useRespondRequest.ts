@@ -1,12 +1,19 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { apiClient } from '@/core/api/client';
+import { extractServerMessage } from '@/core/api/serverMessage';
 import type { RespondRequest } from './dto';
 
 export type RespondErrorKind = 'validation' | 'forbidden' | 'network' | 'unknown';
 
 export class RespondError extends Error {
-  constructor(public readonly kind: RespondErrorKind) {
+  // `serverMessage` porte le texte exact du backend, déjà rédigé en français
+  // (prix de contre-offre hors bornes, demande déjà traitée). Le reformuler
+  // ici ferait deux sources pour une même règle.
+  constructor(
+    public readonly kind: RespondErrorKind,
+    public readonly serverMessage?: string,
+  ) {
     super(kind);
     this.name = 'RespondError';
   }
@@ -24,8 +31,12 @@ async function postRespond({ requestId, body }: RespondArgs): Promise<void> {
     await apiClient.post(`trip-requests/${requestId}/respond/`, body);
   } catch (err) {
     if (isAxiosError(err)) {
-      if (err.response?.status === 400) throw new RespondError('validation');
-      if (err.response?.status === 403) throw new RespondError('forbidden');
+      if (err.response?.status === 400) {
+        throw new RespondError('validation', extractServerMessage(err.response.data) ?? undefined);
+      }
+      if (err.response?.status === 403) {
+        throw new RespondError('forbidden', extractServerMessage(err.response.data) ?? undefined);
+      }
       if (!err.response) throw new RespondError('network');
     }
     throw new RespondError('unknown');
