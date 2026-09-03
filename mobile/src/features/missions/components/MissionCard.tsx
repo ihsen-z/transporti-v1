@@ -118,7 +118,9 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
             keyboardType="numeric"
             error={pinError ?? undefined}
           />
-          <Text style={styles.hint}>{t('missions.photo_deferred')}</Text>
+          {/* E-12 — « Photo de preuve : bientôt. » était affiché tel quel à
+              l'utilisateur. On ne commente pas une absence : le téléversement
+              arrive au lot 7, d'ici là l'écran se tait. */}
           <Button
             testID={`mission-${mission.id}-complete`}
             label={t('missions.complete')}

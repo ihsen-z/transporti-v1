@@ -104,3 +104,36 @@ Capacité décrémentable (D12-b) · alertes corridor transporteurs (D14-b) · c
 - **Lint frontend cassé dans l'environnement** : module `@eslint-community/regexpp` manquant sous `node_modules` → `next lint` échoue au chargement du plugin `@typescript-eslint`. Refaire `npm ci`. Le typecheck (`tsc --noEmit`) reste vert.
 - **Docker Desktop (Windows) — HMR ne se déclenche pas sur les bind-mounts** : les éditions de source faites *après* le démarrage d'un conteneur `npm run dev` / Django ne sont pas rechargées (inotify non propagé via le montage). Pour vérifier une édition : `docker restart transporti_frontend` (ou `_backend`) — le serveur relit la source montée au démarrage. À garder en tête pour toute recette en environnement Docker.
 - **SQLite ≠ PostgreSQL en test** : la recette locale historique tournait sur SQLite (104/104 verts) mais masquait des bugs Postgres-only (ex. `abs(interval)`, corrigé le 21/07). Recommandation : lancer la suite sur Postgres (`docker exec transporti_backend python manage.py test`) avant chaque porte.
+
+
+## ✅ Décision — Transporteurs favoris : conservés et terminés (03/09/2026)
+
+**Contexte de la décision.** Trois sources se contredisaient :
+`PLAN_ACHEVEMENT_MOBILE_2026-08-07.md` §5 écarte la fonctionnalité
+(« contredit le principe n°1 : la valeur vient du matching sur corridor, pas de
+la fidélisation ») ; `VISION_PRODUIT_FONDATRICE.md` §8 range « fidéliser sa
+clientèle » parmi les besoins du **persona principal** ; et le code en livrait
+la moitié — `useToggleFavorite` n'était appelé que pour *retirer*, si bien
+qu'une cliente exclusivement mobile ne pouvait jamais alimenter la rubrique que
+son menu lui promettait (écart E-04 de l'audit du 02/09, confirmé en recette).
+
+**Décision : on garde, et on termine.** Trois raisons.
+
+1. Le pendant transporteur (« clients fidèles », `LoyalClientsCard`) est livré
+   et argumenté par la même ligne de la vision. Garder un seul côté de la
+   symétrie n'était défendable dans aucun sens.
+2. L'argument du plan d'août visait le *coût* d'une fonctionnalité à construire.
+   Ce coût est déjà payé : modèle, endpoints, hook, panneau et invalidation de
+   cache existent. Il manquait un bouton.
+3. Un favori ne concurrence pas le matching sur corridor, il le classe. Le
+   principe n°1 n'est pas menacé par une préférence exprimée après une mission
+   réussie.
+
+**Livré le 03/09** (lot 3, tâche 3.2) : `FavoriteButton` sur le profil public du
+transporteur, réservé au rôle CLIENT (les deux endpoints portent
+`RequireRole('CLIENT')`), avec l'état lu du serveur et non d'une variable
+locale inversée. Vérifié sur émulateur dans les deux sens.
+
+**Conséquence documentaire** : la ligne « Transporteurs favoris » du §5 de
+`PLAN_ACHEVEMENT_MOBILE_2026-08-07.md` est **caduque**. Elle est conservée dans
+ce plan comme trace de l'arbitrage initial, et non comme consigne.

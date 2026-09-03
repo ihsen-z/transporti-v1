@@ -14,6 +14,7 @@ import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { Txt } from '@/shared/ui/Txt';
+import { FavoriteButton } from '@/features/favorites/components/FavoriteButton';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import type { ReviewDto } from '@/features/reviews/api/dto';
 
@@ -65,6 +66,13 @@ export default function TransporterProfileScreen() {
               <Card style={styles.identity}>
                 <Avatar name={`${p.first_name} ${p.last_name}`} size={64} imageUrl={p.avatar_url || null} />
                 <Txt style={styles.name}>{`${p.first_name} ${p.last_name}`}</Txt>
+                {/* E-04 — le seul point d'entrée pour AJOUTER un favori. Sans
+                    lui, la rubrique du menu client reste inalimentable depuis
+                    le mobile. Ne se rend que pour un CLIENT. */}
+                <FavoriteButton
+                  testID="transporter-detail-favorite"
+                  transporterId={userId}
+                />
                 <View style={styles.badges}>
                   {p.is_verified ? (
                     <Badge label={t('trust.status.VERIFIED')} variant="verified" icon="shield-check" />

@@ -30,7 +30,6 @@
     "retry": "Réessayer",
     "cancel": "Annuler",
     "close": "Fermer",
-    "coming_soon": "Bientôt disponible",
     "saved": "Modifications enregistrées",
     "back": "Retour",
     "offline": "Hors ligne — les données affichées peuvent être périmées"
@@ -346,7 +345,6 @@
     "pin_ph": "1234",
     "pin_format": "Le code fait 4 chiffres",
     "complete": "Marquer livré",
-    "photo_deferred": "Photo de preuve : bientôt.",
     "errors": {
       "pin_required": "Code requis. Demandez les 4 chiffres au client.",
       "pin_invalid": "Code de livraison incorrect.",
@@ -387,7 +385,6 @@
     "create_alert": "Créer une alerte corridor",
     "alert_created": "Alerte créée. Vous serez notifié.",
     "refine_hint": "Affinez votre recherche (date, gouvernorat) pour voir tous les résultats.",
-    "instant": "Réservation immédiate",
     "price_range": "{{min}} – {{max}} TND",
     "request": {
       "title": "Envoyer une demande",
@@ -764,7 +761,9 @@
     "jobs_done": "{{count}} mission(s) terminée(s)",
     "add": "Ajouter aux favoris",
     "remove": "Retirer des favoris",
-    "error": "L'action n'a pas abouti. Réessayez."
+    "error": "L'action n'a pas abouti. Réessayez.",
+    "add_a11y": "Ajouter aux favoris",
+    "remove_a11y": "Retirer des favoris"
   },
   "client_wallet": {
     "title": "Mon portefeuille",

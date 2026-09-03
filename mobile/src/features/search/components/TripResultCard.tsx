@@ -39,7 +39,12 @@ export function TripResultCard({ trip, onRequest }: Props) {
         {trip.owner_verification_status === 'VERIFIED' ? (
           <Badge label={t('trust.status.VERIFIED')} variant="verified" icon="shield-check" />
         ) : null}
-        {trip.instant_booking ? <Badge label={t('search.instant')} variant="save" /> : null}
+        {/* E-05 — badge RETIRÉ tant que `jobs/<id>/book-return/` n'est pas
+            câblé. Il annonçait une immédiateté que l'étape suivante contredit :
+            le seul bouton de la carte reste « Envoyer une demande », qui attend
+            l'accord du transporteur. Sur une place de marché dont le premier
+            produit est la confiance, un badge absent coûte moins qu'un badge
+            qui ment. À réactiver avec la réservation immédiate (lot 6). */}
       </Pressable>
 
       <View style={styles.route}>
