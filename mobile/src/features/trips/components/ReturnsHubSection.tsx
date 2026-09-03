@@ -2,7 +2,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { colors, spacing, fontSize, radii, TOUCH_TARGET } from '@/shared/theme';
 import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
 import {
   useMyReturnTrips,
@@ -111,9 +111,9 @@ const s = StyleSheet.create({
   valeurChiffre: {
     fontSize: fontSize.lg,
     fontWeight: '800',
-    color: colors.green[700],
+    color: colors.text.green,
   },
-  valeurDetail: { fontSize: fontSize.sm, color: colors.green[700] },
+  valeurDetail: { fontSize: fontSize.sm, color: colors.text.green },
   carte: {
     borderWidth: 1,
     borderColor: colors.neutral[200],
@@ -142,7 +142,15 @@ const s = StyleSheet.create({
     color: colors.neutral[900],
   },
   expiration: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  lien: { alignSelf: 'flex-start' },
+  // Mesure a 124x21 dp en recette, sans aucun padding — et c'est la SEULE
+  // porte d'entree de l'inventaire depuis l'Accueil.
+  lien: {
+    alignSelf: 'flex-start',
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingRight: spacing.md,
+  },
   lienTexte: {
     fontSize: fontSize.md,
     fontWeight: '600',

@@ -1,6 +1,6 @@
 import { Pressable, ScrollView, StyleSheet, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { TOUCH_TARGET, colors, fontSize, spacing } from '@/shared/theme';
 import {
   ONGLETS_DEMANDES,
   type OngletDemande,
@@ -56,6 +56,8 @@ export function MyRequestsTabs({ actif, compteurs, onSelect }: Props) {
 const styles = StyleSheet.create({
   barre: { gap: spacing.sm, paddingVertical: spacing.xs },
   onglet: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: 999,

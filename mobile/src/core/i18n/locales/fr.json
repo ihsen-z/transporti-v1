@@ -178,7 +178,8 @@
         "network": "Connexion au serveur impossible. Réessayez.",
         "unknown": "Suppression impossible pour le moment. Réessayez."
       }
-    }
+    },
+    "avatar_pick_a11y": "Changer la photo de profil"
   },
   "about": {
     "title": "À propos",
@@ -419,7 +420,9 @@
       "delete_msg": "Vous ne serez plus notifié des trajets publiés sur ce corridor."
     },
     "savings": "Vous économisez {{amount}} DT",
-    "savings_basis": "face à {{amount}} DT pour un transport dédié"
+    "savings_basis": "face à {{amount}} DT pour un transport dédié",
+    "map_expand": "Agrandir la carte",
+    "map_title": "Corridors trouvés"
   },
   "my_requests": {
     "title": "Mes demandes",
@@ -475,7 +478,8 @@
       "locked": "Envoi impossible : conversation verrouillée.",
       "forbidden": "Vous ne participez pas à cette conversation.",
       "network": "Connexion impossible. Réessayez."
-    }
+    },
+    "send_a11y": "Envoyer le message"
   },
   "notifications": {
     "title": "Notifications",
@@ -795,5 +799,11 @@
     "recency": "Connexion récente",
     "usage_warning": "Ces deux critères mesurent votre usage de l'application, pas la qualité de votre service.",
     "points": "{{earned}} / {{max}} points"
+  },
+  "a11y": {
+    "unread": "{{count}} non lu",
+    "unread_plural": "{{count}} non lus",
+    "rate_stars": "{{count}} étoile sur 5",
+    "rate_stars_plural": "{{count}} étoiles sur 5"
   }
 }

@@ -81,10 +81,11 @@ export function ChatView({ jobId }: { jobId: number }) {
           />
           <Pressable
             testID="chat-send"
+            accessibilityRole="button"
+            accessibilityLabel={t('messaging.send_a11y')}
             style={styles.sendBtn}
             onPress={onSend}
             disabled={send.isPending}
-            accessibilityRole="button"
           >
             <Icon name="send" size={20} color={colors.neutral[0]} />
           </Pressable>

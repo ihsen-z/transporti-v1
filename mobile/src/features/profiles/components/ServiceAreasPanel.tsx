@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { FormModalPanel } from '@/shared/ui/FormModalPanel';
 import { Txt } from '@/shared/ui/Txt';
 import { Button } from '@/shared/ui/Button';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { TOUCH_TARGET, colors, fontSize, spacing } from '@/shared/theme';
 import { showToast } from '@/shared/ui/toastStore';
 import { GOVERNORATES } from '@/features/trips/data/governorates';
 import { useTransporterProfile } from '../api/useTransporterProfile';
@@ -179,6 +179,8 @@ const styles = StyleSheet.create({
   chargement: { marginVertical: spacing['2xl'] },
   pastilles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   pastille: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: 999,
@@ -199,12 +201,12 @@ const styles = StyleSheet.create({
   },
   avertissement: {
     fontSize: fontSize.sm,
-    color: colors.warning,
+    color: colors.text.warning,
     marginTop: spacing.sm,
   },
   erreur: {
     fontSize: fontSize.sm,
-    color: colors.error,
+    color: colors.text.error,
     marginTop: spacing.sm,
     marginBottom: spacing.sm,
   },

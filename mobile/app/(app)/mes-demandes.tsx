@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
@@ -21,6 +22,10 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 // une contre-proposition qui attend la décision du client ne doit pas se perdre
 // sous des demandes closes.
 export default function MesDemandesScreen() {
+  // Marge basse reservee sous la liste : sans elle, le dernier element
+  // reste sous la barre flottante et son action devient inatteignable
+  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useFloatingTabBarClearance();
   const { t } = useTranslation();
   // Même queryKey que MyRequestsList (React Query dédoublonne) : ce qui donne
   // le pull-to-refresh à l'écran est aussi ce que la liste affiche.
@@ -32,7 +37,7 @@ export default function MesDemandesScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: margeBasse }]}
         refreshControl={queryRefreshControl(requests)}
       >
         <Txt style={styles.title}>{t('my_requests.title')}</Txt>

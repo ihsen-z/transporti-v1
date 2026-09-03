@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Icon } from '@/shared/ui/icons';
 import { colors, spacing } from '@/shared/theme';
 
@@ -12,6 +13,7 @@ interface Props {
 
 // Notation 1-5. Si `onChange` est fourni -> saisie ; sinon lecture seule.
 export function StarRating({ value, onChange, size = 28, testID }: Props) {
+  const { t } = useTranslation();
   const editable = typeof onChange === 'function';
   const masked = value === null;
   const rating = value ?? 0;
@@ -44,6 +46,9 @@ export function StarRating({ value, onChange, size = 28, testID }: Props) {
               testID={testID ? `${testID}-star-${star}` : undefined}
               onPress={() => onChange?.(star)}
               accessibilityRole="button"
+              // « 3 étoiles sur 5 » : sans cela chaque étoile s'annonce
+              // « bouton », et rien ne dit laquelle donne quelle note.
+              accessibilityLabel={t('a11y.rate_stars', { count: star })}
               hitSlop={6}
             >
               <Icon name="star" size={size} color={color} filled={solid} />

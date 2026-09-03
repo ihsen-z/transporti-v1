@@ -57,7 +57,9 @@ export function TrustPanel({ visible, onClose }: Props) {
       <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
         <View style={styles.header}>
           <Txt style={styles.title}>{t('trust.title')}</Txt>
-          <Pressable testID="trust-panel-close" onPress={onClose} accessibilityRole="button">
+          <Pressable testID="trust-panel-close" onPress={onClose} accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+            hitSlop={12}>
             <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
         </View>
@@ -150,6 +152,6 @@ const styles = StyleSheet.create({
     color: colors.brand[600],
     marginTop: spacing.lg,
   },
-  saved: { color: colors.green[700], fontSize: fontSize.sm, fontWeight: '700' },
+  saved: { color: colors.text.green, fontSize: fontSize.sm, fontWeight: '700' },
   empty: { fontSize: fontSize.md, color: colors.neutral[500] },
 });

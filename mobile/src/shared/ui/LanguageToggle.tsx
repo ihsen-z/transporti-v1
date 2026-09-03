@@ -1,7 +1,7 @@
 import { I18nManager, Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, radii, spacing, fontSize } from '@/shared/theme';
+import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
 import { setStoredLang } from '@/core/i18n/langStorage';
 import { reloadApp } from '@/core/reloadApp';
 
@@ -36,7 +36,11 @@ export function LanguageToggle() {
 }
 
 const styles = StyleSheet.create({
+  // 26 dp mesures, pour l'UNIQUE bascule de langue de l'application —
+  // celle dont depend tout le parcours d'un utilisateur arabophone.
   btn: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.md,
     borderRadius: radii.full,

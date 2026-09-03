@@ -1,9 +1,10 @@
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
@@ -32,6 +33,10 @@ import type { TripRequestDto } from '@/features/requests/api/dto';
 const ORDRE: OngletId[] = ['a-decider', 'negociation', 'archivees'];
 
 export default function RequestsScreen() {
+  // Marge basse reservee sous la liste : sans elle, le dernier element
+  // reste sous la barre flottante et son action devient inatteignable
+  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useFloatingTabBarClearance();
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -75,7 +80,7 @@ export default function RequestsScreen() {
         <FlatList
           data={liste}
           keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: margeBasse }]}
           refreshControl={queryRefreshControl(demandes)}
           ListEmptyComponent={
             // État vide sans cul-de-sac (IA-3) : sans demande, la sortie utile
@@ -118,6 +123,8 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.lg,
   },
   onglet: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
     borderRadius: radii.lg,

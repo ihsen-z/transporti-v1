@@ -1,6 +1,7 @@
 import { useRouter } from 'expo-router';
 import { ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
@@ -22,6 +23,10 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 // puis ses sections. Le client garde un hero de marque — les KPI du pivot
 // (remplissage, km transformés) ne veulent rien dire pour lui.
 export default function HomeScreen() {
+  // Marge basse reservee sous la liste : sans elle, le dernier element
+  // reste sous la barre flottante et son action devient inatteignable
+  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useFloatingTabBarClearance();
   const { t } = useTranslation();
   const router = useRouter();
   const user = useAuthStore((s) => s.user);
@@ -34,7 +39,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: margeBasse }]}
         refreshControl={isTransporter ? queryRefreshControl(stats) : undefined}
       >
         <HomeTopBar />

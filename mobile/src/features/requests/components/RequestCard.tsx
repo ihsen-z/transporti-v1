@@ -9,7 +9,7 @@ import { Card } from '@/shared/ui/Card';
 import { Avatar } from '@/shared/ui/Avatar';
 import { Badge } from '@/shared/ui/Badge';
 import { statusVariant } from '@/shared/ui/statusVariant';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
 import type { RespondAction, TripRequestDto } from '../api/dto';
 import { useRespondRequest } from '../api/useRespondRequest';
 
@@ -48,8 +48,11 @@ export function RequestCard({ request, jobId, montrerCorridor = false }: Props) 
     act('counter', n);
   };
 
+  // Le serveur rédige ses refus en français et cite ses bornes : on
+  // affiche son texte, et le message localisé sert de repli.
   const errorMsg = respond.error
-    ? t(`requests.errors.${respond.error.kind === 'forbidden' ? 'forbidden' : respond.error.kind === 'network' ? 'network' : 'validation'}`)
+    ? (respond.error.serverMessage ??
+       t(`requests.errors.${respond.error.kind === 'forbidden' ? 'forbidden' : respond.error.kind === 'network' ? 'network' : 'validation'}`))
     : null;
 
   return (
@@ -175,7 +178,7 @@ const styles = StyleSheet.create({
   },
   top: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   client: { flex: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
-  price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.green[700], marginTop: spacing.md },
+  price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.text.green, marginTop: spacing.md },
   meta: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.sm, flexWrap: 'wrap' },
   counter: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[500], marginTop: spacing.xs },
   desc: { fontSize: fontSize.sm, color: colors.neutral[700], marginTop: spacing.xs },
@@ -183,9 +186,14 @@ const styles = StyleSheet.create({
   // .acts de la maquette : deux boutons de largeur égale, gouttière 8.
   actionRow: { flexDirection: 'row', gap: spacing.sm },
   actionBtn: { flex: 1 },
-  rejectBtn: { alignSelf: 'center', paddingVertical: spacing.sm },
-  rejectText: { color: colors.error, fontWeight: '700', fontSize: fontSize.sm },
-  error: { color: colors.error, fontSize: fontSize.sm, fontWeight: '600' },
+  rejectBtn: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    paddingVertical: spacing.sm,
+  },
+  rejectText: { color: colors.text.error, fontWeight: '700', fontSize: fontSize.sm },
+  error: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

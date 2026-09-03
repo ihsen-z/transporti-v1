@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { colors, spacing, fontSize, radii, TOUCH_TARGET } from '@/shared/theme';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
@@ -49,11 +49,17 @@ export function NotificationBell() {
         onPress={() => setOpen(true)}
         style={styles.bell}
         accessibilityRole="button"
+        // Sans cette etiquette, Android la derivait du seul enfant texte : le
+        // lecteur d'ecran annoncait « 99+, bouton » — le nombre sans l'objet.
+        accessibilityLabel={t('notifications.title')}
+        accessibilityValue={count > 0 ? { text: t('a11y.unread', { count }) } : undefined}
       >
         <Icon name="bell" size={26} color={colors.brand[600]} />
         {count > 0 ? (
           <View style={styles.badge}>
-            <Text style={styles.badgeText}>{count > 99 ? '99+' : count}</Text>
+            <Text style={styles.badgeText} maxFontSizeMultiplier={1.3}>
+              {count > 99 ? '99+' : count}
+            </Text>
           </View>
         ) : null}
       </Pressable>
@@ -66,6 +72,8 @@ export function NotificationBell() {
               testID="notification-bell-close"
               onPress={() => setOpen(false)}
               accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              hitSlop={12}
             >
               <Icon name="x" size={26} color={colors.neutral[700]} />
             </Pressable>
@@ -112,13 +120,21 @@ export function NotificationBell() {
 }
 
 const styles = StyleSheet.create({
-  bell: { padding: spacing.xs },
+  // Mesuree a 34 dp en recette (icone 26 + padding 4) : sous les 44 dp de
+  // la charte, pour le seul acces aux notifications de l'application.
+  bell: {
+    minWidth: TOUCH_TARGET,
+    minHeight: TOUCH_TARGET,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   badge: {
     position: 'absolute',
     top: 0,
     right: 0,
     minWidth: 18,
-    height: 18,
+    minHeight: 18,
+    paddingVertical: 1,
     borderRadius: radii.full,
     backgroundColor: colors.cta[500],
     alignItems: 'center',
@@ -134,7 +150,12 @@ const styles = StyleSheet.create({
     padding: spacing.xl,
   },
   title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
-  markAll: { paddingHorizontal: spacing.xl, paddingBottom: spacing.md },
+  markAll: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
+    paddingHorizontal: spacing.xl,
+    paddingBottom: spacing.md,
+  },
   markAllText: { color: colors.brand[500], fontWeight: '700', fontSize: fontSize.md },
   loader: { marginTop: spacing['2xl'] },
   list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl, gap: spacing.sm },

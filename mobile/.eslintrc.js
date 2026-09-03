@@ -17,6 +17,9 @@
 module.exports = {
   root: true,
   extends: ['expo'],
+  // Plugin local (`eslint-rules/`, lié en `file:`) : ses règles n'ont de sens
+  // que pour ce dépôt, parce qu'elles encodent une exigence de SA charte.
+  plugins: ['local'],
   ignorePatterns: [
     'node_modules/',
     '.expo/',
@@ -38,6 +41,17 @@ module.exports = {
     // de mission dans les logs de l'appareil. warn/error restent autorisés :
     // ce sont eux qui alimentent l'observabilité.
     'no-console': ['warn', { allow: ['warn', 'error'] }],
+
+    // La charte impose « cibles ≥ 44 px » et la constante `TOUCH_TARGET`
+    // existe depuis le début — pourtant la recette du 03/09 a mesuré ONZE
+    // commandes entre 21 et 43 dp, dont deux actions destructives. Ce n'était
+    // pas un défaut de spécification mais une application partielle, et rien
+    // ne la signalait. Cette règle la signale.
+    //
+    // `warn` et non `error` : les deux contrôles sont des heuristiques (un
+    // style importé d'ailleurs produit un faux positif). Elle doit faire
+    // réfléchir, pas bloquer un correctif urgent.
+    'local/pressable-accessible': 'warn',
   },
   overrides: [
     {

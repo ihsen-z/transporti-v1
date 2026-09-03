@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useWallet } from '@/features/wallet/api/useWallet';
@@ -27,6 +28,10 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 // après une livraison payée en espèces. Il consomme désormais GET wallet/,
 // la source unique des montants (aucun calcul côté mobile).
 export default function GainsScreen() {
+  // Marge basse reservee sous la liste : sans elle, le dernier element
+  // reste sous la barre flottante et son action devient inatteignable
+  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useFloatingTabBarClearance();
   const { t } = useTranslation();
   const role = useAuthStore((s) => s.user?.role);
   const isTransporter = role === 'TRANSPORTER';
@@ -45,7 +50,7 @@ export default function GainsScreen() {
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
       <ScrollView
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: margeBasse }]}
         refreshControl={queryRefreshControl(wallet)}
       >
         <Txt style={styles.title}>{t('gains.title')}</Txt>
@@ -146,8 +151,8 @@ const styles = StyleSheet.create({
   hero: { gap: spacing.md },
   heroLabel: { fontSize: fontSize.md, color: colors.neutral[500], fontWeight: '600' },
   // VERT = la valeur (règle de la charte).
-  heroValue: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.green[700] },
-  heroUnit: { fontSize: fontSize.md, fontWeight: '600', color: colors.green[700] },
+  heroValue: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.text.green },
+  heroUnit: { fontSize: fontSize.md, fontWeight: '600', color: colors.text.green },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.md },
   tile: { width: '48%', gap: spacing.xs },
   tileLabel: { fontSize: fontSize.sm, color: colors.neutral[500], fontWeight: '600' },
@@ -156,7 +161,7 @@ const styles = StyleSheet.create({
   codRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   codLabel: { fontSize: fontSize.md, color: colors.neutral[700] },
   codValue: { fontSize: fontSize.md, fontWeight: '800', color: colors.neutral[900] },
-  codDebt: { fontSize: fontSize.md, fontWeight: '800', color: colors.error },
+  codDebt: { fontSize: fontSize.md, fontWeight: '800', color: colors.text.error },
   sectionTitle: { fontSize: fontSize.lg, fontWeight: '800', color: colors.neutral[900] },
   hint: { fontSize: fontSize.sm, color: colors.neutral[500] },
 });

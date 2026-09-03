@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
@@ -19,6 +20,10 @@ import type { MatchParams, TripResultDto } from '@/features/search/api/dto';
 // Onglet CLIENT : recherche « retour d'abord ». Header bleu (design-system),
 // formulaire en carte, résultats en cartes ; Cas B = repli alerte corridor.
 export default function SearchScreen() {
+  // Marge basse reservee sous la liste : sans elle, le dernier element
+  // reste sous la barre flottante et son action devient inatteignable
+  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useFloatingTabBarClearance();
   const { t } = useTranslation();
   const match = useReturnTripMatch();
   const createAlert = useCreateCorridorAlert();
@@ -56,7 +61,7 @@ export default function SearchScreen() {
       <FlatList
         data={results}
         keyExtractor={(item) => String(item.id)}
-        contentContainerStyle={styles.content}
+        contentContainerStyle={[styles.content, { paddingBottom: margeBasse }]}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
           <View style={styles.formWrap}>
@@ -148,7 +153,7 @@ const styles = StyleSheet.create({
   alertOk: {
     fontSize: fontSize.md,
     fontWeight: '700',
-    color: colors.green[700],
+    color: colors.text.green,
     textAlign: 'center',
   },
 });

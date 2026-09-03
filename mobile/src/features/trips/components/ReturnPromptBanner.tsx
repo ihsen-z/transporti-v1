@@ -5,7 +5,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { Button } from '@/shared/ui/Button';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { colors, spacing, fontSize, radii, TOUCH_TARGET } from '@/shared/theme';
 import { useCompletedMissions } from '@/features/missions/api/useCompletedMissions';
 
 /**
@@ -114,8 +114,8 @@ const s = StyleSheet.create({
     padding: spacing.lg,
     gap: spacing.sm,
   },
-  titre: { fontSize: fontSize.lg, fontWeight: '800', color: colors.cta[600] },
-  corps: { fontSize: fontSize.sm, color: colors.cta[600] },
+  titre: { fontSize: fontSize.lg, fontWeight: '800', color: colors.text.cta },
+  corps: { fontSize: fontSize.sm, color: colors.text.cta },
   corridor: {
     alignSelf: 'flex-start',
     backgroundColor: colors.neutral[0],
@@ -129,6 +129,14 @@ const s = StyleSheet.create({
     fontWeight: '700',
     color: colors.neutral[900],
   },
-  plusTard: { alignSelf: 'center', paddingVertical: spacing.sm },
+  // Mesure a 29 dp : c'est l'echappatoire obligatoire du bandeau, la rater
+  // fait taper sur le CTA juste au-dessus.
+  plusTard: {
+    alignSelf: 'center',
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.lg,
+  },
   plusTardTexte: { fontSize: fontSize.sm, color: colors.neutral[500] },
 });

@@ -48,6 +48,7 @@ export function ProfileAvatar() {
         testID="profile-avatar-pick"
         onPress={onPick}
         accessibilityRole="button"
+        accessibilityLabel={t('profile.avatar_pick_a11y')}
         disabled={upload.isPending}
       >
         <Avatar name={displayName} imageUrl={user?.avatarUrl} size={72} />
@@ -92,5 +93,5 @@ const styles = StyleSheet.create({
     borderColor: colors.neutral[0],
   },
   link: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[600] },
-  error: { fontSize: fontSize.sm, color: colors.error, textAlign: 'center' },
+  error: { fontSize: fontSize.sm, color: colors.text.error, textAlign: 'center' },
 });

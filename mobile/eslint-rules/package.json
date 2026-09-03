@@ -1,0 +1,7 @@
+{
+  "name": "eslint-plugin-local",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.js",
+  "description": "Regles ESLint propres au mobile Transporti : elles encodent des exigences de sa charte et des defauts mesures sur ses ecrans."
+}

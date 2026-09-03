@@ -13,7 +13,7 @@ import { Txt } from '@/shared/ui/Txt';
 import { Card } from '@/shared/ui/Card';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { colors, spacing, fontSize, TOUCH_TARGET } from '@/shared/theme';
 import { useFavorites } from '../api/useFavorites';
 import { useToggleFavorite } from '../api/useToggleFavorite';
 import type { FavoriDto } from '../api/dto';
@@ -61,6 +61,7 @@ export function FavoritesPanel({ visible, onClose }: Props) {
         <Pressable
           testID="favoris-retirer"
           accessibilityRole="button"
+          accessibilityLabel={t('favorites.remove_a11y')}
           disabled={bascule.isPending}
           onPress={() => bascule.mutate(item.transporter_id)}
           style={styles.retirer}
@@ -80,6 +81,8 @@ export function FavoritesPanel({ visible, onClose }: Props) {
             testID="favoris-panneau-fermer"
             onPress={onClose}
             accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+            hitSlop={12}
           >
             <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>
@@ -139,5 +142,11 @@ const styles = StyleSheet.create({
     color: colors.neutral[900],
   },
   detail: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  retirer: { padding: spacing.sm },
+  // Mesure a 36 dp, et sans etiquette : un coeur seul.
+  retirer: {
+    minWidth: TOUCH_TARGET,
+    minHeight: TOUCH_TARGET,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
 });

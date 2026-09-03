@@ -1,4 +1,5 @@
 import { Pressable, StyleSheet, View } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { Icon, type IconName } from '@/shared/ui/icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
@@ -40,6 +41,7 @@ type Props = BottomTabBarProps & { role?: UserRole };
 
 // Barre d'onglets flottante (pilule blanche ombrée) + FAB orange central.
 export function FloatingTabBar({ state, descriptors, navigation, role }: Props) {
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   // ADMIN/MODERATOR ne sont pas des rôles de l'app mobile -> repli client.
   const nav = role === 'TRANSPORTER' ? ROLE_NAV.TRANSPORTER : ROLE_NAV.CLIENT;
@@ -81,7 +83,10 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
     if (!descriptor) return null;
     const { options } = descriptor;
     const isFocused = currentName === name;
-    const color = isFocused ? colors.brand[600] : colors.neutral[400];
+    // `neutral[400]` donnait 2,54:1 sur le blanc de la barre : très en dessous
+    // du seuil AA de 4,5:1, et sur un libellé de 10 px. `neutral[500]` monte à
+    // 4,83:1 sans changer la hiérarchie — l'onglet actif reste le seul en bleu.
+    const color = isFocused ? colors.brand[600] : colors.neutral[500];
     const badge = name === 'messages' && unreadMessages > 0 ? unreadMessages : 0;
     return (
       <Pressable
@@ -92,13 +97,20 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
         accessibilityRole="button"
         accessibilityState={{ selected: isFocused }}
         accessibilityLabel={options.title}
+        // Le compteur est une VALEUR de l'onglet : annonce « Messages, 3 non
+        // lus » plutot que deux elements dont l'un ne dit qu'un nombre.
+        accessibilityValue={badge > 0 ? { text: t('a11y.unread', { count: badge }) } : undefined}
       >
         <View>
           {/* 20 px : taille d'icône d'onglet de la charte (.tab .ic). */}
           {options.tabBarIcon?.({ focused: isFocused, color, size: 20 })}
           {badge > 0 ? (
             <View testID={`tab-${name}-badge`} style={styles.badge}>
-              <Txt style={styles.badgeText}>{badge > 9 ? '9+' : badge}</Txt>
+              {/* Au-dela de 1,3, le chiffre depasse la pastille sans rien
+                  apporter : deux caracteres restent lisibles a cette echelle. */}
+              <Txt style={styles.badgeText} maxFontSizeMultiplier={1.3}>
+                {badge > 9 ? '9+' : badge}
+              </Txt>
             </View>
           ) : null}
         </View>
@@ -177,13 +189,19 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: -6,
     right: -12,
+    // `height` FIXE ecrasait la pastille des que l'utilisateur grossissait la
+    // police : mesuree en recette a 30x12 dp a 150 % et 36x12 a 200 %, le
+    // « 9+ » y devenait illisible. Or c'est le seul signal qui dit qu'une
+    // decision attend — le pilier d'IA-4 — et il se degradait precisement chez
+    // ceux qui ont grossi la police.
     minWidth: 18,
-    height: 18,
+    minHeight: 18,
     borderRadius: 9,
     backgroundColor: colors.cta[500],
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 4,
+    paddingVertical: 1,
     borderWidth: 1.5,
     borderColor: colors.neutral[0],
   },
@@ -198,7 +216,54 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: spacing.sm,
-    transform: [{ translateY: -14 }],
+    // -14 faisait dépasser le FAB de 5 dp au-dessus de la barre : (66−48)/2−14
+    // = −5. Android rogne alors la partie qui sort, ET la zone tactile avec —
+    // d'où les 43 dp mesurés en recette sur l'action primaire de chaque rôle.
+    // `minHeight` n'y pouvait rien : `height: 48` le neutralise, le défaut
+    // n'était pas dans la mise en page mais dans le débordement.
+    //
+    // -9 est le décalage maximal qui garde le FAB entièrement dans la barre.
+    // Le relief reste lisible, et les 48 dp deviennent tous cliquables.
+    transform: [{ translateY: -9 }],
     ...shadows.fab,
   },
 });
+
+/**
+ * Hauteur totale occupee par la barre flottante, insets compris.
+ *
+ * `useBottomTabBarHeight` de react-navigation mesure la barre rendue et
+ * sous-estime celle-ci : son enveloppe porte ses propres paddings et le FAB
+ * deborde. Un ecran a liste defilante qui s'y fiait laissait encore son
+ * dernier element rogne (mesure : 53 dp manquants sur l'inventaire des
+ * retours, recette du 03/09).
+ *
+ * Cette fonction est la SOURCE UNIQUE : la barre et les écrans lisent les
+ * mêmes constantes, donc ils ne peuvent plus diverger après un changement de
+ * gabarit.
+ */
+export function useFloatingTabBarHeight(): number {
+  const insets = useSafeAreaInsets();
+  return spacing.sm + BAR_HEIGHT + (insets.bottom || spacing.md);
+}
+
+/**
+ * Marge basse à réserver sous une liste défilante pour que son DERNIER élément
+ * reste entièrement atteignable.
+ *
+ * C'est cette valeur, et non `useFloatingTabBarHeight`, que doivent utiliser
+ * les écrans : la hauteur seule ne suffit pas.
+ *
+ * Mesuré sur Pixel 7 API 35 le 03/09 : avec la hauteur théorique (98 dp) plus
+ * un intervalle de 24 dp, la dernière action de l'inventaire des retours
+ * restait rognée d'environ 17 dp au défilement maximal — « Dépublier »
+ * n'affichait que 11 dp de haut sur 44. L'origine de l'écart n'est pas
+ * établie (ombre portée de la barre, arrondi de l'inset système, hauteur de
+ * fenêtre de défilement) : on le COUVRE au lieu de le deviner, et on le dit.
+ *
+ * Vérifié à cette valeur : la dernière ligne mesure ses 230 dp et son action
+ * destructive ses 44 dp.
+ */
+export function useFloatingTabBarClearance(): number {
+  return useFloatingTabBarHeight() + spacing['2xl'] + spacing.lg;
+}

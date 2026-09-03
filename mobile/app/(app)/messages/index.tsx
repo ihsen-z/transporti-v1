@@ -1,5 +1,6 @@
 import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -16,6 +17,10 @@ import { ConversationRow } from '@/features/messaging/components/ConversationRow
 // tapote l'utilisateur, ce que rouvre une notification, et ce que le bouton
 // retour Android referme sont maintenant la même chose.
 export default function MessagesScreen() {
+  // Marge basse reservee sous la liste : sans elle, le dernier element
+  // reste sous la barre flottante et son action devient inatteignable
+  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useFloatingTabBarClearance();
   const { t } = useTranslation();
   const router = useRouter();
   const conversations = useConversations();
@@ -33,7 +38,7 @@ export default function MessagesScreen() {
         <FlatList
           data={items}
           keyExtractor={(item) => String(item.id)}
-          contentContainerStyle={styles.list}
+          contentContainerStyle={[styles.list, { paddingBottom: margeBasse }]}
           refreshControl={queryRefreshControl(conversations)}
           onEndReached={onEndReached}
           onEndReachedThreshold={0.5}

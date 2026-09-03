@@ -49,12 +49,25 @@ export default function LoginScreen() {
             <LoginForm />
 
             <View style={styles.links}>
-              <Link href="/forgot-password" style={styles.link}>
+              {/* `Link` rend un texte sans role : l'arbre d'accessibilite
+                  ne signalait pas que ces deux sorties etaient actionnables,
+                  dont la recuperation de mot de passe. */}
+              <Link
+                href="/forgot-password"
+                style={styles.link}
+                accessibilityRole="link"
+                accessibilityLabel={t('auth.login.forgot_link')}
+              >
                 {t('auth.login.forgot_link')}
               </Link>
               <View style={styles.registerRow}>
                 <Text style={styles.registerText}>{t('auth.login.no_account')} </Text>
-                <Link href="/register" style={styles.link}>
+                <Link
+                  href="/register"
+                  style={styles.link}
+                  accessibilityRole="link"
+                  accessibilityLabel={t('auth.login.register_link')}
+                >
                   {t('auth.login.register_link')}
                 </Link>
               </View>

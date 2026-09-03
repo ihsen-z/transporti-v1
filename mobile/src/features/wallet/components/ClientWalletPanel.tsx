@@ -77,6 +77,8 @@ export function ClientWalletPanel({ visible, onClose }: Props) {
             testID="portefeuille-client-fermer"
             onPress={onClose}
             accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+            hitSlop={12}
           >
             <Icon name="x" size={26} color={colors.neutral[700]} />
           </Pressable>

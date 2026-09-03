@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { TOUCH_TARGET, colors, fontSize, spacing } from '@/shared/theme';
 import { useAddresses, type AdresseEnregistreeDto } from '../api/useAddresses';
 
 interface Props {
@@ -72,6 +72,8 @@ const s = StyleSheet.create({
   titre: { fontSize: fontSize.sm, color: colors.neutral[500] },
   pastilles: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   pastille: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: 999,

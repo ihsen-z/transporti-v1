@@ -1,7 +1,7 @@
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
 import {
   daysUntilExpiry,
   isExpired,
@@ -123,8 +123,8 @@ const s = StyleSheet.create({
   meta: { fontSize: fontSize.sm, color: colors.neutral[500] },
   expiration: { fontSize: fontSize.sm, marginTop: spacing.xs },
   normal: { color: colors.neutral[500] },
-  urgent: { color: colors.warning, fontWeight: '700' },
-  expire: { color: colors.error, fontWeight: '700' },
+  urgent: { color: colors.text.warning, fontWeight: '700' },
+  expire: { color: colors.text.error, fontWeight: '700' },
   actions: {
     flexDirection: 'row',
     flexWrap: 'wrap',
@@ -134,7 +134,11 @@ const s = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.neutral[100],
   },
+  // 34 dp mesures : ce sont les trois actions du cycle de vie d'un
+  // retour, dont une destructive.
   action: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
@@ -147,6 +151,8 @@ const s = StyleSheet.create({
     color: colors.neutral[700],
   },
   actionDanger: {
+    minHeight: TOUCH_TARGET,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
@@ -155,6 +161,6 @@ const s = StyleSheet.create({
   actionDangerLabel: {
     fontSize: fontSize.sm,
     fontWeight: '600',
-    color: colors.error,
+    color: colors.text.error,
   },
 });

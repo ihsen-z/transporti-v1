@@ -1,11 +1,13 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { Marker, Polyline, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import Constants from 'expo-constants';
 import { useTranslation } from 'react-i18next';
-import { colors, fontSize, radii, shadows, spacing } from '@/shared/theme';
+import { TOUCH_TARGET, colors, fontSize, radii, shadows, spacing } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
+import { Icon } from '@/shared/ui/icons';
 import { buildCorridors, regionFor } from '../data/corridors';
 import type { TripResultDto } from '../api/dto';
 
@@ -36,6 +38,10 @@ export function ResultsMap({ trips }: Props) {
   const region = useMemo(() => regionFor(corridors), [corridors]);
   const mapRef = useRef<MapView>(null);
   const [showUser, setShowUser] = useState(false);
+  // La carte est un APERCU par defaut : elle ne prend aucun geste, donc la
+  // liste de resultats defile meme quand le doigt part de son milieu.
+  // L'interaction s'obtient explicitement, en plein ecran.
+  const [agrandie, setAgrandie] = useState(false);
 
   // Permission demandée à l'affichage de la carte, et non au démarrage de
   // l'app : hors contexte, l'utilisateur refuse.
@@ -76,6 +82,13 @@ export function ResultsMap({ trips }: Props) {
         showsUserLocation={showUser}
         showsMyLocationButton={false}
         toolbarEnabled={false}
+        // En apercu, aucun geste : c'est ce qui rend le defilement de la liste
+        // possible depuis n'importe ou. Cela evite aussi de consommer du quota
+        // Maps sur un geste involontaire.
+        scrollEnabled={agrandie}
+        zoomEnabled={agrandie}
+        rotateEnabled={agrandie}
+        pitchEnabled={agrandie}
       >
         {corridors.map((corridor) => (
           <Fragment key={corridor.key}>
@@ -106,6 +119,65 @@ export function ResultsMap({ trips }: Props) {
           </Fragment>
         ))}
       </MapView>
+
+      {/* Sortie explicite vers le mode interactif. En apercu la carte ne
+          reagit a rien : sans ce bouton, l'utilisateur croirait la carte
+          cassee plutot que volontairement inerte. */}
+      <Pressable
+        testID="results-map-expand"
+        style={styles.agrandir}
+        onPress={() => setAgrandie(true)}
+        accessibilityRole="button"
+        accessibilityLabel={t('search.map_expand')}
+      >
+        <Icon name="search" size={18} color={colors.brand[600]} />
+        <Txt style={styles.agrandirTexte}>{t('search.map_expand')}</Txt>
+      </Pressable>
+
+      <Modal
+        visible={agrandie}
+        animationType="slide"
+        onRequestClose={() => setAgrandie(false)}
+      >
+        <SafeAreaView style={styles.pleinEcran} edges={['top', 'bottom']}>
+          <View style={styles.barrePleinEcran}>
+            <Txt style={styles.titrePleinEcran}>{t('search.map_title')}</Txt>
+            <Pressable
+              testID="results-map-close"
+              onPress={() => setAgrandie(false)}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
+              hitSlop={12}
+              style={styles.fermer}
+            >
+              <Icon name="x" size={26} color={colors.neutral[700]} />
+            </Pressable>
+          </View>
+          <MapView
+            provider={PROVIDER_GOOGLE}
+            style={styles.mapPleinEcran}
+            initialRegion={region}
+            showsUserLocation={showUser}
+          >
+            {corridors.map((corridor) => (
+              <Fragment key={`plein-${corridor.key}`}>
+                <Polyline
+                  coordinates={corridor.path}
+                  strokeColor={colors.brand[500]}
+                  strokeWidth={3}
+                  lineDashPattern={corridor.isRealRoute ? undefined : [8, 6]}
+                />
+                <Marker coordinate={corridor.from} title={corridor.fromLabel} />
+                <Marker
+                  coordinate={corridor.to}
+                  title={corridor.toLabel}
+                  pinColor={colors.green[600]}
+                />
+              </Fragment>
+            ))}
+          </MapView>
+        </SafeAreaView>
+      </Modal>
     </View>
   );
 }
@@ -118,6 +190,45 @@ const styles = StyleSheet.create({
     ...shadows.card,
   },
   map: { flex: 1 },
+  agrandir: {
+    position: 'absolute',
+    right: spacing.sm,
+    bottom: spacing.sm,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.xs,
+    minHeight: TOUCH_TARGET,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.neutral[0],
+    ...shadows.card,
+  },
+  agrandirTexte: {
+    fontSize: fontSize.sm,
+    fontWeight: '700',
+    color: colors.brand[600],
+  },
+  pleinEcran: { flex: 1, backgroundColor: colors.neutral[0] },
+  barrePleinEcran: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: spacing.xl,
+    paddingVertical: spacing.md,
+  },
+  titrePleinEcran: {
+    fontSize: fontSize.xl,
+    fontWeight: '800',
+    color: colors.neutral[900],
+  },
+  fermer: {
+    minWidth: TOUCH_TARGET,
+    minHeight: TOUCH_TARGET,
+    alignItems: 'center',
+    justifyContent: 'flex-end',
+    flexDirection: 'row',
+  },
+  mapPleinEcran: { flex: 1 },
   fallback: {
     backgroundColor: colors.neutral[100],
     alignItems: 'center',
