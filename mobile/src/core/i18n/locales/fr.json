@@ -156,7 +156,30 @@
     "change_password_submitting": "Modification…",
     "about_link": "À propos",
     "logout_confirm_title": "Se déconnecter",
-    "logout_confirm_msg": "Voulez-vous vraiment vous déconnecter ?"
+    "logout_confirm_msg": "Voulez-vous vraiment vous déconnecter ?",
+    "terms_link": "Conditions d'utilisation",
+    "privacy_link": "Confidentialité",
+    "help_link": "Aide et contact",
+    "link_failed": "Impossible d'ouvrir la page. Réessayez plus tard.",
+    "delete_account": {
+      "link": "Supprimer mon compte",
+      "title": "Supprimer mon compte",
+      "warning_title": "Cette action est définitive.",
+      "warning_body": "Votre profil, vos coordonnées et vos adresses enregistrées seront effacés. Vous ne pourrez plus vous connecter avec cet e-mail.",
+      "kept": "Vos missions terminées restent dans l'historique de la plateforme, sans votre nom : elles portent des paiements et des commissions qui doivent être conservés.",
+      "password_label": "Confirmez votre mot de passe",
+      "password_ph": "Votre mot de passe",
+      "password_required": "Entrez votre mot de passe pour confirmer.",
+      "submit": "Supprimer définitivement",
+      "irreversible": "Aucune récupération n'est possible après confirmation.",
+      "confirm_title": "Supprimer votre compte ?",
+      "confirm_message": "Vous perdrez l'accès immédiatement. Cette action ne peut pas être annulée.",
+      "confirm_cta": "Supprimer",
+      "errors": {
+        "network": "Connexion au serveur impossible. Réessayez.",
+        "unknown": "Suppression impossible pour le moment. Réessayez."
+      }
+    }
   },
   "about": {
     "title": "À propos",

@@ -36,4 +36,17 @@ export const env = {
   // Requis par `getExpoPushTokenAsync` (4.8). Vide = enregistrement du push
   // désactivé : l'app fonctionne normalement, elle ne reçoit simplement rien.
   easProjectId: asString(eas?.projectId),
+
+  // Pages légales et aide, hébergées hors de l'application (lot 2, tâche 2.3).
+  // Un lien de politique de confidentialité est OBLIGATOIRE pour publier sur
+  // Google Play et l'App Store. Les URL vivent ici et non dans le code : elles
+  // changent de domaine entre recette et production, et le texte juridique
+  // évolue sans qu'on republie un binaire.
+  //
+  // Vide = l'entrée correspondante n'apparaît pas dans le menu, plutôt qu'un
+  // lien mort. Ce repli permet de livrer l'écran avant que les textes soient
+  // rédigés — mais il ne dispense pas de les fournir avant soumission.
+  termsUrl: asString(process.env.EXPO_PUBLIC_TERMS_URL),
+  privacyUrl: asString(process.env.EXPO_PUBLIC_PRIVACY_URL),
+  helpUrl: asString(process.env.EXPO_PUBLIC_HELP_URL),
 } as const;

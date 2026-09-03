@@ -21,6 +21,9 @@ import { EditProfilePanel } from '@/features/auth/components/EditProfilePanel';
 import { ChangePasswordPanel } from '@/features/auth/components/ChangePasswordPanel';
 import { NotificationPrefsPanel } from '@/features/notifications/components/NotificationPrefsPanel';
 import { AboutPanel } from '@/shared/ui/AboutPanel';
+import { ExternalLinkRow } from '@/shared/ui/ExternalLinkRow';
+import { DeleteAccountPanel } from '@/features/auth/components/DeleteAccountPanel';
+import { env } from '@/core/env';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 
 // Onglet Profil : identité, rôle, langue, litiges et déconnexion.
@@ -43,6 +46,9 @@ export default function ProfileScreen() {
   const [passwordOpen, setPasswordOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
   const [aboutOpen, setAboutOpen] = useState(false);
+  // Exigence de recevabilite des stores : la suppression doit vivre DANS
+  // l'application, pas dans un e-mail au support.
+  const [deleteOpen, setDeleteOpen] = useState(false);
   const isTransporter = user?.role === 'TRANSPORTER';
 
   // Recharge le profil (inclut avatar_url) pour afficher la photo à jour.
@@ -221,6 +227,44 @@ export default function ProfileScreen() {
             <Txt style={styles.linkText}>{t('profile.about_link')}</Txt>
             <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
+
+          {/* Pages legales et aide, hebergees hors de l'app. Une politique de
+              confidentialite est OBLIGATOIRE pour publier sur les deux stores.
+              `ExternalLinkRow` ne se rend pas quand l'URL manque : mieux vaut
+              une entree absente qu'un lien mort en revue de store. */}
+          <ExternalLinkRow
+            testID="profile-terms"
+            url={env.termsUrl}
+            icon="file-text"
+            label={t('profile.terms_link')}
+          />
+          <ExternalLinkRow
+            testID="profile-privacy"
+            url={env.privacyUrl}
+            icon="shield-check"
+            label={t('profile.privacy_link')}
+          />
+          <ExternalLinkRow
+            testID="profile-help"
+            url={env.helpUrl}
+            icon="mail"
+            label={t('profile.help_link')}
+          />
+
+          {/* Derniere entree du menu, a dessein : c'est l'action la plus
+              destructive de l'application. */}
+          <Pressable
+            testID="profile-delete-account"
+            style={styles.link}
+            onPress={() => setDeleteOpen(true)}
+            accessibilityRole="button"
+          >
+            <Icon name="circle-alert" size={22} color={colors.error} />
+            <Txt style={[styles.linkText, styles.linkDanger]}>
+              {t('profile.delete_account.link')}
+            </Txt>
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
+          </Pressable>
         </Card>
       </ScrollView>
 
@@ -252,6 +296,7 @@ export default function ProfileScreen() {
         userId={user?.id ?? null}
       />
       <AboutPanel visible={aboutOpen} onClose={() => setAboutOpen(false)} />
+      <DeleteAccountPanel visible={deleteOpen} onClose={() => setDeleteOpen(false)} />
     </SafeAreaView>
   );
 }
@@ -302,5 +347,6 @@ const styles = StyleSheet.create({
     borderTopColor: colors.neutral[200],
   },
   linkText: { flex: 1, fontSize: fontSize.md, fontWeight: '600', color: colors.neutral[900] },
+  linkDanger: { color: colors.error },
   footer: { paddingTop: spacing.lg },
 });
