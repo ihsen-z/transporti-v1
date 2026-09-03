@@ -1,0 +1,1069 @@
+<title>Audit mobile Transporti</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+
+<style>
+  /* Palette : celle de l'app (design-system/00-foundations.html), reprise ici
+     comme identite du rapport. Neutres biaises bleu pour rester dans la meme
+     famille que le bleu royal de marque. */
+  :root {
+    --ink:        #101828;
+    --ink-soft:   #475467;
+    --ink-faint:  #667085;
+    --ground:     #fbfbfd;
+    --surface:    #ffffff;
+    --line:       #e3e6ee;
+    --line-soft:  #eef0f5;
+
+    --brand:      #1E3A8A;
+    --brand-lite: #2563B3;
+
+    --crit:       #b3261e;
+    --crit-wash:  #fdf0ef;
+    --warn:       #a1600a;
+    --warn-wash:  #fdf6e9;
+    --good:       #06774a;
+    --good-wash:  #eef8f2;
+    --info:       #1E3A8A;
+    --info-wash:  #eef2ff;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink:        #eef1f7;
+      --ink-soft:   #a9b2c5;
+      --ink-faint:  #8b94a8;
+      --ground:     #0c0f17;
+      --surface:    #141926;
+      --line:       #262d3d;
+      --line-soft:  #1d2331;
+
+      --brand:      #8fabf0;
+      --brand-lite: #a9c1f7;
+
+      --crit:       #ff9e96;
+      --crit-wash:  #2c1615;
+      --warn:       #f0c07a;
+      --warn-wash:  #2a2013;
+      --good:       #6fd6a5;
+      --good-wash:  #10241b;
+      --info:       #a9c1f7;
+      --info-wash:  #182241;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink:        #eef1f7;
+    --ink-soft:   #a9b2c5;
+    --ink-faint:  #8b94a8;
+    --ground:     #0c0f17;
+    --surface:    #141926;
+    --line:       #262d3d;
+    --line-soft:  #1d2331;
+
+    --brand:      #8fabf0;
+    --brand-lite: #a9c1f7;
+
+    --crit:       #ff9e96;
+    --crit-wash:  #2c1615;
+    --warn:       #f0c07a;
+    --warn-wash:  #2a2013;
+    --good:       #6fd6a5;
+    --good-wash:  #10241b;
+    --info:       #a9c1f7;
+    --info-wash:  #182241;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 96px; }
+
+  /* Type */
+  h1, h2, h3, .eyebrow, .num, th, .chip, .tag, .fid, .toc a, figcaption {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5.2vw, 3.3rem);
+    font-weight: 700; letter-spacing: -0.025em; line-height: 1.04;
+    margin: 0; text-wrap: balance;
+  }
+  h2 {
+    font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+    font-weight: 700; letter-spacing: -0.015em; line-height: 1.15;
+    margin: 0; text-wrap: balance;
+  }
+  h3 { font-size: 1.08rem; font-weight: 600; margin: 0; text-wrap: balance; }
+  p { margin: 0; max-width: var(--measure); }
+  a { color: var(--brand-lite); }
+  a:focus-visible { outline: 2px solid var(--brand-lite); outline-offset: 3px; }
+
+  .eyebrow {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 0.84em;
+  }
+  code {
+    background: var(--line-soft); padding: 0.1em 0.35em;
+    border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+
+  /* Masthead */
+  .masthead {
+    border-bottom: 3px solid var(--ink);
+    padding: 64px 0 22px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .masthead .lede {
+    font-size: 1.22rem; line-height: 1.5; color: var(--ink-soft); max-width: 62ch;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 26px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; color: var(--ink-faint);
+  }
+  .meta b { color: var(--ink-soft); font-weight: 600; }
+
+  /* Verdict */
+  .verdict {
+    margin-top: 34px; border: 1px solid var(--line); border-top: 3px solid var(--crit);
+    background: var(--surface); padding: 26px 28px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .verdict p { max-width: 76ch; }
+  .verdict strong { color: var(--ink); }
+
+  .scores {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 30px;
+  }
+  .score { background: var(--surface); padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .score .n {
+    font-family: Archivo, sans-serif; font-size: 2.15rem; font-weight: 700;
+    letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .score .n small { font-size: 0.95rem; font-weight: 600; color: var(--ink-faint); }
+  .score .k {
+    font-family: Archivo, sans-serif; font-size: 0.73rem; font-weight: 600;
+    letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); line-height: 1.35;
+  }
+
+  /* Sommaire */
+  .toc {
+    margin-top: 44px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding: 18px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+    gap: 6px 30px;
+  }
+  .toc a { font-size: 0.86rem; font-weight: 500; text-decoration: none; color: var(--ink-soft); display: flex; gap: 10px; }
+  .toc a:hover { color: var(--brand-lite); }
+  .toc a span { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+
+  /* Sections */
+  section { margin-top: 76px; }
+  .shead {
+    display: flex; align-items: baseline; gap: 16px;
+    border-bottom: 1px solid var(--ink); padding-bottom: 10px; margin-bottom: 26px;
+  }
+  .shead .num {
+    font-size: 0.8rem; font-weight: 700; color: var(--brand-lite);
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  .stack-lg { display: flex; flex-direction: column; gap: 34px; }
+  .subnote { font-size: 0.95rem; color: var(--ink-faint); max-width: 72ch; }
+
+  /* Tables */
+  .scroller { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th {
+    text-align: left; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint); padding: 11px 14px;
+    border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--surface);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; color: var(--ink-soft); }
+  tr:last-child td { border-bottom: none; }
+  td b, td strong { color: var(--ink); font-weight: 600; }
+  .num-col { font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
+
+  /* Chips */
+  .chip {
+    display: inline-flex; align-items: center; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px;
+    border: 1px solid currentColor; border-radius: 2px; white-space: nowrap;
+  }
+  .c-ok   { color: var(--good); background: var(--good-wash); }
+  .c-warn { color: var(--warn); background: var(--warn-wash); }
+  .c-crit { color: var(--crit); background: var(--crit-wash); }
+  .c-neut { color: var(--ink-faint); background: var(--line-soft); }
+  .c-info { color: var(--info); background: var(--info-wash); }
+
+  /* Barres de contraste : echelle 0-10.5, repere au seuil AA 4.5 */
+  .bar {
+    position: relative; height: 9px; min-width: 130px;
+    background: var(--line-soft); border-radius: 1px; overflow: hidden;
+  }
+  .bar i { position: absolute; inset: 0 auto 0 0; display: block; }
+  .bar.fail i { background: var(--crit); }
+  .bar.pass i { background: var(--good); }
+  .bar::after {
+    content: ""; position: absolute; top: -3px; bottom: -3px; left: 42.85%;
+    width: 1px; background: var(--ink); opacity: 0.55;
+  }
+
+  /* Preuves : captures d'ecran recadrees sur le constat */
+  .preuves { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 22px; }
+  figure { margin: 0; display: flex; flex-direction: column; gap: 9px; }
+  figure img {
+    display: block; width: 100%; height: auto;
+    border: 1px solid var(--line); background: #fff;
+  }
+  figcaption { font-size: 0.78rem; line-height: 1.45; color: var(--ink-faint); }
+  figcaption b { color: var(--ink); font-weight: 600; }
+
+  /* Ecarts */
+  .finding { border-top: 1px solid var(--line); padding-top: 20px; display: flex; flex-direction: column; gap: 11px; }
+  .finding:first-child { border-top: 2px solid var(--ink); }
+  .fhead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; }
+  .fid { font-family: "IBM Plex Mono", monospace; font-size: 0.8rem; font-weight: 600; color: var(--brand-lite); }
+  .finding h3 { flex: 1 1 22ch; }
+  .fgrid { display: grid; grid-template-columns: max-content 1fr; gap: 7px 18px; align-items: baseline; }
+  .fgrid dt {
+    font-family: Archivo, sans-serif; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-faint); padding-top: 3px;
+  }
+  .fgrid dd { margin: 0; font-size: 0.95rem; color: var(--ink-soft); max-width: 74ch; }
+  .fgrid dd.proof { font-family: "IBM Plex Mono", monospace; font-size: 0.8rem; line-height: 1.6; }
+
+  /* Blocs annexes */
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--brand-lite);
+    background: var(--surface); padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .callout.rouge { border-left-color: var(--crit); }
+  .callout p { max-width: 74ch; font-size: 0.96rem; color: var(--ink-soft); }
+  .callout h3 { color: var(--ink); }
+
+  ul.plain { margin: 0; padding-left: 1.15em; max-width: var(--measure); }
+  ul.plain li { margin-bottom: 7px; color: var(--ink-soft); }
+  ul.plain li::marker { color: var(--brand-lite); }
+
+  .lots { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .lot {
+    background: var(--surface); padding: 18px 22px;
+    display: grid; grid-template-columns: 92px 1fr; gap: 6px 20px; align-items: baseline;
+  }
+  .lot .tag { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--brand-lite); }
+  .lot h3 { grid-column: 2; }
+  .lot p { grid-column: 2; font-size: 0.94rem; color: var(--ink-soft); }
+  .lot .refs { grid-column: 2; font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; color: var(--ink-faint); }
+
+  footer {
+    margin-top: 84px; border-top: 1px solid var(--line); padding-top: 20px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--ink-faint);
+    display: flex; flex-wrap: wrap; gap: 6px 24px;
+  }
+
+  @media (max-width: 620px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 18px 64px; }
+    .lot { grid-template-columns: 1fr; }
+    .lot h3, .lot p, .lot .refs { grid-column: 1; }
+    .fgrid { grid-template-columns: 1fr; gap: 2px 0; }
+    .fgrid dt { padding-top: 9px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Audit produit &middot; application mobile &middot; Transporti V1</div>
+    <h1>Design, UX/UI et couverture des besoins</h1>
+    <p class="lede">Lecture du code, puis <strong>recette sur émulateur</strong>&nbsp;: 28 écrans parcourus sur un Pixel&nbsp;7 API&nbsp;35, avec les deux rôles, en français et en arabe. La recette confirme la plupart des écarts, en <em>infirme</em> deux, et en découvre un qui bloque à lui seul le parcours client.</p>
+    <div class="meta">
+      <span><b>Audit statique</b> 02/09/2026</span>
+      <span><b>Recette émulateur</b> 03/09/2026</span>
+      <span><b>Périmètre</b> mobile/ &mdash; Expo SDK 54</span>
+      <span><b>Branche</b> feature/lot0-fondations-retour-first</span>
+    </div>
+  </header>
+
+  <div class="verdict">
+    <div class="eyebrow" style="color:var(--crit)">Verdict après recette</div>
+    <p><strong>Le socle est sain, la publication est bloquée, et le client ne peut pas conclure.</strong> Sur l'appareil, l'application se comporte comme le code le promet&nbsp;: la charte est tenue au pixel, l'arabe et le RTL sont réellement miroités jusqu'à 200&nbsp;% de grossissement de police, et le parcours transporteur va de la publication à l'encaissement sans rupture. <code>tsc --noEmit</code> ne renvoie aucune erreur et 206 tests passent.</p>
+    <p>Mais la recette a mis au jour ce qu'aucune lecture de code ne pouvait voir&nbsp;: <strong>l'envoi d'une demande client échoue systématiquement</strong> parce que le serveur exige un champ que l'interface présente comme optionnel, et l'erreur affichée désigne une cause fausse. S'y ajoutent les deux absences qui interdisent toute soumission de store — suppression de compte et pages légales — et trois éléments d'interface qui annoncent une capacité inexistante.</p>
+    <p class="subnote" style="margin-top:4px">Deux écarts annoncés dans la version du 02/09 sont <b>infirmés</b> par la recette&nbsp;: le clavier ne masque pas les feuilles modales sur Android, et la barre d'onglets ne casse pas aux grandes polices. Ils sont conservés ci-dessous, corrigés et déclassés — un audit qui n'enregistre pas ses propres démentis ne vaut pas mieux qu'une opinion.</p>
+  </div>
+
+  <div class="scores">
+    <div class="score">
+      <div class="n">30<small>/48</small></div>
+      <div class="k">User stories couvertes</div>
+    </div>
+    <div class="score">
+      <div class="n" style="color:var(--crit)">6</div>
+      <div class="k">Écarts bloquants</div>
+    </div>
+    <div class="score">
+      <div class="n" style="color:var(--good)">14</div>
+      <div class="k">Écarts confirmés sur appareil</div>
+    </div>
+    <div class="score">
+      <div class="n" style="color:var(--info)">7</div>
+      <div class="k">Écarts découverts en recette</div>
+    </div>
+    <div class="score">
+      <div class="n" style="color:var(--warn)">2</div>
+      <div class="k">Écarts infirmés, corrigés</div>
+    </div>
+  </div>
+
+  <nav class="toc" aria-label="Sommaire">
+    <a href="#methode"><span>01</span> Méthode et sources</a>
+    <a href="#recette"><span>02</span> Recette sur émulateur</a>
+    <a href="#design"><span>03</span> Design system</a>
+    <a href="#contraste"><span>04</span> Contraste et cibles tactiles</a>
+    <a href="#ia"><span>05</span> Architecture de l'information</a>
+    <a href="#stories"><span>06</span> Couverture des user stories</a>
+    <a href="#ecarts"><span>07</span> Écarts détaillés</a>
+    <a href="#solide"><span>08</span> Ce qui est solide</a>
+    <a href="#plan"><span>09</span> Plan de remédiation</a>
+    <a href="#assumes"><span>10</span> Écarts assumés</a>
+  </nav>
+
+  <!-- 01 -->
+  <section id="methode">
+    <div class="shead"><span class="num">01</span><h2>Méthode et sources</h2></div>
+    <div class="stack">
+      <p>L'audit croise cinq sources&nbsp;: le graphe de connaissances du dépôt, la documentation produit, le code des écrans, l'exécution du socle, et une recette pilotée sur émulateur.</p>
+      <ul class="plain">
+        <li><b>Graphe Graphify</b> reconstruit avant l'analyse (<code>graphify . --update --code-only</code>)&nbsp;: 6&nbsp;078 nœuds, 10&nbsp;562 arêtes, 480 communautés. Il a servi à localiser les écrans et la barre d'onglets avant toute lecture de fichier.</li>
+        <li><b>Documentation de référence</b>&nbsp;: <code>VISION_PRODUIT_FONDATRICE.md</code> (personas §8, proposition de valeur §7, principes produit §11), <code>CARTOGRAPHIE_APPLICATIVE_RETOUR_FIRST_2026-08-26.md</code> (principes IA-1 à IA-5), <code>PLAN_ACHEVEMENT_MOBILE_2026-08-07.md</code> (§5, arbitrages assumés), <code>GUIDE_LANCEMENT_EMULATEUR.md</code> (procédure de recette).</li>
+        <li><b>Code</b>&nbsp;: 23 routes <code>expo-router</code>, la barre d'onglets par rôle, les tokens de <code>src/shared/theme</code>, les 17 panneaux modaux.</li>
+        <li><b>Vérification externe</b> via Context7 sur la documentation React&nbsp;Native courante&nbsp;: sémantique d'<code>accessibilityLabel</code> et contrat de <code>KeyboardAvoidingView</code>.</li>
+        <li><b>Exécution</b>&nbsp;: <code>tsc --noEmit</code> (0 erreur) et <code>jest</code> (32 suites, 206 tests verts). Les ratios de contraste sont calculés selon WCAG&nbsp;2.1 depuis les hex de <code>colors.ts</code>.</li>
+        <li><b>Recette sur appareil</b> — détaillée au §02.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="recette">
+    <div class="shead"><span class="num">02</span><h2>Recette sur émulateur</h2></div>
+    <div class="stack-lg">
+      <p>La version du 02/09 se terminait par une réserve explicite&nbsp;: l'analyse était statique, et les défauts de mise en page restaient à confirmer sur appareil. Cette réserve est levée. L'application a été pilotée sur l'émulateur Android Studio du poste, avec les comptes de recette, en exerçant les parcours des deux rôles.</p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Brique</th><th>Configuration effective</th></tr></thead>
+          <tbody>
+            <tr><td><b>Appareil</b></td><td>AVD <code>Pixel_7_API_35</code> — Android 15, 1080×2400, 420&nbsp;dpi (facteur ×2,625&nbsp;: <b>44&nbsp;dp = 116&nbsp;px</b>)</td></tr>
+            <tr><td><b>Application</b></td><td><code>tn.transporti.app</code> 0.1.0, build de développement (<code>DEBUGGABLE</code>), bundle servi par Metro</td></tr>
+            <tr><td><b>Serveur</b></td><td>Django sur <code>0.0.0.0:8000</code>, <code>ALLOWED_HOSTS</code> incluant <code>10.0.2.2</code></td></tr>
+            <tr><td><b>Comptes</b></td><td><code>mehdi.khelifi@…</code> (transporteur vérifié) et <code>leila.benamor@…</code> (cliente), jeu <code>seed_test_data</code></td></tr>
+            <tr><td><b>Pilotage</b></td><td>Captures d'écran, arbre d'accessibilité <code>uiautomator</code> — les cibles tactiles sont <b>mesurées</b>, pas estimées — et injection de gestes</td></tr>
+            <tr><td><b>Langues</b></td><td>Français et arabe, avec bascule RTL en cours de session</td></tr>
+            <tr><td><b>Accessibilité</b></td><td>Grossissement système de police testé à 100&nbsp;%, 150&nbsp;% et 200&nbsp;%</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Les six constats les plus parlants</h3>
+      <div class="preuves">
+        <figure>
+          <img src="data:image/webp;base64,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" alt="Feuille d'envoi de demande : le message d'erreur parle du plafond COD alors que le paiement choisi est Digital.">
+          <figcaption><b>E-21 — la demande client ne peut pas aboutir.</b> Le serveur refuse parce que <code>description</code> est vide&nbsp;; l'interface l'appelle «&nbsp;Message (optionnel)&nbsp;» et affiche une erreur sur le plafond COD, alors que le paiement choisi est Digital.</figcaption>
+        </figure>
+        <figure>
+          <img src="data:image/webp;base64,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" alt="Écran Mes retours publiés : le titre se superpose à l'horloge et aux icônes de la barre d'état.">
+          <figcaption><b>E-11 — pas de zone sûre.</b> Sur «&nbsp;Mes retours publiés&nbsp;», le titre est rendu par-dessus l'horloge et les icônes système.</figcaption>
+        </figure>
+        <figure>
+          <img src="data:image/webp;base64,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" alt="Bas de l'inventaire : les actions du dernier retour sont coupées par la barre d'onglets flottante.">
+          <figcaption><b>E-22 — le dernier retour ne peut pas être dépublié.</b> Au défilement maximal, ses deux premières actions sont coupées en deux et «&nbsp;Dépublier&nbsp;» est absent de l'arbre d'accessibilité.</figcaption>
+        </figure>
+        <figure>
+          <img src="data:image/webp;base64,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" alt="Accueil client : un bandeau de marque, un bouton, puis deux tiers d'écran vide.">
+          <figcaption><b>E-17 — l'accueil client est vide.</b> Un bandeau de marque, un bouton, et <b>deux tiers de l'écran sans contenu</b>. C'est l'écran d'arrivée du persona secondaire.</figcaption>
+        </figure>
+        <figure>
+          <img src="data:image/webp;base64,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" alt="Feuille d'annulation avec le clavier ouvert : champ et boutons restent visibles.">
+          <figcaption><b>E-06 — infirmé.</b> Clavier ouvert, la feuille remonte&nbsp;: champ et bouton de confirmation restent visibles. Android redimensionne la fenêtre, <code>KeyboardAvoidingView</code> n'est pas nécessaire ici.</figcaption>
+        </figure>
+        <figure>
+          <img src="data:image/webp;base64,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" alt="Barre d'onglets à 200 % de police : la pastille de messages non lus est écrasée et illisible.">
+          <figcaption><b>E-24 — nouveau.</b> À 200&nbsp;% de police, la barre d'onglets tient (l'écart annoncé est infirmé) mais les <b>pastilles de non-lus s'écrasent</b> et deviennent illisibles.</figcaption>
+        </figure>
+      </div>
+
+      <h3 style="margin-top:12px">Ce que la recette a changé</h3>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Écart annoncé le 02/09</th><th>Résultat sur appareil</th><th>Suite</th></tr></thead>
+          <tbody>
+            <tr><td><b>E-01</b> aucune suppression de compte</td><td>Menu profil parcouru pour les deux rôles&nbsp;: 10 entrées, aucune suppression</td><td><span class="chip c-ok">confirmé</span></td></tr>
+            <tr><td><b>E-02</b> aucune page légale</td><td>«&nbsp;À propos&nbsp;» = logo, version 0.1.0, description, copyright. Rien d'autre</td><td><span class="chip c-ok">confirmé</span></td></tr>
+            <tr><td><b>E-03</b> demande client indécidable</td><td>3 champs&nbsp;: prix, paiement, «&nbsp;Message (optionnel)&nbsp;». Aucune photo, ni poids, ni adresse, ni créneau</td><td><span class="chip c-ok">confirmé, aggravé</span></td></tr>
+            <tr><td><b>E-04</b> favoris impossibles à créer</td><td>Le mobile ne sait que <em>retirer</em>. Mais la liste n'est pas vide&nbsp;: le jeu de recette en contient un</td><td><span class="chip c-warn">reformulé</span></td></tr>
+            <tr><td><b>E-06</b> le clavier masque 8 feuilles</td><td><b>Non reproductible sur Android</b>&nbsp;: la fenêtre est redimensionnée, la feuille remonte. Testé sur 2 feuilles</td><td><span class="chip c-crit">infirmé</span></td></tr>
+            <tr><td><b>E-08</b> 5 cibles sous 44&nbsp;dp</td><td>Mesurées&nbsp;: 21 à 43&nbsp;dp. Et il y en a <b>onze</b>, dont deux actions destructives</td><td><span class="chip c-ok">confirmé, élargi</span></td></tr>
+            <tr><td><b>E-09</b> une seule sortie sur zéro résultat</td><td>«&nbsp;Aucun trajet retour pour l'instant&nbsp;» + un seul bouton d'alerte corridor</td><td><span class="chip c-ok">confirmé</span></td></tr>
+            <tr><td><b>E-11</b> écran de second rang</td><td>Titre par-dessus la barre d'état, aucun rafraîchissement au tirer</td><td><span class="chip c-ok">confirmé</span></td></tr>
+            <tr><td><b>E-12</b> pas de preuve de livraison</td><td>«&nbsp;Photo de preuve&nbsp;: bientôt.&nbsp;» affiché tel quel dans la carte de mission</td><td><span class="chip c-ok">confirmé</span></td></tr>
+            <tr><td><b>E-13</b> commandes iconographiques muettes</td><td>Cœur et fermeture de panneau&nbsp;: <code>desc=''</code>. Mais la cloche annonce «&nbsp;99+&nbsp;» — le compteur, jamais l'objet</td><td><span class="chip c-warn">confirmé, corrigé</span></td></tr>
+            <tr><td><b>E-14</b> notifications seulement sur l'Accueil</td><td>Aucune cloche sur Recherche, Mes demandes, Messages, Profil ni Inventaire</td><td><span class="chip c-ok">confirmé</span></td></tr>
+            <tr><td><b>E-15</b> recherche sans critère de marchandise</td><td>3 sélecteurs&nbsp;: départ, arrivée, jour facultatif</td><td><span class="chip c-ok">confirmé</span></td></tr>
+            <tr><td><b>E-17</b> pas d'amorçage client</td><td>Deux tiers de l'écran vides après connexion</td><td><span class="chip c-ok">confirmé</span></td></tr>
+            <tr><td><b>E-19</b> barre d'onglets et grossissement</td><td>La barre <b>tient</b> à 150 et 200&nbsp;%. Ce sont les pastilles qui s'écrasent → devient <b>E-24</b></td><td><span class="chip c-crit">infirmé</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h3>Deux hypothèses testées et écartées</h3>
+        <p><b>Le contenu passe-t-il sous la barre flottante&nbsp;?</b> Sur l'Accueil transporteur, non&nbsp;: au défilement maximal, le dernier bouton («&nbsp;Laisser un avis&nbsp;») est intégralement visible et mesure ses 45&nbsp;dp. Le défaut n'existe que sur l'inventaire (E-22), dont la marge basse est plus courte.</p>
+        <p><b>Le correctif de défilement du profil tient-il&nbsp;?</b> Oui. Le commentaire de <code>profile.tsx</code> décrit un écran où «&nbsp;Mes adresses&nbsp;» était masquée par le pied de page. Sur appareil, l'arbre d'accessibilité annonce d'abord des hauteurs nulles voire négatives pour les trois dernières entrées&nbsp;; après défilement elles mesurent toutes 47&nbsp;dp et sont atteignables. Le correctif d'août fonctionne, y compris avec les deux entrées supplémentaires du transporteur.</p>
+      </div>
+
+      <div class="callout rouge">
+        <h3>Effet de bord de la recette, à consigner</h3>
+        <p>Pour établir E-21, une demande de transport a été créée dans la base de recette (<code>trip_request</code> n°252, cliente Leila&nbsp;B. sur le trajet 582, 120&nbsp;TND, paiement Digital). Le jeu de données est reconstructible par <code>manage.py seed_test_data</code>. Rien d'autre n'a été écrit&nbsp;: aucune annulation, aucun retrait, aucune dépublication n'a été confirmée.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="design">
+    <div class="shead"><span class="num">03</span><h2>Design system&nbsp;: la charte est respectée</h2></div>
+    <div class="stack-lg">
+      <p>C'est le point fort du produit, et la recette le confirme à l'écran. <code>src/shared/theme</code> n'est pas une palette décorative&nbsp;: c'est une traduction commentée de <code>design-system/00-foundations.html</code>, avec la règle sémantique inscrite dans le fichier — bleu = structure, orange = le CTA unique de l'écran, vert = la valeur. Sur l'appareil, la règle est tenue&nbsp;: hero bleu, un seul bouton orange par écran, montants en vert.</p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Fondation</th><th>Attendu par la charte</th><th>Constat, mesuré sur appareil</th><th>Statut</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Palette</b></td><td>3 rôles sémantiques non négociables</td><td>Respectés écran par écran&nbsp;; un seul orange par écran, y compris en RTL</td><td><span class="chip c-ok">conforme</span></td></tr>
+            <tr><td><b>Typographie</b></td><td>Inter (latin), Cairo (arabe)</td><td>Les deux familles se chargent au démarrage et se substituent au changement de langue, toutes graisses</td><td><span class="chip c-ok">conforme</span></td></tr>
+            <tr><td><b>Espacement</b></td><td>Échelle 4&nbsp;pt</td><td>4/8/12/16/24/32, aucune valeur magique dans les écrans lus</td><td><span class="chip c-ok">conforme</span></td></tr>
+            <tr><td><b>Rayons</b></td><td>Carte 16, champ 14, FAB 16, barre 20</td><td>Exacts&nbsp;; le FAB est bien un carré arrondi et non un cercle</td><td><span class="chip c-ok">conforme</span></td></tr>
+            <tr><td><b>Cibles tactiles</b></td><td>&laquo;&nbsp;≥ 44&nbsp;dp&nbsp;&raquo; — écrit dans la charte, exporté en constante <code>TOUCH_TARGET</code></td><td>Respecté par <code>Button</code> (44–47&nbsp;dp mesurés) et par les onglets&nbsp;; <b>11 commandes secondaires entre 21 et 43&nbsp;dp</b></td><td><span class="chip c-crit">écart</span></td></tr>
+            <tr><td><b>Contraste</b></td><td>Non spécifié par la charte</td><td>5 combinaisons porteuses de la promesse sous le seuil AA</td><td><span class="chip c-crit">écart</span></td></tr>
+            <tr><td><b>Zone sûre</b></td><td>Implicite</td><td>Tenue partout <b>sauf</b> sur l'inventaire des retours</td><td><span class="chip c-crit">écart</span></td></tr>
+            <tr><td><b>i18n / RTL</b></td><td>FR + AR, miroir complet</td><td><b>Vérifié en session</b>&nbsp;: à la bascule, avatar et cloche échangent de côté, l'ordre des onglets s'inverse, les libellés passent en derja («&nbsp;لوّج على عودة&nbsp;», «&nbsp;حريف&nbsp;»). Tient à 200&nbsp;% de police</td><td><span class="chip c-ok">remarquable</span></td></tr>
+            <tr><td><b>Cartographie</b></td><td>Corridors visibles</td><td>Carte Google rendue avec les marqueurs Sfax et Tunis&nbsp;; repli explicite prévu si la clé manque</td><td><span class="chip c-ok">conforme</span></td></tr>
+            <tr><td><b>Thème sombre</b></td><td>&mdash;</td><td>Application verrouillée en clair, décision documentée</td><td><span class="chip c-neut">assumé</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h3>Le détail qui prouve le sérieux de la couche i18n</h3>
+        <p>L'arabe n'est pas un habillage. <code>ar.json</code> porte 36 clés que le français n'a pas&nbsp;: les six catégories de pluriel de l'arabe (<code>_0</code> à <code>_5</code>) là où le français se contente de <code>_plural</code>. Sur 597 clés, seules quatre chaînes sont identiques dans les deux langues, et ce sont des placeholders. En session, la bascule provoque un rechargement propre et le sens de lecture natif suit — ce qui est précisément le piège que la plupart des applications React&nbsp;Native ratent.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="contraste">
+    <div class="shead"><span class="num">04</span><h2>Contraste et cibles tactiles</h2></div>
+    <div class="stack-lg">
+      <p>Le paradoxe est net&nbsp;: les blocs qui <em>portent la promesse commerciale</em> sont ceux dont le texte passe sous le seuil de lisibilité. Un chiffre d'économie qu'on ne lit pas au soleil, dans une cabine de camion, ne convertit pas. Les ratios suivent WCAG&nbsp;2.1&nbsp;; le repère vertical marque le seuil AA de 4,5:1 exigé sous 18&nbsp;px.</p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Élément</th><th>Couleurs</th><th class="num-col">Ratio</th><th style="min-width:150px">Échelle</th><th>Verdict</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Expiration urgente</b><br><span class="mono">ReturnTripRow &mdash; 13 px</span></td>
+              <td class="mono">#f59e0b / #ffffff</td>
+              <td class="num-col"><b>2,15</b></td>
+              <td><div class="bar fail"><i style="width:20.5%"></i></div></td>
+              <td><span class="chip c-crit">échec AA</span></td>
+            </tr>
+            <tr>
+              <td><b>Onglet inactif</b><br><span class="mono">FloatingTabBar &mdash; 10 px</span></td>
+              <td class="mono">#9ca3af / #ffffff</td>
+              <td class="num-col"><b>2,54</b></td>
+              <td><div class="bar fail"><i style="width:24.2%"></i></div></td>
+              <td><span class="chip c-crit">échec AA</span></td>
+            </tr>
+            <tr>
+              <td><b>Amorce de retour à vide</b><br><span class="mono">ReturnPromptBanner &mdash; 13 et 17 px</span></td>
+              <td class="mono">#ea580c / #fff7ed</td>
+              <td class="num-col"><b>3,35</b></td>
+              <td><div class="bar fail"><i style="width:31.9%"></i></div></td>
+              <td><span class="chip c-crit">échec AA</span></td>
+            </tr>
+            <tr>
+              <td><b>Économie estimée</b><br><span class="mono">TripResultCard &mdash; 13 et 15 px</span></td>
+              <td class="mono">#059669 / #f0fdf4</td>
+              <td class="num-col"><b>3,60</b></td>
+              <td><div class="bar fail"><i style="width:34.3%"></i></div></td>
+              <td><span class="chip c-crit">échec AA</span></td>
+            </tr>
+            <tr>
+              <td><b>Km à vide valorisés</b><br><span class="mono">ReturnsHubSection &mdash; 13 et 17 px</span></td>
+              <td class="mono">#059669 / #f0fdf4</td>
+              <td class="num-col"><b>3,60</b></td>
+              <td><div class="bar fail"><i style="width:34.3%"></i></div></td>
+              <td><span class="chip c-crit">échec AA</span></td>
+            </tr>
+            <tr>
+              <td><b>Expiré, dépublier</b><br><span class="mono">ReturnTripRow &mdash; 13 et 14 px</span><br><span class="subnote">observé en recette</span></td>
+              <td class="mono">#ef4444 / #ffffff</td>
+              <td class="num-col">3,76</td>
+              <td><div class="bar fail"><i style="width:35.8%"></i></div></td>
+              <td><span class="chip c-crit">échec AA</span></td>
+            </tr>
+            <tr>
+              <td><b>Solde retirable</b><br><span class="mono">gains.tsx &mdash; 28 px</span></td>
+              <td class="mono">#059669 / #ffffff</td>
+              <td class="num-col">3,77</td>
+              <td><div class="bar pass"><i style="width:35.9%"></i></div></td>
+              <td><span class="chip c-warn">AA grand texte seul</span></td>
+            </tr>
+            <tr>
+              <td><b>Texte doux, métadonnées</b><br><span class="mono">partout &mdash; 13 et 15 px</span></td>
+              <td class="mono">#6b7280 / #ffffff</td>
+              <td class="num-col">4,83</td>
+              <td><div class="bar pass"><i style="width:46%"></i></div></td>
+              <td><span class="chip c-ok">AA</span></td>
+            </tr>
+            <tr>
+              <td><b>Lien de marque</b><br><span class="mono">liens, en-têtes</span></td>
+              <td class="mono">#1E3A8A / #ffffff</td>
+              <td class="num-col">10,36</td>
+              <td><div class="bar pass"><i style="width:98.7%"></i></div></td>
+              <td><span class="chip c-ok">AAA</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p>Le correctif est mécanique et sans effet sur l'identité&nbsp;: <code>green[700]</code> descend d'un cran pour ses usages textuels sur fond <code>green[50]</code>, <code>cta[600]</code> de même sur <code>cta[50]</code>, <code>warning</code> et <code>error</code> reçoivent une variante foncée réservée au texte, et <code>neutral[400]</code> passe à <code>neutral[500]</code> pour les libellés d'onglets. Six valeurs, un seul fichier.</p>
+
+      <h3>Cibles tactiles&nbsp;: mesurées, pas estimées</h3>
+      <p class="subnote">Relevé dans l'arbre d'accessibilité du Pixel&nbsp;7 (420&nbsp;dpi). La charte exige 44&nbsp;dp&nbsp;; la constante <code>TOUCH_TARGET</code> existe et <code>Button</code> l'applique correctement. Ces onze commandes ne passent pas par elle.</p>
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Commande</th><th>Écran</th><th class="num-col">Mesure</th><th>Ce que c'est</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Gérer mes retours</b></td><td>Accueil transporteur</td><td class="num-col"><b>124×21</b></td><td>Unique porte d'entrée de l'inventaire depuis l'Accueil</td></tr>
+            <tr><td><b>Mes alertes corridor</b></td><td>Recherche client</td><td class="num-col"><b>22×22</b></td><td>Seul accès à la gestion des alertes</td></tr>
+            <tr><td><b>Signaler un problème</b></td><td>Carte de mission</td><td class="num-col"><b>329×22</b></td><td>Ouverture de litige en cours de mission</td></tr>
+            <tr><td><b>Annuler cette mission</b></td><td>Carte de mission</td><td class="num-col"><b>329×26</b></td><td>Action destructive, relevée sur deux missions</td></tr>
+            <tr><td><b>Fermer</b> (panneaux)</td><td>À propos, Favoris</td><td class="num-col"><b>26×26</b></td><td>Sortie des panneaux modaux, sans étiquette</td></tr>
+            <tr><td><b>Langue FR / العربية</b></td><td>Profil</td><td class="num-col"><b>60×28</b></td><td>Unique bascule de langue de l'application</td></tr>
+            <tr><td><b>Changer la photo</b></td><td>Profil</td><td class="num-col"><b>104×18</b></td><td>—</td></tr>
+            <tr><td><b>Cloche de notifications</b></td><td>Accueil</td><td class="num-col"><b>34×34</b></td><td>Icône 26&nbsp;+&nbsp;padding 4</td></tr>
+            <tr><td><b>Prolonger · Dupliquer</b></td><td>Inventaire</td><td class="num-col"><b>36 · 36</b></td><td>Gestion du cycle de vie d'un retour</td></tr>
+            <tr><td><b>Dépublier</b></td><td>Inventaire</td><td class="num-col"><b>34</b></td><td>Action destructive</td></tr>
+            <tr><td><b>Retirer un favori</b></td><td>Panneau Favoris</td><td class="num-col"><b>36×36</b></td><td>Cœur seul, sans étiquette</td></tr>
+            <tr><td><b>Bouton central (FAB)</b></td><td>Barre d'onglets</td><td class="num-col">48×43</td><td>À 1&nbsp;dp du seuil&nbsp;; action primaire de chaque rôle</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>Aucune n'est décorative&nbsp;: on y trouve deux actions destructives, l'ouverture d'un litige, l'unique bascule de langue et l'unique accès à l'inventaire. Le correctif est un <code>minHeight: TOUCH_TARGET</code> ou un <code>hitSlop</code>. Une règle de lint interdisant un <code>Pressable</code> sans l'un des deux éviterait la récidive.</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="ia">
+    <div class="shead"><span class="num">05</span><h2>Architecture de l'information</h2></div>
+    <div class="stack-lg">
+      <p>La cartographie du 26/08 pose cinq principes qui tranchent tous les arbitrages de navigation. La recette confirme que le mobile les applique nettement mieux que le web au moment où ce document a été écrit&nbsp;: la barre d'onglets est <em>conditionnelle par rôle</em>, et le bouton central porte l'action première de chaque métier — <em>Rechercher</em> pour la cliente, <em>Publier</em> pour le transporteur, vérifié en basculant de compte.</p>
+
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th style="min-width:132px">Principe</th><th>Application mobile</th><th>Statut</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>IA-1</b><br><span class="mono">l'inventaire précède l'annonce</span></td>
+              <td>Le bouton central de la cliente est <em>Rechercher</em>, pas <em>Publier une demande</em>. Sa racine est bien la recherche dans le stock existant.</td>
+              <td><span class="chip c-ok">tenu</span></td>
+            </tr>
+            <tr>
+              <td><b>IA-2</b><br><span class="mono">publier en 30 s, d'où l'on est</span></td>
+              <td>Le bouton central transporteur est <em>Publier</em>, atteignable depuis tout onglet, et l'amorce de fin de mission préremplit le corridor inversé. Mais le formulaire réclame <b>5 interactions minimum</b> après l'amorce, dont deux adresses en saisie libre et deux prix.</td>
+              <td><span class="chip c-warn">partiel</span></td>
+            </tr>
+            <tr>
+              <td><b>IA-3</b><br><span class="mono">jamais de cul-de-sac</span></td>
+              <td>Très bien appliqué sur l'inventaire vide, les demandes vides, le portefeuille vide, les conversations vides. <b>Sauf sur l'écran qui compte&nbsp;:</b> zéro résultat de recherche ne propose qu'<em>une</em> sortie, l'alerte corridor, là où le principe en exige deux. Constaté à l'écran.</td>
+              <td><span class="chip c-warn">partiel</span></td>
+            </tr>
+            <tr>
+              <td><b>IA-4</b><br><span class="mono">une boîte de réception par rôle</span></td>
+              <td>Vraiment résolu&nbsp;: <code>requests/index.tsx</code> consolide les demandes de <em>tous</em> les trajets avec trois onglets triés par «&nbsp;qui doit agir&nbsp;», et <code>mes-demandes.tsx</code> fait le symétrique. Réserve confirmée&nbsp;: la cloche ne vit que sur l'Accueil, alors que la pastille de messages, elle, est bien portée par la barre d'onglets.</td>
+              <td><span class="chip c-ok">tenu</span></td>
+            </tr>
+            <tr>
+              <td><b>IA-5</b><br><span class="mono">la valeur se chiffre à l'écran</span></td>
+              <td>Le hero transporteur affiche gains confirmés, taux de remplissage et km transformés — avec un tiret plutôt qu'un faux zéro. En recette&nbsp;: «&nbsp;100&nbsp;TND&nbsp;», «&nbsp;2.4&nbsp;%&nbsp;», «&nbsp;0&nbsp;km&nbsp;». Côté cliente en revanche, l'économie estimée <b>ne s'affiche pas</b>&nbsp;: le seul trajet publié du jeu de recette n'a pas de fourchette de prix, donc pas d'économie calculable (E-25).</td>
+              <td><span class="chip c-warn">partiel</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout">
+        <h3>Une conséquence de la contrainte &laquo;&nbsp;4 onglets + bouton central&nbsp;&raquo;</h3>
+        <p>La charte impose quatre onglets. L'inventaire des retours et le profil transporteur sont donc hors barre, atteints par un lien texte et par l'avatar. C'est un arbitrage défendable et documenté, mais la recette montre ce qu'il coûte&nbsp;: l'inventaire est le seul écran sans zone sûre, sans rafraîchissement au tirer, dont la dernière ligne est amputée (E-22) et dont l'unique porte d'entrée mesure 21&nbsp;dp de haut. Un écran hors barre devient un écran hors revue.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="stories">
+    <div class="shead"><span class="num">06</span><h2>Couverture des user stories</h2></div>
+    <div class="stack-lg">
+      <p>Les user stories sont dérivées des besoins explicites des deux personas de la vision (§8) et de la proposition de valeur (§7), puis confrontées au code et à l'appareil. La recette n'a pas modifié le décompte — elle a modifié la <em>gravité</em>&nbsp;: plusieurs stories comptées comme couvertes le sont par un écran qui existe et fonctionne, mais dont la finition empêche l'usage réel. Légende&nbsp;: <span class="chip c-ok">oui</span> <span class="chip c-warn">partiel</span> <span class="chip c-crit">non</span> <span class="chip c-neut">assumé</span></p>
+
+      <h3>Persona principal &mdash; le transporteur professionnel</h3>
+      <p class="subnote">&laquo;&nbsp;Rentabiliser chacun de ses trajets&nbsp;: trouver des missions retour, réduire les km à vide, être payé rapidement, fidéliser sa clientèle.&nbsp;&raquo; &mdash; <b>16 couverts, 4 partiels, 3 absents, 1 assumé.</b></p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>#</th><th>User story</th><th>Où, dans l'app</th><th>Statut</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">T-01</td><td>S'inscrire en choisissant mon métier</td><td class="mono">(auth)/register &mdash; segment 2 options</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-02</td><td>Déposer mes documents et suivre ma vérification</td><td class="mono">TrustPanel — vu au menu profil</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-03</td><td>Déclarer mon véhicule et sa capacité une seule fois</td><td class="mono">Prérempli : « 🚛 Camion — 2000 kg » en recette</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-04</td><td>Déclarer mes corridors habituels</td><td class="mono">ServiceAreasPanel — vu au menu profil</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-05</td><td>Publier un retour à vide en 30 secondes</td><td class="mono">publish.tsx &mdash; 8 champs requis</td><td><span class="chip c-warn">partiel</span></td></tr>
+            <tr><td class="mono">T-06</td><td>Être relancé au moment où je rentre à vide</td><td class="mono">ReturnPromptBanner — absent en recette (voir E-27)</td><td><span class="chip c-warn">partiel</span></td></tr>
+            <tr><td class="mono">T-07</td><td>Gérer mon inventaire&nbsp;: prolonger, dupliquer, dépublier</td><td class="mono">mes-retours.tsx — dernière ligne inutilisable</td><td><span class="chip c-warn">partiel</span></td></tr>
+            <tr><td class="mono">T-08</td><td>Voir d'un coup d'œil ce qui attend ma décision</td><td class="mono">requests/index.tsx &mdash; 3 onglets</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-09</td><td>Accepter, refuser ou contre-proposer un prix</td><td class="mono">RequestCard</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-10</td><td>Confirmer mon départ</td><td class="mono">Vu et mesuré sur deux missions en recette</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-11</td><td>Clôturer la mission par le code du client</td><td class="mono">Champ PIN 4 chiffres, vu en recette</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-12</td><td><b>Prouver ma livraison par une photo</b></td><td class="mono">« Photo de preuve : bientôt. » à l'écran</td><td><span class="chip c-crit">non</span></td></tr>
+            <tr><td class="mono">T-13</td><td><b>Suivre le détail et les jalons d'une mission</b></td><td class="mono">— aucun écran mission transporteur</td><td><span class="chip c-crit">non</span></td></tr>
+            <tr><td class="mono">T-14</td><td>Annuler avec un motif obligatoire</td><td class="mono">TransporterCancelSheet — ouverte en recette</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-15</td><td>Voir mon net commission déduite, et retirer</td><td class="mono">« 87,96 TND net · commission 7,04 » en recette</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-16</td><td>Comprendre ce que je dois sur les encaissements espèces</td><td class="mono">gains.tsx &mdash; carte COD séparée du solde</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-17</td><td>Savoir quels corridors me rapportent</td><td class="mono">CorridorPerformanceCard</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-18</td><td>Identifier mes clients fidèles</td><td class="mono">LoyalClientsCard</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-19</td><td>Consulter ma réputation et mes avis reçus</td><td class="mono">ReviewsPanel + ReputationCard</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-20</td><td>Compléter mon aller en répondant à des demandes publiées</td><td class="mono">— canal classique hors mobile</td><td><span class="chip c-neut">assumé</span></td></tr>
+            <tr><td class="mono">T-21</td><td>Ouvrir un litige</td><td class="mono">OpenDisputeSheet — cible de 22 dp</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-22</td><td>Échanger avec mon client</td><td class="mono">messages/index + messages/[jobId]</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">T-23</td><td>Être alerté sans ouvrir l'app</td><td class="mono">Cloche présente sur l'Accueil seulement</td><td><span class="chip c-warn">partiel</span></td></tr>
+            <tr><td class="mono">T-24</td><td><b>Supprimer mon compte</b></td><td class="mono">— menu parcouru : absent</td><td><span class="chip c-crit">non</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3 style="margin-top:20px">Persona secondaire &mdash; le particulier expéditeur</h3>
+      <p class="subnote">&laquo;&nbsp;Trouver rapidement un transporteur fiable au meilleur prix.&nbsp;&raquo; &mdash; <b>14 couverts, 3 partiels, 7 absents.</b> C'est ici que se concentre le déficit, et la recette l'aggrave&nbsp;: la story pivot C-07 n'est pas seulement pauvre, son envoi échoue.</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>#</th><th>User story</th><th>Où, dans l'app</th><th>Statut</th></tr></thead>
+          <tbody>
+            <tr><td class="mono">C-01</td><td>M'inscrire comme expéditeur</td><td class="mono">(auth)/register</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-02</td><td><b>Être amorcé à la première ouverture</b></td><td class="mono">Deux tiers de l'écran vides</td><td><span class="chip c-crit">non</span></td></tr>
+            <tr><td class="mono">C-03</td><td>Chercher un retour sur mon corridor et ma date</td><td class="mono">search.tsx &mdash; 3 sélecteurs, recherche exercée</td><td><span class="chip c-warn">partiel</span></td></tr>
+            <tr><td class="mono">C-04</td><td>Voir combien j'économise, et sur quelle base</td><td class="mono">Composant correct, mais rien à afficher en recette</td><td><span class="chip c-warn">partiel</span></td></tr>
+            <tr><td class="mono">C-05</td><td>Juger le transporteur avant de m'engager</td><td class="mono">« Mehdi K., ★ 5.0 (1), Vérifié » sur la carte</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-06</td><td>Visualiser les corridors sur une carte</td><td class="mono">Carte Google rendue, marqueurs Sfax / Tunis</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-07</td><td><b>Décrire ma marchandise et envoyer ma demande</b></td><td class="mono">3 champs, et l'envoi est refusé (E-21)</td><td><span class="chip c-crit">non</span></td></tr>
+            <tr><td class="mono">C-08</td><td><b>Réserver immédiatement quand c'est proposé</b></td><td class="mono">— badge affiché, action absente</td><td><span class="chip c-crit">non</span></td></tr>
+            <tr><td class="mono">C-09</td><td>Ne jamais rester sans issue quand aucun trajet ne correspond</td><td class="mono">Un seul bouton, constaté à l'écran</td><td><span class="chip c-warn">partiel</span></td></tr>
+            <tr><td class="mono">C-10</td><td>Gérer mes alertes corridor</td><td class="mono">CorridorAlertsPanel — accès de 22 dp</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-11</td><td>Suivre mes demandes triées par qui doit agir</td><td class="mono">mes-demandes.tsx &mdash; onglets + compteurs</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-12</td><td>Accepter une contre-proposition</td><td class="mono">useAcceptCounter (MyRequestCard)</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-13</td><td>Payer en escrow ou à la livraison</td><td class="mono">mission/[id] &mdash; paiement + escrow détaillé</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-14</td><td>Suivre ma mission et disposer du code de livraison</td><td class="mono">mission/[id] &mdash; jalons + PIN persistant</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-15</td><td>Confirmer la réception et libérer l'argent</td><td class="mono">mission/[id] &mdash; confirm-completion</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-16</td><td><b>Recevoir une preuve de livraison</b></td><td class="mono">— symétrique de T-12</td><td><span class="chip c-crit">non</span></td></tr>
+            <tr><td class="mono">C-17</td><td>Noter le transporteur</td><td class="mono">OpenReviewSheet — après COMPLETED seulement</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-18</td><td>Annuler mon expédition</td><td class="mono">CancelMissionSheet</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-19</td><td>Voir mes paiements et remboursements</td><td class="mono">ClientWalletPanel — vu au menu profil</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-20</td><td><b>Garder mes transporteurs de confiance</b></td><td class="mono">Panneau ouvert : on ne peut que retirer</td><td><span class="chip c-crit">non</span></td></tr>
+            <tr><td class="mono">C-21</td><td>Réutiliser mes adresses fréquentes</td><td class="mono">AddressBookPanel — jamais dans la demande</td><td><span class="chip c-warn">partiel</span></td></tr>
+            <tr><td class="mono">C-22</td><td>Ouvrir et suivre un litige</td><td class="mono">DisputesPanel + OpenDisputeSheet</td><td><span class="chip c-ok">oui</span></td></tr>
+            <tr><td class="mono">C-23</td><td><b>Lire les CGU, la confidentialité, l'aide</b></td><td class="mono">« À propos » ouvert : logo, version, copyright</td><td><span class="chip c-crit">non</span></td></tr>
+            <tr><td class="mono">C-24</td><td><b>Supprimer mon compte</b></td><td class="mono">— menu parcouru : absent</td><td><span class="chip c-crit">non</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="ecarts">
+    <div class="shead"><span class="num">07</span><h2>Écarts détaillés</h2></div>
+    <div class="stack-lg">
+      <p>Vingt-sept écarts, par gravité décroissante. Les six premiers sont bloquants&nbsp;: ils empêchent la publication sur les stores, ou bien l'interface annonce quelque chose que le code ne fait pas — ce qui, sur une place de marché dont le premier produit est la confiance, coûte plus cher qu'une fonction manquante. Les écarts marqués <span class="chip c-ok">recette</span> ont été observés sur appareil.</p>
+
+      <div class="stack-lg">
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-21</span><h3>La demande client échoue, et l'erreur désigne une cause fausse</h3><span class="chip c-crit">bloquant</span><span class="chip c-info">découvert en recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Feuille remplie avec le seul prix (120 TND, paiement Digital) → l'app affiche&nbsp;: « Demande impossible. Vérifiez le montant (COD ≤ 300 TND) ou une demande est déjà en cours. »<br>Le serveur, lui, répond&nbsp;: <code>400 {"description": ["This field may not be blank."]}</code><br>Le champ correspondant est intitulé <code>search.request.description</code> = <b>« Message (optionnel) »</b>.<br>Avec une description, la même requête passe&nbsp;: <code>200</code>, demande n°252 créée.<br>Cause du message&nbsp;: <code>useSendTripRequest.ts:26</code> replie <em>tout</em> 400 sur <code>'validation'</code> — et son commentaire énumère les causes supposées (« prix invalide, COD > plafond, doublon, trajet indispo ») sans mentionner la description.</dd>
+            <dt>Impact</dt><dd>C'est l'unique action de conversion de la cliente, et elle est <b>impossible à réussir</b> en suivant l'interface&nbsp;: le champ requis est marqué optionnel, et le message d'erreur envoie corriger le prix. Une vraie cliente baisserait son prix, réessaierait, changerait de mode de paiement, puis abandonnerait. Aucun test n'attrape ce cas parce que le défaut vit dans l'écart entre deux contrats — celui du serveur et le libellé de l'app.</dd>
+            <dt>Correctif</dt><dd>Trois gestes, par ordre d'urgence&nbsp;: rendre la description obligatoire côté formulaire avec un libellé qui le dit&nbsp;; faire remonter les erreurs de champ du serveur au lieu d'un message unique&nbsp;; puis structurer la demande (E-03), dont ce champ n'est que le substitut actuel.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-01</span><h3>Aucune suppression de compte, nulle part</h3><span class="chip c-crit">bloquant</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Aucune route dans <code>backend/users/urls.py</code>. Menu profil parcouru sur appareil pour les deux rôles&nbsp;: Modifier le profil · Mot de passe · Notifications · Mes avis · Portefeuille ou Vérification · Favoris ou Zones · Litiges · Adresses · À propos · Se déconnecter. Rien d'autre.</dd>
+            <dt>Impact</dt><dd>Google Play et l'App Store exigent tous deux un chemin de suppression de compte <em>dans l'application</em> pour toute app permettant d'en créer un. C'est un motif de refus, pas une remarque. S'y ajoute l'obligation d'effacement de la loi tunisienne 2004-63.</dd>
+            <dt>Correctif</dt><dd>Un endpoint d'anonymisation côté serveur (missions et écritures comptables doivent survivre à l'utilisateur) et une entrée en bas du profil, derrière une double confirmation qui annonce les conséquences — le motif existe déjà pour la dépublication d'un retour.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-02</span><h3>Ni CGU, ni politique de confidentialité, ni aide dans l'application</h3><span class="chip c-crit">bloquant</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Panneau « À propos » ouvert sur appareil&nbsp;: logo, tagline, « Version 0.1.0 », un paragraphe de description, « © 2026 Transporti ». Aucune occurrence de CGU / confidentialité / aide / FAQ dans <code>locales/fr.json</code> (597 clés).</dd>
+            <dt>Impact</dt><dd>Double&nbsp;: recevabilité store — un lien de politique de confidentialité est obligatoire — et produit. La cartographie identifie «&nbsp;Confiance &amp; sécurité&nbsp;» comme la levée de l'objection n°1 du persona client&nbsp;; sur mobile, une cliente qui hésite à confier sa marchandise n'a rien à lire.</dd>
+            <dt>Correctif</dt><dd>Trois entrées dans le menu du profil pointant vers des pages hébergées, plus un écran «&nbsp;Comment ça marche&nbsp;» court, raconté séparément pour chacun des deux métiers.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-03</span><h3>La demande client ne contient pas de quoi être décidée</h3><span class="chip c-crit">bloquant</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Feuille ouverte sur appareil, contenu exhaustif&nbsp;: « Votre prix proposé (TND) », « Paiement » (Digital / COD), « Message (optionnel) » avec le placeholder « Ce que vous voulez transporter… », bouton « Envoyer ». L'endpoint <code>upload/photo/</code> existe côté serveur et n'est jamais appelé par le mobile.</dd>
+            <dt>Impact</dt><dd>Le transporteur doit accepter ou refuser <em>à l'aveugle</em>&nbsp;: ni photo, ni poids, ni dimensions, ni adresse précise, ni créneau. La recette montre que c'est pire que prévu&nbsp;: la description de la marchandise est le seul porteur d'information et elle est <b>présentée comme optionnelle</b>. Conséquences mécaniques&nbsp;: contre-propositions, annulations sur place, litiges — trois KPI qualité de la vision. Et aucun matching quantitatif possible&nbsp;: la capacité restante déclarée par le transporteur n'est comparée à rien.</dd>
+            <dt>Correctif</dt><dd>Étendre la feuille&nbsp;: type et volume de marchandise, poids, une à trois photos, adresse de retrait via le carnet (E-16), créneau.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-04</span><h3>Le mobile sait retirer un favori, jamais en ajouter</h3><span class="chip c-crit">bloquant</span><span class="chip c-warn">reformulé</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">useToggleFavorite n'est importé que par FavoritesPanel.tsx:18, où il sert au <em>retrait</em>. Ni <code>transporteur/[id].tsx</code> ni <code>TripResultCard.tsx</code> n'exposent de bouton d'ajout.<br>Panneau ouvert en recette&nbsp;: il contient « Mehdi Khelifi », créé par le jeu de données, avec un unique bouton cœur de retrait (36×36 dp, sans étiquette).</dd>
+            <dt>Impact</dt><dd><b>Correction de la version du 02/09&nbsp;:</b> j'écrivais « la liste est vide à vie ». C'est faux — elle se remplit par le web ou par le jeu de données. Ce qui est vrai, et suffisant&nbsp;: une cliente qui n'utilise que le mobile ne peut <em>jamais</em> ajouter un transporteur à ses favoris, alors que le menu lui promet la rubrique. La fonction est à moitié livrée dans le sens qui ne sert à rien.</dd>
+            <dt>Correctif</dt><dd>Un bouton cœur sur le profil public du transporteur&nbsp;: le hook, l'endpoint et l'invalidation de cache existent déjà. Sinon trancher dans l'autre sens et retirer l'entrée du menu — voir E-20.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-05</span><h3>La réservation immédiate est annoncée mais impossible</h3><span class="chip c-crit">bloquant</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">TripResultCard.tsx:42 affiche un badge « réservation immédiate » quand <code>trip.instant_booking</code> est vrai&nbsp;; le transporteur peut cocher l'option à la publication. L'endpoint <code>jobs/&lt;id&gt;/book-return/</code> n'est jamais appelé par le mobile.<br>Non observable en recette&nbsp;: <code>instant_booking = False</code> sur le seul trajet publié du jeu de données.</dd>
+            <dt>Impact</dt><dd>Le seul bouton de la carte reste «&nbsp;Envoyer une demande&nbsp;», qui attend l'accord du transporteur. Le badge promet donc une immédiateté que le parcours contredit à l'étape suivante — sur l'écran de conversion de la cliente.</dd>
+            <dt>Correctif</dt><dd>Câbler <code>book-return/</code> derrière un second bouton sur les cartes concernées, ou masquer le badge jusqu'à ce qu'il soit actionnable. La seconde option est immédiate et arrête le mensonge. À faire suivre d'un jeu de recette qui active l'option, sans quoi le chemin restera non testé.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-22</span><h3>Le dernier retour publié ne peut pas être dépublié</h3><span class="chip c-warn">majeur</span><span class="chip c-info">découvert en recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Inventaire défilé jusqu'à la butée, état stabilisé, quatre retours en base. La dernière carte mesure 141 dp au lieu de 212&nbsp;; ses boutons « Prolonger » et « Dupliquer » tombent à 24 dp au lieu de 36&nbsp;; <b>« Dépublier » est absent de l'arbre d'accessibilité</b>. La marge basse est <code>paddingBottom: spacing['2xl']</code> = 32 dp, contre ~110 dp occupés par la barre flottante.</dd>
+            <dt>Impact</dt><dd>C'est l'action qui retire un trajet périmé de la recherche cliente, sur l'écran dont c'est la seule raison d'être. Le pivot classe ce cycle de vie en «&nbsp;Core&nbsp;»&nbsp;: un inventaire ingérable pollue la recherche, donc la promesse. En recette, les trois retours visibles portent tous «&nbsp;Expiré — invisible dans la recherche&nbsp;»&nbsp;: le cas d'usage est exactement celui-là.</dd>
+            <dt>Correctif</dt><dd>Une marge basse égale à la hauteur de la barre flottante, ou <code>useBottomTabBarHeight()</code>. Même famille que le défaut trouvé en août sur le profil&nbsp;: il faut la même passe sur tous les écrans à liste défilante.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-07</span><h3>Les blocs qui portent la promesse sont sous le seuil de lisibilité</h3><span class="chip c-warn">majeur</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Amorce de retour 3,35:1 · économie estimée 3,60:1 · km valorisés 3,60:1 · onglet inactif 2,54:1 · expiration urgente 2,15:1 · « Expiré » et « Dépublier » 3,76:1. Seuil AA sous 18 px&nbsp;: 4,5:1. Détail au §04.</dd>
+            <dt>Impact</dt><dd>Usage réel&nbsp;: un chauffeur, en plein jour, dans une cabine. Les combinaisons en cause sont le bandeau qui alimente l'inventaire, l'argument de conversion de la cliente, la métrique produit, l'alerte d'expiration et l'action destructive de l'inventaire.</dd>
+            <dt>Correctif</dt><dd>Six valeurs dans <code>colors.ts</code>. Aucun changement d'identité&nbsp;: les mêmes teintes, un cran plus foncées pour les usages textuels.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-08</span><h3>Onze commandes sous les 44 dp que la charte impose</h3><span class="chip c-warn">majeur</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Mesures relevées dans l'arbre d'accessibilité, de 21×124 dp (« Gérer mes retours ») à 48×43 dp (le bouton central). Tableau complet au §04.</dd>
+            <dt>Impact</dt><dd><b>Correction de la version du 02/09&nbsp;:</b> j'annonçais cinq commandes et je notais leurs tailles « px » — c'étaient des dp, et il y en a onze. La liste inclut deux actions destructives (annuler une mission, dépublier), l'ouverture d'un litige, l'unique bascule de langue et les deux seuls accès à l'inventaire et aux alertes corridor. La règle est écrite dans la charte et déjà outillée&nbsp;: ce n'est pas un défaut de spécification mais une application partielle.</dd>
+            <dt>Correctif</dt><dd><code>minHeight: TOUCH_TARGET</code> ou <code>hitSlop</code> sur les onze, et une règle de lint pour la récidive.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-09</span><h3>Zéro résultat de recherche&nbsp;: une seule sortie au lieu de deux</h3><span class="chip c-warn">majeur</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Recherche Le Kef → Tataouine sur appareil. L'état vide affiche « Aucun trajet retour pour l'instant », « Créez une alerte : on vous prévient dès qu'un trajet compatible est publié. », et un unique bouton « Créer une alerte corridor ». <code>jobs/</code> (création de demande classique) n'est jamais appelé par le mobile.</dd>
+            <dt>Impact</dt><dd>Une alerte corridor est une promesse <em>différée</em>&nbsp;: la cliente qui doit expédier demain n'a rien. Sur un corridor peu liquide — la situation normale d'une marketplace en amorçage — l'écran de recherche devient le point de sortie de l'application.</dd>
+            <dt>Correctif</dt><dd>Dépend de l'arbitrage sur le canal classique (§10). Trois options par coût croissant&nbsp;: proposer les trajets du même corridor à d'autres dates&nbsp;; élargir aux gouvernorats voisins&nbsp;; livrer la demande classique préremplie. La première est presque gratuite et supprime l'impasse.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-11</span><h3>L'inventaire des retours n'a pas de zone sûre</h3><span class="chip c-warn">majeur</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">mes-retours.tsx — <code>ScrollView</code> nu&nbsp;: seul écran sans <code>SafeAreaView</code>, sans <code>refreshControl</code>, et seul à signaler ses erreurs par <code>Alert.alert</code> quand tous les autres passent par le <code>ToastHost</code>.<br>Sur appareil, le titre « Mes retours publiés » est centré à 81 px de haut alors que la barre d'état occupe les 136 premiers&nbsp;: <b>il se superpose à l'horloge et aux icônes système</b> (capture au §02).</dd>
+            <dt>Impact</dt><dd>Le défaut est visible en une seconde par n'importe quel testeur, sur l'écran que le pivot classe en « Core ». L'écran ne se rafraîchit pas non plus, alors que son contenu — les jours restants avant expiration — change tout seul avec le temps.</dd>
+            <dt>Correctif</dt><dd>Trois lignes&nbsp;: <code>SafeAreaView edges={['top']}</code>, <code>queryRefreshControl(trajets)</code>, <code>showToast</code>. Et l'édition d'un retour publié reste à ouvrir&nbsp;: on peut prolonger, dupliquer, dépublier, mais pas corriger un prix.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-12</span><h3>Le transporteur n'a pas d'écran de mission</h3><span class="chip c-warn">majeur</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Tout tient dans <code>MissionCard</code>, sur l'Accueil&nbsp;; <code>mission/[id].tsx</code> est un écran client. Sur appareil, la carte d'une mission en cours affiche le texte <b>« Photo de preuve : bientôt. »</b> entre le champ PIN et le bouton « Marquer livré ».</dd>
+            <dt>Impact</dt><dd>Le transporteur n'a ni jalons, ni fil d'événements, ni détail de marchandise, ni historique consultable — alors que la cliente dispose de tout cela. Il ne peut pas prouver sa livraison, ce qui le laisse sans défense en cas de litige. Et un message technique de report est affiché tel quel dans l'interface de production.</dd>
+            <dt>Correctif</dt><dd>Réutiliser <code>MissionTimeline</code> derrière une route de mission transporteur, et brancher <code>upload/photo/</code> à la clôture. Le composant de chronologie et l'endpoint existent tous les deux.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-23</span><h3>La carte des résultats avale le défilement de la liste</h3><span class="chip c-warn">majeur</span><span class="chip c-info">découvert en recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Recherche Sfax → Tunis, un résultat. Deux balayages verticaux successifs amorcés sur la carte (y ≈ 1900, dans les bornes du <code>MapView</code>) laissent l'arbre d'accessibilité <b>inchangé</b>&nbsp;: la liste n'a pas bougé. Le même geste amorcé 150 px plus bas, hors de la carte, fait défiler normalement.</dd>
+            <dt>Impact</dt><dd>La carte occupe 220 dp au milieu de l'en-tête de la <code>FlatList</code>, entre le formulaire et les résultats. Un utilisateur qui balaye au centre de l'écran — le geste par défaut — croit que l'écran est figé. Sur un corridor à dix résultats, les cartes situées sous la carte deviennent difficiles à atteindre.</dd>
+            <dt>Correctif</dt><dd>Rendre la carte non interactive par défaut (<code>scrollEnabled={false}</code>, <code>pointerEvents</code> désactivés) avec un bouton « Agrandir la carte » qui ouvre le mode interactif en plein écran. C'est aussi ce qui évite de consommer du quota Maps sur un geste involontaire.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-24</span><h3>Les pastilles de non-lus deviennent illisibles aux grandes polices</h3><span class="chip c-warn">majeur</span><span class="chip c-info">découvert en recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Grossissement système à 150 % puis 200 %. La pastille de l'onglet Messages passe de 23×16 dp à 30×12 puis 36×12&nbsp;: elle s'élargit et <b>s'écrase</b>, le « 9+ » devenant illisible. Même déformation sur la pastille « 99+ » de la cloche. Les deux ont une <code>height</code> fixe (18 dp) tandis que leur texte suit l'échelle système.</dd>
+            <dt>Impact</dt><dd>C'est le seul signal qui dit à l'utilisateur qu'une décision l'attend — le pilier d'IA-4. Il se dégrade précisément chez les utilisateurs qui ont grossi la police, soit la population qui en a le plus besoin.</dd>
+            <dt>Correctif</dt><dd>Remplacer la hauteur fixe par un <code>minHeight</code> + padding, et poser <code>maxFontSizeMultiplier</code> sur le texte de la pastille. Deux lignes dans <code>FloatingTabBar</code> et <code>NotificationBell</code>.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-10</span><h3>La publication en 30 secondes n'est pas tenue</h3><span class="chip c-warn">majeur</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">publishSchema.ts — 8 champs requis. L'amorce préremplit les 2 gouvernorats et le jour&nbsp;; le véhicule vient du profil (vérifié en recette&nbsp;: « 🚛 Camion — 2000 kg » sur chaque ligne d'inventaire). Restent&nbsp;: adresse de départ, adresse d'arrivée (saisie libre), créneau, prix min, prix max = <b>5 interactions</b>, dont 4 au clavier. L'estimation serveur est un bouton dont le résultat s'<em>affiche</em> sans préremplir les prix.</dd>
+            <dt>Impact</dt><dd>L'objectif du pivot est «&nbsp;moins de 30 secondes, moins de 4 saisies manuelles&nbsp;». C'est la condition du principe n°1&nbsp;: si publier coûte cher, l'inventaire ne s'alimente pas, et la promesse cliente s'effondre en aval.</dd>
+            <dt>Correctif</dt><dd>Préremplir les deux prix depuis l'estimation en les laissant modifiables, et rendre les adresses facultatives quand le gouvernorat suffit — un retour à vide se cherche par corridor, pas par rue.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-13</span><h3>Les commandes purement iconographiques n'ont pas d'étiquette</h3><span class="chip c-warn">majeur</span><span class="chip c-warn">corrigé</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Relevé sur appareil&nbsp;: <code>favoris-retirer</code> et <code>favoris-panneau-fermer</code> ont <code>content-desc=''</code> — muets. En revanche la cloche annonce <b>« 99+ »</b>&nbsp;: faute d'<code>accessibilityLabel</code>, Android a dérivé l'étiquette du seul enfant texte, le compteur.<br>À l'inverse, la barre d'onglets, les boutons de retour et tous les <code>Button</code> sont correctement étiquetés (« Publier un retour », « Confirmer le démarrage », « Gérer mes retours »…).</dd>
+            <dt>Impact</dt><dd><b>Correction de la version du 02/09&nbsp;:</b> j'écrivais que la cloche s'annonce « bouton » et que le compteur n'est jamais annoncé. C'est l'inverse&nbsp;: un lecteur d'écran annonce « 99+, bouton » — le nombre sans l'objet. Le correctif change donc de nature&nbsp;: il faut un <code>accessibilityLabel</code> nommant la fonction <em>et</em> un <code>accessibilityValue</code> portant le compte, pas seulement une étiquette.</dd>
+            <dt>Correctif</dt><dd>Une étiquette par commande iconographique, et <code>accessibilityValue</code> sur les deux compteurs.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-14</span><h3>Les notifications ne sont atteignables que depuis l'Accueil</h3><span class="chip c-warn">majeur</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">NotificationBell n'est monté que dans HomeTopBar, elle-même utilisée uniquement par <code>home.tsx</code>. Arbres d'accessibilité relevés sur Recherche, Inventaire, Profil et Favoris&nbsp;: aucun <code>notification-bell</code>. La cloche de <code>search.tsx</code> est un autre contrôle — « Mes alertes corridor ».</dd>
+            <dt>Impact</dt><dd>Une cliente sur «&nbsp;Mes demandes&nbsp;» ou dans une conversation doit revenir à l'Accueil pour voir ce qui l'attend, alors qu'elle a 99+ notifications non lues. IA-4 exige une boîte de réception unique&nbsp;; elle existe, mais elle est locale à un écran. À noter&nbsp;: la pastille de non-lus des messages, elle, est bien portée par la barre d'onglets — la solution est donc déjà dans le code.</dd>
+            <dt>Correctif</dt><dd>Porter le compteur de notifications sur la barre d'onglets, comme celui des messages, ou fusionner les deux flux dans un seul hub d'attente d'action.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-15</span><h3>La recherche ignore la marchandise et plafonne à dix résultats</h3><span class="chip c-warn">majeur</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Formulaire relevé sur appareil&nbsp;: « Départ », « Arrivée », « Jour (optionnel) ». Ni type, ni volume, ni poids. search.tsx:70-80 documente le plafond serveur de 10 résultats sans pagination et le signale par un texte invitant à affiner.</dd>
+            <dt>Impact</dt><dd>La cartographie exige «&nbsp;type et volume de marchandise&nbsp;» dès la recherche&nbsp;; sans eux, une cliente cherchant un déménagement voit des retours incapables de le prendre, et le badge de compatibilité ne repose sur rien. Le plafond, lui, est correctement signalé plutôt que masqué — choix honnête, mais limite réelle sur un corridor dense.</dd>
+            <dt>Correctif</dt><dd>Ajouter type et volume comme filtres, et les faire porter au matching serveur. La pagination suit.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-25</span><h3>Un retour sans fourchette de prix affiche &laquo;&nbsp;–&nbsp;TND&nbsp;&raquo;, et efface la promesse d'économie</h3><span class="chip c-neut">mineur</span><span class="chip c-info">découvert en recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Réponse serveur pour le seul trajet publié du jeu de recette (id 582)&nbsp;: <code>price_tnd_min = None</code>, <code>price_tnd_max = None</code>, <code>estimated_savings = None</code>, <code>savings_basis = None</code>.<br>La carte rend donc <b>« –  TND »</b> à la place du prix, et le bloc d'économie — l'argument de conversion d'IA-5 — ne s'affiche pas du tout.</dd>
+            <dt>Impact</dt><dd>Deux choses distinctes. <b>Côté produit&nbsp;:</b> le formulaire de publication exige les deux prix, donc un retour publié par l'app en aura toujours&nbsp;; le cas ne devrait pas se produire en production. <b>Côté interface&nbsp;:</b> il n'existe aucun repli pour un prix manquant, et « –  TND » ne veut rien dire. <b>Côté recette&nbsp;:</b> l'équipe ne peut pas valider IA-5 sur son propre environnement, puisque le seul trajet disponible n'a pas de prix — ce qui explique qu'un écart aussi visible ait pu subsister.</dd>
+            <dt>Correctif</dt><dd>Un repli explicite (« Prix à négocier ») et un jeu de recette qui publie les retours avec leur fourchette, leur économie estimée et l'option de réservation immédiate — sans quoi trois écarts (E-05, E-18, E-25) restent non testables.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-16</span><h3>Le carnet d'adresses n'est jamais utilisé là où il servirait à la cliente</h3><span class="chip c-neut">mineur</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">SavedAddressPicker est importé par un seul écran&nbsp;: <code>publish/RouteSection.tsx</code> (transporteur). Côté cliente, « Mes adresses » n'est qu'une entrée du menu profil — confirmé sur appareil.</dd>
+            <dt>Impact</dt><dd>La raison d'être du carnet est de réduire la friction d'une recherche et d'une demande répétées. Côté cliente, il est purement documentaire.</dd>
+            <dt>Correctif</dt><dd>Brancher le sélecteur dans la demande cliente, en même temps que E-03.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-17</span><h3>L'accueil client est vide aux deux tiers</h3><span class="chip c-neut">mineur</span><span class="chip c-ok">recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Écran relevé sur appareil après connexion de la cliente. Contenu exhaustif&nbsp;: barre du haut (avatar, « Bienvenue, Leila », « Client », cloche), une carte dégradée « Transporti / La marketplace des trajets retour », un bouton « Trouver un retour ». Le contenu s'arrête à ~750 px sur 2400&nbsp;: <b>le reste est vide</b>.<br>Le transporteur, lui, dispose de <code>TransporterOnboardingGuide</code>, qui se masque de lui-même une fois ses trois étapes faites.</dd>
+            <dt>Impact</dt><dd>C'est l'écran d'arrivée du persona secondaire, et il ne contient ni ses demandes en cours, ni ses alertes, ni un début de recherche. Le transporteur est guidé, la cliente est accueillie par du marketing.</dd>
+            <dt>Correctif</dt><dd>La cartographie assume que la cliente n'a pas de tableau de bord et que sa racine est la recherche. Alors il faut aller au bout&nbsp;: remplacer le bandeau de marque par le formulaire de recherche lui-même, et lister dessous ses demandes en attente.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-18</span><h3>Le bloc &laquo;&nbsp;économie estimée&nbsp;&raquo; n'est pas la ligne dédiée annoncée</h3><span class="chip c-neut">mineur</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">TripResultCard.tsx:95 — <code>foot</code> est une rangée (<code>flexDirection: 'row'</code>) contenant le prix en 22 px, le bloc d'économie sur deux lignes et le bouton d'action. Non observable en recette&nbsp;: le bloc ne s'affiche pas, faute de données (E-25).</dd>
+            <dt>Impact</dt><dd>Le commentaire du code décrit une «&nbsp;ligne dédiée et non une mention noyée&nbsp;», au nom d'IA-5. La mise en page dit le contraire&nbsp;: sur une largeur de 411 dp, trois éléments se partagent la rangée et l'argument de conversion est le plus compressible des trois.</dd>
+            <dt>Correctif</dt><dd>Sortir le bloc d'économie de la rangée, au-dessus du couple prix / bouton.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-19</span><h3>Deux replis silencieux sur des routes atteignables par notification</h3><span class="chip c-neut">mineur</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">messages/[jobId].tsx — un identifiant invalide rend l'en-tête et <code>null</code>&nbsp;: écran vide, sans message ni sortie, alors qu'un <code>ErrorScreen</code> existe. requests/[jobId].tsx retombe sur un titre générique quand on arrive sans paramètre de corridor.</dd>
+            <dt>Impact</dt><dd>Deux cas atteignables par un tap de notification. <b>Correction de la version du 02/09&nbsp;:</b> j'y joignais la crainte que la barre d'onglets casse au grossissement de police. La recette l'infirme — la barre tient à 200&nbsp;%. Le défaut réel est ailleurs, sur les pastilles&nbsp;: voir E-24.</dd>
+            <dt>Correctif</dt><dd><code>ErrorScreen</code> sur l'identifiant invalide, et chargement du titre depuis le détail.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-06</span><h3>Le clavier et les feuilles modales&nbsp;: écart infirmé sur Android</h3><span class="chip c-neut">mineur</span><span class="chip c-crit">infirmé</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Huit feuilles ancrées en bas d'écran contiennent un champ sans <code>KeyboardAvoidingView</code>. Deux ont été exercées sur appareil, clavier ouvert&nbsp;:<br>• feuille d'annulation de mission&nbsp;: le champ passe de y=1844 à 1024, « Confirmer l'annulation » de 2056 à 1236 — tout reste visible.<br>• feuille d'envoi de demande&nbsp;: « Envoyer » passe de 2214 à 1394.<br>La fenêtre est redimensionnée par Android (<code>adjustResize</code>) et la feuille remonte avec elle.</dd>
+            <dt>Impact</dt><dd><b>Correction de la version du 02/09&nbsp;:</b> je classais cet écart bloquant sur huit feuilles, dont les gestes de conversion. C'était une déduction, et elle est fausse sur Android. Ce qui reste&nbsp;: sur iOS, la fenêtre n'est pas redimensionnée et <code>KeyboardAvoidingView</code> redevient nécessaire — mais le projet n'a pas de build iOS, donc la question n'est ni vérifiable ni urgente aujourd'hui. Seule nuance observée&nbsp;: le bouton secondaire « Garder la mission » est rogné en bas par la barre d'outils du clavier, sans être inutilisable.</dd>
+            <dt>Correctif</dt><dd>À traiter le jour où un build iOS existe, en même temps que la factorisation des huit feuilles sur le motif de <code>FormModalPanel</code> — qui reste souhaitable pour la duplication, pas pour le clavier.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-26</span><h3>Les deux liens de l'écran de connexion ne sont pas des boutons</h3><span class="chip c-neut">mineur</span><span class="chip c-info">découvert en recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Arbre d'accessibilité de l'écran de connexion&nbsp;: « Mot de passe oublié ? » et « Créer un compte » apparaissent comme des <code>View</code> non cliquables, sans rôle de bouton — ils sont rendus par <code>Link</code> d'expo-router. Tous les autres contrôles de l'écran portent bien leur rôle.</dd>
+            <dt>Impact</dt><dd>Un lecteur d'écran ne signale pas qu'ils sont actionnables. Ce sont les deux seules sorties de l'écran de connexion, dont la récupération de mot de passe.</dd>
+            <dt>Correctif</dt><dd><code>accessibilityRole="link"</code> sur les deux, ou les passer par <code>Pressable</code> comme le reste de l'application.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-27</span><h3>Le jeu de recette empêche de valider les écrans qu'il devrait exercer</h3><span class="chip c-neut">mineur</span><span class="chip c-info">découvert en recette</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">Observations sur l'environnement de recette&nbsp;: le seul trajet publié n'a ni prix ni économie ni réservation immédiate (E-25)&nbsp;; l'inventaire contient trois retours « Sfax → Tunis, 30 août » identiques et expirés&nbsp;; le compte transporteur a 99+ notifications non lues&nbsp;; le favori affiche « 0 mission(s) terminée(s) » pour un transporteur noté ★5.0 avec un avis&nbsp;; l'amorce de retour à vide (T4.4) ne s'affiche pas, la préférence de refus étant probablement déjà posée sur l'appareil.</dd>
+            <dt>Impact</dt><dd>Trois écarts (E-05, E-18, E-25) et la fonctionnalité classée priorité n°1 du plan (l'amorce de retour) <b>ne sont pas testables</b> sur cet environnement. C'est la cause structurelle qui explique qu'un défaut aussi visible qu'E-21 ait pu vivre jusqu'ici&nbsp;: le parcours cliente n'était jamais joué jusqu'à l'envoi.</dd>
+            <dt>Correctif</dt><dd>Étendre <code>seed_test_data</code>&nbsp;: retours avec fourchette de prix et économie calculable, un retour en réservation immédiate, un compte transporteur avec une livraison récente et gouvernorats renseignés (pour l'amorce), et des compteurs de notifications réalistes. Le guide de recette recense déjà ce manque&nbsp;; il devient bloquant.</dd>
+          </dl>
+        </div>
+
+        <div class="finding">
+          <div class="fhead"><span class="fid">E-20</span><h3>La documentation et le code divergent sur les favoris</h3><span class="chip c-neut">mineur</span></div>
+          <dl class="fgrid">
+            <dt>Preuve</dt><dd class="proof">PLAN_ACHEVEMENT_MOBILE §5 écarte explicitement « Transporteurs favoris » — « contredit le principe n°1 : la valeur vient du matching sur corridor, pas de la fidélisation ». La fonctionnalité est pourtant à moitié livrée (E-04), et la vision §8 range « fidéliser sa clientèle » parmi les besoins du persona principal.</dd>
+            <dt>Impact</dt><dd>Personne ne peut dire si les favoris sont un défaut ou une fonctionnalité en cours. C'est le genre d'ambiguïté qui laisse vivre une entrée de menu à moitié câblée pendant deux trimestres.</dd>
+            <dt>Correctif</dt><dd>Trancher, puis mettre la décision et le code d'accord. Le pendant transporteur (clients fidèles) est livré et argumenté, ce qui plaide plutôt pour terminer les favoris.</dd>
+          </dl>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="solide">
+    <div class="shead"><span class="num">08</span><h2>Ce qui est solide, et ne doit pas être cassé</h2></div>
+    <div class="stack">
+      <p>Un audit qui ne liste que des manques donne une image fausse. Sept choses sont faites au-dessus du niveau habituel d'un MVP, et la recette en a <em>vérifié</em> cinq plutôt que de les déduire.</p>
+      <ul class="plain">
+        <li><b>L'arabe et le RTL sont réellement traités</b> <span class="chip c-ok">vérifié</span> — à la bascule, l'avatar passe de la gauche à la droite, la cloche fait l'inverse, l'ordre des onglets s'inverse, et les libellés basculent en derja tunisienne («&nbsp;لوّج على عودة&nbsp;» pour chercher un retour, «&nbsp;حريف&nbsp;» pour le client). Tient à 200&nbsp;% de grossissement. C'est le piège que la plupart des applications React&nbsp;Native ratent&nbsp;; ici il est évité, et le code explique pourquoi le sens doit être posé avant le premier rendu.</li>
+        <li><b>La navigation par rôle est le bon geste</b> <span class="chip c-ok">vérifié</span> — en changeant de compte, la barre change&nbsp;: <em>Accueil · Demandes · [Publier] · Messages · Gains</em> pour le transporteur, <em>Accueil · Mes demandes · [Rechercher] · Messages · Profil</em> pour la cliente. La visibilité reste décorative côté sécurité&nbsp;: l'autorisation demeure serveur.</li>
+        <li><b>Les chiffres ne mentent jamais</b> <span class="chip c-ok">vérifié</span> — «&nbsp;87,96&nbsp;TND net&nbsp;» avec «&nbsp;Client&nbsp;: 95&nbsp;TND · commission 7,04&nbsp;TND&nbsp;» juste dessous&nbsp;; les espèces séparées du solde retirable&nbsp;; un tiret plutôt qu'un faux 0&nbsp;% quand la donnée manque&nbsp;; le mode sandbox annoncé au lieu d'un faux encaissement. Cette discipline est rare.</li>
+        <li><b>Le correctif de défilement du profil tient</b> <span class="chip c-ok">vérifié</span> — les dix entrées du menu, y compris les deux propres au transporteur, sont atteignables et mesurent leurs 47&nbsp;dp. Le défaut trouvé en août ne s'est pas reproduit là où il avait été corrigé.</li>
+        <li><b>La cartographie fonctionne</b> <span class="chip c-ok">vérifié</span> — la carte Google se rend avec les marqueurs du corridor, et le code prévoit un repli explicite plutôt qu'un écran cassé si la clé manque.</li>
+        <li><b>Les états vides ne sont pas des culs-de-sac.</b> Inventaire, demandes, portefeuille, conversations, notifications&nbsp;: chacun a un <code>EmptyState</code> avec icône, titre, sous-titre et, quand une action évidente existe, un CTA. Les onglets sans action évidente n'en ont volontairement pas — c'est de la retenue, pas un oubli.</li>
+        <li><b>Le socle tient.</b> Zéro erreur de type, zéro <code>any</code>, 206 tests verts, écrans de route minces qui composent, logique dans les hooks des features. Le hors-ligne et le cycle de vie sont câblés au natif (<code>onlineManager</code> sur NetInfo, <code>focusManager</code> sur <code>AppState</code>) — les deux pièges de React Query en React Native, tous deux évités.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 09 -->
+  <section id="plan">
+    <div class="shead"><span class="num">09</span><h2>Plan de remédiation</h2></div>
+    <div class="stack-lg">
+      <p>Les lots sont ordonnés par ce qu'ils débloquent, pas par leur coût. Le lot&nbsp;A est nouveau&nbsp;: il n'existait pas dans la version du 02/09 parce que l'écart qui le motive n'était pas visible sans exécuter l'application.</p>
+      <div class="lots">
+        <div class="lot">
+          <span class="tag">Lot A</span>
+          <h3>Rendre la demande cliente possible</h3>
+          <p>Un seul écart, mais il annule tout le parcours cliente&nbsp;: rendre la description obligatoire et le dire, faire remonter les erreurs de champ du serveur plutôt qu'un message unique et faux. Quelques heures. Sans ce lot, tout le reste du travail client est théorique.</p>
+          <div class="refs">E-21</div>
+        </div>
+        <div class="lot">
+          <span class="tag">Lot B</span>
+          <h3>Rendre l'application publiable</h3>
+          <p>Suppression de compte — endpoint d'anonymisation et entrée de profil — et pages légales. Sans ces deux points, aucune soumission de store ne passe, quel que soit l'état du reste.</p>
+          <div class="refs">E-01 · E-02</div>
+        </div>
+        <div class="lot">
+          <span class="tag">Lot C</span>
+          <h3>Ne plus rien promettre à faux</h3>
+          <p>Trois éléments d'interface annoncent une capacité absente. Chacun se règle soit en le câblant, soit en le masquant&nbsp;: le badge de réservation immédiate, le cœur des favoris, le message technique de photo différée. Puis trancher la divergence documentaire sur les favoris.</p>
+          <div class="refs">E-05 · E-04 · E-12 (partie photo) · E-20</div>
+        </div>
+        <div class="lot">
+          <span class="tag">Lot D</span>
+          <h3>Réparer ce que la recette a montré</h3>
+          <p>La zone sûre et la marge basse de l'inventaire — dont l'action destructive est aujourd'hui hors d'atteinte —, la carte qui avale le défilement, les pastilles qui s'écrasent, les onze cibles tactiles et les six couleurs sous le seuil AA. Faible coût unitaire, effet direct sur les deux écrans de conversion.</p>
+          <div class="refs">E-11 · E-22 · E-23 · E-24 · E-08 · E-07 · E-13</div>
+        </div>
+        <div class="lot">
+          <span class="tag">Lot E</span>
+          <h3>Rendre le parcours cliente décidable</h3>
+          <p>La demande structurée (photos, poids, dimensions, adresse, créneau), le carnet d'adresses branché au bon endroit, la sortie manquante de l'état vide de recherche, les filtres de marchandise. C'est le lot qui fait passer la cliente de visiteuse à expéditrice.</p>
+          <div class="refs">E-03 · E-16 · E-09 · E-15</div>
+        </div>
+        <div class="lot">
+          <span class="tag">Lot F</span>
+          <h3>Rendre la recette capable de voir</h3>
+          <p>Étendre le jeu de données pour que les écrans de la promesse soient exerçables&nbsp;: retours avec prix et économie, un retour en réservation immédiate, une livraison récente pour l'amorce de retour. Trois écarts et la fonctionnalité priorité n°1 du plan sont aujourd'hui invérifiables.</p>
+          <div class="refs">E-27 · E-25 (repli prix) · débloque E-05 · E-18 · T-06</div>
+        </div>
+        <div class="lot">
+          <span class="tag">Lot G</span>
+          <h3>Finir les parcours entamés</h3>
+          <p>Écran de mission transporteur avec jalons et preuve de livraison, publication ramenée sous les quatre saisies, notifications portées par la barre d'onglets, amorçage de l'accueil cliente, replis d'erreur sur les routes profondes.</p>
+          <div class="refs">E-12 · E-10 · E-14 · E-17 · E-19 · E-26</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 -->
+  <section id="assumes">
+    <div class="shead"><span class="num">10</span><h2>Écarts assumés</h2></div>
+    <div class="stack">
+      <p>Ces absences sont des décisions documentées dans <code>PLAN_ACHEVEMENT_MOBILE §5</code>, appliquant le filtre à six questions de la vision (§11). Elles ne sont pas comptées comme défauts — mais deux méritent d'être réexaminées maintenant que le reste a avancé.</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Écarté</th><th>Justification retenue</th><th>À réexaminer&nbsp;?</th></tr></thead>
+          <tbody>
+            <tr><td><b>Canal classique</b> (demande publiée + offres) sur mobile</td><td>&laquo; Le mener en parallèle diluerait l'effort sur le pivot &raquo;</td><td><b>Oui.</b> C'est ce qui prive l'état vide de recherche de sa seconde sortie (E-09) et le transporteur du &laquo; compléter mon aller &raquo; (T-20). Le pivot est désormais livré, et l'arbitrage était conditionné à cela.</td></tr>
+            <tr><td><b>Transporteurs favoris</b></td><td>&laquo; Contredit le principe n°1 &raquo;</td><td><b>Oui</b> — la décision et le code se contredisent aujourd'hui (E-20), et la recette montre une liste alimentée mais non alimentable.</td></tr>
+            <tr><td><b>Thème sombre</b></td><td>Coût d'audit de contraste de 24 composants pour zéro effet KPI&nbsp;; <code>light</code> forcé</td><td>Non. Mais l'audit de contraste devient nécessaire de toute façon (E-07) — autant en tirer les tokens.</td></tr>
+            <tr><td><b>File de rejeu hors ligne</b></td><td>Détection et message clair couvrent 90&nbsp;% de la valeur pour 10&nbsp;% du risque</td><td>Non. Le repli est effectivement en place et honnête.</td></tr>
+            <tr><td><b>Chat temps réel WebSocket</b></td><td>Aucun canal serveur fonctionnel&nbsp;; le vrai gain de réactivité est le push</td><td>Non.</td></tr>
+            <tr><td><b>Connexion sociale</b></td><td>N'améliore aucun des six critères, frein non observé</td><td>Non.</td></tr>
+            <tr><td><b>Admin et modération</b></td><td>Restent sur le web</td><td>Non.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="subnote">Un point de manipulation, souvent pris pour un défaut, n'en est pas un&nbsp;: sur l'écran de connexion, la touche Retour ferme le clavier au premier appui et quitte l'application au second. C'est le comportement Android attendu sur un écran racine, vérifié en recette.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Audit statique 02/09/2026 &mdash; recette sur émulateur 03/09/2026</span>
+    <span>Pixel 7 API 35 &middot; 1080×2400 &middot; 420 dpi</span>
+    <span>Sources&nbsp;: graphe Graphify (6 078 nœuds), code de la branche, Context7 (React Native), arbre d'accessibilité uiautomator</span>
+    <span>Ratios WCAG 2.1 calculés depuis src/shared/theme/colors.ts</span>
+  </footer>
+
+</div>
