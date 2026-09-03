@@ -1,0 +1,902 @@
+<title>Plan de mise à niveau mobile</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+
+<style>
+  /* Meme systeme que l'audit du 02/09 dont ce plan est le pendant : palette de
+     l'app, neutres biaises bleu, Archivo pour les titres et les donnees,
+     Source Serif pour la prose, IBM Plex Mono pour les chemins de fichiers. */
+  :root {
+    --ink:        #101828;
+    --ink-soft:   #475467;
+    --ink-faint:  #667085;
+    --ground:     #fbfbfd;
+    --surface:    #ffffff;
+    --line:       #e3e6ee;
+    --line-soft:  #eef0f5;
+
+    --brand:      #1E3A8A;
+    --brand-lite: #2563B3;
+
+    --crit:       #b3261e;
+    --crit-wash:  #fdf0ef;
+    --warn:       #a1600a;
+    --warn-wash:  #fdf6e9;
+    --good:       #06774a;
+    --good-wash:  #eef8f2;
+    --info:       #1E3A8A;
+    --info-wash:  #eef2ff;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink:        #eef1f7;
+      --ink-soft:   #a9b2c5;
+      --ink-faint:  #8b94a8;
+      --ground:     #0c0f17;
+      --surface:    #141926;
+      --line:       #262d3d;
+      --line-soft:  #1d2331;
+      --brand:      #8fabf0;
+      --brand-lite: #a9c1f7;
+      --crit:       #ff9e96;
+      --crit-wash:  #2c1615;
+      --warn:       #f0c07a;
+      --warn-wash:  #2a2013;
+      --good:       #6fd6a5;
+      --good-wash:  #10241b;
+      --info:       #a9c1f7;
+      --info-wash:  #182241;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink:        #eef1f7;
+    --ink-soft:   #a9b2c5;
+    --ink-faint:  #8b94a8;
+    --ground:     #0c0f17;
+    --surface:    #141926;
+    --line:       #262d3d;
+    --line-soft:  #1d2331;
+    --brand:      #8fabf0;
+    --brand-lite: #a9c1f7;
+    --crit:       #ff9e96;
+    --crit-wash:  #2c1615;
+    --warn:       #f0c07a;
+    --warn-wash:  #2a2013;
+    --good:       #6fd6a5;
+    --good-wash:  #10241b;
+    --info:       #a9c1f7;
+    --info-wash:  #182241;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 28px 96px; }
+
+  h1, h2, h3, h4, .eyebrow, .num, th, .chip, .toc a, .lotnum, .effort {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5.2vw, 3.3rem);
+    font-weight: 700; letter-spacing: -0.025em; line-height: 1.04;
+    margin: 0; text-wrap: balance;
+  }
+  h2 {
+    font-size: clamp(1.35rem, 2.6vw, 1.7rem);
+    font-weight: 700; letter-spacing: -0.015em; line-height: 1.15;
+    margin: 0; text-wrap: balance;
+  }
+  h3 { font-size: 1.08rem; font-weight: 600; margin: 0; text-wrap: balance; }
+  h4 { font-size: 0.92rem; font-weight: 600; margin: 0; color: var(--ink); }
+  p { margin: 0; max-width: var(--measure); }
+  a { color: var(--brand-lite); }
+  a:focus-visible { outline: 2px solid var(--brand-lite); outline-offset: 3px; }
+
+  .eyebrow {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 0.84em;
+  }
+  code {
+    background: var(--line-soft); padding: 0.1em 0.35em;
+    border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+
+  .masthead {
+    border-bottom: 3px solid var(--ink);
+    padding: 64px 0 22px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .masthead .lede {
+    font-size: 1.22rem; line-height: 1.5; color: var(--ink-soft); max-width: 62ch;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 26px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; color: var(--ink-faint);
+  }
+  .meta b { color: var(--ink-soft); font-weight: 600; }
+
+  .scores {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 34px;
+  }
+  .score { background: var(--surface); padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .score .n {
+    font-family: Archivo, sans-serif; font-size: 2.15rem; font-weight: 700;
+    letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .score .n small { font-size: 0.95rem; font-weight: 600; color: var(--ink-faint); }
+  .score .k {
+    font-family: Archivo, sans-serif; font-size: 0.73rem; font-weight: 600;
+    letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); line-height: 1.35;
+  }
+
+  .toc {
+    margin-top: 44px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    padding: 18px 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 6px 30px;
+  }
+  .toc a { font-size: 0.86rem; font-weight: 500; text-decoration: none; color: var(--ink-soft); display: flex; gap: 10px; }
+  .toc a:hover { color: var(--brand-lite); }
+  .toc a span { color: var(--ink-faint); font-variant-numeric: tabular-nums; }
+
+  section { margin-top: 76px; }
+  .shead {
+    display: flex; align-items: baseline; gap: 16px;
+    border-bottom: 1px solid var(--ink); padding-bottom: 10px; margin-bottom: 26px;
+  }
+  .shead .num {
+    font-size: 0.8rem; font-weight: 700; color: var(--brand-lite);
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  .stack-lg { display: flex; flex-direction: column; gap: 34px; }
+  .subnote { font-size: 0.95rem; color: var(--ink-faint); max-width: 72ch; }
+
+  /* Lots */
+  .lot { display: flex; flex-direction: column; gap: 16px; }
+  .lot + .lot { margin-top: 58px; padding-top: 44px; border-top: 2px solid var(--ink); }
+  .lothead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 16px; }
+  .lotnum {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--brand-lite); border: 1px solid currentColor; border-radius: 2px; padding: 3px 8px;
+  }
+  .lothead h3 { font-size: 1.28rem; font-weight: 700; letter-spacing: -0.01em; flex: 1 1 20ch; }
+  .why {
+    border-left: 3px solid var(--brand-lite); background: var(--surface);
+    border: 1px solid var(--line); border-left-width: 3px;
+    padding: 15px 20px; font-size: 0.97rem; color: var(--ink-soft); max-width: 76ch;
+  }
+  .why b { color: var(--ink); }
+  .livre {
+    background: var(--good-wash); border: 1px solid var(--good); border-left-width: 3px;
+    padding: 16px 20px; font-size: 0.95rem; color: var(--ink-soft); max-width: 78ch;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .livre .eyebrow { color: var(--good); }
+  .livre p { max-width: none; }
+  .livre ul { margin: 0; padding-left: 1.15em; }
+  .livre li { margin-bottom: 5px; }
+  .livre code { background: color-mix(in srgb, var(--good) 12%, transparent); }
+  .partiel { background: var(--warn-wash); border-color: var(--warn); }
+  .partiel .eyebrow { color: var(--warn); }
+  .dod {
+    background: var(--good-wash); border: 1px solid var(--good);
+    padding: 15px 20px; font-size: 0.95rem; color: var(--ink); max-width: 78ch;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .dod .eyebrow { color: var(--good); }
+  .dod p { color: var(--ink-soft); max-width: none; }
+
+  .scroller { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
+  th {
+    text-align: left; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint); padding: 11px 14px;
+    border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--surface);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; color: var(--ink-soft); }
+  tr:last-child td { border-bottom: none; }
+  td b, td strong { color: var(--ink); font-weight: 600; }
+  td.id { font-family: "IBM Plex Mono", monospace; font-size: 0.8rem; color: var(--brand-lite); white-space: nowrap; }
+  .effort {
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 0.05em;
+    text-align: center; color: var(--ink); white-space: nowrap;
+  }
+  .files { font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; line-height: 1.6; }
+  .files em { font-family: Archivo, sans-serif; font-style: normal; font-weight: 600; color: var(--good); font-size: 0.86em; letter-spacing: 0.04em; text-transform: uppercase; }
+
+  .chip {
+    display: inline-flex; align-items: center; font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px;
+    border: 1px solid currentColor; border-radius: 2px; white-space: nowrap;
+  }
+  .c-ok   { color: var(--good); background: var(--good-wash); }
+  .c-warn { color: var(--warn); background: var(--warn-wash); }
+  .c-crit { color: var(--crit); background: var(--crit-wash); }
+  .c-neut { color: var(--ink-faint); background: var(--line-soft); }
+  .c-info { color: var(--info); background: var(--info-wash); }
+
+  ul.plain { margin: 0; padding-left: 1.15em; max-width: var(--measure); }
+  ul.plain li { margin-bottom: 7px; color: var(--ink-soft); }
+  ul.plain li::marker { color: var(--brand-lite); }
+  ol.rules { margin: 0; padding-left: 1.35em; max-width: var(--measure); }
+  ol.rules li { margin-bottom: 12px; color: var(--ink-soft); }
+  ol.rules li::marker { color: var(--brand-lite); font-family: Archivo, sans-serif; font-weight: 700; }
+  ol.rules b { color: var(--ink); }
+
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--brand-lite);
+    background: var(--surface); padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .callout.rouge { border-left-color: var(--crit); }
+  .callout p { max-width: 74ch; font-size: 0.96rem; color: var(--ink-soft); }
+
+  /* Frise de sequencement */
+  .frise { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .jalon { background: var(--surface); padding: 16px 20px; display: grid; grid-template-columns: 116px 1fr; gap: 4px 20px; align-items: baseline; }
+  .jalon .quand {
+    font-family: Archivo, sans-serif; font-size: 0.74rem; font-weight: 700;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--brand-lite);
+  }
+  .jalon h4 { grid-column: 2; }
+  .jalon p { grid-column: 2; font-size: 0.93rem; }
+
+  footer {
+    margin-top: 84px; border-top: 1px solid var(--line); padding-top: 20px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--ink-faint);
+    display: flex; flex-wrap: wrap; gap: 6px 24px;
+  }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 18px 64px; }
+    .jalon { grid-template-columns: 1fr; }
+    .jalon h4, .jalon p { grid-column: 1; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Plan d'action &middot; application mobile &middot; Transporti V1</div>
+    <h1>Mise à niveau après audit et recette</h1>
+    <p class="lede">Sept lots, ordonnés par ce qu'ils débloquent et non par leur coût. Le premier tient en un jour et demi et rend possible un parcours cliente aujourd'hui impossible&nbsp;; les deux suivants rendent l'application soumettable en store. Tout le reste vient après.</p>
+    <div class="meta">
+      <span><b>Rédigé</b> 03/09/2026</span>
+      <span><b>Avancement</b> lots 1, 3, 4 livrés · lot 2 à 3/4</span>
+      <span><b>Fonde sur</b> AUDIT_MOBILE_DESIGN_UX_USERSTORIES_2026-09-02</span>
+      <span><b>Succède à</b> PLAN_ACHEVEMENT_MOBILE_2026-08-07</span>
+      <span><b>Périmètre</b> mobile/ + 2 tâches backend</span>
+    </div>
+  </header>
+
+  <div class="scores">
+    <div class="score"><div class="n" style="color:var(--good)">3,75<small>&nbsp;/7</small></div><div class="k">Lots livrés</div></div>
+    <div class="score"><div class="n" style="color:var(--good)">20<small>&nbsp;/37</small></div><div class="k">Tâches livrées</div></div>
+    <div class="score"><div class="n">≈16<small>&nbsp;j·h</small></div><div class="k">Charge restante</div></div>
+    <div class="score"><div class="n" style="color:var(--good)">✓</div><div class="k">Cliente débloquée</div></div>
+    <div class="score"><div class="n">261</div><div class="k">Tests verts (229 + 32)</div></div>
+  </div>
+
+  <nav class="toc" aria-label="Sommaire">
+    <a href="#cadre"><span>01</span> Ce que ce plan corrige</a>
+    <a href="#regles"><span>02</span> Trois règles de séquencement</a>
+    <a href="#lots"><span>03</span> Les sept lots</a>
+    <a href="#ordre"><span>04</span> Ordre d'exécution et jalons</a>
+    <a href="#kpi"><span>05</span> Traçabilité KPI</a>
+    <a href="#risques"><span>06</span> Risques</a>
+    <a href="#hors"><span>07</span> Ce que ce plan ne fait pas</a>
+    <a href="#dod"><span>08</span> Définition de « fini »</a>
+  </nav>
+
+  <!-- 01 -->
+  <section id="cadre">
+    <div class="shead"><span class="num">01</span><h2>Ce que ce plan corrige</h2></div>
+    <div class="stack">
+      <p>L'audit du 02/09, complété par une recette sur émulateur le 03/09, recense <b>27 écarts</b> et <b>30 user stories couvertes sur 48</b>. Ce plan les ordonne. Trois constats en fixent la forme.</p>
+      <ol class="rules">
+        <li><b>Un écart annule à lui seul le parcours cliente.</b> L'envoi d'une demande échoue toujours&nbsp;: le serveur exige <code>description</code>, l'interface l'appelle «&nbsp;Message (optionnel)&nbsp;», et l'application remplace le message du serveur par une phrase sur le plafond COD. C'est le lot&nbsp;1, et il coûte un jour et demi.</li>
+        <li><b>Deux absences interdisent la publication</b>, indépendamment de la qualité du reste&nbsp;: pas de suppression de compte, pas de politique de confidentialité. C'est le lot&nbsp;2.</li>
+        <li><b>Le déficit est concentré côté cliente.</b> Le transporteur a 16 stories couvertes sur 24, la cliente 14 sur 24 avec sept absences. Les lots 5 et 6 lui sont consacrés.</li>
+      </ol>
+      <div class="callout">
+        <div class="eyebrow">Bonne nouvelle de l'instruction du plan</div>
+        <p>Deux tâches supposées lourdes se révèlent légères après lecture du serveur. <b>Les photos de marchandise n'exigent aucun travail backend</b>&nbsp;: <code>PhotoUploadView</code> existe (<code>logistics/upload_views.py:74</code>, routé <code>upload/photo/</code>), le champ <code>photos</code> est déjà sur le modèle (<code>logistics/models.py:341</code>) <em>et</em> déjà dans les champs du sérialiseur de création (<code>serializers.py:1091</code>). Le mobile n'a jamais rempli un canal ouvert de bout en bout.</p>
+        <p>Et <b>la suppression de compte n'exige pas de migration</b>&nbsp;: <code>User</code> hérite d'<code>AbstractUser</code> (<code>users/models.py:7</code>), donc <code>is_active</code> existe déjà. L'anonymisation se code sans toucher au schéma.</p>
+      </div>
+      <div class="callout rouge">
+        <div class="eyebrow" style="color:var(--crit)">Le serveur parle déjà français, le mobile l'ignore</div>
+        <p>Toutes les erreurs 400 de l'envoi de demande portent <em>déjà</em> un message lisible&nbsp;: «&nbsp;Ce trajet n'est plus disponible.&nbsp;», «&nbsp;Vous avez déjà une demande en cours sur ce trajet.&nbsp;» (<code>views/trip_requests.py:47-79</code>), «&nbsp;Paiement à la livraison limité à 300 TND…&nbsp;» (<code>serializers.py:1104</code>). <code>useSendTripRequest.ts:26</code> les jette toutes et affiche une chaîne codée en dur. Le raisonnement qui manque ici est déjà écrit ailleurs dans le projet&nbsp;: <code>loginError.ts</code> explique en commentaire pourquoi confondre deux 400 fait «&nbsp;vérifier sa frappe indéfiniment&nbsp;». Le lot 1 applique cette leçon à la demande.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="regles">
+    <div class="shead"><span class="num">02</span><h2>Trois règles de séquencement</h2></div>
+    <div class="stack">
+      <ol class="rules">
+        <li><b>Ce qui débloque passe avant ce qui améliore.</b> Le lot 1 précède tout, y compris les lots de recevabilité store&nbsp;: une journée de travail rend testable l'ensemble du parcours cliente, dont dépend la validation de six autres tâches.</li>
+        <li><b>Ne rien construire qu'on ne peut pas voir.</b> Le lot 5 (jeu de recette) vient <em>avant</em> le lot 6 (demande structurée), parce que trois écarts et la fonctionnalité classée priorité n°1 du plan d'août sont aujourd'hui invérifiables faute de données. Construire sur un environnement aveugle est ce qui a laissé vivre l'écart du lot 1.</li>
+        <li><b>Cesser de promettre avant d'enrichir.</b> Le lot 3 masque ou câble trois éléments d'interface qui annoncent une capacité inexistante. C'est presque gratuit et cela retire de la dette de confiance — le premier produit de la plateforme selon la vision (§4).</li>
+      </ol>
+      <p class="subnote">Échelle d'effort&nbsp;: <b>XS</b> moins de 2&nbsp;h · <b>S</b> une demi-journée · <b>M</b> 1 à 2 jours · <b>L</b> 3 à 5 jours. Les tâches marquées <em>créer</em> ajoutent un fichier&nbsp;; les autres modifient l'existant.</p>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="lots">
+    <div class="shead"><span class="num">03</span><h2>Les sept lots</h2></div>
+
+    <div class="stack-lg">
+
+      <!-- LOT 1 -->
+      <div class="lot">
+        <div class="lothead"><span class="lotnum">Lot 1</span><h3>Rendre la demande cliente possible</h3><span class="chip c-crit">1,5 jour · bloquant</span></div>
+        <div class="livre">
+          <div class="eyebrow">✅ Livré le 03/09/2026</div>
+          <p>Les quatre tâches sont faites. <b>Une surprise à l'exécution&nbsp;:</b> le raisonnement manquant existait déjà en local dans <code>useCreateWithdrawal.ts</code> (<code>firstFieldError</code>), avec la bonne justification en commentaire — « le dupliquer côté mobile ferait diverger les deux règles ». La tâche 1.4 a donc consisté à <em>promouvoir</em> ce code en <code>core/api/serverMessage.ts</code> plutôt qu'à écrire cinq classifieurs.</p>
+          <ul>
+            <li><b>1.1</b> — <code>features/search/api/requestError.ts</code>&nbsp;: classifieur pur des deux formes de 400, avec une politique d'affichage explicite par champ (<code>PREFERER_MESSAGE_SERVEUR</code>) — le texte français du serveur pour <code>proposed_price</code> et <code>payment_method</code>, le nôtre pour <code>description</code> dont DRF refuse en anglais.</li>
+            <li><b>1.2</b> — «&nbsp;Message (optionnel)&nbsp;» devient «&nbsp;Ce que vous expédiez&nbsp;», champ requis, placeholder d'exemple, i18n FR + AR.</li>
+            <li><b>1.3</b> — 9 tests, dont l'ordre de préséance entre les deux formes et le repli sur une page HTML de <code>DisallowedHost</code>.</li>
+            <li><b>1.4</b> — 6 hooks portent désormais <code>serverMessage</code> (demande, retrait de demande, contre-offre, réponse à une demande, litige, avis, retrait de gains) et 5 écrans l'affichent avant leur message localisé.</li>
+          </ul>
+          <p><b>DoD tenue sur émulateur.</b> Description vide → «&nbsp;Décrivez ce que vous expédiez.&nbsp;» sous le champ, aucune requête envoyée. Demande complète → succès. Doublon → «&nbsp;Vous avez déjà une demande en cours sur ce trajet.&nbsp;», le texte du serveur.</p>
+        </div>
+        <div class="why"><b>Objectif business&nbsp;:</b> la conversion de la cliente. Aujourd'hui l'unique action qui transforme une visiteuse en expéditrice échoue systématiquement, et le message d'erreur l'envoie corriger le prix. Sans ce lot, le KPI «&nbsp;conversion mission → paiement&nbsp;» reste structurellement à zéro côté canal retour, et six tâches des lots suivants sont invalidables.</div>
+        <div class="scroller">
+          <table>
+            <thead><tr><th>#</th><th>Tâche</th><th>Fichiers</th><th class="effort">Effort</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="id">1.1</td>
+                <td>Remonter le message du serveur au lieu d'une chaîne codée en dur. Classifieur pur sur le modèle de <code>loginError.ts</code>, gérant les <b>deux formes</b> de 400&nbsp;: <code>{error: "…"}</code> (règles métier de la vue) et <code>{champ: ["…"]}</code> (validation DRF)</td>
+                <td class="files"><em>créer</em> src/features/search/api/requestError.ts<br>src/features/search/api/useSendTripRequest.ts:20-33<br>src/features/search/components/SendRequestSheet.tsx:105-110</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">1.2</td>
+                <td>Rendre la description obligatoire côté formulaire, avec un libellé honnête. Le modèle serveur dit déjà ce qu'attend le champ&nbsp;: <span class="mono">«&nbsp;What the client wants to ship (goods, weight estimate…)&nbsp;»</span>. Renommer «&nbsp;Message (optionnel)&nbsp;» → «&nbsp;Ce que vous expédiez&nbsp;», ajouter la validation locale et l'entrée i18n FR + AR</td>
+                <td class="files">src/features/search/components/SendRequestSheet.tsx:33-40<br>src/core/i18n/locales/fr.json · ar.json<br><span class="subnote">référence : backend/logistics/models.py:340</span></td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">1.3</td>
+                <td>Tests du classifieur&nbsp;: les deux formes de 400, le 403 rôle, l'absence de réponse. Suite jumelle de <code>loginError.test.ts</code></td>
+                <td class="files"><em>créer</em> src/features/search/api/requestError.test.ts</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">1.4</td>
+                <td>Passe de cohérence sur les cinq autres mutations qui replient un 400 sur un message unique&nbsp;: retrait de demande, contre-offre, retrait de gains, litige, avis</td>
+                <td class="files">src/features/{my-requests,requests,wallet,disputes,reviews}/api/</td>
+                <td class="effort">S</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dod">
+          <div class="eyebrow">Définition de fini</div>
+          <p>Sur émulateur, avec le compte <code>leila.benamor@</code>&nbsp;: une demande envoyée sans description affiche un message qui <b>nomme la description</b>&nbsp;; une demande complète aboutit et apparaît dans «&nbsp;Mes demandes&nbsp;» ; une demande en doublon affiche «&nbsp;Vous avez déjà une demande en cours sur ce trajet&nbsp;» — le texte du serveur, pas un substitut. Capture d'écran des trois cas joints à la PR.</p>
+        </div>
+      </div>
+
+      <!-- LOT 2 -->
+      <div class="lot">
+        <div class="lothead"><span class="lotnum">Lot 2</span><h3>Rendre l'application recevable en store</h3><span class="chip c-crit">3 jours · bloquant</span></div>
+        <div class="livre partiel">
+          <div class="eyebrow">🟠 Livré partiellement le 03/09/2026 — 3 tâches sur 4</div>
+          <p><b>Deux faits ont allégé le lot&nbsp;:</b> <code>User</code> hérite d'<code>AbstractUser</code>, donc aucune migration ; et <code>TransportJob.owner</code> comme <code>Offer.transporter</code> sont en <code>on_delete=PROTECT</code> — un <code>user.delete()</code> lèverait <code>ProtectedError</code>. L'anonymisation n'est donc pas un choix de confort&nbsp;: la base elle-même interdit la suppression.</p>
+          <ul>
+            <li><b>2.1</b> ✅ — <code>users/services_account_closure.py</code> + <code>DELETE auth/account/</code>. Garde-fous&nbsp;: missions <code>MATCHED</code>/<code>IN_PROGRESS</code>/<code>DISPUTED</code>, dette COD, solde retirable — chacun avec un motif actionnable. 11 tests.</li>
+            <li><b>2.2</b> ✅ — <code>DeleteAccountPanel</code>&nbsp;: conséquences annoncées avant la saisie, mot de passe redemandé, confirmation système, session coupée au succès.</li>
+            <li><b>2.3</b> ✅ — trois entrées légales via <code>ExternalLinkRow</code>, URL dans <code>env</code>. Pas d'URL, pas de ligne&nbsp;: un lien légal mort est pire que son absence en revue de store.</li>
+            <li><b>2.4</b> ⬜ — écran «&nbsp;Comment ça marche&nbsp;» <b>non fait</b>.</li>
+          </ul>
+          <p><b>DoD tenue sur émulateur</b> avec un compte jetable&nbsp;: suppression depuis l'application, retour à l'écran de connexion, reconnexion refusée («&nbsp;No account found with this email&nbsp;»), ligne conservée en base et anonymisée (<code>supprime+…@transporti.invalid</code>, téléphone libéré, mot de passe inutilisable). Garde-fou vérifié sur le compte transporteur réel&nbsp;: «&nbsp;Vous avez 4 mission(s) en cours…&nbsp;», compte laissé actif.</p>
+          <p><b>Reste à fournir, hors code&nbsp;:</b> les trois pages légales elles-mêmes. Les URL pointent aujourd'hui sur <code>transporti.tn</code> à titre de gabarit — la dépendance juridique que le plan signalait au jour 1.</p>
+        </div>
+        <div class="why"><b>Objectif business&nbsp;:</b> pouvoir soumettre. Google Play et l'App Store exigent tous deux un chemin de suppression de compte <em>dans l'application</em> et un lien de politique de confidentialité. Ce sont des motifs de refus, pas des remarques. S'y ajoute l'obligation d'effacement de la loi tunisienne 2004-63. Le lot sert aussi la valeur «&nbsp;confiance&nbsp;» (vision §4)&nbsp;: la cartographie identifie les pages de confiance comme la levée de l'objection n°1 du persona cliente, et elles n'existent nulle part sur mobile.</div>
+        <div class="scroller">
+          <table>
+            <thead><tr><th>#</th><th>Tâche</th><th>Fichiers</th><th class="effort">Effort</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="id">2.1</td>
+                <td><span class="chip c-info">backend</span> Endpoint d'anonymisation&nbsp;: <code>DELETE auth/account/</code>. Anonymise l'identité (e-mail, téléphone, nom, avatar), passe <code>is_active=False</code>, <b>conserve</b> missions et écritures comptables — elles doivent survivre à l'utilisateur. Aucune migration&nbsp;: <code>is_active</code> vient d'<code>AbstractUser</code>. Refus si une mission est en cours ou une dette COD ouverte, avec le motif</td>
+                <td class="files">backend/users/views.py · urls.py<br><em>créer</em> backend/users/services_account_closure.py<br><em>créer</em> backend/users/tests/test_account_closure.py</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">2.2</td>
+                <td>Entrée «&nbsp;Supprimer mon compte&nbsp;» en bas du profil, derrière une double confirmation qui <b>annonce les conséquences</b> avant d'agir — le motif existe déjà pour la dépublication d'un retour (<code>mes-retours.tsx:52-72</code>)</td>
+                <td class="files">app/(app)/profile.tsx<br><em>créer</em> src/features/auth/components/DeleteAccountPanel.tsx<br><em>créer</em> src/features/auth/api/useDeleteAccount.ts</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">2.3</td>
+                <td>Trois entrées légales dans le menu profil (CGU, Confidentialité, Aide) ouvrant des pages hébergées. Les URL viennent de <code>env</code>, pas du code</td>
+                <td class="files">app/(app)/profile.tsx<br>src/shared/ui/AboutPanel.tsx<br>src/core/env.ts · locales</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">2.4</td>
+                <td>Écran «&nbsp;Comment ça marche&nbsp;» court, <b>raconté séparément pour chacun des deux métiers</b> — escrow, vérification, litiges. C'est la page P3 de la cartographie, jamais créée</td>
+                <td class="files"><em>créer</em> app/(app)/comment-ca-marche.tsx<br><em>créer</em> src/features/onboarding/components/TrustExplainer.tsx</td>
+                <td class="effort">M</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dod">
+          <div class="eyebrow">Définition de fini</div>
+          <p>Sur build preview&nbsp;: un compte de test est supprimé depuis l'application, sa session tombe, ses missions passées restent visibles côté back-office avec un client anonymisé, et une seconde tentative de connexion échoue. Les trois liens légaux ouvrent des pages réelles. Une relecture de la <span class="mono">Data safety</span> de Play Console est joignable à la PR.</p>
+        </div>
+      </div>
+
+      <!-- LOT 3 -->
+      <div class="lot">
+        <div class="lothead"><span class="lotnum">Lot 3</span><h3>Cesser d'annoncer ce qui n'existe pas</h3><span class="chip c-warn">1,5 jour</span></div>
+        <div class="livre">
+          <div class="eyebrow">✅ Livré le 03/09/2026</div>
+          <ul>
+            <li><b>3.1</b> — badge de réservation immédiate <b>retiré</b> (option B recommandée), clé <code>search.instant</code> supprimée des deux locales pour qu'il ne puisse pas réapparaître par inadvertance.</li>
+            <li><b>3.2</b> — <code>FavoriteButton</code> sur le profil public du transporteur, réservé au rôle CLIENT, état lu du serveur, cible de 44&nbsp;dp, étiquette qui suit l'état.</li>
+            <li><b>3.3</b> — «&nbsp;Photo de preuve&nbsp;: bientôt.&nbsp;» retiré de l'interface, clé supprimée. <code>common.coming_soon</code>, devenue orpheline, l'est aussi&nbsp;: une clé qui annonce une fonctionnalité à venir est une invitation à la réafficher.</li>
+            <li><b>3.4</b> — décision sur les favoris consignée et datée dans <code>docs/BACKLOG.md</code>, avec ses trois raisons et la mention que la ligne du §5 du plan d'août devient caduque.</li>
+          </ul>
+          <p><b>DoD tenue&nbsp;:</b> aucune occurrence de «&nbsp;bientôt&nbsp;» au sens «&nbsp;à venir&nbsp;» dans les locales (les trois restantes disent «&nbsp;expire bientôt&nbsp;» et «&nbsp;connexion récente&nbsp;»). Cœur testé dans les deux sens sur émulateur, état de départ restauré.</p>
+        </div>
+        <div class="why"><b>Objectif business&nbsp;:</b> arrêter de dépenser de la confiance. Trois éléments d'interface promettent une capacité que le code ne fournit pas, sur les écrans de décision des deux rôles. Chaque ligne se règle par un choix binaire — câbler ou masquer — et la version qui masque coûte quelques heures. Un badge qui mentira demain vaut moins qu'un badge absent.</div>
+        <div class="scroller">
+          <table>
+            <thead><tr><th>#</th><th>Tâche</th><th>Fichiers</th><th class="effort">Effort</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="id">3.1</td>
+                <td>Réservation immédiate&nbsp;: <b>décision à prendre</b>. Option A — câbler <code>jobs/&lt;id&gt;/book-return/</code> derrière un second bouton sur les cartes concernées (M). Option B — masquer le badge jusqu'à ce qu'il soit actionnable (XS). Recommandation&nbsp;: B maintenant, A au lot 6 avec la demande structurée</td>
+                <td class="files">src/features/search/components/TripResultCard.tsx:42<br><em>si A</em> créer src/features/search/api/useBookReturn.ts</td>
+                <td class="effort">XS<br>ou M</td>
+              </tr>
+              <tr>
+                <td class="id">3.2</td>
+                <td>Bouton cœur sur le profil public du transporteur. Le hook, l'endpoint et l'invalidation de cache existent déjà — seul le point d'entrée manque, ce qui rend la rubrique «&nbsp;Mes favoris&nbsp;» inalimentable depuis le mobile</td>
+                <td class="files">app/(app)/transporteur/[id].tsx<br>src/features/favorites/api/useToggleFavorite.ts <span class="subnote">(existe)</span></td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">3.3</td>
+                <td>Retirer de l'interface le texte technique «&nbsp;Photo de preuve&nbsp;: bientôt.&nbsp;», affiché tel quel à l'utilisateur. Le vrai téléversement arrive au lot 7&nbsp;; d'ici là on ne commente pas une absence</td>
+                <td class="files">src/features/missions/components/MissionCard.tsx:121<br>locales fr.json · ar.json</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">3.4</td>
+                <td>Trancher la divergence documentaire sur les favoris&nbsp;: le plan d'août les écarte («&nbsp;contredit le principe n°1&nbsp;»), la vision §8 range «&nbsp;fidéliser sa clientèle&nbsp;» dans les besoins du persona principal, et le code en livre la moitié. Décider, puis aligner la décision et le code</td>
+                <td class="files">docs/PLAN_ACHEVEMENT_MOBILE_2026-08-07.md §5<br>docs/BACKLOG.md</td>
+                <td class="effort">XS</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dod">
+          <div class="eyebrow">Définition de fini</div>
+          <p>Une revue écran par écran ne trouve plus d'élément d'interface annonçant une action indisponible. Le mot «&nbsp;bientôt&nbsp;» n'apparaît dans aucun fichier de locale. La décision sur les favoris est écrite et datée dans le backlog.</p>
+        </div>
+      </div>
+
+      <!-- LOT 4 -->
+      <div class="lot">
+        <div class="lothead"><span class="lotnum">Lot 4</span><h3>Réparer ce que la recette a montré</h3><span class="chip c-warn">3 jours</span></div>
+        <div class="livre">
+          <div class="eyebrow">✅ Livré le 03/09/2026 — 9 tâches sur 9</div>
+          <p><b>Le lot s'est outillé lui-même.</b> La règle de lint (4.9), écrite en dernier dans le plan, a été livrée en premier : elle a trouvé les cibles tactiles restantes, y compris six que la recette n'avait pas relevées. C'est elle qui a rendu 4.5 exhaustive plutôt qu'anecdotique.</p>
+          <ul>
+            <li><b>4.1</b> — inventaire : <code>SafeAreaView</code>, <code>queryRefreshControl</code>, <code>showToast</code>. Le titre passe de y=81 à y=217 px, sous la barre d'état de 136 px.</li>
+            <li><b>4.2 · E-22</b> — marge basse via un hook unique, <code>useFloatingTabBarClearance</code>, appliqué aux 7 écrans à liste. <b>Deux fausses pistes traversées :</b> <code>useBottomTabBarHeight</code> de react-navigation sous-estime une barre custom, et la valeur théorique laissait encore 17 dp de rognage. La marge est donc calibrée sur appareil, et le commentaire le dit au lieu de prétendre une dérivation.</li>
+            <li><b>4.3 · E-23</b> — carte rendue inerte en aperçu (<code>scrollEnabled</code>, <code>zoomEnabled</code>, <code>rotateEnabled</code>, <code>pitchEnabled</code> à false) plus un mode plein écran. Vérifié : un balayage amorcé sur la carte fait maintenant défiler la liste.</li>
+            <li><b>4.4 · E-24</b> — pastilles : <code>minHeight</code> au lieu d'une hauteur fixe, <code>maxFontSizeMultiplier</code> sur le texte. À 200&nbsp;% de police, la pastille messages mesure 27×19 dp au lieu de 36×12 écrasés.</li>
+            <li><b>4.5 · E-08</b> — <b>16 cibles</b> portées à 44 dp, pas 11 : la règle en a révélé six de plus (onglets des deux boîtes de réception, zones de service, refus d'une demande, sélecteur d'adresse, « tout marquer comme lu »). Le FAB a demandé un diagnostic à part : <code>minHeight</code> n'y pouvait rien, <code>height: 48</code> le neutralise — le défaut venait du décalage vertical qui faisait sortir le bouton de la barre, où Android rogne aussi la zone tactile. Ramené de −14 à −9 dp, il mesure ses 48×48.</li>
+            <li><b>4.6 · E-07</b> — quatre variantes texte (<code>colors.text.*</code>), un cran plus foncées à teinte constante, plus <code>neutral[400]</code> → <code>neutral[500]</code> sur les onglets. 60 usages basculés dans 36 fichiers, en ne touchant que la propriété <code>color</code> : fonds et liserés gardent les couleurs d'origine. Un test verrouille 11 ratios en CI.</li>
+            <li><b>4.7 · E-13</b> — étiquettes sur toutes les commandes iconographiques, et <code>accessibilityValue</code> sur les deux compteurs. La cloche annonce désormais «&nbsp;Notifications, 387 non lus&nbsp;» — l'objet <em>et</em> le compte, là où elle ne disait que «&nbsp;99+&nbsp;».</li>
+            <li><b>4.8 · E-26</b> — <code>accessibilityRole="link"</code> sur les deux sorties de l'écran de connexion.</li>
+            <li><b>4.9</b> — règle locale <code>local/pressable-accessible</code>, chargée en <code>file:</code>. Elle <b>résout les références de style</b> dans le <code>StyleSheet.create</code> du fichier et <b>calcule</b> la hauteur effective en résolvant l'échelle d'espacement, au lieu d'exiger un minimum écrit en dur. Sans ces deux raffinements elle produisait 83 avertissements dont la plupart visaient du code conforme — un garde-fou qui crie tout le temps n'est plus lu. Elle se tait quand elle ne sait pas conclure.</li>
+          </ul>
+          <p><b>DoD tenue sur émulateur.</b> Relevé <code>uiautomator</code> en dp : plus aucune cible sous 44 dp, «&nbsp;Dépublier&nbsp;» du dernier retour présent et à 44 dp au défilement maximal, dernière ligne à ses 230 dp, titre sous la barre d'état, pastilles lisibles à 200&nbsp;%, défilement de la liste depuis la carte. ESLint : <b>0 avertissement</b>, règle locale incluse.</p>
+        </div>
+
+        <div class="livre partiel">
+          <div class="eyebrow">🟠 Écart découvert pendant le lot — arbitrage requis</div>
+          <p>Le garde-fou de contraste écrit en 4.6 a trouvé ce que l'audit du 02/09 avait <b>calculé puis omis de reporter</b>&nbsp;: le libellé blanc des boutons pleins est à <b>2,80:1 sur l'orange CTA</b> et <b>2,54:1 sur le vert accent</b>, en 14 px gras — donc sous le seuil de 4,5:1, WCAG ne comptant «&nbsp;texte large&nbsp;» qu'à partir de 18,66 px gras.</p>
+          <p>Ce n'est pas corrigé, à dessein&nbsp;: le lot 4 tenait à ne pas changer l'identité de la charte, et l'orange du CTA se voit sur tous les écrans. Trois options mesurées, à trancher&nbsp;: <b>a)</b> garder l'orange exact et passer le libellé à l'encre (6,33:1, l'orange de marque est préservé)&nbsp;; <b>b)</b> foncer le fond jusqu'à <code>text.cta</code> (5,18:1, orange plus brique)&nbsp;; <b>c)</b> assumer l'écart pour une cible de 44 dp très détachée, et le documenter dans la déclaration d'accessibilité. Le test PIN les deux valeurs mesurées&nbsp;: il ne valide pas l'écart, il empêche qu'il s'aggrave sans qu'on le voie.</p>
+        </div>
+        <div class="why"><b>Objectif business&nbsp;:</b> la simplicité (valeur BO n°4) et l'usage réel — un chauffeur, en plein jour, dans une cabine. Rien ici n'est une refonte&nbsp;: onze cibles tactiles à agrandir, six couleurs à foncer d'un cran, une zone sûre, une marge basse, deux pastilles. Mais l'action destructive de l'inventaire est aujourd'hui <b>hors d'atteinte</b>, et c'est celle qui retire un trajet périmé de la recherche cliente.</div>
+        <div class="scroller">
+          <table>
+            <thead><tr><th>#</th><th>Tâche</th><th>Fichiers</th><th class="effort">Effort</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="id">4.1</td>
+                <td>Inventaire des retours&nbsp;: <code>SafeAreaView edges={['top']}</code> — le titre est aujourd'hui rendu par-dessus l'horloge système —, <code>queryRefreshControl</code>, et <code>showToast</code> à la place d'<code>Alert.alert</code> pour rejoindre la convention des autres écrans</td>
+                <td class="files">app/(app)/mes-retours.tsx:73,44</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">4.2</td>
+                <td>Marge basse égale à la hauteur réelle de la barre&nbsp;: <code>useBottomTabBarHeight()</code> de <code>@react-navigation/bottom-tabs</code>, appliqué à <b>tous</b> les écrans à liste défilante et non au seul cas trouvé. Même famille que le défaut corrigé en août sur le profil</td>
+                <td class="files">app/(app)/mes-retours.tsx<br>+ passe sur home · gains · requests · messages · mes-demandes</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">4.3</td>
+                <td>Carte des résultats non interactive par défaut (<code>scrollEnabled={false}</code>, <code>zoomEnabled={false}</code>) avec un bouton «&nbsp;Agrandir la carte&nbsp;» qui ouvre le mode interactif en plein écran. Aujourd'hui la carte avale le geste vertical&nbsp;: un balayage au centre de l'écran ne fait pas défiler la liste. Évite aussi de consommer du quota Maps sur un geste involontaire</td>
+                <td class="files">src/features/search/components/ResultsMap.tsx</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">4.4</td>
+                <td>Pastilles de non-lus&nbsp;: <code>minHeight</code> + padding à la place d'une hauteur fixe, et <code>maxFontSizeMultiplier</code> sur le texte. À 200&nbsp;% de police système elles s'écrasent et deviennent illisibles — or c'est le seul signal qui dit qu'une décision attend</td>
+                <td class="files">src/shared/ui/FloatingTabBar.tsx:186-196<br>src/features/notifications/components/NotificationBell.tsx:116-127</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">4.5</td>
+                <td>Les onze cibles sous 44&nbsp;dp mesurées en recette (de 21 à 43&nbsp;dp)&nbsp;: <code>minHeight: TOUCH_TARGET</code> ou <code>hitSlop</code>. La liste inclut deux actions destructives, l'ouverture d'un litige, l'unique bascule de langue et les deux seuls accès à l'inventaire et aux alertes corridor</td>
+                <td class="files">ReturnsHubSection:145 · ReturnPromptBanner:132 · NotificationBell:115 · ReturnTripRow:137 · FavoritesPanel:142 · MissionCard · search.tsx · LanguageToggle · ProfileAvatar · AboutPanel · FloatingTabBar</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">4.6</td>
+                <td>Six valeurs de contraste sous le seuil AA, dans un seul fichier&nbsp;: variantes textuelles foncées pour <code>green[700]</code> sur <code>green[50]</code>, <code>cta[600]</code> sur <code>cta[50]</code>, <code>warning</code>, <code>error</code>, et <code>neutral[400]</code> → <code>neutral[500]</code> pour les libellés d'onglets. Mêmes teintes, aucun changement d'identité</td>
+                <td class="files">src/shared/theme/colors.ts<br><em>créer</em> src/shared/theme/colors.test.ts <span class="subnote">(garde-fou de ratio)</span></td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">4.7</td>
+                <td>Étiquettes d'accessibilité sur les commandes purement iconographiques, et <code>accessibilityValue</code> sur les deux compteurs. En l'état la cloche annonce «&nbsp;99+&nbsp;» — le nombre sans l'objet — et le cœur des favoris n'annonce rien</td>
+                <td class="files">NotificationBell.tsx:47 · FavoritesPanel.tsx:62 · ChatView.tsx:82 · AboutPanel</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">4.8</td>
+                <td><code>accessibilityRole="link"</code> sur les deux sorties de l'écran de connexion, aujourd'hui rendues en <code>View</code> non annoncées — dont la récupération de mot de passe</td>
+                <td class="files">app/(auth)/login.tsx:52-62</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">4.9</td>
+                <td>Règle ESLint interdisant un <code>Pressable</code> sans <code>minHeight</code>, <code>hitSlop</code> ni <code>accessibilityLabel</code>. C'est ce qui empêche la récidive&nbsp;: la charte imposait déjà 44&nbsp;dp et la constante existait</td>
+                <td class="files">mobile/.eslintrc.js<br><em>créer</em> mobile/eslint-rules/pressable-touch-target.js</td>
+                <td class="effort">S</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dod">
+          <div class="eyebrow">Définition de fini</div>
+          <p>Recette rejouée sur émulateur avec le relevé <code>uiautomator</code> en dp&nbsp;: <b>aucune commande cliquable sous 44&nbsp;dp</b>, «&nbsp;Dépublier&nbsp;» du dernier retour présent dans l'arbre d'accessibilité et actionnable, titre de l'inventaire sous la barre d'état, pastilles lisibles à 200&nbsp;% de police, et défilement de la liste de résultats depuis un geste amorcé sur la carte. Le script de relevé est versionné avec le plan.</p>
+        </div>
+      </div>
+
+      <!-- LOT 5 -->
+      <div class="lot">
+        <div class="lothead"><span class="lotnum">Lot 5</span><h3>Rendre la recette capable de voir</h3><span class="chip c-info">2 jours · prérequis du lot 6</span></div>
+        <div class="why"><b>Objectif business&nbsp;:</b> pouvoir valider la promesse. Sur l'environnement actuel, le seul trajet publié n'a ni prix ni économie ni réservation immédiate&nbsp;; l'amorce de retour à vide — classée <b>priorité n°1</b> du plan d'août — ne s'affiche pas. Trois écarts et la fonctionnalité pivot sont invérifiables. C'est la cause structurelle qui a laissé vivre l'écart du lot 1&nbsp;: le parcours cliente n'était jamais joué jusqu'à l'envoi.</div>
+        <div class="scroller">
+          <table>
+            <thead><tr><th>#</th><th>Tâche</th><th>Fichiers</th><th class="effort">Effort</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="id">5.1</td>
+                <td><span class="chip c-info">backend</span> Trajets retour semés <b>avec</b> fourchette de prix, distance et économie calculable, pour que la carte de résultat porte enfin l'argument de conversion d'IA-5</td>
+                <td class="files">backend/users/management/commands/seed_test_data.py</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">5.2</td>
+                <td>Un trajet en réservation immédiate, et une livraison récente avec gouvernorats renseignés sur le compte transporteur — sans quoi l'amorce de retour reste invisible et le badge de réservation intestable</td>
+                <td class="files">seed_test_data.py</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">5.3</td>
+                <td>Compteurs de notifications réalistes (le compte de recette en affiche 99+) et dédoublonnage des trois retours «&nbsp;Sfax → Tunis&nbsp;» identiques et expirés</td>
+                <td class="files">seed_test_data.py</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">5.4</td>
+                <td>Repli explicite pour un prix absent&nbsp;: «&nbsp;Prix à négocier&nbsp;» plutôt que «&nbsp;–&nbsp;TND&nbsp;». Le formulaire de publication exige les deux prix, donc le cas ne devrait pas survenir en production — mais il ne doit pas produire une carte muette</td>
+                <td class="files">src/features/search/components/TripResultCard.tsx:60-66<br>locales fr.json · ar.json</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">5.5</td>
+                <td>Consigner la procédure de recette réellement fonctionnelle&nbsp;: Metro sur <b>8081</b> (le build installé y cherche son bundle en dur), processus détachés, relevé <code>uiautomator</code> en dp. Le guide actuel indique 8082 et suppose Expo&nbsp;Go, absent de l'AVD</td>
+                <td class="files">docs/GUIDE_LANCEMENT_EMULATEUR.md<br><em>créer</em> scripts/recette-ui.sh</td>
+                <td class="effort">S</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dod">
+          <div class="eyebrow">Définition de fini</div>
+          <p>Après <code>seed_test_data</code> sur une base vierge&nbsp;: une recherche cliente renvoie au moins trois trajets dont un affiche une économie estimée chiffrée et un autre le badge de réservation immédiate&nbsp;; le compte transporteur ouvre l'application sur l'amorce «&nbsp;Vous rentrez à vide&nbsp;?&nbsp;». Les trois écrans sont capturés dans le registre de recette.</p>
+        </div>
+      </div>
+
+      <!-- LOT 6 -->
+      <div class="lot">
+        <div class="lothead"><span class="lotnum">Lot 6</span><h3>Rendre la demande décidable</h3><span class="chip c-warn">8 jours</span></div>
+        <div class="why"><b>Objectif business&nbsp;:</b> la qualité des mises en relation, donc les trois KPI qualité de la vision — taux de litiges, taux d'annulation, satisfaction. Le transporteur accepte ou refuse aujourd'hui <em>à l'aveugle</em>&nbsp;: ni photo, ni poids, ni dimensions, ni adresse précise, ni créneau. Cela produit mécaniquement des contre-propositions, des annulations sur place et des litiges. C'est aussi ce qui interdit tout matching quantitatif&nbsp;: la capacité restante déclarée par le transporteur n'est comparée à rien.</div>
+        <div class="scroller">
+          <table>
+            <thead><tr><th>#</th><th>Tâche</th><th>Fichiers</th><th class="effort">Effort</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="id">6.1</td>
+                <td>Demande structurée&nbsp;: type et volume de marchandise, poids, une à trois photos, créneau. <b>Aucun travail backend</b> — <code>photos</code> est déjà sur le modèle et dans les champs du sérialiseur, <code>upload/photo/</code> est routé. La feuille devient un formulaire long&nbsp;: la scinder en sections comme <code>publish/</code>, dont le découpage fait ses preuves</td>
+                <td class="files"><em>créer</em> src/features/search/components/request/{GoodsSection,ScheduleSection,PhotosSection}.tsx<br><em>créer</em> src/features/search/api/useUploadRequestPhoto.ts<br>SendRequestSheet.tsx <span class="subnote">(→ composition)</span></td>
+                <td class="effort">L</td>
+              </tr>
+              <tr>
+                <td class="id">6.2</td>
+                <td>Carnet d'adresses branché dans la demande cliente. <code>SavedAddressPicker</code> n'est aujourd'hui utilisé que par l'écran de publication du transporteur&nbsp;; côté cliente le carnet est purement documentaire, alors que sa raison d'être est la répétition</td>
+                <td class="files">src/features/addresses/components/SavedAddressPicker.tsx <span class="subnote">(existe)</span><br>request/AddressSection.tsx</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">6.3</td>
+                <td>Seconde sortie sur zéro résultat (IA-3 exige deux issues nommées, il n'y en a qu'une). Par coût croissant&nbsp;: proposer le même corridor à d'autres dates&nbsp;; élargir aux gouvernorats voisins&nbsp;; livrer la demande classique préremplie. Commencer par la première — presque gratuite, elle supprime l'impasse</td>
+                <td class="files">app/(app)/search.tsx:85-105<br>src/features/search/api/useReturnTripMatch.ts</td>
+                <td class="effort">M</td>
+              </tr>
+              <tr>
+                <td class="id">6.4</td>
+                <td>Filtres de marchandise dans la recherche, portés jusqu'au matching serveur. La cartographie les exige dès C1.1&nbsp;; sans eux une cliente cherchant un déménagement voit des retours incapables de le prendre, et le badge de compatibilité ne repose sur rien. Inclut la pagination au-delà des 10 résultats plafonnés</td>
+                <td class="files">src/features/search/components/SearchForm.tsx<br>src/features/search/api/dto.ts<br><span class="chip c-info">backend</span> logistics/services/corridors.py</td>
+                <td class="effort">L</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dod">
+          <div class="eyebrow">Définition de fini</div>
+          <p>Parcours joué de bout en bout sur émulateur&nbsp;: la cliente cherche un retour en filtrant par type et volume, ouvre un résultat, envoie une demande portant deux photos, un poids, une adresse issue de son carnet et un créneau&nbsp;; le transporteur voit ces éléments dans sa boîte de réception et décide sans poser de question. Sur un corridor vide, deux sorties nommées sont proposées.</p>
+        </div>
+      </div>
+
+      <!-- LOT 7 -->
+      <div class="lot">
+        <div class="lothead"><span class="lotnum">Lot 7</span><h3>Finir les parcours entamés</h3><span class="chip c-neut">6 jours</span></div>
+        <div class="why"><b>Objectif business&nbsp;:</b> la symétrie et la tenue dans le temps. Le transporteur n'a ni jalons, ni détail de mission, ni preuve de livraison, alors que la cliente dispose de tout cela — et sans preuve, il est sans défense en cas de litige. La publication réclame toujours cinq interactions là où le pivot en vise moins de quatre, et l'accueil cliente reste vide aux deux tiers.</div>
+        <div class="scroller">
+          <table>
+            <thead><tr><th>#</th><th>Tâche</th><th>Fichiers</th><th class="effort">Effort</th></tr></thead>
+            <tbody>
+              <tr>
+                <td class="id">7.1</td>
+                <td>Écran de mission transporteur avec jalons et fil d'événements. <code>MissionTimeline</code> existe et est déjà utilisé côté cliente&nbsp;: c'est une réutilisation, pas une création</td>
+                <td class="files"><em>créer</em> app/(app)/missions/[id].tsx<br>src/features/tracking/components/MissionTimeline.tsx <span class="subnote">(existe)</span></td>
+                <td class="effort">M</td>
+              </tr>
+              <tr>
+                <td class="id">7.2</td>
+                <td>Preuve de livraison photo à la clôture, et restitution côté cliente. Endpoint et champ déjà en place&nbsp;: c'est du mobile seul</td>
+                <td class="files">src/features/missions/api/useCompleteJob.ts<br>MissionCard.tsx · app/(app)/mission/[id].tsx</td>
+                <td class="effort">M</td>
+              </tr>
+              <tr>
+                <td class="id">7.3</td>
+                <td>Publication sous quatre saisies&nbsp;: préremplir les deux prix depuis l'estimation serveur en les laissant modifiables, et rendre les adresses facultatives quand le gouvernorat suffit — un retour à vide se cherche par corridor, pas par rue</td>
+                <td class="files">src/features/trips/components/publish/usePublishTripForm.ts<br>publishSchema.ts:9-13</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">7.4</td>
+                <td>Compteur de notifications porté par la barre d'onglets, comme celui des messages. La cloche ne vit que sur l'Accueil&nbsp;; la solution est déjà dans le code, à l'onglet voisin</td>
+                <td class="files">src/shared/ui/FloatingTabBar.tsx:52-58<br>src/features/notifications/api/useUnreadCount.ts</td>
+                <td class="effort">S</td>
+              </tr>
+              <tr>
+                <td class="id">7.5</td>
+                <td>Accueil cliente&nbsp;: remplacer le bandeau de marque par le formulaire de recherche lui-même et lister dessous les demandes en attente. La cartographie assume que la cliente n'a pas de tableau de bord et que sa racine est la recherche — il reste à aller au bout</td>
+                <td class="files">app/(app)/home.tsx:40-70</td>
+                <td class="effort">M</td>
+              </tr>
+              <tr>
+                <td class="id">7.6</td>
+                <td>Replis d'erreur sur les routes profondes atteignables par notification&nbsp;: <code>ErrorScreen</code> sur identifiant invalide, et titre chargé depuis le détail plutôt qu'un libellé générique</td>
+                <td class="files">app/(app)/messages/[jobId].tsx:44<br>app/(app)/requests/[jobId].tsx:31</td>
+                <td class="effort">XS</td>
+              </tr>
+              <tr>
+                <td class="id">7.7</td>
+                <td>Sortir le bloc d'économie de sa rangée, au-dessus du couple prix / bouton. Le code le décrit comme une «&nbsp;ligne dédiée&nbsp;», la mise en page en fait un troisième élément compressible sur 411&nbsp;dp de large</td>
+                <td class="files">src/features/search/components/TripResultCard.tsx:95-101</td>
+                <td class="effort">XS</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="dod">
+          <div class="eyebrow">Définition de fini</div>
+          <p>Un transporteur ouvre le détail d'une mission, suit ses jalons, la clôture avec une photo que la cliente retrouve dans son suivi&nbsp;; il publie un retour depuis l'amorce en <b>moins de quatre saisies, chronomètre à l'appui</b>&nbsp;; sur tout onglet, le compteur de notifications est visible&nbsp;; l'accueil cliente ouvre sur la recherche.</p>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="ordre">
+    <div class="shead"><span class="num">04</span><h2>Ordre d'exécution et jalons</h2></div>
+    <div class="stack-lg">
+      <p>Chemin critique&nbsp;: <b>lot&nbsp;1 → lot&nbsp;5 → lot&nbsp;6</b>. Les lots 2, 3 et 4 sont parallélisables&nbsp;; le lot 2 porte une dépendance externe (hébergement des pages légales) à lancer dès le premier jour.</p>
+      <div class="frise">
+        <div class="jalon">
+          <span class="quand">Jours 1-2</span>
+          <h4>La cliente peut envoyer une demande</h4>
+          <p>Lot&nbsp;1 livré. À partir de là, tout le parcours cliente devient testable — condition de validation de six tâches des lots 5 à 7. En parallèle dès le premier jour&nbsp;: commande des pages légales (dépendance hors code).</p>
+        </div>
+        <div class="jalon">
+          <span class="quand">Jours 3-7</span>
+          <h4>L'application est soumettable</h4>
+          <p>Lot&nbsp;2 livré, lot&nbsp;3 livré dans la même fenêtre (il ne partage aucun fichier). Premier build EAS candidat à une soumission de test interne.</p>
+        </div>
+        <div class="jalon">
+          <span class="quand">Jours 8-11</span>
+          <h4>Plus rien sous les seuils</h4>
+          <p>Lot&nbsp;4 livré, avec la recette rejouée et le relevé en dp joint. La règle de lint verrouille l'acquis.</p>
+        </div>
+        <div class="jalon">
+          <span class="quand">Jours 12-13</span>
+          <h4>La recette voit la promesse</h4>
+          <p>Lot&nbsp;5 livré. L'amorce de retour à vide et l'économie estimée deviennent observables pour la première fois — deux fonctionnalités livrées mais jamais vérifiées.</p>
+        </div>
+        <div class="jalon">
+          <span class="quand">Jours 14-21</span>
+          <h4>La demande est décidable</h4>
+          <p>Lot&nbsp;6 livré. C'est le lot qui fait passer la cliente de visiteuse à expéditrice, et le transporteur d'un pari à une décision.</p>
+        </div>
+        <div class="jalon">
+          <span class="quand">Jours 22-27</span>
+          <h4>Les parcours sont symétriques</h4>
+          <p>Lot&nbsp;7 livré. Le transporteur dispose du même niveau de suivi que la cliente, et la publication tient l'objectif des 30 secondes.</p>
+        </div>
+      </div>
+      <p class="subnote">Jalons donnés en séquentiel pour une personne à temps plein, soit environ cinq semaines. À deux, les lots 2, 3 et 4 se mènent hors du chemin critique&nbsp;: l'ensemble tient en trois semaines.</p>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="kpi">
+    <div class="shead"><span class="num">05</span><h2>Traçabilité KPI</h2></div>
+    <div class="stack">
+      <p>Le principe produit de la vision (§11) impose qu'une fonctionnalité améliore au moins un indicateur stratégique. Chaque lot est rattaché au sien&nbsp;; aucun ne repose sur le seul argument de la propreté technique.</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Lot</th><th>KPI ou promesse servi</th><th>Mesure attendue</th></tr></thead>
+          <tbody>
+            <tr><td><b>1</b> Demande possible</td><td>Conversion mission → paiement · temps avant premier matching</td><td>Le taux passe de <b>0&nbsp;%</b> structurel à une valeur mesurable sur le canal retour</td></tr>
+            <tr><td><b>2</b> Recevabilité store</td><td>Prérequis d'existence · confiance (vision §4)</td><td>Soumission acceptée&nbsp;; objection n°1 du persona cliente adressée par une page</td></tr>
+            <tr><td><b>3</b> Ne plus promettre à faux</td><td>Confiance · taux de litiges</td><td>Zéro élément d'interface annonçant une action indisponible</td></tr>
+            <tr><td><b>4</b> Réparations de recette</td><td>Simplicité · taux de remplissage des retours</td><td>Un retour périmé peut être dépublié&nbsp;: l'inventaire cesse de polluer la recherche</td></tr>
+            <tr><td><b>5</b> Recette visible</td><td>Km à vide transformés <span class="subnote">(North Star)</span></td><td>L'amorce de retour et l'économie estimée deviennent observables, donc améliorables</td></tr>
+            <tr><td><b>6</b> Demande décidable</td><td>Taux de litiges · taux d'annulation · taux de matching</td><td>Le transporteur décide sur des faits&nbsp;; le matching devient quantitatif</td></tr>
+            <tr><td><b>7</b> Parcours symétriques</td><td>Satisfaction transporteur · nombre de retours publiés</td><td>Publication sous 4 saisies&nbsp;; preuve de livraison opposable en litige</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="risques">
+    <div class="shead"><span class="num">06</span><h2>Risques</h2></div>
+    <div class="stack">
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Risque</th><th>Effet</th><th>Parade</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><b>Pas de compte Expo / build EAS</b></td>
+              <td>Les DoD des plans d'août butaient déjà là&nbsp;: «&nbsp;démonstration sur build preview&nbsp;» restait hors de portée</td>
+              <td>La recette sur émulateur avec relevé <code>uiautomator</code> remplace la démonstration pour tout ce qui n'est pas notification push. Elle a prouvé sa valeur&nbsp;: elle a trouvé sept écarts que la lecture de code n'avait pas vus</td>
+            </tr>
+            <tr>
+              <td><b>Pages légales hors du code</b></td>
+              <td>Le lot 2 ne peut pas être clos sans des URL réelles — dépendance juridique, pas technique</td>
+              <td>Commander les textes au jour 1, en parallèle du lot 1. Livrer les entrées de menu contre des URL d'environnement, testables avec des pages provisoires</td>
+            </tr>
+            <tr>
+              <td><b>Le lot 6 change le contrat de la demande</b></td>
+              <td>Ajouter des champs structurés touche le sérialiseur et la vue serveur, donc le web</td>
+              <td>Les champs cibles existent déjà sur le modèle (<code>photos</code>) ou sont additifs et optionnels. Aucun champ existant n'est renommé&nbsp;; le web continue de fonctionner sans modification</td>
+            </tr>
+            <tr>
+              <td><b>Aucun build iOS</b></td>
+              <td>Le comportement du clavier dans les feuilles modales, infirmé sur Android, redevient un risque réel sur iOS</td>
+              <td>Facteriser les huit feuilles sur le motif de <code>FormModalPanel</code> lors du lot 6 — souhaitable pour la duplication de toute façon. Ne pas payer le correctif clavier avant qu'un build iOS existe</td>
+            </tr>
+            <tr>
+              <td><b>Régression sur les acquis</b></td>
+              <td>Le RTL, la discipline des chiffres et le contrat KPI sont les points forts du produit&nbsp;; le lot 6 touche des écrans qui les portent</td>
+              <td>Toute PR touchant un écran bilingue joint une capture dans les deux sens de lecture. Le garde-fou de ratio de contraste (tâche 4.6) tourne en CI</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="hors">
+    <div class="shead"><span class="num">07</span><h2>Ce que ce plan ne fait pas</h2></div>
+    <div class="stack">
+      <p>Application du filtre à six questions de la vision (§11). Les décisions du plan d'août sont reprises&nbsp;; deux sont rouvertes par l'audit.</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Écarté</th><th>Décision</th></tr></thead>
+          <tbody>
+            <tr><td><b>Canal classique</b> (demande publiée + offres) sur mobile</td><td><span class="chip c-warn">rouvert</span> L'arbitrage d'août était conditionné à la livraison du pivot, désormais faite. C'est ce qui prive l'état vide de recherche de sa seconde sortie (tâche 6.3) et le transporteur du «&nbsp;compléter mon aller&nbsp;». <b>À arbitrer avant le lot 6</b>&nbsp;: la tâche 6.3 change de contenu selon la réponse</td></tr>
+            <tr><td><b>Transporteurs favoris</b></td><td><span class="chip c-warn">rouvert</span> Décision et code se contredisent&nbsp;; la recette montre une liste alimentée mais non alimentable. Tranché en tâche 3.4</td></tr>
+            <tr><td><b>Thème sombre complet</b></td><td><span class="chip c-neut">maintenu</span> Coût d'audit de contraste pour zéro effet KPI. Mais la tâche 4.6 produit les tokens textuels foncés&nbsp;: le jour où le sujet revient, la moitié du travail sera faite</td></tr>
+            <tr><td><b>File de rejeu hors ligne</b></td><td><span class="chip c-neut">maintenu</span> Le repli — détection et message clair — est en place et honnête</td></tr>
+            <tr><td><b>Chat temps réel WebSocket</b></td><td><span class="chip c-neut">maintenu</span> Aucun canal serveur&nbsp;; le gain de réactivité est le push, déjà livré</td></tr>
+            <tr><td><b>Connexion sociale</b></td><td><span class="chip c-neut">maintenu</span> N'améliore aucun des six critères</td></tr>
+            <tr><td><b>Admin et modération mobile</b></td><td><span class="chip c-neut">maintenu</span> Restent sur le web</td></tr>
+            <tr><td><b>Correctif clavier des feuilles modales</b></td><td><span class="chip c-crit">retiré</span> L'écart annoncé le 02/09 est <b>infirmé sur Android</b>&nbsp;: la fenêtre est redimensionnée et la feuille remonte. Ne reste qu'un risque iOS non vérifiable faute de build</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="dod">
+    <div class="shead"><span class="num">08</span><h2>Définition de « fini », transverse</h2></div>
+    <div class="stack">
+      <p>Chaque lot porte sa DoD fonctionnelle. S'y ajoutent quatre conditions valables pour toute PR de ce plan, qui reprennent les exigences déjà en vigueur sur <code>master</code>.</p>
+      <ul class="plain">
+        <li><b>Socle vert.</b> <code>tsc --noEmit</code> sans erreur, <code>jest</code> sans échec, ESLint sans avertissement — le contexte <span class="mono">mobile-build-and-test</span> est dans le ruleset de protection de <code>master</code>, donc rien ne fusionne sans CI verte.</li>
+        <li><b>Parité i18n.</b> Toute clé ajoutée existe en français <em>et</em> en arabe, avec les six catégories de pluriel arabes quand le nombre varie. Une capture dans chaque sens de lecture pour tout écran modifié.</li>
+        <li><b>Preuve sur appareil.</b> Pour tout ce qui se voit&nbsp;: capture d'écran de l'émulateur, et relevé <code>uiautomator</code> en dp lorsque la tâche touche une cible tactile ou une marge. C'est ce qui a manqué aux lots précédents, et ce qui explique la moitié des écarts de l'audit.</li>
+        <li><b>Aucun message technique visible.</b> Ni chaîne codée en dur à la place d'une erreur serveur, ni mention d'une fonctionnalité à venir dans l'interface.</li>
+      </ul>
+      <div class="callout">
+        <div class="eyebrow">Un mot sur ce qui ne doit pas casser</div>
+        <p>L'audit a vérifié cinq points forts sur appareil&nbsp;: le RTL arabe intégralement miroité jusqu'à 200&nbsp;% de police, la navigation conditionnelle par rôle, la discipline des chiffres — un tiret plutôt qu'un faux zéro, les espèces séparées du solde retirable —, le correctif de défilement du profil, et la cartographie des corridors. Ce sont des acquis rares dans un MVP React&nbsp;Native. Aucune tâche de ce plan ne justifie de les dégrader.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Plan du 03/09/2026 &mdash; succède à PLAN_ACHEVEMENT_MOBILE_2026-08-07</span>
+    <span>Fonde sur AUDIT_MOBILE_DESIGN_UX_USERSTORIES_2026-09-02 (27 écarts, recette émulateur)</span>
+    <span>Localisations vérifiées via le graphe Graphify (6 098 nœuds) et lecture ciblée</span>
+    <span>APIs confirmées via Context7&nbsp;: useBottomTabBarHeight, maxFontSizeMultiplier, MapView.scrollEnabled</span>
+  </footer>
+
+</div>
