@@ -31,6 +31,10 @@ dump_tree() {
 parse_tree() {
   python -c "
 import re, sys, xml.etree.ElementTree as ET
+# La console Windows est en cp1252 : sans cela, le premier libelle accentue de
+# l'app (« Départ », « Arrivée », l'arabe) fait planter le dump entier avec un
+# UnicodeEncodeError, et l'ecran parait vide alors qu'il ne l'est pas.
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
 want = sys.argv[2] if len(sys.argv) > 2 else None
 for e in ET.parse(sys.argv[1]).iter('node'):
     label = (e.get('text','') or e.get('content-desc','')).strip()

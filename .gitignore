@@ -72,3 +72,6 @@ REANALYSIS_COMPARISON.md
 test_*.jpg
 test_*.png
 test_output.txt
+
+# Dossier de travail de l agent — logs de recette, brouillons.
+.claude-scratch/

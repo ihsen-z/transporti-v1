@@ -406,6 +406,13 @@ class Command(BaseCommand):
                 'status': 'PUBLISHED',
                 'is_return_trip': True,
                 'available_capacity': '2 tonnes, 8 m³ libres',
+                # Lot 6.1 — la capacite structuree, qui DOIT dire la meme chose
+                # que le libelle ci-dessus. Sans elle, ni l'indice affiche a la
+                # cliente avant l'envoi ni le refus au-dela du disponible
+                # n'etaient exercables sur cet environnement (meme defaut que
+                # E-27 pour les prix et la reservation immediate).
+                'available_capacity_kg': Decimal('2000'),
+                'available_capacity_m3': Decimal('8'),
                 'pickup_address': 'Centre Ville, Sousse',
                 'pickup_governorate': 'Sousse',
                 'dropoff_address': 'Centre Ville, Tunis',
@@ -421,7 +428,10 @@ class Command(BaseCommand):
             },
             # La date fait le scenario : un rejeu doit la ramener dans le futur,
             # sinon ce trajet disparait de la recherche cliente en deux jours.
-            rafraichir=('scheduled_time', 'status', 'instant_booking'),
+            rafraichir=(
+                'scheduled_time', 'status', 'instant_booking',
+                'available_capacity_kg', 'available_capacity_m3',
+            ),
         )
 
         # Return trip 2: date passed (expiration scenario, REC-F5)
@@ -431,6 +441,8 @@ class Command(BaseCommand):
                 'status': 'PUBLISHED',
                 'is_return_trip': True,
                 'available_capacity': '500 kg, fourgon couvert',
+                # Le libelle ne donne pas de volume : on n'en invente pas.
+                'available_capacity_kg': Decimal('500'),
                 'pickup_address': 'Zone Industrielle, Sfax',
                 'pickup_governorate': 'Sfax',
                 'dropoff_address': 'Centre Ville, Gabès',
@@ -444,7 +456,7 @@ class Command(BaseCommand):
             # rafraichissement il s'eloigne indefiniment dans le passe, ce qui
             # est inoffensif, mais on garde la meme regle pour que les deux
             # trajets se lisent de la meme facon.
-            rafraichir=('scheduled_time', 'status'),
+            rafraichir=('scheduled_time', 'status', 'available_capacity_kg'),
         )
 
         self.stdout.write(self.style.SUCCESS(
