@@ -55,6 +55,40 @@ export function TripResultCard({ trip, onRequest }: Props) {
         <Badge label={t('search.badge_return')} variant="brand" />
       </View>
 
+      {/* C1.2 — l'argument de conversion du pivot : « vous payez moins parce
+          que le camion roulait deja ». Sur sa PROPRE ligne, pleine largeur
+          (IA-5), et jamais un montant nu : la base de comparaison
+          l'accompagne, sans quoi le chiffre n'est pas verifiable.
+
+          Il etait auparavant le troisieme element d'une rangee avec le prix et
+          le bouton. Le commentaire disait « ligne dediee », la mise en page
+          disait le contraire, et le defaut est reste invisible tant que le
+          serveur ne renvoyait aucune economie. Des que le jeu de recette en a
+          produit une (lot 5), la recette du 04/09 a montre le resultat : le
+          bloc debordait la carte, le montant etait coupe en plein chiffre
+          (« Vous economisez 7… ») et le bouton « Envoyer une demande » avait
+          entierement disparu. La cliente ne pouvait plus agir depuis la carte
+          qui devait la convaincre. */}
+      {trip.estimated_savings !== null && trip.savings_basis !== null ? (
+        <View style={styles.economie} testID="recherche-trajet-economie">
+          <Text style={styles.economieMontant}>
+            {t('search.savings', { amount: Math.round(trip.estimated_savings) })}
+          </Text>
+          <Text
+            style={styles.economieBase}
+            testID="recherche-trajet-economie-base"
+          >
+            {t('search.savings_basis', { amount: Math.round(trip.savings_basis) })}
+          </Text>
+        </View>
+      ) : null}
+
+      {/* Prix et action EMPILES, et non cote a cote. La fourchette fait 212 dp
+          en 22 px gras, le bouton 162 : 386 dp pour une carte qui en offre 329.
+          Les mettre en rangee tronquait le prix — « 100.00 – 140.… », soit le
+          second chiffre le plus important de la carte ampute de sa devise.
+          Empiles, les deux tiennent en entier, et le bouton pleine largeur est
+          au passage une cible plus franche. */}
       <View style={styles.foot}>
         {/* VERT = valeur : fourchette de prix serveur.
 
@@ -63,7 +97,7 @@ export function TripResultCard({ trip, onRequest }: Props) {
             toujours — mais la recette du 03/09 a trouve une ligne heritee sans
             prix, et la carte annoncait « – TND ». Un tiret suivi d'une devise
             ne veut rien dire ; « Prix a negocier » dit ce qu'il faut faire. */}
-        <Text style={styles.price}>
+        <Text style={styles.price} numberOfLines={1}>
           {trip.price_tnd_min === null
             ? t('search.price_negotiable')
             : t('search.price_range', {
@@ -71,30 +105,11 @@ export function TripResultCard({ trip, onRequest }: Props) {
                 max: trip.price_tnd_max ?? trip.price_tnd_min,
               })}
         </Text>
-
-        {/* C1.2 — l'argument de conversion du pivot : « vous payez moins parce
-            que le camion roulait deja ». Ligne DEDIEE et non mention noyee
-            (IA-5), et jamais un montant nu : la base de comparaison
-            l'accompagne, sans quoi le chiffre n'est pas verifiable. */}
-        {trip.estimated_savings !== null && trip.savings_basis !== null ? (
-          <View style={styles.economie} testID="recherche-trajet-economie">
-            <Text style={styles.economieMontant}>
-              {t('search.savings', { amount: Math.round(trip.estimated_savings) })}
-            </Text>
-            <Text
-              style={styles.economieBase}
-              testID="recherche-trajet-economie-base"
-            >
-              {t('search.savings_basis', { amount: Math.round(trip.savings_basis) })}
-            </Text>
-          </View>
-        ) : null}
         <Button
           testID={`trip-${trip.id}-request`}
           label={t('search.request.title')}
           onPress={onRequest}
           variant="cta"
-          size="sm"
         />
       </View>
     </Card>
@@ -108,16 +123,14 @@ const styles = StyleSheet.create({
   rating: { fontSize: fontSize.sm, color: colors.neutral[500] },
   route: { marginTop: spacing.md },
   meta: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' },
-  foot: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: spacing.lg,
-    gap: spacing.md,
+  foot: { marginTop: spacing.lg, gap: spacing.md },
+  price: {
+    fontSize: fontSize.xl,
+    fontWeight: '800',
+    color: colors.text.green,
   },
-  price: { fontSize: fontSize.xl, fontWeight: '800', color: colors.text.green },
   economie: {
-    marginTop: spacing.sm,
+    marginTop: spacing.lg,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     borderRadius: radii.md,
