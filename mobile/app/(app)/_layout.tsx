@@ -115,6 +115,10 @@ export default function AppLayout() {
           page. On y arrive depuis l'écran de publication et depuis l'Accueil,
           ce qui correspond au parcours réel. */}
       <Tabs.Screen name="mes-retours" options={{ href: null }} />
+      {/* P2 + P3 — « Comment ça marche » et « Confiance ». Hors barre pour la
+          même raison, mais adressable : un lien d'acquisition doit pouvoir y
+          mener sans passer par le menu. */}
+      <Tabs.Screen name="comment-ca-marche" options={{ href: null }} />
     </Tabs>
   );
 }

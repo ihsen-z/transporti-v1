@@ -805,5 +805,88 @@
     "unread_plural": "{{count}} non lus",
     "rate_stars": "{{count}} étoile sur 5",
     "rate_stars_plural": "{{count}} étoiles sur 5"
+  },
+  "how_it_works": {
+    "link": "Comment ça marche",
+    "title": "Comment ça marche",
+    "tab_client": "J'expédie",
+    "tab_transporter": "Je transporte",
+    "trust_title": "Ce qui sécurise chaque mission",
+    "client": {
+      "promise": "Trouvez un transporteur qui passe déjà par votre trajet, et payez moins cher qu'un transport dédié.",
+      "steps": {
+        "search": {
+          "title": "Cherchez sur votre corridor",
+          "body": "Indiquez le départ, l'arrivée et la date. Vous voyez les camions qui rentrent à vide sur ce trajet, pas des annonces générales."
+        },
+        "compare": {
+          "title": "Comparez avant de vous engager",
+          "body": "Note, avis reçus, badge de vérification d'identité, véhicule et capacité restante. Le profil du transporteur est consultable avant tout contact."
+        },
+        "request": {
+          "title": "Envoyez une demande",
+          "body": "Décrivez ce que vous expédiez et proposez votre prix. Le transporteur accepte, refuse, ou vous fait une contre-proposition que vous êtes libre de décliner."
+        },
+        "pay": {
+          "title": "Choisissez comment payer",
+          "body": "Paiement en ligne : la somme est retenue et ne part au transporteur qu'après votre confirmation. Ou paiement en espèces à la livraison, plafonné à 300 TND."
+        },
+        "track": {
+          "title": "Suivez la mission",
+          "body": "Chaque étape est horodatée : départ confirmé, en route, livré. Vous recevez un code à quatre chiffres à remettre au transporteur au moment de la livraison."
+        },
+        "confirm": {
+          "title": "Confirmez la réception",
+          "body": "C'est votre confirmation qui libère le paiement. Tant que vous ne l'avez pas donnée, l'argent reste retenu par la plateforme."
+        }
+      }
+    },
+    "transporter": {
+      "promise": "Gagnez plus avec les trajets que vous effectuez déjà : vos retours à vide deviennent des missions payées.",
+      "steps": {
+        "publish": {
+          "title": "Publiez votre retour à vide",
+          "body": "Départ, arrivée, date et capacité restante. Votre véhicule est repris de votre profil, vous ne le ressaisissez pas. Après une livraison, l'application vous propose directement le trajet inverse."
+        },
+        "decide": {
+          "title": "Décidez sur vos demandes",
+          "body": "Toutes les demandes reçues arrivent dans un seul écran, triées par celles qui attendent votre décision. Accepter, refuser, ou contre-proposer un prix."
+        },
+        "start": {
+          "title": "Confirmez votre départ",
+          "body": "Un appui déclenche le suivi côté client. Il voit que vous êtes en route, sans avoir à vous appeler."
+        },
+        "deliver": {
+          "title": "Clôturez avec le code du client",
+          "body": "Le client vous remet un code à quatre chiffres. Le saisir prouve la livraison et clôt la mission : personne ne peut la contester ensuite."
+        },
+        "earn": {
+          "title": "Voyez ce que vous gagnez vraiment",
+          "body": "Le net vous est annoncé commission déduite, avant que vous acceptiez. Les encaissements en espèces sont comptés à part de votre solde retirable, avec la commission que vous devez."
+        },
+        "withdraw": {
+          "title": "Retirez vos gains",
+          "body": "Demandez un virement dès que votre solde le permet. La demande est traitée par l'équipe, et son état reste visible dans votre portefeuille."
+        }
+      }
+    },
+    "trust": {
+      "escrow": {
+        "title": "Paiement retenu jusqu'à la livraison",
+        "body": "Sur un paiement en ligne, la plateforme retient la somme. Le transporteur sait qu'elle existe, le client sait qu'elle ne partira qu'après sa confirmation. Aucun des deux n'avance sa confiance à l'autre."
+      },
+      "verified": {
+        "title": "Vérification d'identité",
+        "body": "Un transporteur dépose permis, carte grise et assurance. Le badge « Vérifié » n'apparaît qu'après contrôle de ces pièces — un simple numéro de téléphone confirmé ne suffit pas."
+      },
+      "dispute": {
+        "title": "Litiges",
+        "body": "Client comme transporteur peuvent ouvrir un litige sur une mission terminée. Il est traité par notre équipe, avec les événements horodatés de la mission comme pièces."
+      },
+      "data": {
+        "title": "Vos données",
+        "body": "Vous pouvez supprimer votre compte depuis l'application, à tout moment. Vos coordonnées sont effacées ; les missions passées restent dans l'historique de la plateforme sans votre nom, parce qu'elles portent des paiements et des commissions."
+      }
+    }
   }
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
@@ -29,6 +30,7 @@ import { colors, spacing, fontSize, radii } from '@/shared/theme';
 // Onglet Profil : identité, rôle, langue, litiges et déconnexion.
 export default function ProfileScreen() {
   const { t } = useTranslation();
+  const router = useRouter();
   const user = useAuthStore((s) => s.user);
   const logout = useAuthStore((s) => s.logout);
   const [disputesOpen, setDisputesOpen] = useState(false);
@@ -225,6 +227,20 @@ export default function ProfileScreen() {
           >
             <Icon name="info" size={22} color={colors.brand[600]} />
             <Txt style={styles.linkText}>{t('profile.about_link')}</Txt>
+            <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
+          </Pressable>
+
+          {/* P2 + P3 — le seul endroit du mobile qui explique l'escrow, la
+              vérification et les litiges. C'est la levée de l'objection n°1 du
+              persona client selon la cartographie. */}
+          <Pressable
+            testID="profile-how-it-works"
+            style={styles.link}
+            onPress={() => router.push('/comment-ca-marche')}
+            accessibilityRole="button"
+          >
+            <Icon name="compass" size={22} color={colors.brand[600]} />
+            <Txt style={styles.linkText}>{t('how_it_works.link')}</Txt>
             <Icon name="chevron-right" size={20} color={colors.neutral[400]} />
           </Pressable>
 
