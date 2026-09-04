@@ -12,6 +12,7 @@ import { statusVariant } from '@/shared/ui/statusVariant';
 import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
 import type { RespondAction, TripRequestDto } from '../api/dto';
 import { useRespondRequest } from '../api/useRespondRequest';
+import { RequestGoodsSummary } from './RequestGoodsSummary';
 
 interface Props {
   request: TripRequestDto;
@@ -97,6 +98,9 @@ export function RequestCard({ request, jobId, montrerCorridor = false }: Props) 
         <Txt style={styles.counter}>{t('requests.countered', { price: request.counter_price })}</Txt>
       ) : null}
       {request.description ? <Txt style={styles.desc}>{request.description}</Txt> : null}
+      {/* Lot 6.1 — poids, volume, photos, adresse et créneau : de quoi trancher
+          sans rappeler la cliente. Le bloc s'efface s'il n'a rien à dire. */}
+      <RequestGoodsSummary request={request} />
 
       {isPending ? (
         <View style={styles.actions}>

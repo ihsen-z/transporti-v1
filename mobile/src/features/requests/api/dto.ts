@@ -2,6 +2,12 @@
 // Source : backend/logistics/views/{jobs,trip_requests}.py + serializers
 // (TransporterMissionSerializer, ReturnTripRequestSerializer).
 
+// La nature de marchandise est la même énumération serveur des deux côtés du
+// marché (`TransportJob.JobType`) : une seule définition, côté demande.
+import type { GoodsType } from '@/features/search/api/dto';
+
+export type { GoodsType };
+
 // Enveloppe de pagination DRF (PageNumberPagination global, page 20).
 export interface Paginated<T> {
   count: number;
@@ -50,6 +56,18 @@ export interface TripRequestDto {
   counter_price: string | null;
   response_message: string;
   client_name: string;
+  // Lot 6.1 — ce sur quoi le transporteur décide. Avant, il n'avait que
+  // `description` en texte libre et devait accepter ou refuser à l'aveugle.
+  // Tous facultatifs : les demandes créées avant le lot n'en portent aucun,
+  // d'où la chaîne vide et les `null` plutôt qu'un champ absent.
+  goods_type: GoodsType | '';
+  weight_kg: string | null;
+  volume_m3: string | null;
+  pickup_address: string;
+  pickup_governorate: string;
+  pickup_from: string | null;
+  pickup_until: string | null;
+  photos: string[];
   // T2.1 — contexte du trajet, indispensable dans une liste consolidee : sans
   // lui, on ne sait pas de quel trajet vient chaque demande.
   job_pickup: string;

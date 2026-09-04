@@ -23,6 +23,10 @@ function trip(overrides: Partial<TripResultDto> = {}): TripResultDto {
     price_tnd_max: '120',
     instant_booking: false,
     available_capacity: '3',
+    // Capacite structurée : `null` est le cas nominal, elle est facultative
+    // pour le transporteur qui publie.
+    available_capacity_kg: null,
+    available_capacity_m3: null,
     distance_km: '127.4',
     route_polyline: '',
     ...overrides,

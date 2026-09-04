@@ -25,10 +25,21 @@
 export type SendRequestErrorKind = 'network' | 'field' | 'server' | 'unknown';
 
 /** Champs que le formulaire sait désigner nommément. */
-export type SendRequestField = 'description' | 'proposed_price' | 'payment_method';
+export type SendRequestField =
+  | 'description'
+  | 'weight_kg'
+  | 'volume_m3'
+  | 'pickup_until'
+  | 'proposed_price'
+  | 'payment_method';
 
+// L'ordre est celui du formulaire, et il compte : quand le serveur refuse sur
+// plusieurs champs, on désigne celui que la cliente rencontre en premier.
 const CHAMPS_CONNUS: readonly SendRequestField[] = [
   'description',
+  'weight_kg',
+  'volume_m3',
+  'pickup_until',
   'proposed_price',
   'payment_method',
 ];
@@ -124,6 +135,12 @@ export function classifySendRequestError(
  */
 export const PREFERER_MESSAGE_SERVEUR: Record<SendRequestField, boolean> = {
   description: false,
+  // Le refus de poids cite la capacité exacte annoncée par CE transporteur
+  // (« annonce 2000 kg disponibles, et votre chargement en fait 2500 »). Le
+  // chiffre vient du trajet : aucune chaîne locale ne peut le porter.
+  weight_kg: true,
+  volume_m3: true,
+  pickup_until: true,
   proposed_price: true,
   payment_method: true,
 };

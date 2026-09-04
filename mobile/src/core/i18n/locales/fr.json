@@ -328,6 +328,16 @@
       "a-decider": "À décider",
       "negociation": "En négociation",
       "archivees": "Archivées"
+    },
+    "goods": {
+      "TRANSPORT": "Marchandise",
+      "MOVING": "Déménagement",
+      "DELIVERY": "Livraison",
+      "weight": "{{poids}} kg",
+      "volume": "{{volume}} m³",
+      "pickup": "Retrait : {{lieu}}",
+      "slot": "Le {{jour}}, entre {{debut}} et {{fin}}",
+      "photo_alt": "Photo {{n}} de la marchandise"
     }
   },
   "missions": {
@@ -397,7 +407,36 @@
       "description": "Ce que vous expédiez",
       "description_ph": "Ex. deux palettes de carrelage, 800 kg",
       "submit": "Envoyer",
-      "success": "Demande envoyée ! Le transporteur va répondre."
+      "success": "Demande envoyée ! Le transporteur va répondre.",
+      "goods_title": "Votre marchandise",
+      "goods_type": "Type de marchandise",
+      "goods_transport": "Transport de marchandise",
+      "goods_moving": "Déménagement",
+      "goods_delivery": "Livraison",
+      "weight": "Poids (kg)",
+      "weight_ph": "Ex. 450",
+      "volume": "Volume (m³)",
+      "volume_ph": "Ex. 3",
+      "capacity_hint": "Ce transporteur annonce {{poids}} kg et {{volume}} m³ disponibles.",
+      "photos_title": "Photos",
+      "photos_hint": "Jusqu'à {{max}} photos. Une photo évite la moitié des questions.",
+      "photo_add": "Ajouter",
+      "photo_remove": "Retirer la photo {{n}}",
+      "photo_alt": "Photo {{n}} de votre marchandise",
+      "pickup_title": "Adresse de retrait",
+      "pickup_hint": "Là où le transporteur vient chercher. Facultatif, mais évite un aller-retour.",
+      "governorate": "Gouvernorat",
+      "governorate_ph": "Choisir",
+      "address": "Adresse",
+      "address_ph": "Rue, immeuble, repère",
+      "slot_title": "Créneau de retrait",
+      "slot_hint": "Facultatif. À défaut, le transporteur vous appellera pour convenir.",
+      "day": "Jour",
+      "day_ph": "Choisir",
+      "from": "De",
+      "until": "À",
+      "time_ph": "--:--",
+      "price_title": "Votre proposition"
     },
     "errors": {
       "route_required": "Choisissez départ et arrivée.",
@@ -409,8 +448,18 @@
       "field": {
         "description": "Décrivez ce que vous expédiez : le transporteur décide sur cette information.",
         "proposed_price": "Montant refusé. Vérifiez le prix proposé.",
-        "payment_method": "Ce mode de paiement n'est pas accepté pour ce montant."
-      }
+        "payment_method": "Ce mode de paiement n'est pas accepté pour ce montant.",
+        "weight_kg": "Poids refusé pour ce trajet.",
+        "volume_m3": "Volume refusé pour ce trajet.",
+        "pickup_until": "Créneau invalide."
+      },
+      "weight": "Poids invalide. Laissez vide si vous ne le connaissez pas.",
+      "volume": "Volume invalide. Laissez vide si vous ne le connaissez pas.",
+      "slot_incomplete": "Indiquez l'heure de début et l'heure de fin.",
+      "slot_order": "La fin du créneau doit suivre son début.",
+      "gov_required": "Choisissez le gouvernorat de cette adresse.",
+      "photo_upload": "Photo non envoyée. Réessayez.",
+      "photo_pick": "Impossible d'ouvrir la galerie. Réessayez."
     },
     "alerts": {
       "title": "Mes alertes corridor",

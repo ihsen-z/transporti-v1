@@ -46,6 +46,12 @@ export interface TripResultDto {
   savings_basis: number | null;
   instant_booking: boolean;
   available_capacity: string;
+  // Capacité structurée annoncée par le transporteur. `TransportJobListSerializer`
+  // la servait déjà ; le DTO ne la déclarait pas, donc l'écran ne pouvait pas
+  // dire à la cliente contre quoi son poids allait être confronté — alors même
+  // que le serveur refuse au-delà. Decimal DRF => chaîne, `null` si non annoncée.
+  available_capacity_kg: string | null;
+  available_capacity_m3: string | null;
   distance_km: string | null;
   // Polyligne encodée (précision 5) de l'itinéraire routier, calculée par le
   // serveur. Chaîne vide quand le routage a échoué à la création.
@@ -57,12 +63,33 @@ export interface MatchResponse {
   results: TripResultDto[];
 }
 
+/** Nature de la marchandise — `TransportJob.JobType` côté serveur. */
+export type GoodsType = 'TRANSPORT' | 'MOVING' | 'DELIVERY';
+
 // Corps de POST jobs/<id>/requests/ (ReturnTripRequestCreateSerializer).
 // COD limité à 300 TND côté serveur.
 export interface SendRequestBody {
   proposed_price: number;
   payment_method: PaymentMethod;
   description: string;
+  // Lot 6.1 — la marchandise, le lieu, le moment. Tous facultatifs côté
+  // serveur : une demande minimale reste valide, et les demandes créées avant
+  // ce lot restent lisibles.
+  goods_type?: GoodsType;
+  weight_kg?: number;
+  volume_m3?: number;
+  pickup_address?: string;
+  pickup_governorate?: string;
+  /** ISO 8601. Créneau de retrait souhaité chez la cliente. */
+  pickup_from?: string;
+  pickup_until?: string;
+  /** URLs rendues par `upload/photo/`, jamais des URI locales. */
+  photos?: string[];
+}
+
+/** Réponse de POST upload/photo/ (PhotoUploadView). */
+export interface PhotoUploadResponse {
+  url: string;
 }
 
 // Corps de POST corridor-alerts/ (D14, Cas B).
