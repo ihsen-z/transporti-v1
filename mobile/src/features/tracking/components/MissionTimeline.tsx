@@ -1,4 +1,4 @@
-import { StyleSheet, View } from 'react-native';
+import { Image, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -38,6 +38,19 @@ export function MissionTimeline({ events }: { events: JobEventDto[] }) {
                 {t(`tracking.events.${event.event}`, { defaultValue: event.event })}
               </Txt>
               <Txt style={styles.when}>{formatWhen(event.created_at)}</Txt>
+              {/* 7.2 — la preuve de livraison (C-16). Le champ existait dans le
+                  DTO et arrivait du serveur ; rien ne l'affichait, donc la
+                  cliente ne recevait aucune preuve de ce qu'elle avait payé. */}
+              {event.pod_photo_url ? (
+                <Image
+                  testID="timeline-pod-photo"
+                  source={{ uri: event.pod_photo_url }}
+                  style={styles.preuve}
+                  accessibilityIgnoresInvertColors
+                  accessible
+                  accessibilityLabel={t('tracking.pod_photo_alt')}
+                />
+              ) : null}
             </View>
           </View>
         );
@@ -48,6 +61,13 @@ export function MissionTimeline({ events }: { events: JobEventDto[] }) {
 
 const styles = StyleSheet.create({
   wrap: { gap: 0 },
+  preuve: {
+    width: 140,
+    height: 140,
+    borderRadius: 8,
+    marginTop: 8,
+    backgroundColor: '#f3f4f6',
+  },
   row: { flexDirection: 'row', gap: spacing.md },
   gutter: { alignItems: 'center', width: 16 },
   dot: {

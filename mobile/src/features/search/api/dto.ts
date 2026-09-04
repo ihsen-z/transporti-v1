@@ -98,10 +98,6 @@ export interface SendRequestBody {
   photos?: string[];
 }
 
-/** Réponse de POST upload/photo/ (PhotoUploadView). */
-export interface PhotoUploadResponse {
-  url: string;
-}
 
 // Corps de POST corridor-alerts/ (D14, Cas B).
 export interface CorridorAlertBody {

@@ -8,9 +8,9 @@ import { nextDays, TIME_SLOTS, toScheduledTime } from '@/features/trips/data/sch
 import { useSendTripRequest } from '../../api/useSendTripRequest';
 import {
   PhotoUploadError,
-  useUploadRequestPhoto,
+  useUploadPhoto,
   type PhotoAsset,
-} from '../../api/useUploadRequestPhoto';
+} from '@/core/api/usePhotoUpload';
 import { PREFERER_MESSAGE_SERVEUR, type SendRequestField } from '../../api/requestError';
 import type { SendRequestBody, TripResultDto } from '../../api/dto';
 import {
@@ -52,7 +52,7 @@ const CHAMPS_INLINE: readonly SendRequestField[] = [
 export function useSendRequestForm(trip: TripResultDto | null, onClose: () => void) {
   const { t, i18n } = useTranslation();
   const send = useSendTripRequest();
-  const upload = useUploadRequestPhoto();
+  const upload = useUploadPhoto();
 
   // URLs rendues par `upload/photo/`, jamais des URI locales : une `file://`
   // ne veut rien dire sur l'appareil du transporteur.

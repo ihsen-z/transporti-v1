@@ -377,6 +377,16 @@
         "state": "Annulation impossible dans l'état actuel de la mission.",
         "network": "Connexion au serveur impossible. Réessayez."
       }
+    },
+    "proof": {
+      "title": "Preuve de livraison",
+      "capture": "Photographier la livraison",
+      "remove": "Retirer",
+      "photo_alt": "Photo de la livraison",
+      "optional_note": "Facultatif, mais c'est ce qui vous défend en cas de litige.",
+      "permission_refused": "Accès à la caméra refusé. Autorisez-le pour joindre une preuve.",
+      "camera_failed": "Impossible d'ouvrir la caméra. Réessayez.",
+      "upload_failed": "Photo non envoyée. Réessayez."
     }
   },
   "search": {
@@ -794,7 +804,8 @@
       "forbidden": "Action non autorisée.",
       "network": "Connexion impossible. Vérifiez votre réseau.",
       "unknown": "Une erreur est survenue."
-    }
+    },
+    "pod_photo_alt": "Photo de la livraison"
   },
   "onboarding": {
     "transporter": {

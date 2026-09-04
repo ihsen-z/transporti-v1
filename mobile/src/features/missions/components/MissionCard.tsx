@@ -14,6 +14,7 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MissionDto } from '../api/dto';
 import { useConfirmStart } from '../api/useConfirmStart';
 import { useCompleteJob } from '../api/useCompleteJob';
+import { DeliveryProofPicker } from './DeliveryProofPicker';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -30,6 +31,9 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
   const complete = useCompleteJob();
   const [pin, setPin] = useState('');
   const [pinError, setPinError] = useState<string | null>(null);
+  // 7.2 — preuve de livraison, facultative : le PIN du client reste la seule
+  // condition de cloture.
+  const [podPhotoUrl, setPodPhotoUrl] = useState<string | null>(null);
   const [disputeOpen, setDisputeOpen] = useState(false);
   const [cancelOpen, setCancelOpen] = useState(false);
 
@@ -50,7 +54,10 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
       return;
     }
     setPinError(null);
-    complete.mutate({ jobId: mission.id, body: { pin: value } });
+    complete.mutate({
+      jobId: mission.id,
+      body: { pin: value, ...(podPhotoUrl ? { pod_photo_url: podPhotoUrl } : {}) },
+    });
   };
 
   // 'unknown' retombe sur le message générique 'state'.
@@ -118,9 +125,10 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
             keyboardType="numeric"
             error={pinError ?? undefined}
           />
-          {/* E-12 — « Photo de preuve : bientôt. » était affiché tel quel à
-              l'utilisateur. On ne commente pas une absence : le téléversement
-              arrive au lot 7, d'ici là l'écran se tait. */}
+          {/* E-12 — livré au lot 7.2. L'écran affichait « Photo de preuve :
+              bientôt. » (retiré au lot 3, on ne commente pas une absence) ;
+              la preuve existe maintenant, et elle part avec la clôture. */}
+          <DeliveryProofPicker photoUrl={podPhotoUrl} onChange={setPodPhotoUrl} />
           <Button
             testID={`mission-${mission.id}-complete`}
             label={t('missions.complete')}

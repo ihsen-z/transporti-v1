@@ -1,20 +1,23 @@
 import { useMutation } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
-import { apiClient } from '@/core/api/client';
-import { extractServerMessage } from '@/core/api/serverMessage';
-import type { PhotoUploadResponse } from './dto';
+import { apiClient } from './client';
+import { extractServerMessage } from './serverMessage';
+
+/** Reponse de POST upload/photo/ (PhotoUploadView). */
+interface PhotoUploadResponse {
+  url: string;
+}
 
 /**
- * Lot 6.1 — une photo de la marchandise, envoyée à `upload/photo/`.
+ * Envoi d'une photo à `upload/photo/`, partagé par toutes les fonctions qui en
+ * ont besoin : la marchandise d'une demande (6.1) et la preuve de livraison
+ * (7.2). L'endpoint est générique côté serveur, le hook doit l'être aussi.
  *
- * L'endpoint existait depuis longtemps côté serveur (`PhotoUploadView`) et le
- * champ `photos` était déjà accepté par le sérialiseur de création : le mobile
- * n'avait simplement jamais rempli ce canal. Le serveur valide (5 Mo max,
- * JPEG/PNG/WebP par octets magiques), corrige l'orientation EXIF, redimensionne
- * à 2000 px et renvoie une URL publique.
+ * Le serveur valide (5 Mo max, JPEG/PNG/WebP par octets magiques), corrige
+ * l'orientation EXIF, redimensionne à 2000 px et renvoie une URL publique.
  *
- * On envoie donc l'URL, jamais l'URI locale `file://` : celle-ci ne veut rien
- * dire pour le transporteur qui lira la demande sur son propre appareil.
+ * On transmet donc l'URL, jamais l'URI locale `file://` : celle-ci ne veut rien
+ * dire sur l'appareil de celui qui lira la photo.
  */
 
 /** Un fichier en React Native se décrit par ces trois champs. */
@@ -64,7 +67,7 @@ async function uploadPhoto(asset: PhotoAsset): Promise<string> {
   }
 }
 
-export function useUploadRequestPhoto() {
+export function useUploadPhoto() {
   return useMutation<string, PhotoUploadError, PhotoAsset>({
     mutationFn: uploadPhoto,
   });
