@@ -71,7 +71,7 @@ describe('SearchEmptyState', () => {
       rendre(FILTREE);
       expect(screen.queryByText('Aucun trajet retour pour l\'instant')).toBeNull();
       expect(
-        screen.getByText('Aucun retour ne correspond a votre marchandise'),
+        screen.getByText('Aucun retour ne correspond à votre marchandise'),
       ).toBeTruthy();
     });
 
@@ -101,7 +101,7 @@ describe('SearchEmptyState', () => {
       // les transporteurs individuels.
       rendre(CORRIDOR, { voisins: ['Monastir', 'Mahdia'] });
       expect(screen.getByTestId('search-elargir-voisins')).toBeTruthy();
-      expect(screen.getByText('Departs voisins : Monastir, Mahdia.')).toBeTruthy();
+      expect(screen.getByText('Départs voisins : Monastir, Mahdia.')).toBeTruthy();
     });
 
     it('elargit quand on le demande', () => {

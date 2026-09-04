@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useLocalSearchParams } from 'expo-router';
 import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
@@ -37,6 +38,12 @@ export default function SearchScreen() {
   // Le jour vit ici et non dans le formulaire : « Voir tout le corridor »
   // rejoue la recherche sans date, et le formulaire doit suivre (lot 6.3).
   const [day, setDay] = useState<string | null>(null);
+  // Lot 7.5 — l'accueil cliente porte le meme formulaire et transmet le
+  // corridor ici. L'ecran s'ouvre donc DEJA rempli, et lance la recherche
+  // tout seul : sans cela la cliente ressaisirait ce qu'elle vient de choisir.
+  const amorce = useLocalSearchParams<{ pickup?: string; dropoff?: string; day?: string }>();
+  const [pickup, setPickup] = useState<string | null>(amorce.pickup ?? null);
+  const [dropoff, setDropoff] = useState<string | null>(amorce.dropoff ?? null);
   // Idem pour les filtres marchandise : l'etat vide peut proposer de les
   // retirer, et le formulaire doit suivre (lot 6.4).
   const [filtres, setFiltres] = useState<GoodsFilterValues>({
@@ -45,9 +52,29 @@ export default function SearchScreen() {
     volume: '',
   });
 
+  // Une seule fois : un `useEffect` sans garde relancerait la recherche a
+  // chaque rendu, et « Voir tout le corridor » se ferait ecraser aussitot.
+  const amorceJouee = useRef(false);
+
   // Les resultats sont accumules ici et non lus directement dans la mutation :
   // « Voir plus » ajoute une page a la liste au lieu de la remplacer (6.4).
   const [items, setItems] = useState<TripResultDto[]>([]);
+
+  useEffect(() => {
+    if (amorceJouee.current) return;
+    if (!amorce.pickup || !amorce.dropoff) return;
+    amorceJouee.current = true;
+    if (amorce.day) setDay(amorce.day);
+    onSearch({
+      pickup_governorate: amorce.pickup,
+      dropoff_governorate: amorce.dropoff,
+      date: amorce.day || undefined,
+    });
+    // `onSearch` est stable pour ce qui compte ici (mutation + setState) et
+    // l'amorce ne doit jouer qu'au montage : la liste de dependances est
+    // volontairement reduite aux parametres de route.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [amorce.pickup, amorce.dropoff, amorce.day]);
 
   const onSearch = (params: MatchParams) => {
     setLastParams(params);
@@ -141,6 +168,10 @@ export default function SearchScreen() {
                 onDayChange={setDay}
                 filtres={filtres}
                 onFiltresChange={setFiltres}
+                pickup={pickup}
+                dropoff={dropoff}
+                onPickupChange={setPickup}
+                onDropoffChange={setDropoff}
               />
             </Card>
             {match.isSuccess && total > 0 ? (

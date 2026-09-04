@@ -127,7 +127,14 @@
     "km_transformed": "فارغ ← محمّل",
     "requests_section": "الطلبات الواردة",
     "see_all": "عرض الكل",
-    "kpi_unavailable": "—"
+    "kpi_unavailable": "—",
+    "client": {
+      "search_title": "لوين باش تبعث ؟",
+      "search_subtitle": "لوّج على ناقل موجود ديجا في مسارك.",
+      "requests_title": "الطلبات متاعك الجارية",
+      "requests_count": "{{nb}} تستنّى تكملة",
+      "requests_to_pay": "{{nb}} تستنّى الخلاص متاعك"
+    }
   },
   "screens": {
     "search": {

@@ -12,11 +12,11 @@ import { CompletedMissionsList } from '@/features/reviews/components/CompletedMi
 import { ReturnPromptBanner } from '@/features/trips/components/ReturnPromptBanner';
 import { ReturnsHubSection } from '@/features/trips/components/ReturnsHubSection';
 import { Button } from '@/shared/ui/Button';
-import { GradientCard } from '@/shared/ui/GradientCard';
 import { TransporterOnboardingGuide } from '@/features/onboarding/components/TransporterOnboardingGuide';
-import { Txt } from '@/shared/ui/Txt';
+import { ClientHomeSearch } from '@/features/search/components/ClientHomeSearch';
+import { ClientRequestsSummary } from '@/features/my-requests/components/ClientRequestsSummary';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { colors, spacing } from '@/shared/theme';
 
 // Onglet Accueil, rôle-aware. Pour le transporteur c'est le tableau de bord de
 // design-system/10-transporteur-dashboard.html : hero chiffré, CTA unique,
@@ -44,13 +44,15 @@ export default function HomeScreen() {
       >
         <HomeTopBar />
 
+        {/* 7.5 — le bandeau de marque cede la place a la recherche elle-meme
+            (E-17). Il occupait le premier tiers d'un ecran vide aux deux
+            autres, et ne disait a la cliente rien qu'elle ne sache deja. La
+            cartographie assume qu'elle n'a pas de tableau de bord et que sa
+            racine est la recherche : autant l'y mettre. */}
         {isTransporter ? (
           <TransporterHero stats={stats.data} loading={stats.isLoading} />
         ) : (
-          <GradientCard>
-            <Txt style={styles.heroLabel}>{t('app.name')}</Txt>
-            <Txt style={styles.heroBig}>{t('app.tagline')}</Txt>
-          </GradientCard>
+          <ClientHomeSearch />
         )}
 
         {/* CTA unique de l'écran — le seul orange autorisé ici. */}
@@ -62,14 +64,10 @@ export default function HomeScreen() {
             variant="cta"
           />
         ) : null}
-        {isClient ? (
-          <Button
-            testID="home-search"
-            label={t('search.title')}
-            onPress={() => router.push('/search')}
-            variant="cta"
-          />
-        ) : null}
+        {/* Le bouton « Trouver un retour » a disparu : le formulaire porte
+            desormais son propre CTA, et deux oranges sur un ecran violeraient
+            la charte. */}
+        {isClient ? <ClientRequestsSummary /> : null}
 
         {/* La maquette place ici « Demandes reçues » avec ses cartes.
             L'endpoint transverse existe depuis T2.1
@@ -105,11 +103,4 @@ const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.neutral[50] },
   content: { padding: spacing.xl, gap: spacing.xl },
   section: { marginBottom: -spacing.md },
-  heroLabel: { fontSize: fontSize.sm, color: colors.neutral[0], opacity: 0.85 },
-  heroBig: {
-    fontSize: fontSize.xl,
-    fontWeight: '800',
-    color: colors.neutral[0],
-    marginTop: 4,
-  },
 });

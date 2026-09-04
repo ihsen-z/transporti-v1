@@ -127,7 +127,14 @@
     "km_transformed": "À vide → chargés",
     "requests_section": "Demandes reçues",
     "see_all": "Tout voir",
-    "kpi_unavailable": "—"
+    "kpi_unavailable": "—",
+    "client": {
+      "search_title": "Où allez-vous expédier ?",
+      "search_subtitle": "Cherchez un transporteur déjà sur votre corridor.",
+      "requests_title": "Vos demandes en cours",
+      "requests_count": "{{nb}} en attente de suite",
+      "requests_to_pay": "{{nb}} attend votre paiement"
+    }
   },
   "screens": {
     "search": {
@@ -488,11 +495,11 @@
       "dated_title": "Aucun retour ce jour-là",
       "dated_hint": "Le corridor {{depart}} → {{arrivee}} est peut-être servi à d'autres dates.",
       "see_corridor": "Voir tout le corridor",
-      "filtered_title": "Aucun retour ne correspond a votre marchandise",
-      "filtered_hint": "Le corridor n'est pas vide : ce sont vos criteres de marchandise qui ne trouvent rien.",
+      "filtered_title": "Aucun retour ne correspond à votre marchandise",
+      "filtered_hint": "Le corridor n'est pas vide : ce sont vos critères de marchandise qui ne trouvent rien.",
       "drop_filters": "Voir sans filtre marchandise",
-      "neighbours_hint": "Departs voisins : {{liste}}.",
-      "widen_neighbours": "Elargir aux gouvernorats voisins"
+      "neighbours_hint": "Départs voisins : {{liste}}.",
+      "widen_neighbours": "Élargir aux gouvernorats voisins"
     },
     "filters": {
       "title": "Affiner par marchandise",
@@ -974,7 +981,7 @@
   "errors": {
     "route": {
       "title": "Cette page n'est pas accessible",
-      "subtitle": "Le lien que vous avez suivi ne mene nulle part. Il a peut-etre expire.",
+      "subtitle": "Le lien que vous avez suivi ne mène nulle part. Il a peut-être expiré.",
       "back": "Retour"
     }
   }

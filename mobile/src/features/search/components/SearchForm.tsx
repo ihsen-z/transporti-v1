@@ -27,6 +27,18 @@ interface Props {
    */
   filtres: GoodsFilterValues;
   onFiltresChange: (filtres: GoodsFilterValues) => void;
+  /**
+   * Le corridor est porté par l'écran, comme le jour et les filtres. Lot 7.5 —
+   * l'accueil cliente embarque ce même formulaire et transmet le corridor à
+   * l'écran de recherche : celui-ci doit pouvoir s'ouvrir DÉJÀ rempli, sinon
+   * la cliente ressaisirait ce qu'elle vient de choisir.
+   */
+  pickup: string | null;
+  dropoff: string | null;
+  onPickupChange: (v: string | null) => void;
+  onDropoffChange: (v: string | null) => void;
+  /** Libellé du bouton, « Rechercher » par défaut. */
+  labelBouton?: string;
 }
 
 export function SearchForm({
@@ -36,11 +48,14 @@ export function SearchForm({
   onDayChange,
   filtres,
   onFiltresChange,
+  pickup,
+  dropoff,
+  onPickupChange,
+  onDropoffChange,
+  labelBouton,
 }: Props) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === 'ar';
-  const [pickup, setPickup] = useState<string | null>(null);
-  const [dropoff, setDropoff] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   // Lot 6.4 — filtres marchandise, repliés par défaut.
   const [filtresOuverts, setFiltresOuverts] = useState(false);
@@ -93,7 +108,7 @@ export function SearchForm({
         placeholder={t('trips.governorate_ph')}
         value={pickup}
         options={govOptions}
-        onChange={setPickup}
+        onChange={onPickupChange}
       />
       <Select
         testID="search-to"
@@ -101,7 +116,7 @@ export function SearchForm({
         placeholder={t('trips.governorate_ph')}
         value={dropoff}
         options={govOptions}
-        onChange={setDropoff}
+        onChange={onDropoffChange}
       />
       <Select
         testID="search-date"
@@ -125,7 +140,7 @@ export function SearchForm({
       ) : null}
       <Button
         testID="search-submit"
-        label={t('search.button')}
+        label={labelBouton ?? t('search.button')}
         onPress={submit}
         variant="cta"
         loading={loading}
