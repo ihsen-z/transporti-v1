@@ -342,6 +342,41 @@ class ReturnTripRequest(models.Model):
         help_text="What the client wants to ship (goods, weight estimate...)")
     photos = models.JSONField(default=list, blank=True,
         help_text="List of photo URLs (PhotoUploadView)")
+
+    # Lot 6.1 — rendre la demande decidable.
+    # Le trajet retour declare deja sa capacite de facon structuree
+    # (`TransportJob.available_capacity_kg` / `_m3`) ; la demande, elle, ne
+    # declarait rien de quantifie. La capacite du transporteur n'etait donc
+    # comparee a rien, et le seul porteur d'information etait `description`,
+    # en texte libre. Ces champs sont le pendant exact, cote demande, de la
+    # capacite declaree cote trajet.
+    #
+    # Tous facultatifs : les demandes creees avant ce lot restent valides et
+    # s'affichent simplement sans ces precisions.
+    goods_type = models.CharField(
+        max_length=20, choices=TransportJob.JobType.choices,
+        blank=True, default='',
+        help_text="Nature de la marchandise. Vide = non precisee.")
+    weight_kg = models.DecimalField(
+        max_digits=8, decimal_places=2, null=True, blank=True,
+        help_text="Poids declare par le client. Se compare a "
+                  "TransportJob.available_capacity_kg, qui fait foi.")
+    volume_m3 = models.DecimalField(
+        max_digits=7, decimal_places=2, null=True, blank=True,
+        help_text="Volume declare. Optionnel, comme available_capacity_m3 : "
+                  "jamais derive du poids.")
+    pickup_address = models.CharField(
+        max_length=255, blank=True, default='',
+        help_text="Adresse de retrait chez le client, distincte du depart du "
+                  "trajet retour (qui est celui du transporteur).")
+    pickup_governorate = models.CharField(
+        max_length=50, blank=True, default='')
+    pickup_from = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Debut du creneau de retrait souhaite.")
+    pickup_until = models.DateTimeField(
+        null=True, blank=True, help_text="Fin du creneau de retrait souhaite.")
+
     proposed_price = models.DecimalField(
         max_digits=10, decimal_places=2,
         help_text="Client-facing total price proposed by the client (TND)")

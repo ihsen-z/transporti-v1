@@ -79,7 +79,11 @@ class JobTripRequestsView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        serializer = ReturnTripRequestCreateSerializer(data=request.data)
+        # Le trajet est passe en contexte : le serializer confronte le poids
+        # demande a la capacite que ce trajet annonce (lot 6.1).
+        serializer = ReturnTripRequestCreateSerializer(
+            data=request.data, context={'job': job}
+        )
         serializer.is_valid(raise_exception=True)
         trip_request = serializer.save(job=job, client=request.user)
 

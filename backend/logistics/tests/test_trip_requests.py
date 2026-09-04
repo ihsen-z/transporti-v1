@@ -465,3 +465,122 @@ class OffresLisiblesParLeClientTests(TripRequestTestBase):
         self.assertEqual(resp.status_code, 200, resp.data)
         resultats = resp.data.get('results', resp.data)
         self.assertGreaterEqual(len(resultats), 1)
+
+
+class DemandeStructureeTests(TripRequestTestBase):
+    """
+    Lot 6.1 — la demande doit porter de quoi decider.
+
+    Avant ce lot, `ReturnTripRequest` ne portait que description, photos, prix
+    et mode de paiement : la capacite structuree annoncee par le trajet
+    (`available_capacity_kg`) n'etait comparee a rien.
+    """
+
+    def _demande(self, trip, **champs):
+        self._auth(self.client_user)
+        corps = {
+            'description': 'Un frigo et 5 cartons',
+            'proposed_price': '200.00',
+            'payment_method': 'DIGITAL',
+        }
+        corps.update(champs)
+        return self.client.post(
+            f'/api/jobs/{trip.id}/requests/', corps, format='json'
+        )
+
+    def test_les_champs_structures_font_l_aller_retour(self):
+        """Envoyes a la creation, ils doivent revenir dans la lecture — sans
+        quoi ils existeraient en base sans atteindre l'ecran de decision."""
+        trip = self._trip(available_capacity_kg=Decimal('2000'))
+        debut = timezone.now() + timedelta(days=1)
+        resp = self._demande(
+            trip,
+            goods_type='MOVING',
+            weight_kg='450.50',
+            volume_m3='3.20',
+            pickup_address='12 rue de Marseille, Sousse',
+            pickup_governorate='Sousse',
+            pickup_from=debut.isoformat(),
+            pickup_until=(debut + timedelta(hours=3)).isoformat(),
+        )
+        self.assertEqual(resp.status_code, 201, resp.data)
+
+        lu = resp.data['request']
+        self.assertEqual(lu['goods_type'], 'MOVING')
+        self.assertEqual(Decimal(lu['weight_kg']), Decimal('450.50'))
+        self.assertEqual(Decimal(lu['volume_m3']), Decimal('3.20'))
+        self.assertEqual(lu['pickup_address'], '12 rue de Marseille, Sousse')
+        self.assertEqual(lu['pickup_governorate'], 'Sousse')
+        self.assertIsNotNone(lu['pickup_from'])
+        self.assertIsNotNone(lu['pickup_until'])
+
+    def test_une_demande_sans_les_nouveaux_champs_reste_valide(self):
+        """Retrocompatibilite : les demandes d'avant 6.1 et les clients pas
+        encore mis a jour ne doivent pas etre casses."""
+        trip = self._trip()
+        resp = self._demande(trip)
+        self.assertEqual(resp.status_code, 201, resp.data)
+        self.assertEqual(resp.data['request']['goods_type'], '')
+        self.assertIsNone(resp.data['request']['weight_kg'])
+
+    def test_le_poids_au_dela_de_la_capacite_annoncee_est_refuse(self):
+        """La capacite du trajet fait foi : mieux vaut le dire a l'envoi
+        qu'apres un refus a J+1."""
+        trip = self._trip(available_capacity_kg=Decimal('2000'))
+        resp = self._demande(trip, weight_kg='2500')
+        self.assertEqual(resp.status_code, 400, resp.data)
+        # L'erreur doit etre portee par le champ, pas globale : le mobile
+        # s'appuie sur le nom du champ pour la poser au bon endroit.
+        self.assertIn('weight_kg', resp.data)
+        message = str(resp.data['weight_kg'])
+        self.assertIn('2000', message)
+        # Le message est affiche tel quel a la cliente : il doit s'ecrire comme
+        # un humain l'ecrit. `:g` laissait passer « 2000.0 » et « 2500.00 »
+        # (releve en recette le 04/09) — un Decimal garde ses zeros de queue.
+        self.assertIn('2000 kg', message)
+        self.assertNotIn('2000.0', message)
+        self.assertNotIn('2500.00', message)
+
+    def test_le_poids_egal_a_la_capacite_passe(self):
+        trip = self._trip(available_capacity_kg=Decimal('2000'))
+        resp = self._demande(trip, weight_kg='2000')
+        self.assertEqual(resp.status_code, 201, resp.data)
+
+    def test_un_trajet_sans_capacite_annoncee_ne_bloque_rien(self):
+        """`available_capacity_kg` est facultatif cote trajet ; son absence ne
+        doit pas se transformer en refus silencieux."""
+        trip = self._trip()
+        self.assertIsNone(trip.available_capacity_kg)
+        resp = self._demande(trip, weight_kg='9000')
+        self.assertEqual(resp.status_code, 201, resp.data)
+
+    def test_un_poids_nul_est_refuse(self):
+        """0 kg s'afficherait comme une donnee renseignee sans rien dire.
+        Ne pas repondre, c'est laisser le champ vide."""
+        trip = self._trip()
+        resp = self._demande(trip, weight_kg='0')
+        self.assertEqual(resp.status_code, 400, resp.data)
+        self.assertIn('weight_kg', resp.data)
+
+    def test_un_creneau_qui_finit_avant_de_commencer_est_refuse(self):
+        trip = self._trip()
+        debut = timezone.now() + timedelta(days=1)
+        resp = self._demande(
+            trip,
+            pickup_from=debut.isoformat(),
+            pickup_until=(debut - timedelta(hours=2)).isoformat(),
+        )
+        self.assertEqual(resp.status_code, 400, resp.data)
+        self.assertIn('pickup_until', resp.data)
+
+    def test_le_transporteur_lit_les_champs_dans_ses_demandes_recues(self):
+        """Le point d'arrivee reel : l'ecran de decision du transporteur."""
+        trip = self._trip(available_capacity_kg=Decimal('2000'))
+        self._demande(trip, goods_type='DELIVERY', weight_kg='120')
+
+        self._auth(self.transporter)
+        resp = self.client.get(f'/api/jobs/{trip.id}/requests/')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        recue = resp.data['results'][0]
+        self.assertEqual(recue['goods_type'], 'DELIVERY')
+        self.assertEqual(Decimal(recue['weight_kg']), Decimal('120'))

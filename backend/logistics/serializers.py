@@ -1074,6 +1074,12 @@ class ReturnTripRequestSerializer(serializers.ModelSerializer):
             'id', 'job', 'status', 'description', 'photos',
             'proposed_price', 'payment_method', 'counter_price',
             'response_message', 'client_name',
+            # Lot 6.1 — ce que le transporteur doit voir pour decider sans
+            # poser de question. Absents ici, ces champs existeraient en base
+            # sans jamais atteindre l'ecran de decision.
+            'goods_type', 'weight_kg', 'volume_m3',
+            'pickup_address', 'pickup_governorate',
+            'pickup_from', 'pickup_until',
             'job_pickup', 'job_dropoff', 'job_date',
             'created_at', 'updated_at',
         ]
@@ -1083,12 +1089,33 @@ class ReturnTripRequestSerializer(serializers.ModelSerializer):
         return f"{obj.client.first_name} {obj.client.last_name[:1]}.".strip()
 
 
+def _kg_lisible(valeur):
+    """
+    Decimal -> texte tel qu'un humain l'ecrit : 2000.0 -> « 2000 »,
+    450.50 -> « 450.5 ».
+
+    Le format `:g`, qui suffirait pour un float, ne normalise PAS un Decimal :
+    il en conserve les zeros de queue. Releve en recette le 04/09 — le refus
+    annoncait « 2000.0 kg disponibles, et votre chargement en fait 2500.00 ».
+    Ce message est affiche tel quel a la cliente (le mobile prefere le texte
+    serveur pour ce champ, puisqu'il porte le chiffre exact).
+    """
+    entier = valeur.to_integral_value()
+    return f'{entier:f}' if valeur == entier else f'{valeur.normalize():f}'
+
+
 class ReturnTripRequestCreateSerializer(serializers.ModelSerializer):
     """D5 — client sends a structured request on a published return trip."""
     class Meta:
         from .models import ReturnTripRequest
         model = ReturnTripRequest
-        fields = ['description', 'photos', 'proposed_price', 'payment_method']
+        fields = [
+            'description', 'photos', 'proposed_price', 'payment_method',
+            # Lot 6.1 — la marchandise, le lieu et le moment.
+            'goods_type', 'weight_kg', 'volume_m3',
+            'pickup_address', 'pickup_governorate',
+            'pickup_from', 'pickup_until',
+        ]
 
     def validate_proposed_price(self, value):
         if value <= 0:
@@ -1097,12 +1124,49 @@ class ReturnTripRequestCreateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Le prix proposé ne peut pas dépasser 100 000 TND.")
         return value
 
+    def validate_weight_kg(self, value):
+        # Meme raison que StructuredCapacityValidationMixin cote trajet : un 0
+        # s'afficherait comme une donnee renseignee alors qu'il ne veut rien
+        # dire. Laisser le champ vide est la facon de ne pas repondre.
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("Le poids doit être positif.")
+        return value
+
+    def validate_volume_m3(self, value):
+        if value is not None and value <= 0:
+            raise serializers.ValidationError("Le volume doit être positif.")
+        return value
+
     def validate(self, attrs):
         COD_MAX = 300
         if attrs.get('payment_method') == 'COD' and attrs['proposed_price'] > COD_MAX:
             raise serializers.ValidationError(
                 {'payment_method': f'Paiement à la livraison limité à {COD_MAX} TND. Choisissez le paiement digital.'}
             )
+
+        debut, fin = attrs.get('pickup_from'), attrs.get('pickup_until')
+        if debut and fin and fin <= debut:
+            raise serializers.ValidationError(
+                {'pickup_until': "La fin du créneau doit suivre son début."}
+            )
+
+        # Le poids demande, confronte a la capacite annoncee par le trajet.
+        # `available_capacity_kg` fait foi (cf. commentaire du modele) : au-dela,
+        # la demande serait refusee de toute facon. Autant le dire tout de
+        # suite, et avec le chiffre — c'est moins couteux qu'un refus a J+1.
+        # L'erreur est portee par le champ pour que le mobile la pose au bon
+        # endroit (classifySendRequestError distingue {champ:[...]} de {error}).
+        job = self.context.get('job')
+        poids = attrs.get('weight_kg')
+        if job is not None and poids is not None and job.available_capacity_kg:
+            if poids > job.available_capacity_kg:
+                raise serializers.ValidationError({
+                    'weight_kg': (
+                        f"Ce transporteur annonce {_kg_lisible(job.available_capacity_kg)} kg "
+                        f"disponibles, et votre chargement en fait "
+                        f"{_kg_lisible(poids)}."
+                    )
+                })
         return attrs
 
 
