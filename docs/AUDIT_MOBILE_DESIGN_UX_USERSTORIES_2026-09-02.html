@@ -298,6 +298,7 @@
     <div class="meta">
       <span><b>Audit statique</b> 02/09/2026</span>
       <span><b>Recette émulateur</b> 03/09/2026</span>
+      <span><b>Arbitrage canal classique</b> 04/09/2026</span>
       <span><b>Périmètre</b> mobile/ &mdash; Expo SDK 54</span>
       <span><b>Branche</b> feature/lot0-fondations-retour-first</span>
     </div>
@@ -667,7 +668,7 @@
             <tr><td class="mono">T-17</td><td>Savoir quels corridors me rapportent</td><td class="mono">CorridorPerformanceCard</td><td><span class="chip c-ok">oui</span></td></tr>
             <tr><td class="mono">T-18</td><td>Identifier mes clients fidèles</td><td class="mono">LoyalClientsCard</td><td><span class="chip c-ok">oui</span></td></tr>
             <tr><td class="mono">T-19</td><td>Consulter ma réputation et mes avis reçus</td><td class="mono">ReviewsPanel + ReputationCard</td><td><span class="chip c-ok">oui</span></td></tr>
-            <tr><td class="mono">T-20</td><td>Compléter mon aller en répondant à des demandes publiées</td><td class="mono">— canal classique hors mobile</td><td><span class="chip c-neut">assumé</span></td></tr>
+            <tr><td class="mono">T-20</td><td>Compléter mon aller en répondant à des demandes publiées</td><td class="mono">— hors mobile, tranché le 04/09 (§10)</td><td><span class="chip c-neut">assumé</span></td></tr>
             <tr><td class="mono">T-21</td><td>Ouvrir un litige</td><td class="mono">OpenDisputeSheet — cible de 22 dp</td><td><span class="chip c-ok">oui</span></td></tr>
             <tr><td class="mono">T-22</td><td>Échanger avec mon client</td><td class="mono">messages/index + messages/[jobId]</td><td><span class="chip c-ok">oui</span></td></tr>
             <tr><td class="mono">T-23</td><td>Être alerté sans ouvrir l'app</td><td class="mono">Cloche présente sur l'Accueil seulement</td><td><span class="chip c-warn">partiel</span></td></tr>
@@ -806,7 +807,7 @@
           <dl class="fgrid">
             <dt>Preuve</dt><dd class="proof">Recherche Le Kef → Tataouine sur appareil. L'état vide affiche « Aucun trajet retour pour l'instant », « Créez une alerte : on vous prévient dès qu'un trajet compatible est publié. », et un unique bouton « Créer une alerte corridor ». <code>jobs/</code> (création de demande classique) n'est jamais appelé par le mobile.</dd>
             <dt>Impact</dt><dd>Une alerte corridor est une promesse <em>différée</em>&nbsp;: la cliente qui doit expédier demain n'a rien. Sur un corridor peu liquide — la situation normale d'une marketplace en amorçage — l'écran de recherche devient le point de sortie de l'application.</dd>
-            <dt>Correctif</dt><dd>Dépend de l'arbitrage sur le canal classique (§10). Trois options par coût croissant&nbsp;: proposer les trajets du même corridor à d'autres dates&nbsp;; élargir aux gouvernorats voisins&nbsp;; livrer la demande classique préremplie. La première est presque gratuite et supprime l'impasse.</dd>
+            <dt>Correctif</dt><dd><b>Arbitré le 04/09 (§10), et l'arbitrage change le correctif&nbsp;:</b> l'état vide n'est pas un cas mais deux, et le code sait déjà les distinguer. <code>return-trips/match/</code> traite <code>date</code> comme <em>facultatif</em> — fenêtre serveur <code>window_hours</code>, 48&nbsp;h par défaut, résultats triés par écart à la date — et <code>useReturnTripMatch</code> l'omet déjà lorsqu'il est absent. Donc&nbsp;: <b>recherche datée sans résultat</b> → un bouton «&nbsp;Voir tout le corridor&nbsp;» qui rejoue la même requête sans la date. Aucun endpoint, aucun hook, aucune ligne de serveur. <b>Recherche sans date sans résultat</b> → le corridor est réellement vide, et c'est là seulement que deux sorties nommées se justifient&nbsp;: l'alerte corridor (existante, différée) et la demande classique préremplie (immédiate, livrée en incrément du lot&nbsp;6.1). Le premier écran devient ainsi <em>diagnostique</em> — il sépare «&nbsp;rien ce jour-là&nbsp;» de «&nbsp;rien sur ce corridor&nbsp;» — et ne fait payer la sortie coûteuse que dans le second cas.</dd>
           </dl>
         </div>
 
@@ -878,7 +879,7 @@
           <dl class="fgrid">
             <dt>Preuve</dt><dd class="proof">Formulaire relevé sur appareil&nbsp;: « Départ », « Arrivée », « Jour (optionnel) ». Ni type, ni volume, ni poids. search.tsx:70-80 documente le plafond serveur de 10 résultats sans pagination et le signale par un texte invitant à affiner.</dd>
             <dt>Impact</dt><dd>La cartographie exige «&nbsp;type et volume de marchandise&nbsp;» dès la recherche&nbsp;; sans eux, une cliente cherchant un déménagement voit des retours incapables de le prendre, et le badge de compatibilité ne repose sur rien. Le plafond, lui, est correctement signalé plutôt que masqué — choix honnête, mais limite réelle sur un corridor dense.</dd>
-            <dt>Correctif</dt><dd>Ajouter type et volume comme filtres, et les faire porter au matching serveur. La pagination suit.</dd>
+            <dt>Correctif</dt><dd>Ajouter type et volume comme filtres, et les faire porter au matching serveur — qui vit dans la vue elle-même (<code>logistics/views/corridors.py</code>, <code>MAX_RESULTS = 10</code>) et non dans une couche de services&nbsp;; le fichier <code>logistics/services/corridors.py</code> que plusieurs notes de travail citent n'existe pas. La pagination suit.</dd>
           </dl>
         </div>
 
@@ -1040,12 +1041,12 @@
   <section id="assumes">
     <div class="shead"><span class="num">10</span><h2>Écarts assumés</h2></div>
     <div class="stack">
-      <p>Ces absences sont des décisions documentées dans <code>PLAN_ACHEVEMENT_MOBILE §5</code>, appliquant le filtre à six questions de la vision (§11). Elles ne sont pas comptées comme défauts — mais deux méritent d'être réexaminées maintenant que le reste a avancé.</p>
+      <p>Ces absences sont des décisions documentées dans <code>PLAN_ACHEVEMENT_MOBILE §5</code>, appliquant le filtre à six questions de la vision (§11). Elles ne sont pas comptées comme défauts — mais deux méritaient d'être réexaminées maintenant que le reste a avancé. <b>La première l'a été le 04/09&nbsp;:</b> le canal classique est tranché, en deux moitiés de sens opposé (voir sous le tableau). Restent les favoris.</p>
       <div class="scroller">
         <table>
           <thead><tr><th>Écarté</th><th>Justification retenue</th><th>À réexaminer&nbsp;?</th></tr></thead>
           <tbody>
-            <tr><td><b>Canal classique</b> (demande publiée + offres) sur mobile</td><td>&laquo; Le mener en parallèle diluerait l'effort sur le pivot &raquo;</td><td><b>Oui.</b> C'est ce qui prive l'état vide de recherche de sa seconde sortie (E-09) et le transporteur du &laquo; compléter mon aller &raquo; (T-20). Le pivot est désormais livré, et l'arbitrage était conditionné à cela.</td></tr>
+            <tr><td><b>Canal classique</b> (demande publiée + offres) sur mobile</td><td>&laquo; Le mener en parallèle diluerait l'effort sur le pivot &raquo;</td><td><b>Réexaminé et tranché le 04/09</b> &mdash; en deux moitiés, pas en bloc&nbsp;: la moitié cliente est retenue, la moitié transporteur est écartée définitivement. Motifs et preuves ci-dessous.</td></tr>
             <tr><td><b>Transporteurs favoris</b></td><td>&laquo; Contredit le principe n°1 &raquo;</td><td><b>Oui</b> — la décision et le code se contredisent aujourd'hui (E-20), et la recette montre une liste alimentée mais non alimentable.</td></tr>
             <tr><td><b>Thème sombre</b></td><td>Coût d'audit de contraste de 24 composants pour zéro effet KPI&nbsp;; <code>light</code> forcé</td><td>Non. Mais l'audit de contraste devient nécessaire de toute façon (E-07) — autant en tirer les tokens.</td></tr>
             <tr><td><b>File de rejeu hors ligne</b></td><td>Détection et message clair couvrent 90&nbsp;% de la valeur pour 10&nbsp;% du risque</td><td>Non. Le repli est effectivement en place et honnête.</td></tr>
@@ -1054,6 +1055,13 @@
             <tr><td><b>Admin et modération</b></td><td>Restent sur le web</td><td>Non.</td></tr>
           </tbody>
         </table>
+      </div>
+      <div class="callout">
+        <h3>Arbitrage du 04/09&nbsp;: le canal classique se coupe en deux</h3>
+        <p>La question d'août était binaire — «&nbsp;le canal classique passe-t-il sur mobile&nbsp;?&nbsp;» — et c'est ce qui la rendait insoluble. Ses deux moitiés n'ont ni le même coût, ni le même effet sur le pivot. <b>Constat préalable&nbsp;: le canal classique ne manque pas au produit, il manque au mobile.</b> Le web sert les deux moitiés aujourd'hui (<code>jobs</code>, <code>demandes</code>, <code>demandes-recues</code>, <code>mes-offres</code>), et l'inventaire des appels du mobile ne contient <em>aucun</em> endpoint classique — ni <code>POST jobs/</code>, ni <code>jobs/public/</code>, ni <code>offers/</code>&nbsp;; les champs <code>offer_*</code> qu'on y trouve sont les montants en lecture seule d'une mission déjà attribuée.</p>
+        <p><b>Moitié transporteur (parcourir <code>jobs/public/</code>, enchérir via <code>offers/</code>)&nbsp;: écartée, et cette fois sans clause de revoyure.</b> Le motif d'août n'était pas un coût de développement mais un coût d'attention&nbsp;; livrer le pivot ne l'a pas périmé, il l'a rendu concret. Avant le pivot, il n'existait aucune surface de publication de retour à diluer&nbsp;; il en existe une désormais, et c'est le bouton central — l'action première du métier. Une surface «&nbsp;demandes à saisir&nbsp;» serait un second mode de découverte en concurrence frontale avec «&nbsp;publiez votre retour&nbsp;», réclamerait un cinquième onglet que la charte interdit, et poserait un second CTA sur des écrans que le design system limite à un. Le transporteur qui veut enchérir a le web. T-20 reste donc <em>assumé</em>, mais avec un motif au lieu d'une question ouverte&nbsp;: une ligne «&nbsp;à arbitrer&nbsp;» qui survit deux trimestres est exactement la pathologie décrite en E-20.</p>
+        <p><b>Moitié cliente (publier une demande)&nbsp;: retenue, en incrément du lot&nbsp;6.1 — pas comme contenu de E-09.</b> <code>TransportJobCreateSerializer</code> accepte exactement les champs que ce lot s'apprête à construire — type, adresses, gouvernorats, <code>scheduled_time</code>, <code>specifications</code>, <code>description</code>, <code>photos</code>, fourchette de prix — et son <code>create()</code> pose <code>status = PUBLISHED</code>&nbsp;: il n'y a même pas d'étape de publication à câbler. Une fois le formulaire structuré livré, cette moitié est un second bouton d'envoi, pas une seconde fonctionnalité. Le bassin, côté serveur, est fait pour elle&nbsp;: <code>jobs/public/</code> filtre <code>is_return_trip=False</code> dès que le lecteur est transporteur, et accepte les deux gouvernorats en filtre.</p>
+        <p><b>La réserve, et elle est sérieuse&nbsp;:</b> une demande publiée depuis le mobile trouvera sa réponse chez un transporteur <em>sur le web</em>, puisque l'app transporteur ne montrera pas ce bassin. L'interface ne doit donc pas laisser croire à une mise en relation immédiate&nbsp;: c'est une diffusion qui attend, et le libellé doit le dire — au même titre que le badge de réservation immédiate a dû être retiré (E-05). Et si ce bassin n'est en réalité consommé par personne, cette moitié tombe aussi&nbsp;: l'état vide se rabat alors sur «&nbsp;Voir tout le corridor&nbsp;» puis sur l'alerte seule. C'est la seule inconnue de cet arbitrage, et elle ne se lit pas dans le code.</p>
       </div>
       <p class="subnote">Un point de manipulation, souvent pris pour un défaut, n'en est pas un&nbsp;: sur l'écran de connexion, la touche Retour ferme le clavier au premier appui et quitte l'application au second. C'est le comportement Android attendu sur un écran racine, vérifié en recette.</p>
     </div>
