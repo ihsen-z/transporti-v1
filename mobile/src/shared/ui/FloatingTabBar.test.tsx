@@ -16,6 +16,11 @@ jest.mock('@/features/messaging/api/useConversations', () => ({
   useConversations: () => mockUseConversations(),
 }));
 
+const mockUseUnreadCount = jest.fn();
+jest.mock('@/features/notifications/api/useUnreadCount', () => ({
+  useUnreadCount: () => mockUseUnreadCount(),
+}));
+
 const TAB_NAMES = ['home', 'search', 'publish', 'requests', 'mes-demandes', 'messages', 'profile', 'gains'];
 
 function makeProps(currentName: string) {
@@ -45,6 +50,7 @@ function makeProps(currentName: string) {
 beforeEach(() => {
   jest.clearAllMocks();
   mockUseConversations.mockReturnValue({ data: { pages: [] } });
+  mockUseUnreadCount.mockReturnValue({ data: 0 });
 });
 
 describe('navigation par rôle', () => {
@@ -139,5 +145,48 @@ describe('pastille messages non lus', () => {
     render(<FloatingTabBar {...props} role="TRANSPORTER" />);
 
     expect(screen.queryByTestId('tab-messages-badge')).toBeNull();
+  });
+});
+
+
+// Lot 7.4 (E-14) — la cloche ne vivait QUE sur l'Accueil : depuis « Mes
+// demandes », une conversation ou le profil, rien ne signalait qu'une décision
+// attendait. IA-4 exige une boîte de réception unique ; le compteur des
+// messages était déjà porté par la barre, celui des notifications non.
+describe('7.4 — compteur de notifications sur la barre', () => {
+  it("pose la pastille sur l'onglet Accueil, ou la cloche ouvre la liste", () => {
+    mockUseUnreadCount.mockReturnValue({ data: 3 });
+    const { props } = makeProps('messages');
+    render(<FloatingTabBar {...props} role="CLIENT" />);
+    expect(screen.getByTestId('tab-home-badge')).toBeTruthy();
+  });
+
+  it('reste visible depuis un AUTRE onglet — c est tout l interet', () => {
+    mockUseUnreadCount.mockReturnValue({ data: 7 });
+    const { props } = makeProps('profile');
+    render(<FloatingTabBar {...props} role="CLIENT" />);
+    expect(screen.getByTestId('tab-home-badge')).toBeTruthy();
+  });
+
+  it("n'affiche rien quand il n'y a aucune notification non lue", () => {
+    mockUseUnreadCount.mockReturnValue({ data: 0 });
+    const { props } = makeProps('home');
+    render(<FloatingTabBar {...props} role="CLIENT" />);
+    expect(screen.queryByTestId('tab-home-badge')).toBeNull();
+  });
+
+  it('survit a une reponse absente sans afficher de pastille vide', () => {
+    // Premier rendu, requete en vol : `data` est undefined.
+    mockUseUnreadCount.mockReturnValue({ data: undefined });
+    const { props } = makeProps('home');
+    render(<FloatingTabBar {...props} role="CLIENT" />);
+    expect(screen.queryByTestId('tab-home-badge')).toBeNull();
+  });
+
+  it('vaut pour le transporteur aussi', () => {
+    mockUseUnreadCount.mockReturnValue({ data: 2 });
+    const { props } = makeProps('gains');
+    render(<FloatingTabBar {...props} role="TRANSPORTER" />);
+    expect(screen.getByTestId('tab-home-badge')).toBeTruthy();
   });
 });

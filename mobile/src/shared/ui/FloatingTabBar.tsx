@@ -7,6 +7,7 @@ import { colors, spacing, radii, shadows, fontSize, TOUCH_TARGET } from '@/share
 import { Txt } from '@/shared/ui/Txt';
 import { useConversations } from '@/features/messaging/api/useConversations';
 import type { ConversationListDto } from '@/features/messaging/api/dto';
+import { useUnreadCount } from '@/features/notifications/api/useUnreadCount';
 import type { UserRole } from '@/core/auth/authStore';
 
 // Navigation par rôle : quels onglets afficher (dans l'ordre de la barre) et
@@ -54,6 +55,18 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
     .flatMap((page) => page.results)
     .filter((c: ConversationListDto) => c.unread_count > 0).length;
 
+  // Lot 7.4 — le compteur de notifications sur l'onglet Accueil (E-14).
+  // La cloche ne vivait QUE sur l'Accueil : depuis « Mes demandes », une
+  // conversation ou le profil, rien ne signalait qu'une decision attendait, et
+  // il fallait revenir en arriere pour le decouvrir. IA-4 exige une boite de
+  // reception unique ; elle existait, mais elle etait locale a un ecran. Le
+  // compteur des messages, lui, etait deja porte par la barre : la solution
+  // etait dans le code, appliquee a un seul des deux flux.
+  //
+  // La pastille se pose sur « home » parce que c'est la que la cloche ouvre la
+  // liste. Elle dit « quelque chose t'attend, et voici ou aller ».
+  const unreadNotifications = useUnreadCount();
+
   const currentName = state.routes[state.index]?.name;
 
   const go = (name: string) => {
@@ -87,7 +100,12 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
     // du seuil AA de 4,5:1, et sur un libellé de 10 px. `neutral[500]` monte à
     // 4,83:1 sans changer la hiérarchie — l'onglet actif reste le seul en bleu.
     const color = isFocused ? colors.brand[600] : colors.neutral[500];
-    const badge = name === 'messages' && unreadMessages > 0 ? unreadMessages : 0;
+    const badge =
+      name === 'messages'
+        ? unreadMessages
+        : name === 'home'
+          ? (unreadNotifications.data ?? 0)
+          : 0;
     return (
       <Pressable
         key={name}
