@@ -488,7 +488,9 @@
       "see_corridor": "Voir tout le corridor",
       "filtered_title": "Aucun retour ne correspond a votre marchandise",
       "filtered_hint": "Le corridor n'est pas vide : ce sont vos criteres de marchandise qui ne trouvent rien.",
-      "drop_filters": "Voir sans filtre marchandise"
+      "drop_filters": "Voir sans filtre marchandise",
+      "neighbours_hint": "Departs voisins : {{liste}}.",
+      "widen_neighbours": "Elargir aux gouvernorats voisins"
     },
     "filters": {
       "title": "Affiner par marchandise",

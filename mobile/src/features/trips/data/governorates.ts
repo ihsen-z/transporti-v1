@@ -67,3 +67,47 @@ export function resolveGovernorateCode(value: string | null | undefined): string
   );
   return trouve?.code ?? null;
 }
+
+/** Rayon terrestre moyen, en km. */
+const RAYON_TERRE_KM = 6371;
+
+function radians(deg: number): number {
+  return (deg * Math.PI) / 180;
+}
+
+/** Distance orthodromique entre deux points, en km (haversine). */
+export function distanceKm(a: Governorate, b: Governorate): number {
+  const dLat = radians(b.lat - a.lat);
+  const dLng = radians(b.lng - a.lng);
+  const h =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(radians(a.lat)) * Math.cos(radians(b.lat)) * Math.sin(dLng / 2) ** 2;
+  return 2 * RAYON_TERRE_KM * Math.asin(Math.min(1, Math.sqrt(h)));
+}
+
+/**
+ * Gouvernorats voisins d'un gouvernorat, du plus proche au plus lointain.
+ *
+ * Sert la seconde sortie de l'état vide de recherche (lot 6.3) : quand un
+ * corridor est réellement vide, élargir de quelques dizaines de kilomètres est
+ * la seule proposition IMMÉDIATE qu'on puisse faire — l'alerte, elle, ne promet
+ * que plus tard.
+ *
+ * Le rayon est volontairement court. Au-delà, « déplacer son chargement » cesse
+ * d'être un service rendu et devient une contrainte déguisée : on proposerait à
+ * une cliente de Sousse de porter sa marchandise à Sfax.
+ */
+export function gouvernoratsVoisins(
+  code: string,
+  rayonKm = 60,
+  maximum = 3,
+): Governorate[] {
+  const depart = findGovernorate(code);
+  if (!depart) return [];
+  return GOVERNORATES.filter((g) => g.code !== depart.code)
+    .map((g) => ({ g, d: distanceKm(depart, g) }))
+    .filter(({ d }) => d <= rayonKm)
+    .sort((x, y) => x.d - y.d)
+    .slice(0, maximum)
+    .map(({ g }) => g);
+}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
@@ -9,6 +9,7 @@ import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { Icon } from '@/shared/ui/icons';
 import { SearchForm } from '@/features/search/components/SearchForm';
+import { gouvernoratsVoisins } from '@/features/trips/data/governorates';
 import type { GoodsFilterValues } from '@/features/search/components/GoodsFilters';
 import { TripResultCard } from '@/features/search/components/TripResultCard';
 import { SendRequestSheet } from '@/features/search/components/SendRequestSheet';
@@ -26,7 +27,8 @@ export default function SearchScreen() {
   // reste sous la barre flottante et son action devient inatteignable
   // (defaut mesure sur l'inventaire des retours, recette du 03/09).
   const margeBasse = useFloatingTabBarClearance();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const isAr = i18n.language === 'ar';
   const match = useReturnTripMatch();
   const createAlert = useCreateCorridorAlert();
   const [selected, setSelected] = useState<TripResultDto | null>(null);
@@ -73,6 +75,22 @@ export default function SearchScreen() {
       job_type: lastParams.job_type,
       weight_kg: lastParams.weight_kg,
       volume_m3: lastParams.volume_m3,
+    });
+  };
+
+  // Voisins proposables : aucun si on a deja elargi (le parametre porte alors
+  // plusieurs gouvernorats), aucun s'il n'y en a pas dans le rayon.
+  const voisins = useMemo(() => {
+    if (!lastParams || lastParams.pickup_governorate.includes(',')) return [];
+    return gouvernoratsVoisins(lastParams.pickup_governorate);
+  }, [lastParams]);
+
+  const onElargirVoisins = () => {
+    if (!lastParams || voisins.length === 0) return;
+    const departs = [lastParams.pickup_governorate, ...voisins.map((v) => v.code)];
+    onSearch({
+      pickup_governorate: departs.join(','),
+      dropoff_governorate: lastParams.dropoff_governorate,
     });
   };
 
@@ -141,6 +159,8 @@ export default function SearchScreen() {
               params={lastParams}
               onVoirCorridor={onVoirCorridor}
               onRetirerFiltres={onRetirerFiltres}
+              onElargirVoisins={onElargirVoisins}
+              voisins={voisins.map((v) => (isAr ? v.nameAr : v.nameFr))}
               onCreerAlerte={() =>
                 createAlert.mutate({
                   pickup_governorate: lastParams.pickup_governorate,

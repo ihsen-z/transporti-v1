@@ -41,6 +41,32 @@ class ReturnTripMatchView(APIView):
     MAX_LIMIT = 50
     DEFAULT_WINDOW_HOURS = 48
 
+    @staticmethod
+    def _ou_iexact(champ, brut):
+        """
+        Un OU de comparaisons insensibles a la casse, a partir d'une liste
+        separee par des virgules.
+
+        Lot 6.3 — l'etat vide propose d'elargir aux gouvernorats voisins quand
+        un corridor est reellement vide. Plutot qu'un endpoint de plus ou N
+        requetes, le meme parametre accepte desormais plusieurs valeurs :
+        `pickup_governorate=Sousse,Monastir`. Une valeur seule continue de se
+        comporter exactement comme avant.
+
+        `iexact` et non `__in` : le gouvernorat est du texte libre cote base,
+        rien ne garantit la casse (meme raison que `resolveGovernorateCode`
+        cote mobile).
+        """
+        valeurs = [v.strip() for v in brut.split(',') if v.strip()]
+        if not valeurs:
+            # Un `Q()` vide ne filtre RIEN : « pickup_governorate=,, » rendrait
+            # alors tous les corridors du pays. L'appelant doit refuser avant.
+            return None
+        condition = Q()
+        for valeur in valeurs:
+            condition |= Q(**{f'{champ}__iexact': valeur})
+        return condition
+
     def _decimal_positif(self, brut, nom):
         """
         Lit un filtre numerique. Renvoie (valeur, erreur).
@@ -62,7 +88,9 @@ class ReturnTripMatchView(APIView):
     def get(self, request):
         pickup = request.query_params.get('pickup_governorate', '').strip()
         dropoff = request.query_params.get('dropoff_governorate', '').strip()
-        if not pickup or not dropoff:
+        depart = self._ou_iexact('pickup_governorate', pickup)
+        arrivee = self._ou_iexact('dropoff_governorate', dropoff)
+        if depart is None or arrivee is None:
             return Response(
                 {'error': 'pickup_governorate et dropoff_governorate sont requis.'},
                 status=status.HTTP_400_BAD_REQUEST
@@ -72,9 +100,9 @@ class ReturnTripMatchView(APIView):
             status=TransportJob.Status.PUBLISHED,
             is_return_trip=True,
             scheduled_time__gte=timezone.now(),
-            pickup_governorate__iexact=pickup,
-            dropoff_governorate__iexact=dropoff,
-        ).exclude(owner=request.user).select_related('owner').prefetch_related('offers')
+        ).filter(depart).filter(arrivee).exclude(
+            owner=request.user
+        ).select_related('owner').prefetch_related('offers')
 
         # --- Lot 6.4 : filtres marchandise -----------------------------------
         job_type = request.query_params.get('job_type', '').strip()

@@ -13,6 +13,14 @@ interface Props {
   onVoirCorridor: () => void;
   /** Rejoue la même recherche sans les filtres marchandise. */
   onRetirerFiltres: () => void;
+  /** Rejoue la recherche en ajoutant les gouvernorats voisins au départ. */
+  onElargirVoisins: () => void;
+  /**
+   * Noms localisés des voisins qu'on peut proposer. Vide quand il n'y en a
+   * aucun dans le rayon, ou quand on a déjà élargi — on ne propose pas deux
+   * fois la même chose.
+   */
+  voisins: string[];
   onCreerAlerte: () => void;
   alerteCreee: boolean;
   alertePending: boolean;
@@ -38,11 +46,20 @@ interface Props {
  * corridor non plus : elle dit « rien à cette taille ». Sans ce cas, le lot 6.4
  * aurait réintroduit exactement le défaut que le 6.3 venait de corriger —
  * annoncer un corridor vide sans l'avoir regardé.
+ *
+ * Et quand le corridor est vraiment vide, sans date ni filtre, la seconde
+ * sortie est l'élargissement aux gouvernorats voisins. Ce n'est PAS la demande
+ * classique : l'arbitrage du 04/09 l'avait retenue, mais la réponse du terrain
+ * l'a écartée pour cette version — les transporteurs individuels consultent
+ * rarement le web, et le bassin `jobs/public/` est surtout lu par des sociétés
+ * de transport, segment que cette version ne sert pas encore.
  */
 export function SearchEmptyState({
   params,
   onVoirCorridor,
   onRetirerFiltres,
+  onElargirVoisins,
+  voisins,
   onCreerAlerte,
   alerteCreee,
   alertePending,
@@ -57,6 +74,10 @@ export function SearchEmptyState({
   // la charte, et on demanderait à la cliente de deviner laquelle a mordu.
   const leverFiltres = estFiltree;
   const elargirDates = !estFiltree && estDatee;
+  // Dernier recours immédiat : le corridor est vraiment vide, mais un départ
+  // voisin peut ne pas l'être. C'est la seconde sortie du cas sans contrainte,
+  // celle qui manquait a IA-3 (E-09).
+  const elargirVoisins = !estFiltree && !estDatee && voisins.length > 0;
 
   return (
     <Card style={styles.carte}>
@@ -97,6 +118,19 @@ export function SearchEmptyState({
           variant="cta"
         />
       ) : null}
+      {elargirVoisins ? (
+        <>
+          <Txt style={styles.indice}>
+            {t('search.empty.neighbours_hint', { liste: voisins.join(', ') })}
+          </Txt>
+          <Button
+            testID="search-elargir-voisins"
+            label={t('search.empty.widen_neighbours')}
+            onPress={onElargirVoisins}
+            variant="cta"
+          />
+        </>
+      ) : null}
 
       {alerteCreee ? (
         <Txt testID="search-alert-created" style={styles.alerteOk}>
@@ -110,7 +144,7 @@ export function SearchEmptyState({
             onPress={onCreerAlerte}
             // Un seul CTA orange par écran : quand une sortie immédiate est
             // là, c'est elle qui le porte, et l'alerte devient secondaire.
-            variant={leverFiltres || elargirDates ? 'ghost' : 'primary'}
+            variant={leverFiltres || elargirDates || elargirVoisins ? 'ghost' : 'primary'}
             loading={alertePending}
           />
         </View>

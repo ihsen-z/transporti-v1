@@ -18,6 +18,8 @@ function rendre(params: MatchParams, sur: Partial<Parameters<typeof SearchEmptyS
     params,
     onVoirCorridor: jest.fn(),
     onRetirerFiltres: jest.fn(),
+    onElargirVoisins: jest.fn(),
+    voisins: [] as string[],
     onCreerAlerte: jest.fn(),
     alerteCreee: false,
     alertePending: false,
@@ -87,14 +89,37 @@ describe('SearchEmptyState', () => {
     });
   });
 
-  describe('recherche sans date sans résultat', () => {
-    it("n'offre pas d'élargissement : il n'y a plus rien à élargir", () => {
-      rendre(CORRIDOR);
+  describe('corridor reellement vide, sans date ni filtre', () => {
+    it("n'offre pas d'elargir les dates : il n'y en avait pas", () => {
+      rendre(CORRIDOR, { voisins: ['Monastir'] });
       expect(screen.queryByTestId('search-voir-corridor')).toBeNull();
     });
 
-    it("laisse l'alerte corridor, seule sortie possible aujourd'hui", () => {
-      const props = rendre(CORRIDOR);
+    it('propose les gouvernorats voisins, et les nomme', () => {
+      // Seconde sortie du cas sans contrainte (E-09). Ce n'est PAS la demande
+      // classique : le terrain a montre que son bassin est peu consulte par
+      // les transporteurs individuels.
+      rendre(CORRIDOR, { voisins: ['Monastir', 'Mahdia'] });
+      expect(screen.getByTestId('search-elargir-voisins')).toBeTruthy();
+      expect(screen.getByText('Departs voisins : Monastir, Mahdia.')).toBeTruthy();
+    });
+
+    it('elargit quand on le demande', () => {
+      const props = rendre(CORRIDOR, { voisins: ['Monastir'] });
+      fireEvent.press(screen.getByTestId('search-elargir-voisins'));
+      expect(props.onElargirVoisins).toHaveBeenCalledTimes(1);
+    });
+
+    it("ne propose rien a elargir quand il n'y a aucun voisin", () => {
+      // On a alors regarde partout : l'alerte redevient la seule chose
+      // honnete a offrir, et elle reprend le CTA principal.
+      rendre(CORRIDOR, { voisins: [] });
+      expect(screen.queryByTestId('search-elargir-voisins')).toBeNull();
+      expect(screen.getByTestId('search-create-alert')).toBeTruthy();
+    });
+
+    it("laisse l'alerte corridor dans tous les cas", () => {
+      const props = rendre(CORRIDOR, { voisins: ['Monastir'] });
       fireEvent.press(screen.getByTestId('search-create-alert'));
       expect(props.onCreerAlerte).toHaveBeenCalledTimes(1);
     });

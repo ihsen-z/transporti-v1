@@ -343,3 +343,62 @@ class PaginationMatchTests(CorridorTestBase):
         self.assertEqual(resp.status_code, 200, resp.data)
         self.assertEqual(resp.data['limit'], 10)
         self.assertEqual(resp.data['offset'], 0)
+
+
+class CorridorsVoisinsTests(CorridorTestBase):
+    """
+    Lot 6.3 — elargir aux gouvernorats voisins quand un corridor est vide.
+    Le meme parametre accepte plusieurs gouvernorats separes par des virgules,
+    plutot qu'un endpoint de plus ou N requetes.
+    """
+
+    def test_une_valeur_seule_se_comporte_comme_avant(self):
+        self._trip('Sfax', 'Tunis')
+        self._trip('Sousse', 'Tunis')
+        self._auth(self.client_user)
+        resp = self.client.get(
+            '/api/return-trips/match/?pickup_governorate=Sfax&dropoff_governorate=Tunis')
+        self.assertEqual(resp.data['count'], 1)
+
+    def test_plusieurs_gouvernorats_de_depart(self):
+        self._trip('Sfax', 'Tunis')
+        self._trip('Sousse', 'Tunis')
+        self._trip('Gabès', 'Tunis')
+        self._auth(self.client_user)
+        resp = self.client.get(
+            '/api/return-trips/match/'
+            '?pickup_governorate=Sfax,Sousse&dropoff_governorate=Tunis')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertEqual(resp.data['count'], 2)
+        departs = {r['pickup_governorate'] for r in resp.data['results']}
+        self.assertEqual(departs, {'Sfax', 'Sousse'})
+
+    def test_la_casse_n_a_pas_d_importance(self):
+        """
+        Le gouvernorat est du texte libre en base : une liste ne doit pas etre
+        plus stricte qu'une valeur seule, qui compare en iexact.
+        """
+        self._trip('Sfax', 'Tunis')
+        self._auth(self.client_user)
+        resp = self.client.get(
+            '/api/return-trips/match/'
+            '?pickup_governorate=sfax,SOUSSE&dropoff_governorate=tunis')
+        self.assertEqual(resp.data['count'], 1)
+
+    def test_les_espaces_et_virgules_vides_sont_ignores(self):
+        self._trip('Sfax', 'Tunis')
+        self._auth(self.client_user)
+        resp = self.client.get(
+            '/api/return-trips/match/'
+            '?pickup_governorate=Sfax, ,,Sousse &dropoff_governorate=Tunis')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertEqual(resp.data['count'], 1)
+
+    def test_une_liste_entierement_vide_est_refusee(self):
+        """`pickup_governorate=,,` ne doit pas se lire « tous les corridors »."""
+        self._trip('Sfax', 'Tunis')
+        self._auth(self.client_user)
+        resp = self.client.get(
+            '/api/return-trips/match/'
+            '?pickup_governorate=,,&dropoff_governorate=Tunis')
+        self.assertEqual(resp.status_code, 400, resp.data)
