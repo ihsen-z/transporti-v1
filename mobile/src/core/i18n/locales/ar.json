@@ -488,7 +488,12 @@
     "savings_basis": "مقابل {{amount}} دينار لنقل مخصص",
     "map_expand": "كبّر الخريطة",
     "map_title": "المسارات الملقاة",
-    "price_negotiable": "السعر بالتفاوض"
+    "price_negotiable": "السعر بالتفاوض",
+    "empty": {
+      "dated_title": "ما فماش عودة هذا النهار",
+      "dated_hint": "مسار {{depart}} ← {{arrivee}} يمكن يخدم في أيام أخرى.",
+      "see_corridor": "شوف المسار الكل"
+    }
   },
   "my_requests": {
     "title": "طلباتي",

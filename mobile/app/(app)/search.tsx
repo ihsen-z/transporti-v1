@@ -5,12 +5,12 @@ import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
-import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { Icon } from '@/shared/ui/icons';
 import { SearchForm } from '@/features/search/components/SearchForm';
 import { TripResultCard } from '@/features/search/components/TripResultCard';
 import { SendRequestSheet } from '@/features/search/components/SendRequestSheet';
+import { SearchEmptyState } from '@/features/search/components/SearchEmptyState';
 import { ResultsMap } from '@/features/search/components/ResultsMap';
 import { CorridorAlertsPanel } from '@/features/search/components/CorridorAlertsPanel';
 import { useReturnTripMatch } from '@/features/search/api/useReturnTripMatch';
@@ -30,11 +30,25 @@ export default function SearchScreen() {
   const [selected, setSelected] = useState<TripResultDto | null>(null);
   const [lastParams, setLastParams] = useState<MatchParams | null>(null);
   const [alertsOpen, setAlertsOpen] = useState(false);
+  // Le jour vit ici et non dans le formulaire : « Voir tout le corridor »
+  // rejoue la recherche sans date, et le formulaire doit suivre (lot 6.3).
+  const [day, setDay] = useState<string | null>(null);
 
   const onSearch = (params: MatchParams) => {
     setLastParams(params);
     createAlert.reset();
     match.mutate(params);
+  };
+
+  // Sortie immédiate de l'état vide : la même requête, sans la date. Le
+  // serveur traite `date` comme facultatif, donc rien d'autre à câbler.
+  const onVoirCorridor = () => {
+    if (!lastParams) return;
+    setDay(null);
+    onSearch({
+      pickup_governorate: lastParams.pickup_governorate,
+      dropoff_governorate: lastParams.dropoff_governorate,
+    });
   };
 
   const results = match.data?.results ?? [];
@@ -66,7 +80,12 @@ export default function SearchScreen() {
         ListHeaderComponent={
           <View style={styles.formWrap}>
             <Card>
-              <SearchForm onSearch={onSearch} loading={match.isPending} />
+              <SearchForm
+                onSearch={onSearch}
+                loading={match.isPending}
+                day={day}
+                onDayChange={setDay}
+              />
             </Card>
             {match.isSuccess && match.data.count > 0 ? (
               <>
@@ -88,28 +107,19 @@ export default function SearchScreen() {
           </View>
         }
         ListEmptyComponent={
-          showEmpty ? (
-            <Card style={styles.emptyCard}>
-              <Txt style={styles.emptyTitle}>{t('search.no_results_title')}</Txt>
-              <Txt style={styles.emptyHint}>{t('search.no_results_hint')}</Txt>
-              {createAlert.isSuccess ? (
-                <Txt style={styles.alertOk}>{t('search.alert_created')}</Txt>
-              ) : (
-                <Button
-                  testID="search-create-alert"
-                  label={t('search.create_alert')}
-                  onPress={() =>
-                    lastParams &&
-                    createAlert.mutate({
-                      pickup_governorate: lastParams.pickup_governorate,
-                      dropoff_governorate: lastParams.dropoff_governorate,
-                    })
-                  }
-                  variant="primary"
-                  loading={createAlert.isPending}
-                />
-              )}
-            </Card>
+          showEmpty && lastParams ? (
+            <SearchEmptyState
+              params={lastParams}
+              onVoirCorridor={onVoirCorridor}
+              onCreerAlerte={() =>
+                createAlert.mutate({
+                  pickup_governorate: lastParams.pickup_governorate,
+                  dropoff_governorate: lastParams.dropoff_governorate,
+                })
+              }
+              alerteCreee={createAlert.isSuccess}
+              alertePending={createAlert.isPending}
+            />
           ) : null
         }
         renderItem={({ item }) => (
@@ -142,18 +152,4 @@ const styles = StyleSheet.create({
   formWrap: { gap: spacing.md, marginBottom: spacing.xs },
   count: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[600] },
   refineHint: { fontSize: fontSize.sm, color: colors.neutral[500], fontStyle: 'italic' },
-  emptyCard: { gap: spacing.md, marginTop: spacing.lg },
-  emptyTitle: {
-    fontSize: fontSize.lg,
-    fontWeight: '800',
-    color: colors.neutral[900],
-    textAlign: 'center',
-  },
-  emptyHint: { fontSize: fontSize.md, color: colors.neutral[500], textAlign: 'center' },
-  alertOk: {
-    fontSize: fontSize.md,
-    fontWeight: '700',
-    color: colors.text.green,
-    textAlign: 'center',
-  },
 });

@@ -472,7 +472,12 @@
     "savings_basis": "face à {{amount}} DT pour un transport dédié",
     "map_expand": "Agrandir la carte",
     "map_title": "Corridors trouvés",
-    "price_negotiable": "Prix à négocier"
+    "price_negotiable": "Prix à négocier",
+    "empty": {
+      "dated_title": "Aucun retour ce jour-là",
+      "dated_hint": "Le corridor {{depart}} → {{arrivee}} est peut-être servi à d'autres dates.",
+      "see_corridor": "Voir tout le corridor"
+    }
   },
   "my_requests": {
     "title": "Mes demandes",

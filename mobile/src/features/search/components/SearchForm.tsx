@@ -11,14 +11,21 @@ import type { MatchParams } from '../api/dto';
 interface Props {
   onSearch: (params: MatchParams) => void;
   loading: boolean;
+  /**
+   * Le jour est porté par l'écran, pas par le formulaire : l'état vide peut
+   * proposer « Voir tout le corridor », qui rejoue la recherche SANS date. Si
+   * le formulaire gardait sa propre copie, il continuerait d'afficher un jour
+   * que les résultats ne respectent plus.
+   */
+  day: string | null;
+  onDayChange: (day: string | null) => void;
 }
 
-export function SearchForm({ onSearch, loading }: Props) {
+export function SearchForm({ onSearch, loading, day, onDayChange }: Props) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === 'ar';
   const [pickup, setPickup] = useState<string | null>(null);
   const [dropoff, setDropoff] = useState<string | null>(null);
-  const [day, setDay] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const govOptions = useMemo(
@@ -68,7 +75,7 @@ export function SearchForm({ onSearch, loading }: Props) {
         placeholder={t('trips.day_ph')}
         value={day}
         options={dayOptions}
-        onChange={setDay}
+        onChange={onDayChange}
       />
       {error ? (
         <Text testID="search-error" style={styles.error}>
