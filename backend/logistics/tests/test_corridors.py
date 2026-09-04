@@ -402,3 +402,82 @@ class CorridorsVoisinsTests(CorridorTestBase):
             '/api/return-trips/match/'
             '?pickup_governorate=,,&dropoff_governorate=Tunis')
         self.assertEqual(resp.status_code, 400, resp.data)
+
+
+class AdressesFacultativesTests(CorridorTestBase):
+    """
+    Lot 7.3 — publier un retour en moins de 4 saisies.
+
+    Un retour a vide se cherche par CORRIDOR, pas par rue : exiger deux adresses
+    en saisie libre coutait deux entrees clavier a chaque publication, alors que
+    l'objectif du pivot est « moins de 30 secondes, moins de 4 saisies ». Si
+    publier coute cher, l'inventaire ne s'alimente pas — et c'est la condition
+    du principe n°1.
+    """
+
+    def _corps_retour(self, **extra):
+        corps = {
+            'job_type': 'TRANSPORT',
+            'pickup_governorate': 'Sfax',
+            'dropoff_governorate': 'Tunis',
+            'scheduled_time': (timezone.now() + timedelta(days=3)).isoformat(),
+            'available_capacity': '1 tonne',
+        }
+        corps.update(extra)
+        return corps
+
+    def test_un_retour_se_publie_sans_adresse(self):
+        self._auth(self.transporter)
+        resp = self.client.post('/api/jobs/return-trip/', self._corps_retour(), format='json')
+        self.assertEqual(resp.status_code, 201, resp.data)
+        job = TransportJob.objects.get(id=resp.data['job']['id'])
+        self.assertEqual(job.pickup_address, '')
+        self.assertEqual(job.dropoff_address, '')
+        self.assertEqual(job.pickup_governorate, 'Sfax')
+
+    def test_les_adresses_restent_acceptees_quand_elles_sont_donnees(self):
+        self._auth(self.transporter)
+        resp = self.client.post('/api/jobs/return-trip/', self._corps_retour(
+            pickup_address='Zone Industrielle', dropoff_address='Bab Saadoun',
+        ), format='json')
+        self.assertEqual(resp.status_code, 201, resp.data)
+        job = TransportJob.objects.get(id=resp.data['job']['id'])
+        self.assertEqual(job.pickup_address, 'Zone Industrielle')
+
+    def test_un_retour_sans_adresse_reste_trouvable(self):
+        """La recherche porte sur le gouvernorat : l'absence d'adresse ne doit
+        pas faire disparaitre le trajet du matching."""
+        self._auth(self.transporter)
+        self.client.post('/api/jobs/return-trip/', self._corps_retour(), format='json')
+        self._auth(self.client_user)
+        resp = self.client.get(
+            '/api/return-trips/match/?pickup_governorate=Sfax&dropoff_governorate=Tunis')
+        self.assertEqual(resp.data['count'], 1)
+
+    def test_le_canal_classique_exige_toujours_les_adresses(self):
+        """
+        La contrainte n'a pas disparu, elle a change de place : une demande
+        cliente sans adresse de retrait n'est pas realisable.
+        """
+        self._auth(self.client_user)
+        resp = self.client.post('/api/jobs/', {
+            'job_type': 'TRANSPORT',
+            'pickup_governorate': 'Sfax',
+            'dropoff_governorate': 'Tunis',
+            'scheduled_time': (timezone.now() + timedelta(days=3)).isoformat(),
+        }, format='json')
+        self.assertEqual(resp.status_code, 400, resp.data)
+        self.assertIn('pickup_address', resp.data)
+        self.assertIn('dropoff_address', resp.data)
+
+    def test_le_canal_classique_refuse_une_adresse_vide(self):
+        """`required=True` seul laisserait passer une chaine vide."""
+        self._auth(self.client_user)
+        resp = self.client.post('/api/jobs/', {
+            'job_type': 'TRANSPORT',
+            'pickup_address': '', 'pickup_governorate': 'Sfax',
+            'dropoff_address': '', 'dropoff_governorate': 'Tunis',
+            'scheduled_time': (timezone.now() + timedelta(days=3)).isoformat(),
+        }, format='json')
+        self.assertEqual(resp.status_code, 400, resp.data)
+        self.assertIn('pickup_address', resp.data)

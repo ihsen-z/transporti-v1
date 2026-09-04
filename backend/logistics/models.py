@@ -26,11 +26,22 @@ class TransportJob(models.Model):
     job_type = models.CharField(max_length=20, choices=JobType.choices)
     
     # Logistics
-    pickup_address = models.CharField(max_length=255)
+    #
+    # Lot 7.3 — les adresses deviennent facultatives AU NIVEAU DU MODELE, parce
+    # qu'un trajet retour se cherche par corridor et non par rue : exiger deux
+    # adresses en saisie libre coutait deux entrees clavier a chaque
+    # publication, et l'objectif du pivot est « moins de 4 saisies ». Si
+    # publier coute cher, l'inventaire ne s'alimente pas.
+    #
+    # Le canal CLASSIQUE, lui, continue de les exiger : une demande cliente
+    # sans adresse de retrait n'est pas realisable. La contrainte vit donc dans
+    # `TransportJobCreateSerializer`, la ou elle a un sens, et non ici ou elle
+    # s'appliquait aux deux canaux sans distinction.
+    pickup_address = models.CharField(max_length=255, blank=True, default='')
     pickup_lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     pickup_lng = models.DecimalField(max_digits=9, decimal_places=6, null=True)
-    
-    dropoff_address = models.CharField(max_length=255)
+
+    dropoff_address = models.CharField(max_length=255, blank=True, default='')
     dropoff_lat = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     dropoff_lng = models.DecimalField(max_digits=9, decimal_places=6, null=True)
     

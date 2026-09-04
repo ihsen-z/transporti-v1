@@ -281,7 +281,9 @@
       "manage": "Gérer mes retours",
       "expires_in_days": "expire dans {{count}} j",
       "expires_in_days_plural": "expire dans {{count}} j"
-    }
+    },
+    "address_optional": "Adresse (facultatif)",
+    "address_hint": "Le gouvernorat suffit : un retour se cherche par corridor."
   },
   "requests": {
     "title": "Demandes reçues",

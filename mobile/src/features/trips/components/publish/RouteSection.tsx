@@ -54,6 +54,7 @@ export function RouteSection({
 
       {/* Départ */}
       <Text style={s.section}>{t('trips.pickup')}</Text>
+      <Text style={s.hint}>{t('trips.address_hint')}</Text>
       <SavedAddressPicker
         cible="pickup"
         onChoisir={(a) =>
@@ -84,7 +85,7 @@ export function RouteSection({
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
             testID="publish-pickupAddress"
-            label={t('trips.address')}
+            label={t('trips.address_optional')}
             placeholder={t('trips.address_ph')}
             value={value}
             onChangeText={onChange}
@@ -127,7 +128,7 @@ export function RouteSection({
         render={({ field: { value, onChange, onBlur } }) => (
           <TextField
             testID="publish-dropoffAddress"
-            label={t('trips.address')}
+            label={t('trips.address_optional')}
             placeholder={t('trips.address_ph')}
             value={value}
             onChangeText={onChange}

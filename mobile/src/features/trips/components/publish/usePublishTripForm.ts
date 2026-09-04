@@ -97,7 +97,11 @@ export function usePublishTripForm() {
     [],
   );
 
-  // Estimation serveur (D1 : affichage seulement, jamais de recalcul local).
+  // Estimation serveur (D1 : le montant vient du serveur, jamais d'un recalcul
+  // local). Lot 7.3 — son resultat PREREMPLIT desormais les deux prix au lieu
+  // de se contenter de s'afficher. C'etaient deux entrees clavier sur cinq, sur
+  // un formulaire qui doit tenir en moins de quatre saisies : la valeur etait
+  // sous les yeux du transporteur et il devait la recopier.
   const onEstimate = () => {
     const { pickupGov, dropoffGov, jobType } = getValues();
     const p = findGovernorate(pickupGov);
@@ -107,13 +111,28 @@ export function usePublishTripForm() {
       return;
     }
     setRouteHint(null);
-    estimate.mutate({
-      pickup_lat: p.lat,
-      pickup_lng: p.lng,
-      dropoff_lat: d.lat,
-      dropoff_lng: d.lng,
-      job_type: jobType,
-    });
+    estimate.mutate(
+      {
+        pickup_lat: p.lat,
+        pickup_lng: p.lng,
+        dropoff_lat: d.lat,
+        dropoff_lng: d.lng,
+        job_type: jobType,
+      },
+      {
+        onSuccess: (reponse) => {
+          // Le serveur peut repondre en erreur metier (grille indisponible)
+          // avec un 200 : on ne prerempli alors rien plutot que d'ecrire un
+          // faux prix dans le formulaire.
+          if (reponse.error) return;
+          // Les prix restent MODIFIABLES : l'estimation est une proposition,
+          // pas une decision. Le transporteur connait son trajet mieux que la
+          // grille.
+          setValue('priceMin', String(reponse.min), { shouldValidate: true });
+          setValue('priceMax', String(reponse.max), { shouldValidate: true });
+        },
+      },
+    );
   };
 
   const onSubmit = handleSubmit((values) => {

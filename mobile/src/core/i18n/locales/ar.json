@@ -293,7 +293,9 @@
       "expires_in_days_3": "تنتهي خلال {{count}} أيام",
       "expires_in_days_4": "تنتهي خلال {{count}} أيام",
       "expires_in_days_5": "تنتهي خلال {{count}} أيام"
-    }
+    },
+    "address_optional": "العنوان (اختياري)",
+    "address_hint": "الولاية تكفي : العودة تتلوّج بالمسار."
   },
   "requests": {
     "title": "الطلبات الواردة",

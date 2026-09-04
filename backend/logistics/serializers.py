@@ -20,6 +20,15 @@ class TransportJobCreateSerializer(serializers.ModelSerializer):
             'price_tnd_min', 'price_tnd_max',
             'pickup_hint', 'dropoff_hint'
         ]
+        # Lot 7.3 — les adresses sont devenues facultatives sur le MODELE pour
+        # que la publication d'un retour tienne en moins de 4 saisies. Le canal
+        # classique, lui, en a besoin : une demande cliente sans adresse de
+        # retrait n'est pas realisable. La contrainte est donc reposee ici,
+        # explicitement, plutot que subie par les deux canaux.
+        extra_kwargs = {
+            'pickup_address': {'required': True, 'allow_blank': False},
+            'dropoff_address': {'required': True, 'allow_blank': False},
+        }
 
     def validate_scheduled_time(self, value):
         if value < timezone.now():
