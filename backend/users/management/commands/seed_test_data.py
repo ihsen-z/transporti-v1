@@ -216,9 +216,26 @@ class Command(BaseCommand):
         
         self.stdout.write(self.style.SUCCESS('   ✓ 6 users created'))
 
-    def _creer_job(self, job_id, defaults):
+    def _creer_job(self, job_id, defaults, rafraichir=()):
         """
         Cree un job du jeu fixe, distance et trace compris.
+
+        `rafraichir` liste les champs a remettre a jour sur une ligne DEJA
+        presente. Ce parametre existe parce que les scenarios du jeu fixe sont
+        definis RELATIVEMENT a maintenant : « un retour dans deux jours »,
+        « un retour echu depuis deux jours ». Or cette fonction etait
+        totalement idempotente, donc la date restait celle du premier seed.
+
+        Un environnement de recette vieillissait ainsi jusqu'a n'avoir plus
+        aucun trajet retour valide. C'est exactement ce que la recette du
+        03/09 a mesure : les DEUX trajets du jeu fixe etaient expires, il ne
+        restait qu'une ligne heritee sans prix, donc sans economie estimee.
+        La promesse du produit devenait invisible sans qu'aucun code
+        applicatif soit en cause.
+
+        Le rafraichissement reste OPT-IN champ par champ : ni `distance_km`
+        ni le trace ne doivent etre ecrases par un rejeu, pour la raison
+        expliquee ci-dessous.
 
         Les jobs ecrits a la main ici contournent le serializer, donc aussi
         l'annotation que `JobCreateSerializer.create` et
@@ -240,6 +257,11 @@ class Command(BaseCommand):
 
         existant = TransportJob.objects.filter(id=job_id).first()
         if existant is not None:
+            champs = [c for c in rafraichir if c in defaults]
+            if champs:
+                for champ in champs:
+                    setattr(existant, champ, defaults[champ])
+                existant.save(update_fields=champs)
             return existant
 
         annotate_distance_and_route(defaults)
@@ -391,8 +413,15 @@ class Command(BaseCommand):
                 'scheduled_time': timezone.now() + timedelta(days=2),
                 'price_tnd_min': Decimal('100.00'),
                 'price_tnd_max': Decimal('140.00'),
+                # Seul trajet du jeu fixe en reservation immediate. Sans lui,
+                # le chemin `jobs/<id>/book-return/` et le badge de la carte de
+                # resultat n'etaient testables sur AUCUN environnement.
+                'instant_booking': True,
                 'description': 'Retour à vide après une livraison. Chargement possible dès 14h.',
-            }
+            },
+            # La date fait le scenario : un rejeu doit la ramener dans le futur,
+            # sinon ce trajet disparait de la recherche cliente en deux jours.
+            rafraichir=('scheduled_time', 'status', 'instant_booking'),
         )
 
         # Return trip 2: date passed (expiration scenario, REC-F5)
@@ -408,11 +437,20 @@ class Command(BaseCommand):
                 'dropoff_governorate': 'Gabès',
                 'scheduled_time': timezone.now() - timedelta(days=2),
                 'price_tnd_min': Decimal('60.00'),
+                'price_tnd_max': Decimal('90.00'),
                 'description': 'Trajet retour passé — scénario expiration.',
-            }
+            },
+            # Ce trajet doit rester ECHU pour porter son scenario : sans
+            # rafraichissement il s'eloigne indefiniment dans le passe, ce qui
+            # est inoffensif, mais on garde la meme regle pour que les deux
+            # trajets se lisent de la meme facon.
+            rafraichir=('scheduled_time', 'status'),
         )
 
-        self.stdout.write(self.style.SUCCESS('   ✓ 2 return trips created'))
+        self.stdout.write(self.style.SUCCESS(
+            '   ✓ 2 return trips (1 publié à J+2 avec réservation immédiate, '
+            '1 échu pour le scénario expiration)'
+        ))
 
     def seed_offers(self):
         """Create offers linked to jobs.

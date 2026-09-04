@@ -2,15 +2,21 @@
 # Test live de l'app mobile Transporti sur l'émulateur Android.
 #
 # Usage :
-#   scripts/mobile-emulator.sh              # AVD par défaut, port 8082
+#   scripts/mobile-emulator.sh              # AVD par défaut, port 8081
 #   scripts/mobile-emulator.sh Pixel_5_API_33 8083
 #   scripts/mobile-emulator.sh --shot nom   # capture d'écran seule (émulateur déjà lancé)
 #
-# Enchaîne : boot de l'AVD → Metro (watch mode) → ouverture dans Expo Go.
+# Enchaîne : boot de l'AVD → Metro (watch mode) → ouverture de l'application.
+#
+# PORT 8081 ET NON 8082. Ce script visait Expo Go, qui n'est PAS installé sur
+# l'AVD `Pixel_7_API_35` : ce qui l'est, c'est un build de développement
+# `tn.transporti.app` qui cherche son bundle sur `ws://10.0.2.2:8081` EN DUR.
+# Avec Metro sur 8082, l'application reste sur un écran noir sans rien logger —
+# une heure de diagnostic perdue en recette le 03/09.
 set -euo pipefail
 
 AVD="${1:-Pixel_7_API_35}"
-PORT="${2:-8082}"
+PORT="${2:-8081}"
 
 ANDROID_HOME="${ANDROID_HOME:-$LOCALAPPDATA/Android/Sdk}"
 ADB="$ANDROID_HOME/platform-tools/adb.exe"
@@ -68,10 +74,11 @@ fi
 # 10.0.2.2 = alias de l'hôte vu depuis l'AVD. Ne PAS utiliser 127.0.0.1 :
 # même avec `adb reverse`, Expo Go échoue en "connection refused".
 echo "▶ ouverture de l'app dans Expo Go…"
-"$ADB" shell am force-stop host.exp.exponent
+# Build de développement installé, et non Expo Go : voir l'en-tête.
+"$ADB" shell am force-stop tn.transporti.app
 sleep 2
 "$ADB" shell am start -a android.intent.action.VIEW \
-  -d "exp://10.0.2.2:$PORT" host.exp.exponent
+  -d "exp://10.0.2.2:$PORT" tn.transporti.app   || "$ADB" shell monkey -p tn.transporti.app -c android.intent.category.LAUNCHER 1
 
 echo
 echo "✓ prêt. Le bundle met ~10 s la première fois."

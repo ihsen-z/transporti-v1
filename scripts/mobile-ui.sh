@@ -9,12 +9,13 @@
 #   scripts/mobile-ui.sh type "a@b.tn"           # saisit du texte
 #   scripts/mobile-ui.sh shot mon-ecran          # capture -> mobile/.expo/shots/
 #   scripts/mobile-ui.sh open                    # ouvre l'app via le deep link
+#   scripts/mobile-ui.sh cibles                  # cibles tactiles sous 44 dp
 set -euo pipefail
 
 ANDROID_HOME="${ANDROID_HOME:-$LOCALAPPDATA/Android/Sdk}"
 ADB="$ANDROID_HOME/platform-tools/adb.exe"
 MOBILE_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../mobile" && pwd)"
-PORT="${PORT:-8082}"
+PORT="${PORT:-8081}"
 UI_XML="$MOBILE_DIR/.expo/ui.xml"
 
 # ATTENTION : git-bash réécrit tout argument commençant par «/» en chemin
@@ -67,9 +68,52 @@ case "${1:-elements}" in
     "$ADB" exec-out screencap -p > "$MOBILE_DIR/.expo/shots/${2:-shot}.png"
     echo "capture : mobile/.expo/shots/${2:-shot}.png"
     ;;
+  cibles)
+    # Mesure les cibles tactiles en dp et signale celles sous le seuil de la
+    # charte. C'est cette commande qui a trouve les 16 cibles trop petites de
+    # la recette du 03/09, la ou une lecture des feuilles de style n'en voyait
+    # que cinq : le style ne dit pas ce que le rognage par un parent produit.
+    #
+    # dp = px / (densite / 160). La densite est LUE sur l'appareil, jamais
+    # supposee : un AVD en 420 dpi et un telephone en 320 dpi ne donnent pas
+    # les memes chiffres pour le meme code.
+    #
+    # LIMITE A CONNAITRE : `hitSlop` est INVISIBLE dans l'arbre
+    # d'accessibilite. Un chevron de 24 dp avec `hitSlop={12}` fait 48 dp au
+    # doigt et sera pourtant signale ici. Les deux outils sont donc
+    # complementaires et non redondants : la regle ESLint
+    # `local/pressable-accessible` connait `hitSlop` mais pas le rognage par un
+    # parent ; cette commande voit le rognage mais pas `hitSlop`. C'est elle
+    # qui a trouve le FAB rogne a 43 dp, que la regle ne pouvait pas voir.
+    dump_tree
+    densite="$("$ADB" shell wm density | grep -oE '[0-9]+' | head -1)"
+    python -c "
+import re, sys, xml.etree.ElementTree as ET
+sys.stdout.reconfigure(encoding='utf-8', errors='replace')
+facteur = int(sys.argv[2]) / 160
+CIBLE = 44
+sous_seuil = []
+for e in ET.parse(sys.argv[1]).iter('node'):
+    if e.get('clickable') != 'true':
+        continue
+    b = re.findall(r'-?\d+', e.get('bounds', ''))
+    if len(b) != 4:
+        continue
+    largeur = round((int(b[2]) - int(b[0])) / facteur)
+    hauteur = round((int(b[3]) - int(b[1])) / facteur)
+    label = (e.get('content-desc') or e.get('text') or e.get('resource-id') or '?').strip()
+    if largeur < CIBLE or hauteur < CIBLE:
+        sous_seuil.append((hauteur, largeur, label))
+for h, l, label in sorted(sous_seuil):
+    print(f'  {l:>4}x{h:<4} dp   {label[:60]}')
+print(f'\n{len(sous_seuil)} cible(s) sous {CIBLE} dp   (densite {sys.argv[2]} dpi)')
+if sous_seuil:
+    print('Rappel : hitSlop est invisible ici. Verifier le code avant de conclure.')
+" "$UI_XML" "$densite"
+    ;;
   open)
     "$ADB" shell am start -a android.intent.action.VIEW \
-      -d "exp://10.0.2.2:$PORT" host.exp.exponent
+      -d "exp://10.0.2.2:$PORT" tn.transporti.app       || "$ADB" shell monkey -p tn.transporti.app -c android.intent.category.LAUNCHER 1
     ;;
   *)
     echo "commande inconnue : $1" >&2; exit 1

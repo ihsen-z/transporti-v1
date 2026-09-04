@@ -13,7 +13,7 @@ Android Studio. Compte environ **5 minutes** au premier lancement.
 |---|---|---|
 | L'émulateur | le faux téléphone | — |
 | Le backend Django | les données (comptes, trajets) | 8000 |
-| Metro | fabrique l'app et l'envoie au téléphone | 8082 |
+| Metro | fabrique l'app et l'envoie au téléphone | **8081** |
 
 Si l'un des trois s'arrête, l'application ne marche plus.
 
@@ -93,14 +93,20 @@ http://0.0.0.0:8000/`.
 Ouvre un **troisième** terminal :
 
 ```bash
-cd mobile && npx expo start --port 8082
+cd mobile && npx expo start --port 8081
 ```
 
-Attends la ligne `Waiting on http://localhost:8082`.
+Attends la ligne `Waiting on http://localhost:8081`.
 
-> **Pourquoi 8082 et pas 8081 ?** Le port 8081 (celui par défaut) est déjà
-> utilisé par la version web du projet. Si tu laisses le port par défaut, Expo
-> te posera une question et, sans réponse, ne démarrera pas.
+> **Pourquoi 8081 et pas 8082 ?** *(corrigé le 04/09, après une heure perdue
+> en recette.)* Ce guide indiquait 8082 en supposant qu'on passait par Expo Go.
+> Or **Expo Go n'est pas installé sur l'AVD** : ce qui l'est, c'est un build de
+> développement `tn.transporti.app` qui cherche son bundle sur
+> `ws://10.0.2.2:8081` **en dur**. Avec Metro sur 8082, l'application reste sur
+> un écran noir **sans rien écrire dans les logs** — rien n'indique la cause.
+>
+> Si le port 8081 est déjà pris par la version web, arrête-la : c'est le mobile
+> qui n'a pas le choix du port, pas le web.
 
 Laisse ce terminal ouvert aussi.
 
@@ -111,17 +117,22 @@ Laisse ce terminal ouvert aussi.
 Dans le **premier** terminal :
 
 ```bash
-"$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe" shell am start -a android.intent.action.VIEW -d "exp://10.0.2.2:8082" host.exp.exponent
+"$LOCALAPPDATA/Android/Sdk/platform-tools/adb.exe" shell monkey -p tn.transporti.app -c android.intent.category.LAUNCHER 1
 ```
 
-L'application **Expo Go** s'ouvre sur l'émulateur et affiche
-« Bundling… » pendant 10 à 60 secondes, puis l'écran de connexion Transporti
-apparaît.
+L'application Transporti s'ouvre sur l'émulateur. Le premier lancement
+affiche le logo pendant 20 à 60 secondes — Metro construit le bundle — puis
+l'écran de connexion apparaît.
 
-> **Attention** : utilise bien `exp://10.0.2.2:8082`. Avec `127.0.0.1`, Expo Go
-> échoue avec « connection refused », même si tout le reste est correct.
+Pour vérifier que le bundle est bien parti, dans le terminal de Metro :
+`Android Bundled 20593ms node_modules\expo-router\entry.js`.
 
-Expo Go est **déjà installé** sur cet émulateur — rien à installer.
+> **Attention** : `10.0.2.2` et jamais `127.0.0.1`. Depuis l'émulateur,
+> `127.0.0.1` désigne l'émulateur lui-même, pas ton PC.
+
+Le build de développement est **déjà installé** sur cet émulateur — rien à
+installer. Si tu dois le réinstaller, il se reconstruit avec
+`npx expo run:android` (compte 10 à 15 minutes).
 
 ---
 
@@ -137,12 +148,35 @@ Deux comptes de test, même mot de passe : **`Test@123!`**
 Le transporteur voit « Publier un retour » et « Mes missions » ; le client voit
 « Trouver un retour » et « Mes demandes ».
 
-Ces comptes viennent de `backend/users/management/commands/seed_test_data.py`.
-S'ils n'existent pas dans ta base :
+### Rejoue le seed avant toute campagne
+
+Les scénarios du jeu fixe sont datés **relativement à maintenant** : « un
+retour dans deux jours », « un retour échu depuis deux jours ». Sans rejeu, ces
+dates restent celles du premier seed et l'environnement **vieillit jusqu'à
+devenir inutilisable** : au 03/09, les deux trajets retour du jeu fixe étaient
+expirés et la recherche cliente ne renvoyait plus qu'une ligne héritée sans
+prix — donc sans économie estimée. L'argument de conversion du produit était
+invisible, et aucun code n'était en cause.
 
 ```bash
 cd backend && ./venv/Scripts/python.exe manage.py seed_test_data
 ```
+
+Depuis le 04/09, un rejeu **remet les dates à l'heure** (les autres champs, dont
+`distance_km`, restent intacts). Verrouillé par
+`backend/logistics/tests/test_seed_rafraichissement.py`.
+
+**Et si tu veux repartir vraiment propre**, ajoute `--clear`. Un environnement
+utilisé pendant des semaines accumule des lignes qu'aucun seed ne nettoie : au
+03/09 il portait **82 trajets retour dont 78 sans prix** et 388 notifications
+non lues, tous issus de l'usage et non du seed.
+
+```bash
+cd backend && ./venv/Scripts/python.exe manage.py seed_test_data --clear
+```
+
+Ces comptes et ces scénarios vivent dans
+`backend/users/management/commands/seed_test_data.py`.
 
 ---
 
@@ -162,11 +196,13 @@ Ferme les fenêtres, ou dans chaque terminal fais **Ctrl + C**. Puis :
 |---|---|
 | `adb devices` est vide | l'émulateur n'a pas fini de démarrer, ou il s'est fermé → refaire l'étape 1 |
 | Metro reste bloqué sur `Starting Metro Bundler` | un ancien Metro tourne encore en fond (voir juste en dessous) |
-| Expo Go : « Something went wrong » | Metro n'était pas prêt → vérifier l'étape 3, puis refaire l'étape 4 |
-| Expo Go : « connection refused » | tu as utilisé `127.0.0.1` au lieu de `10.0.2.2` |
+| **Écran noir figé, aucun log** | Metro n'écoute pas sur **8081**. C'est le seul port que le build installé accepte → étape 3 |
+| L'app ne se connecte pas au bundle | tu as utilisé `127.0.0.1` au lieu de `10.0.2.2` |
 | L'app s'ouvre, la connexion échoue | le backend est éteint, ou `ALLOWED_HOSTS` sans `10.0.2.2` → étape 2 |
-| `Port 8081 is being used` | utilise `--port 8082` comme à l'étape 3 |
+| `Port 8081 is being used` | un autre Metro ou la version web tient le port. Arrête-le : le mobile n'a pas le choix du port (voir étape 3) |
 | Écran blanc figé | recharge : refais l'étape 4 |
+| La recherche cliente ne renvoie rien | les trajets du seed ont expiré → rejoue le seed (étape 5) |
+| Aucune économie estimée sur les cartes | même cause, ou des lignes héritées sans prix → `seed_test_data --clear` |
 | L'app s'ouvre directement sur l'accueil | normal : la session précédente est mémorisée, pas besoin de se reconnecter |
 | L'app est en arabe sans raison | la langue choisie reste mémorisée sur l'appareil ; rebascule avec le bouton **Français** en haut de l'écran |
 
@@ -176,7 +212,7 @@ Cela arrive quand un Metro précédent ne s'est pas arrêté proprement : il n'o
 jamais le port et attend indéfiniment. Vérifie d'abord que personne n'écoute :
 
 ```bash
-netstat -ano | grep 8082
+netstat -ano | grep 8081
 ```
 
 Si la commande ne renvoie rien alors que Metro « démarre » depuis plus d'une
@@ -216,7 +252,7 @@ cd "$LOCALAPPDATA/Android/Sdk/emulator" && cmd //c start "" //B emulator.exe -av
 ```
 
 ```bash
-curl -s http://localhost:8082/status
+curl -s http://localhost:8081/status
 ```
 
 ```bash
@@ -225,3 +261,28 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:8000/api/
 
 Attendu : un `emulator-5554 device`, puis `packager-status:running`, puis un
 code HTTP (`404` est **normal** ici — cela prouve juste que Django répond).
+
+---
+
+## Mesurer au lieu d'estimer
+
+Deux commandes valent d'être connues avant une campagne de recette.
+
+```bash
+scripts/mobile-ui.sh elements     # arbre d'accessibilité + centres cliquables
+scripts/mobile-ui.sh cibles       # cibles tactiles sous 44 dp, mesurées en dp
+```
+
+`cibles` convertit les bornes en dp avec la densité **lue sur l'appareil** — un
+AVD en 420 dpi et un téléphone en 320 dpi ne donnent pas les mêmes chiffres
+pour le même code. C'est cette commande qui a trouvé les 16 cibles trop petites
+du 03/09, là où une lecture des feuilles de style n'en voyait que cinq : le
+style ne dit pas ce que le rognage par un parent produit. Elle a aussi trouvé
+le bouton central rogné à 43 dp par sa translation verticale, invisible
+autrement.
+
+Elle a une limite à connaître : **`hitSlop` n'apparaît pas dans l'arbre
+d'accessibilité**. Un chevron de 24 dp avec `hitSlop={12}` fait 48 dp au doigt
+et sera pourtant signalé. La règle de lint `local/pressable-accessible` est
+complémentaire : elle connaît `hitSlop` mais pas le rognage. Les deux ensemble
+couvrent ce qu'aucune des deux ne voit seule.

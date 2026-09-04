@@ -422,7 +422,8 @@
     "savings": "Vous économisez {{amount}} DT",
     "savings_basis": "face à {{amount}} DT pour un transport dédié",
     "map_expand": "Agrandir la carte",
-    "map_title": "Corridors trouvés"
+    "map_title": "Corridors trouvés",
+    "price_negotiable": "Prix à négocier"
   },
   "my_requests": {
     "title": "Mes demandes",

@@ -30,8 +30,13 @@ export interface TripResultDto {
   owner_rating: number | null;
   owner_review_count: number;
   owner_verification_status: string | null;
-  price_tnd_min: string;
-  price_tnd_max: string;
+  // NULLABLES cote serveur, et le type le disait non. Le champ est
+  // `null=True` sur `TransportJob`, et la recette du 03/09 a trouve un trajet
+  // publie sans fourchette : la carte affichait alors « – TND », un tiret nu
+  // suivi d'une devise. Le type mentait, donc TypeScript n'exigeait aucun
+  // garde — c'est le type qu'il fallait corriger, pas seulement l'affichage.
+  price_tnd_min: string | null;
+  price_tnd_max: string | null;
   // C1.2 — economie face a un transport dedie, calculee SERVEUR pour que le
   // chiffre soit identique sur les deux plateformes. `null` quand le calcul
   // est impossible ou l'economie negative : jamais zero, qui se lirait

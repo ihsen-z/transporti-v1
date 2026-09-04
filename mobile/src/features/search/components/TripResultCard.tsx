@@ -56,9 +56,20 @@ export function TripResultCard({ trip, onRequest }: Props) {
       </View>
 
       <View style={styles.foot}>
-        {/* VERT = valeur : fourchette de prix serveur. */}
+        {/* VERT = valeur : fourchette de prix serveur.
+
+            Repli quand la fourchette manque. Le formulaire de publication
+            exige les deux prix, donc un retour publie par l'application en a
+            toujours — mais la recette du 03/09 a trouve une ligne heritee sans
+            prix, et la carte annoncait « – TND ». Un tiret suivi d'une devise
+            ne veut rien dire ; « Prix a negocier » dit ce qu'il faut faire. */}
         <Text style={styles.price}>
-          {t('search.price_range', { min: trip.price_tnd_min, max: trip.price_tnd_max })}
+          {trip.price_tnd_min === null
+            ? t('search.price_negotiable')
+            : t('search.price_range', {
+                min: trip.price_tnd_min,
+                max: trip.price_tnd_max ?? trip.price_tnd_min,
+              })}
         </Text>
 
         {/* C1.2 — l'argument de conversion du pivot : « vous payez moins parce
