@@ -283,7 +283,7 @@
     <p class="lede">Sept lots, ordonnés par ce qu'ils débloquent et non par leur coût. Le premier tient en un jour et demi et rend possible un parcours cliente aujourd'hui impossible&nbsp;; les deux suivants rendent l'application soumettable en store. Tout le reste vient après.</p>
     <div class="meta">
       <span><b>Rédigé</b> 03/09/2026</span>
-      <span><b>Avancement</b> lots 1, 3, 4 livrés · lot 2 à 3/4</span>
+      <span><b>Avancement</b> lots 1 à 5 livrés · reste 6 et 7</span>
       <span><b>Fonde sur</b> AUDIT_MOBILE_DESIGN_UX_USERSTORIES_2026-09-02</span>
       <span><b>Succède à</b> PLAN_ACHEVEMENT_MOBILE_2026-08-07</span>
       <span><b>Périmètre</b> mobile/ + 2 tâches backend</span>
@@ -291,11 +291,11 @@
   </header>
 
   <div class="scores">
-    <div class="score"><div class="n" style="color:var(--good)">3,75<small>&nbsp;/7</small></div><div class="k">Lots livrés</div></div>
-    <div class="score"><div class="n" style="color:var(--good)">20<small>&nbsp;/37</small></div><div class="k">Tâches livrées</div></div>
-    <div class="score"><div class="n">≈16<small>&nbsp;j·h</small></div><div class="k">Charge restante</div></div>
+    <div class="score"><div class="n" style="color:var(--good)">5,15<small>&nbsp;/7</small></div><div class="k">Lots livrés</div></div>
+    <div class="score"><div class="n" style="color:var(--good)">27<small>&nbsp;/37</small></div><div class="k">Tâches livrées</div></div>
+    <div class="score"><div class="n">≈12<small>&nbsp;j·h</small></div><div class="k">Charge restante</div></div>
     <div class="score"><div class="n" style="color:var(--good)">✓</div><div class="k">Cliente débloquée</div></div>
-    <div class="score"><div class="n">261</div><div class="k">Tests verts (229 + 32)</div></div>
+    <div class="score"><div class="n">266</div><div class="k">Tests verts (229 + 37)</div></div>
   </div>
 
   <nav class="toc" aria-label="Sommaire">
@@ -405,14 +405,14 @@
       <!-- LOT 2 -->
       <div class="lot">
         <div class="lothead"><span class="lotnum">Lot 2</span><h3>Rendre l'application recevable en store</h3><span class="chip c-crit">3 jours · bloquant</span></div>
-        <div class="livre partiel">
-          <div class="eyebrow">🟠 Livré partiellement le 03/09/2026 — 3 tâches sur 4</div>
+        <div class="livre">
+          <div class="eyebrow">✅ Livré — 3 tâches le 03/09, la 4ᵉ le 04/09</div>
           <p><b>Deux faits ont allégé le lot&nbsp;:</b> <code>User</code> hérite d'<code>AbstractUser</code>, donc aucune migration ; et <code>TransportJob.owner</code> comme <code>Offer.transporter</code> sont en <code>on_delete=PROTECT</code> — un <code>user.delete()</code> lèverait <code>ProtectedError</code>. L'anonymisation n'est donc pas un choix de confort&nbsp;: la base elle-même interdit la suppression.</p>
           <ul>
             <li><b>2.1</b> ✅ — <code>users/services_account_closure.py</code> + <code>DELETE auth/account/</code>. Garde-fous&nbsp;: missions <code>MATCHED</code>/<code>IN_PROGRESS</code>/<code>DISPUTED</code>, dette COD, solde retirable — chacun avec un motif actionnable. 11 tests.</li>
             <li><b>2.2</b> ✅ — <code>DeleteAccountPanel</code>&nbsp;: conséquences annoncées avant la saisie, mot de passe redemandé, confirmation système, session coupée au succès.</li>
             <li><b>2.3</b> ✅ — trois entrées légales via <code>ExternalLinkRow</code>, URL dans <code>env</code>. Pas d'URL, pas de ligne&nbsp;: un lien légal mort est pire que son absence en revue de store.</li>
-            <li><b>2.4</b> ⬜ — écran «&nbsp;Comment ça marche&nbsp;» <b>non fait</b>.</li>
+            <li><b>2.4</b> ✅ <b>(04/09)</b> — écran «&nbsp;Comment ça marche&nbsp;», les deux métiers racontés séparément parce qu'ils n'ont pas la même objection : celle du client est la confiance, celle du transporteur l'impayé. Le parcours de l'autre rôle reste accessible d'un tap — un client qui découvre qu'il pourrait publier ses retours est le chemin d'acquisition P4. 39 clés, parité FR/AR.</li>
           </ul>
           <p><b>DoD tenue sur émulateur</b> avec un compte jetable&nbsp;: suppression depuis l'application, retour à l'écran de connexion, reconnexion refusée («&nbsp;No account found with this email&nbsp;»), ligne conservée en base et anonymisée (<code>supprime+…@transporti.invalid</code>, téléphone libéré, mot de passe inutilisable). Garde-fou vérifié sur le compte transporteur réel&nbsp;: «&nbsp;Vous avez 4 mission(s) en cours…&nbsp;», compte laissé actif.</p>
           <p><b>Reste à fournir, hors code&nbsp;:</b> les trois pages légales elles-mêmes. Les URL pointent aujourd'hui sur <code>transporti.tn</code> à titre de gabarit — la dépendance juridique que le plan signalait au jour 1.</p>
@@ -602,6 +602,20 @@
       <!-- LOT 5 -->
       <div class="lot">
         <div class="lothead"><span class="lotnum">Lot 5</span><h3>Rendre la recette capable de voir</h3><span class="chip c-info">2 jours · prérequis du lot 6</span></div>
+        <div class="livre">
+          <div class="eyebrow">✅ Livré le 04/09/2026 — et deux de mes prémisses étaient fausses</div>
+          <p><b>Vérifier avant d'écrire a évité deux corrections inutiles.</b> «&nbsp;Le seed ne pose pas de prix&nbsp;» était faux — il en pose, sur le jeu fixe comme sur le volumétrique&nbsp;; les 78 trajets sans prix (sur 82) venaient de l'usage, pas de lui. «&nbsp;Les compteurs de notifications sont irréalistes&nbsp;» aussi — <code>seed_notifications</code> est gardé par titre et n'en crée que <b>trois</b>&nbsp;; les 388 non lues sont la trace de semaines de test. Dans les deux cas, <code>--clear</code> suffisait.</p>
+          <p><b>Le vrai défaut, que le plan n'avait pas vu.</b> Les scénarios du jeu fixe sont datés <em>relativement à maintenant</em> — «&nbsp;un retour dans deux jours&nbsp;». Or <code>_creer_job</code> était totalement idempotent&nbsp;: la date restait celle du premier seed, et l'environnement <b>vieillissait jusqu'à n'avoir plus aucun trajet retour valide</b>. C'est exactement l'état du 03/09, et rejouer le seed ne réparait rien. Aucun code applicatif n'était en cause, et le seul symptôme est «&nbsp;je ne vois plus rien&nbsp;» — qu'on attribue naturellement à l'application.</p>
+          <ul>
+            <li><b>5.1</b> — rafraîchissement <b>opt-in champ par champ</b> (<code>rafraichir=(…)</code>). <code>distance_km</code> n'en fait pas partie&nbsp;: un rejeu ne doit pas écraser une distance corrigée par <code>backfill_routes</code>. Les deux comportements sont verrouillés par test, dans le même fichier, pour qu'on ne «&nbsp;répare&nbsp;» pas l'un en cassant l'autre.</li>
+            <li><b>5.2</b> — un trajet du jeu fixe porte <code>instant_booking</code>. Il n'était vrai sur <em>aucune</em> ligne d'<em>aucun</em> environnement&nbsp;: ni le badge ni <code>book-return/</code> n'étaient exerçables.</li>
+            <li><b>5.3</b> — <b>rien à coder</b>, prémisse fausse. Documenté dans le guide.</li>
+            <li><b>5.4</b> — <code>price_tnd_min</code> était typé <code>string</code> alors qu'il est <code>null=True</code> en base. Le type mentait, donc TypeScript n'exigeait aucun garde et la carte affichait «&nbsp;–&nbsp;TND&nbsp;». C'est le <b>type</b> qu'il fallait corriger&nbsp;: une fois <code>string | null</code>, le compilateur a réclamé le repli lui-même.</li>
+            <li><b>5.5</b> — les scripts existaient déjà mais visaient Expo&nbsp;Go sur le port 8082. Expo&nbsp;Go n'est pas installé sur l'AVD&nbsp;; le build de développement cherche son bundle sur <code>8081</code> <b>en dur</b>, et avec 8082 l'app reste sur un écran noir <em>sans rien logger</em> — une heure de diagnostic. Scripts et guide corrigés, plus une commande <code>mobile-ui.sh cibles</code> qui mesure en dp avec la densité <em>lue</em> sur l'appareil.</li>
+          </ul>
+          <p><b>DoD tenue.</b> Après rejeu, la recherche cliente renvoie un trajet à J+2 portant «&nbsp;Vous économisez 70&nbsp;DT / face à 170&nbsp;DT pour un transport dédié&nbsp;» — IA-5 observable pour la première fois — et <code>instant_booking</code> à vrai.</p>
+          <p><b>Effet de bord vertueux&nbsp;:</b> rendre l'économie visible a révélé que le bloc <b>débordait la carte</b> et chassait le bouton «&nbsp;Envoyer une demande&nbsp;» hors de l'écran. L'audit classait cet écart en mineur faute de pouvoir l'observer. Corrigé dans la foulée (tâche 7.7, remontée ici).</p>
+        </div>
         <div class="why"><b>Objectif business&nbsp;:</b> pouvoir valider la promesse. Sur l'environnement actuel, le seul trajet publié n'a ni prix ni économie ni réservation immédiate&nbsp;; l'amorce de retour à vide — classée <b>priorité n°1</b> du plan d'août — ne s'affiche pas. Trois écarts et la fonctionnalité pivot sont invérifiables. C'est la cause structurelle qui a laissé vivre l'écart du lot 1&nbsp;: le parcours cliente n'était jamais joué jusqu'à l'envoi.</div>
         <div class="scroller">
           <table>
