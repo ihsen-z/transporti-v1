@@ -395,7 +395,6 @@
     "map_distance": "≈ {{km}} km par la route",
     "create_alert": "Créer une alerte corridor",
     "alert_created": "Alerte créée. Vous serez notifié.",
-    "refine_hint": "Affinez votre recherche (date, gouvernorat) pour voir tous les résultats.",
     "price_range": "{{min}} – {{max}} TND",
     "request": {
       "title": "Envoyer une demande",
@@ -476,8 +475,21 @@
     "empty": {
       "dated_title": "Aucun retour ce jour-là",
       "dated_hint": "Le corridor {{depart}} → {{arrivee}} est peut-être servi à d'autres dates.",
-      "see_corridor": "Voir tout le corridor"
-    }
+      "see_corridor": "Voir tout le corridor",
+      "filtered_title": "Aucun retour ne correspond a votre marchandise",
+      "filtered_hint": "Le corridor n'est pas vide : ce sont vos criteres de marchandise qui ne trouvent rien.",
+      "drop_filters": "Voir sans filtre marchandise"
+    },
+    "filters": {
+      "title": "Affiner par marchandise",
+      "title_active": "Marchandise · {{nb}} filtre(s)",
+      "type": "Type de marchandise",
+      "any_type": "Peu importe",
+      "undeclared_note": "Les trajets qui n'annoncent pas leur capacité restent affichés.",
+      "invalid": "Poids ou volume invalide. Laissez vide si vous ne le connaissez pas."
+    },
+    "see_more": "Voir plus de trajets",
+    "shown_of": "{{affiches}} affichés sur {{total}}"
   },
   "my_requests": {
     "title": "Mes demandes",

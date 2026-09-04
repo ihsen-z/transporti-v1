@@ -11,6 +11,8 @@ interface Props {
   params: MatchParams;
   /** Rejoue la même recherche sans la date. */
   onVoirCorridor: () => void;
+  /** Rejoue la même recherche sans les filtres marchandise. */
+  onRetirerFiltres: () => void;
   onCreerAlerte: () => void;
   alerteCreee: boolean;
   alertePending: boolean;
@@ -30,35 +32,64 @@ interface Props {
  * L'écran devient ainsi diagnostique : il sépare « rien ce jour-là » de « rien
  * sur ce corridor », et ne propose la sortie différée que dans le second cas,
  * quand elle est réellement la seule chose à offrir.
+ *
+ * Lot 6.4 — les filtres marchandise ajoutent une TROISIÈME cause, et la même
+ * règle s'y applique. Une recherche filtrée qui ne donne rien ne dit rien du
+ * corridor non plus : elle dit « rien à cette taille ». Sans ce cas, le lot 6.4
+ * aurait réintroduit exactement le défaut que le 6.3 venait de corriger —
+ * annoncer un corridor vide sans l'avoir regardé.
  */
 export function SearchEmptyState({
   params,
   onVoirCorridor,
+  onRetirerFiltres,
   onCreerAlerte,
   alerteCreee,
   alertePending,
 }: Props) {
   const { t } = useTranslation();
+  const estFiltree = Boolean(params.job_type || params.weight_kg || params.volume_m3);
   const estDatee = Boolean(params.date);
+
+  // Une seule sortie immédiate à la fois, et c'est la contrainte la PLUS
+  // restrictive qu'on propose de lever en premier : les filtres marchandise
+  // avant la date. Sinon on garderait plusieurs CTA sur un même écran, contre
+  // la charte, et on demanderait à la cliente de deviner laquelle a mordu.
+  const leverFiltres = estFiltree;
+  const elargirDates = !estFiltree && estDatee;
 
   return (
     <Card style={styles.carte}>
       <Txt style={styles.titre}>
-        {estDatee ? t('search.empty.dated_title') : t('search.no_results_title')}
+        {leverFiltres
+          ? t('search.empty.filtered_title')
+          : elargirDates
+            ? t('search.empty.dated_title')
+            : t('search.no_results_title')}
       </Txt>
       <Txt style={styles.indice}>
-        {estDatee
-          ? t('search.empty.dated_hint', {
-              depart: params.pickup_governorate,
-              arrivee: params.dropoff_governorate,
-            })
-          : t('search.no_results_hint')}
+        {leverFiltres
+          ? t('search.empty.filtered_hint')
+          : elargirDates
+            ? t('search.empty.dated_hint', {
+                depart: params.pickup_governorate,
+                arrivee: params.dropoff_governorate,
+              })
+            : t('search.no_results_hint')}
       </Txt>
 
-      {/* Sortie immédiate, quand elle existe : élargir à tout le corridor.
-          Elle passe avant l'alerte parce qu'elle peut répondre tout de suite,
-          là où l'alerte ne promet que plus tard. */}
-      {estDatee ? (
+      {/* Sortie immédiate, quand elle existe. Elle passe avant l'alerte parce
+          qu'elle peut répondre tout de suite, là où l'alerte ne promet que
+          plus tard. */}
+      {leverFiltres ? (
+        <Button
+          testID="search-retirer-filtres"
+          label={t('search.empty.drop_filters')}
+          onPress={onRetirerFiltres}
+          variant="cta"
+        />
+      ) : null}
+      {elargirDates ? (
         <Button
           testID="search-voir-corridor"
           label={t('search.empty.see_corridor')}
@@ -77,9 +108,9 @@ export function SearchEmptyState({
             testID="search-create-alert"
             label={t('search.create_alert')}
             onPress={onCreerAlerte}
-            // Un seul CTA orange par écran : quand « Voir tout le corridor »
-            // est là, c'est lui qui le porte, et l'alerte devient secondaire.
-            variant={estDatee ? 'ghost' : 'primary'}
+            // Un seul CTA orange par écran : quand une sortie immédiate est
+            // là, c'est elle qui le porte, et l'alerte devient secondaire.
+            variant={leverFiltres || elargirDates ? 'ghost' : 'primary'}
             loading={alertePending}
           />
         </View>

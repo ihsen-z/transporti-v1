@@ -35,8 +35,11 @@ class CorridorTestBase(APITestCase):
         self.client.force_authenticate(user=user)
 
     def _trip(self, pickup='Sfax', dropoff='Tunis', days=2, **extra):
+        # `job_type` reste surchargeable : le lot 6.4 en fait un filtre, donc
+        # un test doit pouvoir creer deux trajets de natures differentes.
+        extra.setdefault('job_type', 'TRANSPORT')
         return TransportJob.objects.create(
-            owner=self.transporter, status='PUBLISHED', job_type='TRANSPORT',
+            owner=self.transporter, status='PUBLISHED',
             is_return_trip=True,
             pickup_address=f'Centre {pickup}', pickup_governorate=pickup,
             dropoff_address=f'Centre {dropoff}', dropoff_governorate=dropoff,
@@ -195,3 +198,148 @@ class AdminPivotStatsTests(CorridorTestBase):
         self.assertEqual(pivot['tripsActive'], 1)
         corridors = {c['corridor'] for c in pivot['corridorA1']}
         self.assertIn('Tunis → Sousse', corridors)
+
+
+class FiltresMarchandiseTests(CorridorTestBase):
+    """
+    Lot 6.4 — la marchandise entre dans le matching.
+
+    Jusqu'ici la recherche ne connaissait que le corridor et la date : une
+    cliente cherchant un demenagement voyait des retours incapables de le
+    prendre, et la capacite declaree par le transporteur ne servait a rien.
+    """
+
+    URL = '/api/return-trips/match/?pickup_governorate=Sfax&dropoff_governorate=Tunis'
+
+    def test_filtre_par_type_de_marchandise(self):
+        self._trip(job_type='TRANSPORT')
+        self._trip(job_type='MOVING')
+
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&job_type=MOVING')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertEqual(resp.data['count'], 1)
+        self.assertEqual(resp.data['results'][0]['job_type'], 'MOVING')
+
+    def test_ecarte_les_trajets_trop_petits(self):
+        assez = self._trip(available_capacity_kg=Decimal('2000'))
+        self._trip(available_capacity_kg=Decimal('300'))
+
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&weight_kg=500')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertEqual(resp.data['count'], 1)
+        self.assertEqual(resp.data['results'][0]['id'], assez.id)
+
+    def test_garde_les_trajets_qui_ne_declarent_rien(self):
+        """
+        Declarer sa capacite reste facultatif. L'absence d'information n'est
+        pas un refus : exclure les silencieux ferait disparaitre du stock
+        utilisable, alors que la liquidite est le principe n°1 du modele.
+        C'est la meme regle que le garde-fou de la demande, qui ne refuse que
+        lorsque le trajet a annonce un chiffre.
+        """
+        muet = self._trip()
+        self.assertIsNone(muet.available_capacity_kg)
+
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&weight_kg=9000')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertEqual(resp.data['count'], 1)
+
+    def test_capacite_exactement_egale_acceptee(self):
+        self._trip(available_capacity_kg=Decimal('500'))
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&weight_kg=500')
+        self.assertEqual(resp.data['count'], 1)
+
+    def test_filtre_par_volume(self):
+        assez = self._trip(available_capacity_m3=Decimal('12'))
+        self._trip(available_capacity_m3=Decimal('2'))
+
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&volume_m3=8')
+        self.assertEqual(resp.data['count'], 1)
+        self.assertEqual(resp.data['results'][0]['id'], assez.id)
+
+    def test_poids_et_volume_se_cumulent(self):
+        self._trip(available_capacity_kg=Decimal('2000'),
+                   available_capacity_m3=Decimal('2'))
+        bon = self._trip(available_capacity_kg=Decimal('2000'),
+                         available_capacity_m3=Decimal('12'))
+
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&weight_kg=500&volume_m3=8')
+        self.assertEqual(resp.data['count'], 1)
+        self.assertEqual(resp.data['results'][0]['id'], bon.id)
+
+    def test_un_filtre_illisible_est_refuse_et_non_ignore(self):
+        """
+        Ignorer un filtre invalide rendrait une liste qui ne respecte pas ce
+        que la cliente a demande, sans que rien ne le signale.
+        """
+        self._trip()
+        self._auth(self.client_user)
+        for valeur in ('lourd', '-5', '0'):
+            resp = self.client.get(f'{self.URL}&weight_kg={valeur}')
+            self.assertEqual(resp.status_code, 400, f'weight_kg={valeur}')
+            self.assertIn('error', resp.data)
+
+    def test_un_filtre_vide_ne_filtre_pas(self):
+        self._trip()
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&weight_kg=&volume_m3=&job_type=')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertEqual(resp.data['count'], 1)
+
+
+class PaginationMatchTests(CorridorTestBase):
+    """
+    Lot 6.4 — au-dela de 10 resultats, la liste s'arretait sans qu'aucun chemin
+    ne permette de voir la suite (E-15). Le plafond reste la valeur par defaut ;
+    il n'est plus une impasse.
+    """
+
+    URL = '/api/return-trips/match/?pickup_governorate=Sfax&dropoff_governorate=Tunis'
+
+    def setUp(self):
+        super().setUp()
+        for i in range(12):
+            self._trip(days=i + 1)
+
+    def test_plafond_par_defaut_inchange(self):
+        self._auth(self.client_user)
+        resp = self.client.get(self.URL)
+        self.assertEqual(resp.data['count'], 12)      # le vrai total
+        self.assertEqual(len(resp.data['results']), 10)
+        self.assertEqual(resp.data['limit'], 10)
+        self.assertEqual(resp.data['offset'], 0)
+
+    def test_la_page_suivante_donne_le_reste(self):
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&offset=10')
+        self.assertEqual(resp.data['count'], 12)
+        self.assertEqual(len(resp.data['results']), 2)
+        self.assertEqual(resp.data['offset'], 10)
+
+    def test_les_deux_pages_ne_se_recouvrent_pas(self):
+        self._auth(self.client_user)
+        page1 = self.client.get(self.URL).data['results']
+        page2 = self.client.get(f'{self.URL}&offset=10').data['results']
+        ids1 = {r['id'] for r in page1}
+        ids2 = {r['id'] for r in page2}
+        self.assertEqual(len(ids1 & ids2), 0)
+        self.assertEqual(len(ids1 | ids2), 12)
+
+    def test_limite_bornee(self):
+        """Une limite absurde ne doit pas devenir un vecteur de charge."""
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&limit=9999')
+        self.assertEqual(resp.data['limit'], 50)
+
+    def test_valeurs_illisibles_repliees_sur_les_defauts(self):
+        self._auth(self.client_user)
+        resp = self.client.get(f'{self.URL}&limit=beaucoup&offset=plus-loin')
+        self.assertEqual(resp.status_code, 200, resp.data)
+        self.assertEqual(resp.data['limit'], 10)
+        self.assertEqual(resp.data['offset'], 0)

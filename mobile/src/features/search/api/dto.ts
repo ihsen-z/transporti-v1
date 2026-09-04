@@ -10,6 +10,14 @@ export interface MatchParams {
   pickup_governorate: string;
   dropoff_governorate: string;
   date?: string; // YYYY-MM-DD (fenêtre ±48h côté serveur)
+  // Lot 6.4 — la marchandise entre dans le matching. Un trajet qui ne déclare
+  // pas sa capacité reste retenu : l'absence d'information n'est pas un refus.
+  job_type?: GoodsType;
+  weight_kg?: number;
+  volume_m3?: number;
+  /** Pagination. Le serveur plafonne `limit` à 50 ; défaut 10. */
+  limit?: number;
+  offset?: number;
 }
 
 // Trajet retour trouvé (sous-ensemble de TransportJobListSerializer ;
@@ -59,7 +67,10 @@ export interface TripResultDto {
 }
 
 export interface MatchResponse {
+  /** Total réel sur le corridor, AVANT découpage en pages. */
   count: number;
+  limit: number;
+  offset: number;
   results: TripResultDto[];
 }
 

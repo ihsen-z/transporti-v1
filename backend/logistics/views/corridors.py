@@ -8,9 +8,10 @@ Sprint 4 (pivot) — matching v1 & corridor alerts.
   Publication trigger lives in ReturnTripCreateView.
 """
 from datetime import timedelta
+from decimal import Decimal, InvalidOperation
 
 from django.db.models.functions import Greatest
-from django.db.models import F, ExpressionWrapper, DurationField, Avg, Count
+from django.db.models import F, ExpressionWrapper, DurationField, Avg, Count, Q
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime, parse_date
@@ -27,12 +28,36 @@ from ..serializers import TransportJobListSerializer
 class ReturnTripMatchView(APIView):
     """
     GET /api/return-trips/match/?pickup_governorate=&dropoff_governorate=&date=&window_hours=48
+        &job_type=&weight_kg=&volume_m3=&limit=&offset=
     Matching v1: PUBLISHED future return trips on the corridor, closest date first.
+
+    Lot 6.4 — la marchandise entre dans le matching. Jusqu'ici la recherche
+    ignorait ce que la cliente expedie : elle voyait des retours incapables de
+    le prendre, et la capacite declaree par le transporteur ne servait a rien.
     """
     permission_classes = [IsAuthenticated]
 
     MAX_RESULTS = 10
+    MAX_LIMIT = 50
     DEFAULT_WINDOW_HOURS = 48
+
+    def _decimal_positif(self, brut, nom):
+        """
+        Lit un filtre numerique. Renvoie (valeur, erreur).
+
+        Un filtre illisible n'est PAS ignore en silence : la cliente verrait
+        alors une liste qui ne respecte pas ce qu'elle a demande, sans que
+        rien ne le signale. Mieux vaut un refus explicite.
+        """
+        if brut is None or brut == '':
+            return None, None
+        try:
+            valeur = Decimal(brut)
+        except (InvalidOperation, TypeError):
+            return None, f'{nom} doit etre un nombre.'
+        if valeur <= 0:
+            return None, f'{nom} doit etre positif.'
+        return valeur, None
 
     def get(self, request):
         pickup = request.query_params.get('pickup_governorate', '').strip()
@@ -50,6 +75,37 @@ class ReturnTripMatchView(APIView):
             pickup_governorate__iexact=pickup,
             dropoff_governorate__iexact=dropoff,
         ).exclude(owner=request.user).select_related('owner').prefetch_related('offers')
+
+        # --- Lot 6.4 : filtres marchandise -----------------------------------
+        job_type = request.query_params.get('job_type', '').strip()
+        if job_type:
+            queryset = queryset.filter(job_type=job_type)
+
+        poids, erreur = self._decimal_positif(
+            request.query_params.get('weight_kg'), 'weight_kg')
+        if erreur:
+            return Response({'error': erreur}, status=status.HTTP_400_BAD_REQUEST)
+        volume, erreur = self._decimal_positif(
+            request.query_params.get('volume_m3'), 'volume_m3')
+        if erreur:
+            return Response({'error': erreur}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Un trajet qui ne DECLARE PAS sa capacite est conserve. L'absence
+        # d'information n'est pas un refus : declarer reste facultatif cote
+        # transporteur, et exclure les silencieux ferait disparaitre du stock
+        # utilisable — la liquidite est le principe n°4. C'est la meme regle
+        # que le garde-fou de ReturnTripRequestCreateSerializer, qui ne refuse
+        # que lorsque le trajet a annonce un chiffre.
+        if poids is not None:
+            queryset = queryset.filter(
+                Q(available_capacity_kg__isnull=True)
+                | Q(available_capacity_kg__gte=poids)
+            )
+        if volume is not None:
+            queryset = queryset.filter(
+                Q(available_capacity_m3__isnull=True)
+                | Q(available_capacity_m3__gte=volume)
+            )
 
         # Optional date window (±window_hours around the requested date)
         raw_date = request.query_params.get('date')
@@ -90,6 +146,21 @@ class ReturnTripMatchView(APIView):
 
         total = queryset.count()
 
+        # Lot 6.4 — pagination. Le plafond de 10 restait la valeur par defaut,
+        # mais il n'etait plus une impasse : au-dela, la liste s'arretait sans
+        # qu'aucun chemin ne permette de voir la suite, sur le seul ecran de
+        # conversion de la cliente.
+        try:
+            limit = int(request.query_params.get('limit', self.MAX_RESULTS))
+        except ValueError:
+            limit = self.MAX_RESULTS
+        limit = max(1, min(limit, self.MAX_LIMIT))
+        try:
+            offset = int(request.query_params.get('offset', 0))
+        except ValueError:
+            offset = 0
+        offset = max(0, offset)
+
         # Trust signals are annotated here (not computed per row in the
         # serializer) so that showing a rating and a verification badge on the
         # matching screen costs one query instead of three per result.
@@ -98,10 +169,12 @@ class ReturnTripMatchView(APIView):
         ).annotate(
             _owner_rating=Avg('owner__reviews_received__rating'),
             _owner_review_count=Count('owner__reviews_received', distinct=True),
-        )[:self.MAX_RESULTS]
+        )[offset:offset + limit]
 
         return Response({
             'count': total,
+            'limit': limit,
+            'offset': offset,
             'results': TransportJobListSerializer(results, many=True).data,
         })
 

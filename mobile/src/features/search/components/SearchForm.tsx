@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { GOVERNORATES } from '@/features/trips/data/governorates';
 import { nextDays } from '@/features/trips/data/schedule';
+import { GoodsFilters, type GoodsFilterValues } from './GoodsFilters';
 import type { MatchParams } from '../api/dto';
 
 interface Props {
@@ -19,20 +20,41 @@ interface Props {
    */
   day: string | null;
   onDayChange: (day: string | null) => void;
+  /**
+   * Les filtres marchandise vivent aussi dans l'ecran : l'etat vide peut
+   * proposer « Voir sans filtre marchandise », qui les retire. Meme raison que
+   * le jour.
+   */
+  filtres: GoodsFilterValues;
+  onFiltresChange: (filtres: GoodsFilterValues) => void;
 }
 
-export function SearchForm({ onSearch, loading, day, onDayChange }: Props) {
+export function SearchForm({
+  onSearch,
+  loading,
+  day,
+  onDayChange,
+  filtres,
+  onFiltresChange,
+}: Props) {
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === 'ar';
   const [pickup, setPickup] = useState<string | null>(null);
   const [dropoff, setDropoff] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  // Lot 6.4 — filtres marchandise, repliés par défaut.
+  const [filtresOuverts, setFiltresOuverts] = useState(false);
+  const [erreurFiltres, setErreurFiltres] = useState<string | null>(null);
 
   const govOptions = useMemo(
     () => GOVERNORATES.map((g) => ({ value: g.code, label: isAr ? g.nameAr : g.nameFr })),
     [isAr],
   );
   const dayOptions = useMemo(() => nextDays(14), []);
+
+  /** Décimal positif ou vide, comme le serveur l'attend. */
+  const nombreOuVide = (v: string): boolean =>
+    v === '' || (/^\d+(\.\d{1,2})?$/.test(v) && Number(v) > 0);
 
   const submit = () => {
     if (!pickup || !dropoff) {
@@ -43,11 +65,23 @@ export function SearchForm({ onSearch, loading, day, onDayChange }: Props) {
       setError(t('search.errors.same'));
       return;
     }
+    // Le serveur refuse un filtre illisible plutôt que de l'ignorer : on
+    // l'attrape ici pour que la cliente corrige au bon endroit, et on ouvre
+    // le dépliant si elle l'avait replié sur une valeur fautive.
+    if (!nombreOuVide(filtres.weight) || !nombreOuVide(filtres.volume)) {
+      setErreurFiltres(t('search.filters.invalid'));
+      setFiltresOuverts(true);
+      return;
+    }
     setError(null);
+    setErreurFiltres(null);
     onSearch({
       pickup_governorate: pickup,
       dropoff_governorate: dropoff,
       date: day ?? undefined,
+      job_type: filtres.jobType || undefined,
+      weight_kg: filtres.weight ? Number(filtres.weight) : undefined,
+      volume_m3: filtres.volume ? Number(filtres.volume) : undefined,
     });
   };
 
@@ -76,6 +110,13 @@ export function SearchForm({ onSearch, loading, day, onDayChange }: Props) {
         value={day}
         options={dayOptions}
         onChange={onDayChange}
+      />
+      <GoodsFilters
+        ouvert={filtresOuverts}
+        onBasculer={() => setFiltresOuverts((o) => !o)}
+        valeurs={filtres}
+        onChange={onFiltresChange}
+        erreur={erreurFiltres}
       />
       {error ? (
         <Text testID="search-error" style={styles.error}>

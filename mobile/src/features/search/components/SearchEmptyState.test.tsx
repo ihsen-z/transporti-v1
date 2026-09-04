@@ -17,6 +17,7 @@ function rendre(params: MatchParams, sur: Partial<Parameters<typeof SearchEmptyS
   const props = {
     params,
     onVoirCorridor: jest.fn(),
+    onRetirerFiltres: jest.fn(),
     onCreerAlerte: jest.fn(),
     alerteCreee: false,
     alertePending: false,
@@ -50,6 +51,39 @@ describe('SearchEmptyState', () => {
       const props = rendre(DATEE);
       fireEvent.press(screen.getByTestId('search-voir-corridor'));
       expect(props.onVoirCorridor).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('recherche filtrée sans résultat', () => {
+    const FILTREE: MatchParams = { ...CORRIDOR, weight_kg: 5000 };
+
+    it('propose de lever le filtre, pas d\'attendre', () => {
+      rendre(FILTREE);
+      expect(screen.getByTestId('search-retirer-filtres')).toBeTruthy();
+      expect(screen.getByTestId('search-create-alert')).toBeTruthy();
+    });
+
+    it('ne conclut pas que le corridor est vide', () => {
+      // Sans ce cas, le lot 6.4 aurait reintroduit le defaut que le 6.3
+      // venait de corriger : annoncer un corridor vide sans l'avoir regarde.
+      rendre(FILTREE);
+      expect(screen.queryByText('Aucun trajet retour pour l\'instant')).toBeNull();
+      expect(
+        screen.getByText('Aucun retour ne correspond a votre marchandise'),
+      ).toBeTruthy();
+    });
+
+    it('lève les filtres AVANT la date quand les deux sont posés', () => {
+      // La contrainte la plus restrictive d'abord, et un seul CTA par ecran.
+      rendre({ ...CORRIDOR, date: '2026-09-17', weight_kg: 5000 });
+      expect(screen.getByTestId('search-retirer-filtres')).toBeTruthy();
+      expect(screen.queryByTestId('search-voir-corridor')).toBeNull();
+    });
+
+    it('retire les filtres quand on le demande', () => {
+      const props = rendre(FILTREE);
+      fireEvent.press(screen.getByTestId('search-retirer-filtres'));
+      expect(props.onRetirerFiltres).toHaveBeenCalledTimes(1);
     });
   });
 

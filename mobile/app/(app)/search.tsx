@@ -5,9 +5,11 @@ import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
+import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
 import { Icon } from '@/shared/ui/icons';
 import { SearchForm } from '@/features/search/components/SearchForm';
+import type { GoodsFilterValues } from '@/features/search/components/GoodsFilters';
 import { TripResultCard } from '@/features/search/components/TripResultCard';
 import { SendRequestSheet } from '@/features/search/components/SendRequestSheet';
 import { SearchEmptyState } from '@/features/search/components/SearchEmptyState';
@@ -33,26 +35,60 @@ export default function SearchScreen() {
   // Le jour vit ici et non dans le formulaire : « Voir tout le corridor »
   // rejoue la recherche sans date, et le formulaire doit suivre (lot 6.3).
   const [day, setDay] = useState<string | null>(null);
+  // Idem pour les filtres marchandise : l'etat vide peut proposer de les
+  // retirer, et le formulaire doit suivre (lot 6.4).
+  const [filtres, setFiltres] = useState<GoodsFilterValues>({
+    jobType: '',
+    weight: '',
+    volume: '',
+  });
+
+  // Les resultats sont accumules ici et non lus directement dans la mutation :
+  // « Voir plus » ajoute une page a la liste au lieu de la remplacer (6.4).
+  const [items, setItems] = useState<TripResultDto[]>([]);
 
   const onSearch = (params: MatchParams) => {
     setLastParams(params);
     createAlert.reset();
-    match.mutate(params);
+    match.mutate(params, { onSuccess: (data) => setItems(data.results) });
   };
 
-  // Sortie immédiate de l'état vide : la même requête, sans la date. Le
-  // serveur traite `date` comme facultatif, donc rien d'autre à câbler.
+  const onVoirPlus = () => {
+    if (!lastParams) return;
+    match.mutate(
+      { ...lastParams, offset: items.length },
+      { onSuccess: (data) => setItems((precedents) => [...precedents, ...data.results]) },
+    );
+  };
+
+  // Sorties immédiates de l'état vide : la même requête, moins la contrainte
+  // qui a probablement mordu. Le serveur traite date et filtres comme
+  // facultatifs, donc il n'y a rien d'autre à câbler.
   const onVoirCorridor = () => {
     if (!lastParams) return;
     setDay(null);
     onSearch({
       pickup_governorate: lastParams.pickup_governorate,
       dropoff_governorate: lastParams.dropoff_governorate,
+      job_type: lastParams.job_type,
+      weight_kg: lastParams.weight_kg,
+      volume_m3: lastParams.volume_m3,
     });
   };
 
-  const results = match.data?.results ?? [];
-  const showEmpty = match.isSuccess && match.data.count === 0;
+  const onRetirerFiltres = () => {
+    if (!lastParams) return;
+    setFiltres({ jobType: '', weight: '', volume: '' });
+    onSearch({
+      pickup_governorate: lastParams.pickup_governorate,
+      dropoff_governorate: lastParams.dropoff_governorate,
+      date: lastParams.date,
+    });
+  };
+
+  const total = match.data?.count ?? 0;
+  const showEmpty = match.isSuccess && total === 0;
+  const resteAVoir = match.isSuccess && items.length < total;
 
   return (
     <SafeAreaView style={styles.safe} edges={['top']}>
@@ -73,7 +109,7 @@ export default function SearchScreen() {
       </View>
 
       <FlatList
-        data={results}
+        data={items}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={[styles.content, { paddingBottom: margeBasse }]}
         keyboardShouldPersistTaps="handled"
@@ -85,23 +121,16 @@ export default function SearchScreen() {
                 loading={match.isPending}
                 day={day}
                 onDayChange={setDay}
+                filtres={filtres}
+                onFiltresChange={setFiltres}
               />
             </Card>
-            {match.isSuccess && match.data.count > 0 ? (
+            {match.isSuccess && total > 0 ? (
               <>
-                <ResultsMap trips={results} />
+                <ResultsMap trips={items} />
                 <Txt style={styles.count}>
-                  {t('search.results_count', { count: match.data.count })}
+                  {t('search.results_count', { count: total })}
                 </Txt>
-                {/* 5.3 : le serveur plafonne à 10 résultats (MAX_RESULTS,
-                    corridors.py) sans pagination — au-delà, `count` (le vrai
-                    total) dépasse `results.length` sans que rien ne le
-                    signale. Un compteur annonçant plus de résultats qu'il
-                    n'en affiche serait plus trompeur qu'une liste simplement
-                    coupée. */}
-                {match.data.count > results.length ? (
-                  <Txt style={styles.refineHint}>{t('search.refine_hint')}</Txt>
-                ) : null}
               </>
             ) : null}
           </View>
@@ -111,6 +140,7 @@ export default function SearchScreen() {
             <SearchEmptyState
               params={lastParams}
               onVoirCorridor={onVoirCorridor}
+              onRetirerFiltres={onRetirerFiltres}
               onCreerAlerte={() =>
                 createAlert.mutate({
                   pickup_governorate: lastParams.pickup_governorate,
@@ -125,6 +155,25 @@ export default function SearchScreen() {
         renderItem={({ item }) => (
           <TripResultCard trip={item} onRequest={() => setSelected(item)} />
         )}
+        ListFooterComponent={
+          // 6.4 — le plafond serveur (10 par page) n'est plus une impasse.
+          // L'ecran invitait a « affiner » ; il propose desormais de voir la
+          // suite, ce qui est l'action que la cliente cherchait.
+          resteAVoir ? (
+            <View style={styles.footer}>
+              <Txt style={styles.footerHint}>
+                {t('search.shown_of', { affiches: items.length, total })}
+              </Txt>
+              <Button
+                testID="search-voir-plus"
+                label={t('search.see_more')}
+                onPress={onVoirPlus}
+                variant="ghost"
+                loading={match.isPending}
+              />
+            </View>
+          ) : null
+        }
       />
 
       <SendRequestSheet trip={selected} onClose={() => setSelected(null)} />
@@ -151,5 +200,6 @@ const styles = StyleSheet.create({
   content: { padding: spacing.xl, gap: spacing.md },
   formWrap: { gap: spacing.md, marginBottom: spacing.xs },
   count: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[600] },
-  refineHint: { fontSize: fontSize.sm, color: colors.neutral[500], fontStyle: 'italic' },
+  footer: { gap: spacing.sm, marginTop: spacing.sm },
+  footerHint: { fontSize: fontSize.sm, color: colors.neutral[500], textAlign: 'center' },
 });
