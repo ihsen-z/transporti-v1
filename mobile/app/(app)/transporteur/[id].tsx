@@ -12,6 +12,7 @@ import { StarRating } from '@/shared/ui/StarRating';
 import { Icon } from '@/shared/ui/icons';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
+import { RouteUnavailable } from '@/shared/ui/RouteUnavailable';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { Txt } from '@/shared/ui/Txt';
 import { FavoriteButton } from '@/features/favorites/components/FavoriteButton';
@@ -53,7 +54,11 @@ export default function TransporterProfileScreen() {
         <Txt style={styles.headerTitle}>{t('profiles.title')}</Txt>
       </View>
 
-      {profile.isLoading || !p ? (
+      {/* 7.6 — meme squelette perpetuel que sur mission/[id] quand
+          l'identifiant ne mene nulle part. */}
+      {!valid || profile.isError ? (
+        <RouteUnavailable />
+      ) : profile.isLoading || !p ? (
         <SkeletonList />
       ) : (
         <FlatList

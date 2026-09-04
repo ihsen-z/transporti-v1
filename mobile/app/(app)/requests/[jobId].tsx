@@ -4,6 +4,7 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { Txt } from '@/shared/ui/Txt';
+import { RouteUnavailable } from '@/shared/ui/RouteUnavailable';
 import { Icon } from '@/shared/ui/icons';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
@@ -46,7 +47,13 @@ export default function JobRequestsScreen() {
         </Txt>
       </View>
 
-      {requests.isLoading ? (
+      {/* 7.6 — sans ce cas, un identifiant invalide affichait « Aucune
+          demande » : le hook etant desactive, la liste etait vide et l'ecran
+          concluait a une absence de demandes au lieu d'un lien casse. Pire
+          qu'un ecran blanc, parce que c'est faux. */}
+      {!valid || requests.isError ? (
+        <RouteUnavailable />
+      ) : requests.isLoading ? (
         <SkeletonList />
       ) : (
         <FlatList

@@ -20,6 +20,7 @@ import { Button } from '@/shared/ui/Button';
 import { RouteRow } from '@/shared/ui/RouteRow';
 import { Icon } from '@/shared/ui/icons';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
+import { RouteUnavailable } from '@/shared/ui/RouteUnavailable';
 import { statusVariant } from '@/shared/ui/statusVariant';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { showToast } from '@/shared/ui/toastStore';
@@ -99,7 +100,18 @@ export default function MissionScreen() {
         contentContainerStyle={styles.content}
         refreshControl={queryRefreshControl(job)}
       >
-        {job.isLoading || !d ? (
+        {/* 7.6 — deux cas menaient au meme ecran mort. Un identifiant
+            invalide desactivait le hook, donc `isLoading` restait faux et `d`
+            undefined ; et un identifiant numeriquement valide dont la mission
+            n'existe pas (ou appartient a quelqu'un d'autre) faisait echouer la
+            requete, sans que rien ne l'affiche. Dans les deux cas l'ecran
+            montrait un squelette de chargement PERPETUEL, donnant l'illusion
+            de travailler — pire qu'un ecran blanc. Le second cas est le plus
+            frequent : c'est celui d'une notification qui pointe une mission
+            supprimee. */}
+        {!valid || job.isError ? (
+          <RouteUnavailable />
+        ) : job.isLoading || !d ? (
           <SkeletonList />
         ) : (
           <>

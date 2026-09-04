@@ -970,5 +970,12 @@
         "body": "Vous pouvez supprimer votre compte depuis l'application, à tout moment. Vos coordonnées sont effacées ; les missions passées restent dans l'historique de la plateforme sans votre nom, parce qu'elles portent des paiements et des commissions."
       }
     }
+  },
+  "errors": {
+    "route": {
+      "title": "Cette page n'est pas accessible",
+      "subtitle": "Le lien que vous avez suivi ne mene nulle part. Il a peut-etre expire.",
+      "back": "Retour"
+    }
   }
 }

@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { ChatView } from '@/features/messaging/components/ChatView';
 import { Icon } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
+import { RouteUnavailable } from '@/shared/ui/RouteUnavailable';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
 // Fil d'une conversation — adressable (4.5), atteignable depuis la liste, une
@@ -36,7 +37,10 @@ export default function ConversationScreen() {
         </Txt>
       </View>
 
-      {valid ? <ChatView jobId={numericJobId} /> : null}
+      {/* 7.6 — un identifiant invalide rendait l'en-tete puis `null` : un
+          ecran vide, sans message ni sortie, atteignable d'un tap de
+          notification. */}
+      {valid ? <ChatView jobId={numericJobId} /> : <RouteUnavailable />}
     </SafeAreaView>
   );
 }
