@@ -396,6 +396,12 @@
       "permission_refused": "Accès à la caméra refusé. Autorisez-le pour joindre une preuve.",
       "camera_failed": "Impossible d'ouvrir la caméra. Réessayez.",
       "upload_failed": "Photo non envoyée. Réessayez."
+    },
+    "detail": {
+      "client": "Client : {{nom}}",
+      "goods": "La marchandise",
+      "timeline": "Déroulé de la mission",
+      "open": "Voir le détail"
     }
   },
   "search": {

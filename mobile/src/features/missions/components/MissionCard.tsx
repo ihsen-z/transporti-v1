@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
@@ -27,6 +28,7 @@ function formatWhen(iso: string): string {
 
 export function MissionCard({ mission }: { mission: MissionDto }) {
   const { t } = useTranslation();
+  const router = useRouter();
   const confirmStart = useConfirmStart();
   const complete = useCompleteJob();
   const [pin, setPin] = useState('');
@@ -78,9 +80,19 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
         <Badge label={t(`missions.status.${mission.status}`)} variant={statusVariant(mission.status)} />
         <Text style={styles.when}>{formatWhen(mission.scheduled_time)}</Text>
       </View>
-      <View style={styles.route}>
+      {/* 7.1 — l'entree vers le detail de la mission (jalons, marchandise).
+          Sur le corridor lui-meme : c'est ce qui identifie la mission, donc
+          l'endroit ou l'on cherche a en savoir plus. Les actions restent sur
+          cette carte, le detail ne fait que SUIVRE. */}
+      <Pressable
+        testID={`mission-${mission.id}-open`}
+        onPress={() => router.push(`/mission/${mission.id}`)}
+        accessibilityRole="link"
+        accessibilityLabel={t('missions.detail.open')}
+        style={styles.route}
+      >
         <RouteRow from={mission.pickup_governorate} to={mission.dropoff_governorate} />
-      </View>
+      </Pressable>
 
       {hasEarnings ? (
         <View style={styles.earnings}>

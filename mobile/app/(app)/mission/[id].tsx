@@ -2,6 +2,8 @@ import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useAuthStore } from '@/core/auth/authStore';
+import { TransporterMissionView } from '@/features/missions/components/TransporterMissionView';
 import { useTranslation } from 'react-i18next';
 import { useJobDetail } from '@/features/tracking/api/useJobDetail';
 import { MissionTimeline } from '@/features/tracking/components/MissionTimeline';
@@ -39,6 +41,7 @@ export default function MissionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const jobId = Number(id);
   const valid = Number.isFinite(jobId) && jobId > 0;
+  const isTransporter = useAuthStore((st) => st.user?.role) === 'TRANSPORTER';
 
   const job = useJobDetail(valid ? jobId : null);
   const pay = usePayJob();
@@ -100,6 +103,16 @@ export default function MissionScreen() {
         contentContainerStyle={styles.content}
         refreshControl={queryRefreshControl(job)}
       >
+        {/* 7.1 — la meme route sert les deux roles. Une notification de
+            mission doit pouvoir pointer `/mission/<id>` sans savoir qui
+            tapera dessus ; deux routes obligeraient l'emetteur a le deviner.
+            Le corps cliente reste intact ci-dessous — son extraction dans son
+            propre composant reste a faire, et ce fichier depasse la consigne
+            de taille. */}
+        {isTransporter ? (
+          <TransporterMissionView jobId={jobId} />
+        ) : (
+          <>
         {/* 7.6 — deux cas menaient au meme ecran mort. Un identifiant
             invalide desactivait le hook, donc `isLoading` restait faux et `d`
             undefined ; et un identifiant numeriquement valide dont la mission
@@ -238,6 +251,8 @@ export default function MissionScreen() {
                 <Txt style={styles.cancel}>{t('tracking.cancel_link')}</Txt>
               </Pressable>
             ) : null}
+          </>
+        )}
           </>
         )}
       </ScrollView>
