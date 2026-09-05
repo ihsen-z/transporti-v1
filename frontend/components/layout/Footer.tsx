@@ -50,7 +50,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-neutral-400">
               <li>
                 <Link
-                  href="/help"
+                  href="/aide"
                   className="hover:text-white transition-colors"
                 >
                   À propos
@@ -72,7 +72,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/help"
+                  href="/aide"
                   className="hover:text-white transition-colors"
                 >
                   Contact
@@ -86,7 +86,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm text-neutral-400">
               <li>
                 <Link
-                  href="/terms"
+                  href="/conditions"
                   className="hover:text-white transition-colors"
                 >
                   Conditions d&apos;utilisation
@@ -94,7 +94,7 @@ export default function Footer() {
               </li>
               <li>
                 <Link
-                  href="/privacy"
+                  href="/confidentialite"
                   className="hover:text-white transition-colors"
                 >
                   Politique de confidentialité

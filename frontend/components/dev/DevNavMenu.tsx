@@ -114,10 +114,18 @@ const ROUTE_MAP: RouteGroup[] = [
       { path: "/notifications", label: "Notifications", icon: Bell },
       { path: "/litiges", label: "Litiges", icon: Scale },
       { path: "/compte", label: "Paramètres", icon: Settings },
-      { path: "/help", label: "Centre d'aide", icon: HelpCircle },
+      { path: "/aide", label: "Centre d'aide", icon: HelpCircle },
       { path: "/documents", label: "Vérification", icon: ShieldCheck },
-      { path: "/privacy", label: "Politique de confidentialité", icon: Shield },
-      { path: "/terms", label: "Conditions d'utilisation", icon: FileText },
+      {
+        path: "/confidentialite",
+        label: "Politique de confidentialité",
+        icon: Shield,
+      },
+      {
+        path: "/conditions",
+        label: "Conditions d'utilisation",
+        icon: FileText,
+      },
     ],
   },
   {

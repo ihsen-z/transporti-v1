@@ -22,6 +22,15 @@ const nextConfig = {
             { source: '/transporter/:id', destination: '/transporteur/:id', permanent: true },
             { source: '/booking/:jobId', destination: '/reservation/:jobId', permanent: true },
 
+            // Pages legales, 05/09/2026. Les stubs vivaient sous app/(app)/,
+            // donc derriere AuthGuard : un examinateur de store ne peut pas
+            // creer de compte pour lire une politique de confidentialite, et
+            // un lien de politique inaccessible est un motif de refus. Les
+            // vraies pages sont publiques et portent les slugs vers lesquels
+            // l'application mobile pointe deja (EXPO_PUBLIC_*_URL).
+            { source: '/terms', destination: '/conditions', permanent: true },
+            { source: '/privacy', destination: '/confidentialite', permanent: true },
+
             // /jobs et /jobs/[id] ne sont volontairement pas renommes : ils
             // portent deux roles (detail de trajet vu par un client, detail de
             // mission vu par un transporteur). Leur separation releve du lot 4.

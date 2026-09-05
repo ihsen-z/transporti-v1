@@ -60,7 +60,7 @@ export default function NotFound() {
             {t.errors.backToDashboard}
           </Link>
           <Link
-            href="/help"
+            href="/aide"
             className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-neutral-300 text-neutral-700 rounded-xl font-semibold hover:bg-neutral-50 transition-colors"
           >
             {t.errors.helpCenter || "Centre d'aide"}

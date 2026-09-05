@@ -72,7 +72,7 @@ export default function TrustFooter() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="/help"
+                  href="/aide"
                   className="text-sm text-neutral-500 hover:text-brand-600 transition-colors"
                 >
                   Centre d&apos;aide
@@ -80,7 +80,7 @@ export default function TrustFooter() {
               </li>
               <li>
                 <Link
-                  href="/terms"
+                  href="/conditions"
                   className="text-sm text-neutral-500 hover:text-brand-600 transition-colors"
                 >
                   Conditions générales
@@ -88,7 +88,7 @@ export default function TrustFooter() {
               </li>
               <li>
                 <Link
-                  href="/privacy"
+                  href="/confidentialite"
                   className="text-sm text-neutral-500 hover:text-brand-600 transition-colors"
                 >
                   Politique de confidentialité
