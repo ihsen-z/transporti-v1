@@ -1,0 +1,574 @@
+<title>Exécution du plan mobile</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+
+<style>
+  /* Identité de la série : reprise de AUDIT_MOBILE_DESIGN_UX_USERSTORIES et de
+     PLAN_MISE_A_NIVEAU_MOBILE. Ce rapport est le troisième document du même
+     dossier — il doit se lire comme leur suite, pas comme une pièce isolée. */
+  :root {
+    --ink:        #101828;
+    --ink-soft:   #475467;
+    --ink-faint:  #667085;
+    --ground:     #fbfbfd;
+    --surface:    #ffffff;
+    --line:       #e3e6ee;
+    --line-soft:  #eef0f5;
+
+    --brand:      #1E3A8A;
+    --brand-lite: #2563B3;
+
+    --crit:       #b3261e;
+    --crit-wash:  #fdf0ef;
+    --warn:       #a1600a;
+    --warn-wash:  #fdf6e9;
+    --good:       #06774a;
+    --good-wash:  #eef8f2;
+    --info:       #1E3A8A;
+    --info-wash:  #eef2ff;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink:        #eef1f7;
+      --ink-soft:   #a9b2c5;
+      --ink-faint:  #8b94a8;
+      --ground:     #0c0f17;
+      --surface:    #141926;
+      --line:       #262d3d;
+      --line-soft:  #1d2331;
+      --brand:      #8fabf0;
+      --brand-lite: #a9c1f7;
+      --crit:       #ff9e96;
+      --crit-wash:  #2c1615;
+      --warn:       #f0c07a;
+      --warn-wash:  #2a2013;
+      --good:       #6fd6a5;
+      --good-wash:  #10241b;
+      --info:       #a9c1f7;
+      --info-wash:  #182241;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink:        #eef1f7;
+    --ink-soft:   #a9b2c5;
+    --ink-faint:  #8b94a8;
+    --ground:     #0c0f17;
+    --surface:    #141926;
+    --line:       #262d3d;
+    --line-soft:  #1d2331;
+    --brand:      #8fabf0;
+    --brand-lite: #a9c1f7;
+    --crit:       #ff9e96;
+    --crit-wash:  #2c1615;
+    --warn:       #f0c07a;
+    --warn-wash:  #2a2013;
+    --good:       #6fd6a5;
+    --good-wash:  #10241b;
+    --info:       #a9c1f7;
+    --info-wash:  #182241;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 28px 96px; }
+
+  h1, h2, h3, .eyebrow, .num, th, .chip, .tag, .fid, figcaption, .kpi-k {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5.2vw, 3.2rem);
+    font-weight: 700; letter-spacing: -0.025em; line-height: 1.05;
+    margin: 0; text-wrap: balance;
+  }
+  h2 {
+    font-size: clamp(1.3rem, 2.6vw, 1.65rem);
+    font-weight: 700; letter-spacing: -0.015em; line-height: 1.15;
+    margin: 0; text-wrap: balance;
+  }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 0; text-wrap: balance; }
+  p { margin: 0; max-width: var(--measure); }
+  a { color: var(--brand-lite); }
+  a:focus-visible { outline: 2px solid var(--brand-lite); outline-offset: 3px; }
+
+  .eyebrow {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 0.84em;
+  }
+  code {
+    background: var(--line-soft); padding: 0.1em 0.35em;
+    border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+
+  .masthead {
+    border-bottom: 3px solid var(--ink);
+    padding: 64px 0 22px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .masthead .lede {
+    font-size: 1.2rem; line-height: 1.5; color: var(--ink-soft); max-width: 62ch;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 26px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; color: var(--ink-faint);
+  }
+  .meta b { color: var(--ink-soft); font-weight: 600; }
+
+  .verdict {
+    margin-top: 34px; border: 1px solid var(--line); border-top: 3px solid var(--good);
+    background: var(--surface); padding: 26px 28px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .verdict p { max-width: 76ch; }
+  .verdict strong { color: var(--ink); }
+
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 30px;
+  }
+  .kpi { background: var(--surface); padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .kpi-n {
+    font-family: Archivo, sans-serif; font-size: 2.1rem; font-weight: 700;
+    letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .kpi-n small { font-size: 0.9rem; font-weight: 600; color: var(--ink-faint); }
+  .kpi-k {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--ink-faint); line-height: 1.35;
+  }
+
+  section { margin-top: 72px; }
+  .shead {
+    display: flex; align-items: baseline; gap: 16px;
+    border-bottom: 1px solid var(--ink); padding-bottom: 10px; margin-bottom: 24px;
+  }
+  .shead .num {
+    font-size: 0.78rem; font-weight: 700; color: var(--brand-lite);
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  .stack-lg { display: flex; flex-direction: column; gap: 32px; }
+  .subnote { font-size: 0.94rem; color: var(--ink-faint); max-width: 72ch; }
+
+  .scroller { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.89rem; }
+  th {
+    text-align: left; font-size: 0.69rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint); padding: 11px 14px;
+    border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--surface);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; color: var(--ink-soft); }
+  tr:last-child td { border-bottom: none; }
+  td b, td strong { color: var(--ink); font-weight: 600; }
+  .tid { font-family: "IBM Plex Mono", monospace; font-weight: 600; color: var(--brand-lite); white-space: nowrap; }
+  .charge { font-family: "IBM Plex Mono", monospace; text-align: center; white-space: nowrap; }
+
+  .chip {
+    display: inline-flex; align-items: center; font-size: 0.67rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px;
+    border: 1px solid currentColor; border-radius: 2px; white-space: nowrap;
+  }
+  .c-ok   { color: var(--good); background: var(--good-wash); }
+  .c-warn { color: var(--warn); background: var(--warn-wash); }
+  .c-crit { color: var(--crit); background: var(--crit-wash); }
+  .c-info { color: var(--info); background: var(--info-wash); }
+  .c-neut { color: var(--ink-faint); background: var(--line-soft); }
+
+  .ecart { border-top: 1px solid var(--line); padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .ecart:first-child { border-top: 2px solid var(--ink); }
+  .ehead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; }
+  .ehead .tid { font-size: 0.86rem; }
+  .ecart h3 { flex: 1 1 24ch; }
+  .egrid { display: grid; grid-template-columns: max-content 1fr; gap: 7px 18px; align-items: baseline; }
+  .egrid dt {
+    font-family: Archivo, sans-serif; font-size: 0.67rem; font-weight: 600;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-faint); padding-top: 3px;
+  }
+  .egrid dd { margin: 0; font-size: 0.94rem; color: var(--ink-soft); max-width: 74ch; }
+
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--brand-lite);
+    background: var(--surface); padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .callout.rouge { border-left-color: var(--crit); }
+  .callout.vert  { border-left-color: var(--good); }
+  .callout p { max-width: 74ch; font-size: 0.95rem; color: var(--ink-soft); }
+  .callout h3 { color: var(--ink); }
+
+  ul.plain { margin: 0; padding-left: 1.15em; max-width: var(--measure); }
+  ul.plain li { margin-bottom: 7px; color: var(--ink-soft); }
+  ul.plain li::marker { color: var(--brand-lite); }
+
+  .commits { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .commit {
+    background: var(--surface); padding: 12px 18px;
+    display: grid; grid-template-columns: 78px 1fr; gap: 4px 16px; align-items: baseline;
+  }
+  .commit .sha {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; color: var(--brand-lite); font-weight: 600;
+  }
+  .commit .sujet { font-size: 0.94rem; color: var(--ink); }
+
+  footer {
+    margin-top: 80px; border-top: 1px solid var(--line); padding-top: 20px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--ink-faint);
+    display: flex; flex-wrap: wrap; gap: 6px 24px;
+  }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 18px 64px; }
+    .commit { grid-template-columns: 1fr; }
+    .egrid { grid-template-columns: 1fr; gap: 2px 0; }
+    .egrid dt { padding-top: 9px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Rapport d'exécution &middot; application mobile &middot; Transporti V1</div>
+    <h1>Les dix dernières tâches du plan</h1>
+    <p class="lede">Le plan du 03/09 découpait la mise à niveau en <strong>37 tâches sur sept lots</strong>. Vingt-sept étaient livrées&nbsp;; cette session a livré les dix restantes, en quatorze commits. Ce rapport les rend au plan, tâche par tâche, et dit où l'exécution s'en est écartée.</p>
+    <div class="meta">
+      <span><b>Plan de référence</b> PLAN_MISE_A_NIVEAU_MOBILE_2026-09-03</span>
+      <span><b>Période</b> 04–05/09/2026</span>
+      <span><b>Branche</b> feature/plan-mise-a-niveau-mobile</span>
+      <span><b>Base</b> 4afd199 &rarr; ed58b34</span>
+    </div>
+  </header>
+
+  <div class="verdict">
+    <div class="eyebrow" style="color:var(--good)">Verdict</div>
+    <p><strong>Le plan est exécuté&nbsp;: 37 tâches sur 37.</strong> Les lots 6 (rendre la demande décidable) et 7 (finir les parcours entamés) sont clos. Chaque tâche a été vérifiée sur émulateur, pas seulement compilée&nbsp;: c'est ce qui a fait apparaître cinq défauts qu'aucun test ne voyait, dont un bloquant et un qui dépassait largement le périmètre du plan.</p>
+    <p><strong>Une seule chose empêche encore une soumission de store, et ce n'est pas du code&nbsp;:</strong> les trois pages légales existent comme liens dans l'application depuis le lot 2, mais leur contenu reste à rédiger et à héberger. C'est une dépendance externe, identifiée comme telle par le plan lui-même.</p>
+    <p class="subnote" style="margin-top:4px">Un constat traverse la session et mérite d'être retenu pour les estimations futures&nbsp;: <b>sept des dix tâches n'ont demandé aucun travail serveur</b>. Le canal existait des deux côtés et personne n'avait rempli le milieu. Détail au §04.</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-n">37<small>/37</small></div>
+      <div class="kpi-k">Tâches du plan livrées</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n">14</div>
+      <div class="kpi-k">Commits, poussés</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--good)">589</div>
+      <div class="kpi-k">Tests verts (298 back · 291 mobile)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--info)">26<small>&nbsp;%</small></div>
+      <div class="kpi-k">Des lignes ajoutées sont des tests</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--crit)">5</div>
+      <div class="kpi-k">Défauts trouvés en recette</div>
+    </div>
+  </div>
+
+  <!-- 01 -->
+  <section id="tracabilite">
+    <div class="shead"><span class="num">01</span><h2>Traçabilité, tâche par tâche</h2></div>
+    <div class="stack">
+      <p>La colonne <b>charge</b> est celle du plan. Elle est reproduite telle quelle parce que l'écart entre l'estimation et la réalité est l'enseignement principal de cette session.</p>
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Ce que le plan demandait</th><th>Charge</th><th>Livré</th><th>Écart</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="tid">6.1</td>
+              <td>Demande structurée&nbsp;: type et volume, poids, une à trois photos, créneau</td>
+              <td class="charge">L</td>
+              <td><span class="chip c-ok">conforme</span></td>
+              <td><b>Sous-estimée.</b> «&nbsp;Aucun travail backend&nbsp;» était faux&nbsp;: 7 champs et une migration</td>
+            </tr>
+            <tr>
+              <td class="tid">6.2</td>
+              <td>Carnet d'adresses branché dans la demande cliente</td>
+              <td class="charge">S</td>
+              <td><span class="chip c-ok">conforme</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="tid">6.3</td>
+              <td>Seconde sortie sur zéro résultat (IA-3 en exige deux)</td>
+              <td class="charge">M</td>
+              <td><span class="chip c-warn">conception révisée</span></td>
+              <td><b>Trois causes distinguées</b> au lieu d'une sortie&nbsp;; la demande classique écartée après arbitrage</td>
+            </tr>
+            <tr>
+              <td class="tid">6.4</td>
+              <td>Filtres marchandise portés au matching serveur, puis pagination</td>
+              <td class="charge">L</td>
+              <td><span class="chip c-ok">conforme</span></td>
+              <td>Un trou de sécurité trouvé en écrivant le test&nbsp;: un filtre vide n'excluait rien</td>
+            </tr>
+            <tr>
+              <td class="tid">7.1</td>
+              <td>Écran de mission transporteur avec jalons et fil d'événements</td>
+              <td class="charge">M</td>
+              <td><span class="chip c-warn">route unifiée</span></td>
+              <td>Pas de route nouvelle&nbsp;: <code>mission/[id]</code> aiguille sur le rôle</td>
+            </tr>
+            <tr>
+              <td class="tid">7.2</td>
+              <td>Preuve de livraison photo à la clôture, restituée côté cliente</td>
+              <td class="charge">M</td>
+              <td><span class="chip c-ok">conforme</span></td>
+              <td>Bloqué jusqu'ici par une dépendance absente, sans rapport avec la tâche</td>
+            </tr>
+            <tr>
+              <td class="tid">7.3</td>
+              <td>Publication sous quatre saisies&nbsp;: prix préremplis, adresses facultatives</td>
+              <td class="charge">S</td>
+              <td><span class="chip c-ok">dépassé</span></td>
+              <td>Zéro saisie clavier mesurée, pour un objectif de moins de quatre</td>
+            </tr>
+            <tr>
+              <td class="tid">7.4</td>
+              <td>Compteur de notifications porté par la barre d'onglets</td>
+              <td class="charge">S</td>
+              <td><span class="chip c-ok">conforme</span></td>
+              <td>—</td>
+            </tr>
+            <tr>
+              <td class="tid">7.5</td>
+              <td>Accueil cliente&nbsp;: la recherche à la place du bandeau, demandes dessous</td>
+              <td class="charge">M</td>
+              <td><span class="chip c-ok">conforme</span></td>
+              <td>Un résumé et non la liste, pour ne pas dupliquer l'onglet</td>
+            </tr>
+            <tr>
+              <td class="tid">7.6</td>
+              <td>Replis d'erreur sur les routes profondes atteignables par notification</td>
+              <td class="charge">XS</td>
+              <td><span class="chip c-warn">périmètre élargi</span></td>
+              <td><b>Quatre routes et non deux</b>, et le cas fréquent n'était pas celui décrit</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="subnote">7.7 (bloc d'économie sorti de sa rangée) avait été remontée au lot 5 et livrée avant cette session.</p>
+    </div>
+  </section>
+
+  <!-- 02 -->
+  <section id="ecarts">
+    <div class="shead"><span class="num">02</span><h2>Où l'exécution s'est écartée du plan</h2></div>
+    <div class="stack-lg">
+      <p>Quatre écarts, tous assumés. Chacun est une décision prise en cours de route, avec ce qui l'a motivée.</p>
+
+      <div class="stack-lg">
+        <div class="ecart">
+          <div class="ehead"><span class="tid">6.1</span><h3>La prémisse «&nbsp;aucun travail backend&nbsp;» était fausse</h3><span class="chip c-crit">estimation</span></div>
+          <dl class="egrid">
+            <dt>Constat</dt><dd><code>ReturnTripRequest</code> ne portait que description, photos, prix et mode de paiement. Aucune colonne pour le type, le poids, le volume, l'adresse de retrait ou le créneau. Or le trajet, lui, déclarait déjà sa capacité de façon structurée&nbsp;: l'asymétrie était totale, et la phrase de l'audit — «&nbsp;la capacité déclarée n'est comparée à rien&nbsp;» — était vraie au niveau du schéma.</dd>
+            <dt>Décision</dt><dd>Sept champs facultatifs et une migration, plutôt que d'entasser l'information dans <code>description</code>. Construire le formulaire sur l'API d'alors aurait produit de la prose plus jolie et le même aveuglement.</dd>
+            <dt>Effet</dt><dd>Le garde-fou de capacité devient possible&nbsp;: au-delà de ce que le trajet annonce, la demande est refusée avec le chiffre exact. Et 6.4 peut filtrer sur des nombres réels.</dd>
+          </dl>
+        </div>
+
+        <div class="ecart">
+          <div class="ehead"><span class="tid">6.3</span><h3>Un état vide qui concluait sur un corridor sans l'avoir regardé</h3><span class="chip c-warn">conception</span></div>
+          <dl class="egrid">
+            <dt>Constat</dt><dd>Le plan proposait trois options par coût croissant. En lisant le code de matching, la première s'est révélée meilleure que prévu&nbsp;: <code>date</code> est facultatif côté serveur, donc une recherche datée sans résultat ne dit <em>rien</em> du corridor — elle dit «&nbsp;pas ce jour-là&nbsp;». L'écran, lui, annonçait un corridor vide.</dd>
+            <dt>Décision</dt><dd>Non pas une sortie de plus, mais une <b>cascade diagnostique</b>&nbsp;: filtres marchandise, puis date, puis gouvernorats voisins, puis l'alerte. Un seul CTA à la fois, et la contrainte la plus restrictive levée en premier.</dd>
+            <dt>Arbitrage</dt><dd>La demande classique préremplie, retenue le 04/09, a été <b>écartée pour cette version</b> après vérification terrain&nbsp;: les transporteurs individuels consultent peu le web, et le bassin est surtout lu par des sociétés de transport que cette version ne sert pas encore. Elle est différée, avec un déclencheur nommé.</dd>
+          </dl>
+        </div>
+
+        <div class="ecart">
+          <div class="ehead"><span class="tid">7.1</span><h3>Une seule route pour les deux rôles</h3><span class="chip c-info">architecture</span></div>
+          <dl class="egrid">
+            <dt>Constat</dt><dd>Le plan prévoyait de créer <code>app/(app)/missions/[id].tsx</code>, distinct de l'écran cliente.</dd>
+            <dt>Décision</dt><dd><code>mission/[id]</code> aiguille sur le rôle. Une notification de mission doit pouvoir pointer une URL sans savoir qui tapera dessus&nbsp;; deux routes obligeraient l'émetteur à le deviner.</dd>
+            <dt>Réserve</dt><dd>Le corps cliente n'a pas été extrait dans son propre composant. Le fichier dépasse la consigne de taille et l'extraction reste à faire&nbsp;: refactorer 300 lignes d'un écran qui marche n'était pas le bon moment.</dd>
+          </dl>
+        </div>
+
+        <div class="ecart">
+          <div class="ehead"><span class="tid">7.6</span><h3>Quatre routes, et un cas plus fréquent que celui décrit</h3><span class="chip c-warn">périmètre</span></div>
+          <dl class="egrid">
+            <dt>Constat</dt><dd>L'audit citait deux routes. Il y en avait quatre, et le symptôme était pire que «&nbsp;vide&nbsp;»&nbsp;: l'une affichait «&nbsp;Aucune demande&nbsp;» — un mensonge — et deux autres un squelette de chargement <b>perpétuel</b>, qui donne l'illusion de travailler.</dd>
+            <dt>Décision</dt><dd>Le plan disait «&nbsp;<code>ErrorScreen</code> sur identifiant invalide&nbsp;». <code>ErrorScreen</code> est le repli de l'ErrorBoundary&nbsp;: il annonce «&nbsp;une erreur inattendue est survenue&nbsp;» et propose de réessayer. Ici rien n'est inattendu et réessayer ne changerait rien. D'où un composant dédié, qui nomme la situation et offre une sortie.</dd>
+            <dt>Élargissement</dt><dd>Le plan visait l'identifiant <em>non numérique</em>. Le cas fréquent est l'autre&nbsp;: un identifiant valide dont la ressource n'existe plus — une notification qui pointe une mission supprimée. Les deux sont couverts.</dd>
+          </dl>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 03 -->
+  <section id="recette">
+    <div class="shead"><span class="num">03</span><h2>Ce que seule la recette a vu</h2></div>
+    <div class="stack-lg">
+      <p>Cinq défauts, dont <b>aucun</b> n'était visible par <code>tsc</code>, <code>eslint</code> ni les 589 tests. Ils sont listés par gravité.</p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Défaut</th><th>Ce qu'il produisait</th><th>Cause</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><b>La feuille de demande ne défilait pas</b><br><span class="chip c-crit">bloquant</span></td>
+              <td>Créneau, prix, paiement et bouton d'envoi <b>absents de l'arbre d'accessibilité</b>. La demande était impossible à envoyer</td>
+              <td>Un <code>Pressable</code> ancêtre capte le geste et le garde&nbsp;; le <code>ScrollView</code> ne reçoit jamais rien</td>
+            </tr>
+            <tr>
+              <td><b>Le sélecteur de photos ne rendait aucune image</b><br><span class="chip c-crit">hors périmètre</span></td>
+              <td>Écran muet après un choix valide. Cassait aussi l'avatar et le <b>dépôt KYC</b>, chemin critique de la vérification</td>
+              <td><code>expo-file-system</code> absent du projet. Le rejet partait dans le vide, faute de <code>try/catch</code></td>
+            </tr>
+            <tr>
+              <td><b>Décimaux bruts, serveur</b><br><span class="chip c-warn">majeur</span></td>
+              <td>«&nbsp;annonce 2000.0 kg… votre chargement en fait 2500.00&nbsp;», affiché tel quel à la cliente</td>
+              <td><code>:g</code> ne normalise pas un <code>Decimal</code> comme il le fait pour un <code>float</code></td>
+            </tr>
+            <tr>
+              <td><b>Décimaux bruts, mobile</b><br><span class="chip c-neut">mineur</span></td>
+              <td>«&nbsp;Ce transporteur annonce 2000.0 kg et 8.00 m³&nbsp;»</td>
+              <td>DTO affiché sans passer par le formateur, qui existait déjà</td>
+            </tr>
+            <tr>
+              <td><b>Chaînes françaises sans accents</b><br><span class="chip c-neut">mineur</span></td>
+              <td>«&nbsp;Ou allez-vous expedier&nbsp;?&nbsp;», «&nbsp;deja&nbsp;», «&nbsp;Departs voisins&nbsp;» — huit chaînes sur quatre lots</td>
+              <td>Convention sans accents des messages de commit, débordée dans l'interface</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="callout rouge">
+        <h3>Le défaut que le lot 6.4 a failli réintroduire</h3>
+        <p>Une recherche filtrée sans résultat affichait «&nbsp;Aucun trajet retour pour l'instant&nbsp;» — une conclusion sur le corridor, alors qu'un trajet existait et était seulement trop petit. C'est <em>mot pour mot</em> l'erreur que le lot 6.3 venait de corriger pour la date, sous une autre forme. Elle n'a été vue qu'en exerçant le filtre sur l'appareil.</p>
+        <p>La règle a donc été généralisée et consignée&nbsp;: <b>un état vide ne conclut jamais sur le corridor tant qu'une contrainte de la recherche peut expliquer le vide.</b> Toute nouvelle contrainte devra entrer dans la cascade.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 04 -->
+  <section id="motif">
+    <div class="shead"><span class="num">04</span><h2>Le motif&nbsp;: canal ouvert, milieu vide</h2></div>
+    <div class="stack">
+      <p><b>Sept des dix tâches n'ont demandé aucun travail serveur.</b> Le canal existait des deux côtés et personne n'avait rempli le milieu&nbsp;:</p>
+      <ul class="plain">
+        <li><b>Photos de la demande</b> — endpoint, champ de modèle et sérialiseur en place, mobile jamais appelant.</li>
+        <li><b>Preuve de livraison</b> — <code>pod_photo_url</code> accepté, stocké, exposé, et le DTO mobile portait <em>déjà</em> le champ.</li>
+        <li><b>Capacité structurée</b> — servie par l'API, absente du DTO mobile.</li>
+        <li><b>Compteur de notifications</b> — le mécanisme existait pour les messages.</li>
+        <li><b>Carnet d'adresses</b> — utilisé côté transporteur seulement.</li>
+        <li><b>Estimation de prix</b> — calculée, affichée, jamais réutilisée pour préremplir.</li>
+        <li><b>Écran de mission transporteur</b> — <code>GET jobs/&lt;id&gt;/</code> servait déjà les jalons au transporteur.</li>
+      </ul>
+      <div class="callout">
+        <h3>Conséquence pratique pour les estimations</h3>
+        <p>Les charges du plan étaient <b>systématiquement trop hautes</b> pour ces sept tâches, et <b>trop basses</b> pour la seule qui exigeait vraiment du backend. Avant d'estimer une tâche mobile, il faut vérifier ce que le serveur fait déjà.</p>
+        <p>Corollaire&nbsp;: <b>les DTO mobiles mentent par omission.</b> Trois fois dans la session, le serveur servait un champ que le DTO ne déclarait pas — donc TypeScript n'exigeait aucun garde et l'écran ne pouvait pas l'afficher. Comparer le sérialiseur au DTO avant de conclure «&nbsp;le backend ne le fait pas&nbsp;».</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 05 -->
+  <section id="hors-plan">
+    <div class="shead"><span class="num">05</span><h2>Travail non prévu au plan</h2></div>
+    <div class="stack">
+      <p>Quatre chantiers ouverts en cours de route, tous parce qu'ils bloquaient une tâche du plan ou la rendaient invérifiable.</p>
+      <ul class="plain">
+        <li><b>Dépendance manquante et reconstruction du client de développement.</b> <code>expo-file-system</code> était absent&nbsp;: aucun sélecteur d'image ne pouvait rendre une photo. Ajout, puis rebuild natif — le module vient de l'APK, le paquet JS ne suffit pas. Débloque 7.2, l'avatar et le KYC d'un coup.</li>
+        <li><b>Arbitrage du canal classique</b>, laissé ouvert par le plan d'août. Tranché en deux moitiés de sens opposé, puis révisé sur la réponse terrain. Consigné dans l'audit.</li>
+        <li><b>Outillage de recette.</b> <code>mobile-ui.sh</code> plantait sur le premier libellé accentué — l'écran paraissait vide alors qu'il ne l'était pas, et le diagnostic est parti dans la mauvaise direction. Et le jeu de données ne renseignait pas la capacité structurée, rendant le garde-fou de 6.1 invérifiable&nbsp;: c'est l'écart E-27 qui se répétait sur un champ neuf.</li>
+        <li><b>Correction des accents</b> sur huit chaînes de quatre lots.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 06 -->
+  <section id="dette">
+    <div class="shead"><span class="num">06</span><h2>Dette laissée, explicitement</h2></div>
+    <div class="stack">
+      <p>Rien de tout cela n'est masqué&nbsp;; c'est ce qu'un relecteur doit savoir avant de reprendre.</p>
+      <ul class="plain">
+        <li><b>Le corps cliente de <code>mission/[id]</code> n'est pas extrait.</b> Le fichier dépasse la consigne de taille depuis avant cette session, et la route aiguille désormais sur le rôle sans que cette moitié ait bougé.</li>
+        <li><b>Sept fichiers touchés dépassent 200 lignes</b> — quatre l'étaient déjà, trois ont été poussés au-delà.</li>
+        <li><b>Une dérogation <code>eslint</code></b>, dans <code>search.tsx</code>, justifiée en commentaire&nbsp;: l'amorce ne doit jouer qu'au montage.</li>
+        <li><b>Le correctif d'accents est parti dans le commit de 7.5</b> au lieu du sien — entorse à la lisibilité de l'historique, signalée plutôt que réécrite.</li>
+        <li><b>Jeu de recette&nbsp;:</b> la mission 2 est passée à <code>COMPLETED</code> et le seed ne la rafraîchit pas. Un <code>--clear</code> sera nécessaire pour retrouver une mission en cours.</li>
+        <li><b>Le dépôt KYC est vérifié jusqu'à la sélection de la photo</b>, pas jusqu'à l'envoi du document.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- 07 -->
+  <section id="commits">
+    <div class="shead"><span class="num">07</span><h2>Les quatorze commits</h2></div>
+    <div class="stack">
+      <p class="subnote">62 fichiers, +4&nbsp;090 / −298 lignes, deux migrations. Poussés sur <code>origin</code>.</p>
+      <div class="commits">
+        <div class="commit"><span class="sha">4e65035</span><span class="sujet">Le canal classique ne se tranche pas en bloc mais en deux</span></div>
+        <div class="commit"><span class="sha">ed41103</span><span class="sujet">La capacité du transporteur n'était comparée à rien</span></div>
+        <div class="commit"><span class="sha">68e0175</span><span class="sujet">Le transporteur devait décider à l'aveugle, et la feuille ne défilait pas</span></div>
+        <div class="commit"><span class="sha">c0ead2f</span><span class="sujet">Le sélecteur de photos n'a jamais pu rendre une image</span></div>
+        <div class="commit"><span class="sha">fa454df</span><span class="sujet">L'outillage rendait un écran vide, et le jeu de données cachait la capacité</span></div>
+        <div class="commit"><span class="sha">225008b</span><span class="sujet">Zéro résultat concluait sur le corridor sans l'avoir regardé</span></div>
+        <div class="commit"><span class="sha">3ae1946</span><span class="sujet">La recherche ignorait la marchandise et s'arrêtait à dix</span></div>
+        <div class="commit"><span class="sha">a971adf</span><span class="sujet">Le transporteur ne pouvait pas prouver sa livraison</span></div>
+        <div class="commit"><span class="sha">04832ad</span><span class="sujet">Un corridor vide n'avait toujours qu'une seule issue</span></div>
+        <div class="commit"><span class="sha">db8e2ee</span><span class="sujet">Publier un retour coûtait cinq saisies pour un objectif de quatre</span></div>
+        <div class="commit"><span class="sha">087e328</span><span class="sujet">Rien ne signalait une décision en attente hors de l'Accueil</span></div>
+        <div class="commit"><span class="sha">cf2041d</span><span class="sujet">Un lien cassé ouvrait un écran qui faisait semblant de charger</span></div>
+        <div class="commit"><span class="sha">ecc85f3</span><span class="sujet">L'accueil cliente était vide aux deux tiers</span></div>
+        <div class="commit"><span class="sha">ed58b34</span><span class="sujet">Le transporteur suivait sa mission sans jamais pouvoir la consulter</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 08 -->
+  <section id="suite">
+    <div class="shead"><span class="num">08</span><h2>Ce qui reste</h2></div>
+    <div class="stack-lg">
+      <div class="callout vert">
+        <h3>Sur le chemin de la soumission&nbsp;: une seule chose, et elle n'est pas technique</h3>
+        <p>Les <b>trois pages légales</b> — CGU, confidentialité, aide — existent comme liens dans l'application depuis le lot 2. Leur contenu reste à rédiger et à héberger sur les URL déjà configurées. Tant qu'elles renvoient dans le vide, aucune soumission ne passe&nbsp;: un lien de politique de confidentialité est obligatoire chez Google comme chez Apple.</p>
+      </div>
+
+      <div class="callout">
+        <h3>Le segment «&nbsp;sociétés de transport&nbsp;», et l'ordre qui compte</h3>
+        <p>Le terrain a montré que ce sont elles, et non les chauffeurs indépendants, qui consultent le web — donc le canal classique. Cette version ne les sert pas, et rien de ce qui a été livré ne ferme la porte&nbsp;: le canal existe de bout en bout côté serveur, et la moitié cliente mobile est à un hook près maintenant que le formulaire structuré est livré.</p>
+        <p>Une chose est à décider avant d'écrire la première ligne&nbsp;: <b>l'ordre</b>. Servir les sociétés côté <em>offre</em> — les amener à publier leurs retours — avant de leur adresser de la <em>demande</em>. L'inverse alimenterait un bassin sans en tirer de trajets, et la métrique nord ne bougerait pas.</p>
+      </div>
+
+      <p class="subnote">Reste aussi, sans urgence&nbsp;: l'extraction du corps cliente de <code>mission/[id]</code>, et une passe de recette sur le dépôt KYC désormais débloqué.</p>
+    </div>
+  </section>
+
+  <footer>
+    <span>Exécution 04–05/09/2026 &mdash; 14 commits, 4afd199 → ed58b34</span>
+    <span>Vérifié sur Pixel 7 API 35 &middot; 1080×2400 &middot; 420 dpi</span>
+    <span>Plan de référence : PLAN_MISE_A_NIVEAU_MOBILE_2026-09-03</span>
+    <span>Audit de référence : AUDIT_MOBILE_DESIGN_UX_USERSTORIES_2026-09-02</span>
+  </footer>
+
+</div>
