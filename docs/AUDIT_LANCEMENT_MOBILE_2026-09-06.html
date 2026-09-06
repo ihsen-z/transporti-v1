@@ -1,0 +1,674 @@
+<title>Prêt pour le marché ?</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+
+<style>
+  /* Identité de la série : quatrième document du même dossier, après
+     l'audit du 02/09, le plan du 03/09 et le rapport du 05/09. Il se lit
+     comme leur suite : mêmes conventions, mêmes couleurs de gravité. */
+  :root {
+    --ink:        #101828;
+    --ink-soft:   #475467;
+    --ink-faint:  #667085;
+    --ground:     #fbfbfd;
+    --surface:    #ffffff;
+    --line:       #e3e6ee;
+    --line-soft:  #eef0f5;
+
+    --brand:      #1E3A8A;
+    --brand-lite: #2563B3;
+
+    --crit:       #b3261e;
+    --crit-wash:  #fdf0ef;
+    --warn:       #a1600a;
+    --warn-wash:  #fdf6e9;
+    --good:       #06774a;
+    --good-wash:  #eef8f2;
+    --info:       #1E3A8A;
+    --info-wash:  #eef2ff;
+
+    --measure: 68ch;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink:        #eef1f7;
+      --ink-soft:   #a9b2c5;
+      --ink-faint:  #8b94a8;
+      --ground:     #0c0f17;
+      --surface:    #141926;
+      --line:       #262d3d;
+      --line-soft:  #1d2331;
+      --brand:      #8fabf0;
+      --brand-lite: #a9c1f7;
+      --crit:       #ff9e96;
+      --crit-wash:  #2c1615;
+      --warn:       #f0c07a;
+      --warn-wash:  #2a2013;
+      --good:       #6fd6a5;
+      --good-wash:  #10241b;
+      --info:       #a9c1f7;
+      --info-wash:  #182241;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ink:        #eef1f7;
+    --ink-soft:   #a9b2c5;
+    --ink-faint:  #8b94a8;
+    --ground:     #0c0f17;
+    --surface:    #141926;
+    --line:       #262d3d;
+    --line-soft:  #1d2331;
+    --brand:      #8fabf0;
+    --brand-lite: #a9c1f7;
+    --crit:       #ff9e96;
+    --crit-wash:  #2c1615;
+    --warn:       #f0c07a;
+    --warn-wash:  #2a2013;
+    --good:       #6fd6a5;
+    --good-wash:  #10241b;
+    --info:       #a9c1f7;
+    --info-wash:  #182241;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: "Source Serif 4", Georgia, "Times New Roman", serif;
+    font-size: 17px;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1040px; margin: 0 auto; padding: 0 28px 96px; }
+
+  h1, h2, h3, .eyebrow, .num, th, .chip, .tag, .fid, figcaption, .kpi-k {
+    font-family: Archivo, "Helvetica Neue", Arial, sans-serif;
+  }
+  h1 {
+    font-size: clamp(2.1rem, 5.2vw, 3.2rem);
+    font-weight: 700; letter-spacing: -0.025em; line-height: 1.05;
+    margin: 0; text-wrap: balance;
+  }
+  h2 {
+    font-size: clamp(1.3rem, 2.6vw, 1.65rem);
+    font-weight: 700; letter-spacing: -0.015em; line-height: 1.15;
+    margin: 0; text-wrap: balance;
+  }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 0; text-wrap: balance; }
+  p { margin: 0; max-width: var(--measure); }
+  a { color: var(--brand-lite); }
+  a:focus-visible { outline: 2px solid var(--brand-lite); outline-offset: 3px; }
+
+  .eyebrow {
+    font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em;
+    text-transform: uppercase; color: var(--ink-faint);
+  }
+  code, .mono {
+    font-family: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+    font-size: 0.84em;
+  }
+  code {
+    background: var(--line-soft); padding: 0.1em 0.35em;
+    border-radius: 2px; color: var(--ink); white-space: nowrap;
+  }
+
+  .masthead {
+    border-bottom: 3px solid var(--ink);
+    padding: 64px 0 22px;
+    display: flex; flex-direction: column; gap: 20px;
+  }
+  .masthead .lede {
+    font-size: 1.2rem; line-height: 1.5; color: var(--ink-soft); max-width: 62ch;
+  }
+  .meta {
+    display: flex; flex-wrap: wrap; gap: 8px 26px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.76rem; color: var(--ink-faint);
+  }
+  .meta b { color: var(--ink-soft); font-weight: 600; }
+
+  .verdict {
+    margin-top: 34px; border: 1px solid var(--line); border-top: 3px solid var(--good);
+    background: var(--surface); padding: 26px 28px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .verdict p { max-width: 76ch; }
+  .verdict strong { color: var(--ink); }
+
+  .kpis {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
+    gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 30px;
+  }
+  .kpi { background: var(--surface); padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .kpi-n {
+    font-family: Archivo, sans-serif; font-size: 2.1rem; font-weight: 700;
+    letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums;
+  }
+  .kpi-n small { font-size: 0.9rem; font-weight: 600; color: var(--ink-faint); }
+  .kpi-k {
+    font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em;
+    text-transform: uppercase; color: var(--ink-faint); line-height: 1.35;
+  }
+
+  section { margin-top: 72px; }
+  .shead {
+    display: flex; align-items: baseline; gap: 16px;
+    border-bottom: 1px solid var(--ink); padding-bottom: 10px; margin-bottom: 24px;
+  }
+  .shead .num {
+    font-size: 0.78rem; font-weight: 700; color: var(--brand-lite);
+    font-variant-numeric: tabular-nums; letter-spacing: 0.04em;
+  }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  .stack-lg { display: flex; flex-direction: column; gap: 32px; }
+  .subnote { font-size: 0.94rem; color: var(--ink-faint); max-width: 72ch; }
+
+  .scroller { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.89rem; }
+  th {
+    text-align: left; font-size: 0.69rem; font-weight: 600; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--ink-faint); padding: 11px 14px;
+    border-bottom: 1px solid var(--line); white-space: nowrap; background: var(--surface);
+  }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; color: var(--ink-soft); }
+  tr:last-child td { border-bottom: none; }
+  td b, td strong { color: var(--ink); font-weight: 600; }
+  .tid { font-family: "IBM Plex Mono", monospace; font-weight: 600; color: var(--brand-lite); white-space: nowrap; }
+  .charge { font-family: "IBM Plex Mono", monospace; text-align: center; white-space: nowrap; }
+
+  .chip {
+    display: inline-flex; align-items: center; font-size: 0.67rem; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px;
+    border: 1px solid currentColor; border-radius: 2px; white-space: nowrap;
+  }
+  .c-ok   { color: var(--good); background: var(--good-wash); }
+  .c-warn { color: var(--warn); background: var(--warn-wash); }
+  .c-crit { color: var(--crit); background: var(--crit-wash); }
+  .c-info { color: var(--info); background: var(--info-wash); }
+  .c-neut { color: var(--ink-faint); background: var(--line-soft); }
+
+  .ecart { border-top: 1px solid var(--line); padding-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .ecart:first-child { border-top: 2px solid var(--ink); }
+  .ehead { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px 14px; }
+  .ehead .tid { font-size: 0.86rem; }
+  .ecart h3 { flex: 1 1 24ch; }
+  .egrid { display: grid; grid-template-columns: max-content 1fr; gap: 7px 18px; align-items: baseline; }
+  .egrid dt {
+    font-family: Archivo, sans-serif; font-size: 0.67rem; font-weight: 600;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-faint); padding-top: 3px;
+  }
+  .egrid dd { margin: 0; font-size: 0.94rem; color: var(--ink-soft); max-width: 74ch; }
+
+  .callout {
+    border: 1px solid var(--line); border-left: 3px solid var(--brand-lite);
+    background: var(--surface); padding: 18px 22px;
+    display: flex; flex-direction: column; gap: 9px;
+  }
+  .callout.rouge { border-left-color: var(--crit); }
+  .callout.vert  { border-left-color: var(--good); }
+  .callout p { max-width: 74ch; font-size: 0.95rem; color: var(--ink-soft); }
+  .callout h3 { color: var(--ink); }
+
+  ul.plain { margin: 0; padding-left: 1.15em; max-width: var(--measure); }
+  ul.plain li { margin-bottom: 7px; color: var(--ink-soft); }
+  ul.plain li::marker { color: var(--brand-lite); }
+
+  .commits { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .commit {
+    background: var(--surface); padding: 12px 18px;
+    display: grid; grid-template-columns: 78px 1fr; gap: 4px 16px; align-items: baseline;
+  }
+  .commit .sha {
+    font-family: "IBM Plex Mono", monospace; font-size: 0.78rem; color: var(--brand-lite); font-weight: 600;
+  }
+  .commit .sujet { font-size: 0.94rem; color: var(--ink); }
+
+  footer {
+    margin-top: 80px; border-top: 1px solid var(--line); padding-top: 20px;
+    font-family: "IBM Plex Mono", monospace; font-size: 0.74rem; color: var(--ink-faint);
+    display: flex; flex-wrap: wrap; gap: 6px 24px;
+  }
+
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    .wrap { padding: 0 18px 64px; }
+    .commit { grid-template-columns: 1fr; }
+    .egrid { grid-template-columns: 1fr; gap: 2px 0; }
+    .egrid dt { padding-top: 9px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="masthead">
+    <div class="eyebrow">Audit produit &middot; application mobile &middot; Transporti V1</div>
+    <h1>Ce qui empêche encore le lancement</h1>
+    <p class="lede">Le plan de mise à niveau est exécuté&nbsp;: 37 tâches sur 37. Cet audit ne le rejoue pas — il pose l'autre question, celle du marché. <strong>L'application peut-elle être mise entre les mains de vrais clients, avec de vrais dinars&nbsp;?</strong> La réponse est non, pour trois raisons&nbsp;; et aucune des trois n'est dans l'application mobile.</p>
+    <div class="meta">
+      <span><b>Date</b> 06/09/2026</span>
+      <span><b>Branche</b> feature/plan-mise-a-niveau-mobile</span>
+      <span><b>Base</b> 095e8f3 &rarr; e2ca25d</span>
+      <span><b>Recette</b> Pixel&nbsp;7 API&nbsp;35 &middot; fr &amp; ar</span>
+    </div>
+  </header>
+
+  <div class="verdict" style="border-top-color:var(--crit)">
+    <div class="eyebrow" style="color:var(--crit)">Verdict</div>
+    <p><strong>Ne pas lancer en l'état.</strong> Trois bloquants&nbsp;: deux touchent l'argent, un touche la conformité. Le premier laissait la production démarrer en mode bac à sable, où <b>tout paiement se déclare abouti sans qu'un dinar circule</b>. Le second laissait le webhook de paiement accepter des appels non signés, ce qui permettait à un tiers de déclarer un paiement encaissé. Le troisième est que les trois pages légales renvoient <code>404</code> en production — alors que l'application y envoie l'utilisateur.</p>
+    <p><strong>L'application mobile, elle, est en bon état.</strong> C'est le résultat le plus net de cette recette. Les parcours tiennent, l'arabe et le RTL sont complets jusque dans les interpolations, l'état vide ne laisse jamais l'utilisateur sans suite, et refuser la localisation ne coûte rien. Les défauts trouvés côté mobile sont des défauts de texte, pas de fonctionnement.</p>
+    <p class="subnote" style="margin-top:4px">Les deux bloquants de paiement <b>sont corrigés dans cet audit</b>&nbsp;: la production refuse désormais de démarrer si l'un des trois réglages d'argent garde sa valeur de développement. Le troisième relève du déploiement et vous appartient. Détail au §06.</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--crit)">3</div>
+      <div class="kpi-k">Bloquants au lancement</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--warn)">3</div>
+      <div class="kpi-k">Défauts majeurs</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--good)">639</div>
+      <div class="kpi-k">Tests verts (347 back · 292 mobile)</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--good)">3</div>
+      <div class="kpi-k">Défauts corrigés pendant l'audit</div>
+    </div>
+    <div class="kpi">
+      <div class="kpi-n" style="color:var(--info)">2</div>
+      <div class="kpi-k">Décisions qui vous appartiennent</div>
+    </div>
+  </div>
+
+  <section id="synthese">
+    <div class="shead"><span class="num">01</span><h2>Le tableau de bord du lancement</h2></div>
+    <div class="stack">
+      <p>Un état par domaine. «&nbsp;Vérifié&nbsp;» veut dire <em>manipulé en marche</em>, jamais «&nbsp;écrit et compilé&nbsp;»&nbsp;: chaque ligne verte correspond à un geste réel sur l'émulateur ou à une requête réelle contre le serveur.</p>
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Domaine</th><th>État</th><th>Ce qui a été constaté, et comment</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><b>Encaissement</b></td>
+              <td><span class="chip c-crit">bloquant</span></td>
+              <td>Passerelle en bac à sable par défaut, sans garde de production. <b>Corrigé.</b></td>
+            </tr>
+            <tr>
+              <td><b>Webhook de paiement</b></td>
+              <td><span class="chip c-crit">bloquant</span></td>
+              <td>Signature ignorée quand le secret est vide, sur un endpoint public. Prouvé par requête. <b>Corrigé.</b></td>
+            </tr>
+            <tr>
+              <td><b>Pages légales</b></td>
+              <td><span class="chip c-crit">bloquant</span></td>
+              <td>Les cinq URL testées renvoient <code>404</code> en production. Relève du déploiement.</td>
+            </tr>
+            <tr>
+              <td><b>Marque, premier écran</b></td>
+              <td><span class="chip c-warn">majeur</span></td>
+              <td>Le nom s'affiche «&nbsp;ransporti&nbsp;», et se prononce ainsi aux lecteurs d'écran.</td>
+            </tr>
+            <tr>
+              <td><b>Réservation immédiate</b></td>
+              <td><span class="chip c-warn">majeur</span></td>
+              <td>Le commutateur du transporteur est inerte&nbsp;: rien côté cliente ne l'honore.</td>
+            </tr>
+            <tr>
+              <td><b>Rétention des pièces KYC</b></td>
+              <td><span class="chip c-warn">majeur</span></td>
+              <td>Jamais supprimées, durée non décidée. Bloque la publication de la politique.</td>
+            </tr>
+            <tr>
+              <td><b>Parcours cliente</b></td>
+              <td><span class="chip c-ok">vérifié</span></td>
+              <td>Accueil &rarr; recherche &rarr; carte &rarr; résultat &rarr; demande, parcouru de bout en bout.</td>
+            </tr>
+            <tr>
+              <td><b>Arabe et RTL</b></td>
+              <td><span class="chip c-ok">vérifié</span></td>
+              <td>Écrans récents en derja, miroir complet, interpolations et flèche de corridor correctes.</td>
+            </tr>
+            <tr>
+              <td><b>État vide de la recherche</b></td>
+              <td><span class="chip c-ok">vérifié</span></td>
+              <td>Cascade à trois causes exercée en direct, second passage après élargissement compris.</td>
+            </tr>
+            <tr>
+              <td><b>Permissions</b></td>
+              <td><span class="chip c-ok">vérifié</span></td>
+              <td>Localisation refusée&nbsp;: recherche, carte et résultats fonctionnent quand même.</td>
+            </tr>
+            <tr>
+              <td><b>Secrets et configuration</b></td>
+              <td><span class="chip c-ok">vérifié</span></td>
+              <td><code>DEBUG</code> à False par défaut, gardes sur les deux clés, aucun <code>.env</code> versionné.</td>
+            </tr>
+            <tr>
+              <td><b>Suites de tests</b></td>
+              <td><span class="chip c-ok">vérifié</span></td>
+              <td>639 tests verts. Le backend est vert pour la première fois&nbsp;— §06.</td>
+            </tr>
+            <tr>
+              <td><b>Correctif à chaud</b></td>
+              <td><span class="chip c-warn">mineur</span></td>
+              <td>Canaux EAS déclarés, <code>updates</code> absent&nbsp;: tout correctif repasse par le store.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section id="bloquants">
+    <div class="shead"><span class="num">02</span><h2>Les trois bloquants</h2></div>
+    <div class="stack-lg">
+
+      <div class="ecart">
+        <div class="ehead">
+          <span class="tid">B-01</span>
+          <h3>La production pouvait démarrer en bac à sable</h3>
+          <span class="chip c-crit">bloquant</span>
+          <span class="chip c-ok">corrigé</span>
+        </div>
+        <dl class="egrid">
+          <dt>Constat</dt>
+          <dd><code>PAYMENT_GATEWAY</code> vaut <code>'SANDBOX'</code> par défaut et rien ne l'empêchait en production. Or <code>SandboxGateway.check_status()</code> renvoie <code>completed</code> <b>inconditionnellement</b>, sans interroger qui que ce soit.</dd>
+          <dt>Conséquence</dt>
+          <dd>Déployé tel quel, chaque paiement se déclarait abouti, aucun dinar ne circulait, et le séquestre se libérait sur cette réussite imaginaire. Le transporteur aurait vu son solde monter, la cliente aurait cru avoir payé, et personne n'aurait rien reçu.</dd>
+          <dt>Aggravant</dt>
+          <dd><code>KONNECT_API_URL</code> pointe la <b>préproduction</b> par défaut. Basculer la passerelle sur <code>'KONNECT'</code> sans fixer l'URL n'aurait donc <em>toujours</em> fait circuler aucun argent&nbsp;— un second piège caché derrière le premier.</dd>
+          <dt>Ce qui rend le défaut visible</dt>
+          <dd>Deux gardes du même fichier faisaient déjà exactement ce travail&nbsp;: <code>SECRET_KEY</code> et <code>JWT_SECRET_KEY</code> font <code>raise RuntimeError</code> quand ils gardent leur valeur de développement. Le motif existait&nbsp;; il n'avait simplement jamais été appliqué à l'argent.</dd>
+          <dt>Correctif</dt>
+          <dd>Trois gardes sur le même modèle. Vérifiées dans les deux sens&nbsp;: le développement démarre inchangé, une production incomplète refuse de démarrer avec un message qui nomme le réglage fautif, une production complète démarre.</dd>
+        </dl>
+      </div>
+
+      <div class="ecart">
+        <div class="ehead">
+          <span class="tid">B-02</span>
+          <h3>Le webhook de paiement acceptait les appels non signés</h3>
+          <span class="chip c-crit">bloquant</span>
+          <span class="chip c-ok">corrigé</span>
+        </div>
+        <dl class="egrid">
+          <dt>Constat</dt>
+          <dd><code>PaymentWebhookView</code> a des <code>permission_classes</code> vides — c'est normal, une passerelle n'a pas de compte. Toute la protection repose donc sur la signature HMAC. Or <code>verify_webhook_signature()</code> <b>retourne sans rien vérifier</b> quand <code>PAYMENT_WEBHOOK_SECRET</code> est vide, et ce secret vaut <code>''</code> par défaut.</dd>
+          <dt>Preuve</dt>
+          <dd>Requête réelle contre le serveur local, sans en-tête de signature. Réponse&nbsp;: <b><code>404</code> «&nbsp;référence inconnue&nbsp;»</b>, et non <code>403</code>. Ce 404 dit que l'appel a franchi le contrôle et atteint la base. Avec une référence valide, il aurait fait passer le séquestre de <code>INITIATED</code> à <code>HELD</code> et démarré la mission.</dd>
+          <dt>Conséquence</dt>
+          <dd>Un tiers connaissant une référence de paiement pouvait déclarer ce paiement encaissé. Le code portait déjà l'avertissement «&nbsp;<span class="mono">THIS IS UNSAFE IN PRODUCTION</span>&nbsp;» — mais une ligne de journal n'a jamais bloqué un déploiement.</dd>
+          <dt>Correctif</dt>
+          <dd>Garde au démarrage plutôt qu'à la requête&nbsp;: en production, un secret vide empêche le serveur de démarrer. On échoue au déploiement, pas au premier paiement forgé.</dd>
+        </dl>
+      </div>
+
+      <div class="ecart">
+        <div class="ehead">
+          <span class="tid">B-03</span>
+          <h3>Les trois pages légales renvoient 404 en production</h3>
+          <span class="chip c-crit">bloquant</span>
+          <span class="chip c-info">déploiement</span>
+        </div>
+        <dl class="egrid">
+          <dt>Constat</dt>
+          <dd>Le domaine répond <code>200</code>. Les cinq chemins légaux répondent <code>404</code>&nbsp;: <code>/conditions</code>, <code>/confidentialite</code>, <code>/aide</code>, et même les anciens <code>/terms</code> et <code>/privacy</code>. La version en ligne est antérieure à tout ce travail.</dd>
+          <dt>Vérifié depuis l'application</dt>
+          <dd>Pas seulement en <code>curl</code>&nbsp;: en touchant «&nbsp;Conditions d'utilisation&nbsp;» dans le profil, le navigateur s'ouvre sur «&nbsp;Not Found&nbsp;». C'est ce que verrait un examinateur de store, et c'est un motif de refus chez Google comme chez Apple.</dd>
+          <dt>Ce qui manque</dt>
+          <dd>Rien à écrire&nbsp;: les trois pages ont été rédigées hier, sont dans le dépôt, publiques et hors <code>AuthGuard</code>. Il manque un déploiement du site — et, avant lui, les blancs à compléter (§07).</dd>
+          <dt>Pourquoi ce n'est pas un détail</dt>
+          <dd>L'application <em>renvoie</em> vers ces pages. Un lien mort depuis un écran qui parle de confiance coûte plus cher qu'un lien absent&nbsp;: il suggère que ce qui est promis ailleurs n'est peut-être pas là non plus.</dd>
+        </dl>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="majeurs">
+    <div class="shead"><span class="num">03</span><h2>Les défauts majeurs</h2></div>
+    <div class="stack-lg">
+
+      <div class="ecart">
+        <div class="ehead">
+          <span class="tid">M-01</span>
+          <h3>Le nom de la marque s'affiche «&nbsp;ransporti&nbsp;»</h3>
+          <span class="chip c-warn">majeur</span>
+        </div>
+        <dl class="egrid">
+          <dt>Constat</dt>
+          <dd>Sur l'écran de connexion, le logotype dessine un «&nbsp;T&nbsp;» censé remplacer la première lettre, suivi du texte littéral <code>ransporti</code>. Le dessin ne se lit pas comme un T&nbsp;; l'œil lit «&nbsp;ransporti&nbsp;».</dd>
+          <dt>Aggravant</dt>
+          <dd>L'arbre d'accessibilité annonce <b>littéralement «&nbsp;ransporti&nbsp;»</b>. Un lecteur d'écran ne prononce donc pas le nom de la marque sur le premier écran de l'application.</dd>
+          <dt>Pourquoi majeur</dt>
+          <dd>C'est le premier écran, avant tout compte, avant toute confiance. Une marque qu'on ne sait pas épeler ne se transmet pas de bouche à oreille — le canal principal sur ce marché.</dd>
+          <dt>Recommandation</dt>
+          <dd>Deux voies&nbsp;: rendre le T lisible comme un T, ou écrire le mot entier à côté du symbole. Dans les deux cas, donner au bloc un <code>accessibilityLabel</code> valant «&nbsp;Transporti&nbsp;». C'est une décision de design&nbsp;: je ne l'ai pas tranchée seul.</dd>
+        </dl>
+      </div>
+
+      <div class="ecart">
+        <div class="ehead">
+          <span class="tid">M-02</span>
+          <h3>Le commutateur «&nbsp;Réservation immédiate&nbsp;» est inerte</h3>
+          <span class="chip c-warn">majeur</span>
+        </div>
+        <dl class="egrid">
+          <dt>Constat</dt>
+          <dd>Le formulaire de publication propose au transporteur «&nbsp;Réservation immédiate&nbsp;», avec l'indice «&nbsp;Si désactivé, les clients envoient une demande à valider&nbsp;». L'implication est nette&nbsp;: activé, les clients réservent directement. Or <code>instant_booking</code> est bien renvoyé par l'API de recherche et <b>n'est lu nulle part côté cliente</b>.</dd>
+          <dt>Ce qui existe déjà</dt>
+          <dd>L'endpoint <code>jobs/&lt;id&gt;/book-return/</code> existe et fonctionne côté serveur. Seul le câblage mobile manque.</dd>
+          <dt>L'histoire</dt>
+          <dd>Un audit précédent (E-05) avait retiré le badge «&nbsp;réservation immédiate&nbsp;» de la carte de résultat, avec une justification exemplaire&nbsp;: «&nbsp;un badge absent coûte moins qu'un badge qui ment&nbsp;». Mais le correctif n'a couvert <b>qu'un côté de la place de marché</b>. Le mensonge symétrique, celui fait au transporteur, est resté.</dd>
+          <dt>Recommandation</dt>
+          <dd>Soit câbler le parcours, soit masquer le commutateur jusque-là. Ne pas laisser un réglage qui ne règle rien&nbsp;: le transporteur qui l'active croit gagner en visibilité et obtient exactement ce qu'il croyait refuser.</dd>
+        </dl>
+      </div>
+
+      <div class="ecart">
+        <div class="ehead">
+          <span class="tid">M-03</span>
+          <h3>Les pièces d'identité KYC ne sont jamais supprimées</h3>
+          <span class="chip c-warn">majeur</span>
+          <span class="chip c-info">décision attendue</span>
+        </div>
+        <dl class="egrid">
+          <dt>Constat</dt>
+          <dd><code>services_account_closure.py</code> anonymise l'identité, efface l'avatar, les jetons de notification et le carnet d'adresses. Il <b>ne touche jamais</b> <code>VerificationDocument</code>&nbsp;: carte d'identité, permis, carte grise et attestation d'assurance survivent à la fermeture du compte, sans durée.</dd>
+          <dt>Enjeu</dt>
+          <dd>Ce sont les données les plus sensibles de la plateforme, et la loi 2004-63 exige une durée de conservation déterminée. La politique de confidentialité rédigée hier ne peut pas être publiée tant que cette durée n'est ni décidée ni implémentée&nbsp;: on ne publie pas un engagement que le code ne tient pas.</dd>
+          <dt>Ce qu'il faut décider</dt>
+          <dd>Une durée, en mois, après la fermeture du compte. Elle doit tenir compte de vos obligations comptables et d'un litige qui pourrait s'ouvrir après coup. C'est <b>votre décision</b>&nbsp;: la purge s'implémente et se teste le jour où le nombre est arrêté.</dd>
+        </dl>
+      </div>
+
+    </div>
+  </section>
+
+  <section id="mineurs">
+    <div class="shead"><span class="num">04</span><h2>Les défauts mineurs</h2></div>
+    <div class="stack">
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>#</th><th>Constat</th><th>Pourquoi ça compte</th><th>État</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="tid">m-01</td>
+              <td>«&nbsp;Vous économisez 70&nbsp;DT&nbsp;» et «&nbsp;face à 170&nbsp;DT&nbsp;» juste au-dessus de «&nbsp;100.00&nbsp;–&nbsp;140.00&nbsp;TND&nbsp;»</td>
+              <td>Deux notations monétaires dans la même carte, à trois lignes d'écart. L'arabe avait le même écart, «&nbsp;<span dir="rtl">دينار</span>&nbsp;» contre «&nbsp;<span dir="rtl">د.ت</span>&nbsp;»</td>
+              <td><span class="chip c-ok">corrigé</span></td>
+            </tr>
+            <tr>
+              <td class="tid">m-02</td>
+              <td>L'état vide affichait «&nbsp;Créez une alerte&nbsp;» en sous-titre pendant que le bouton orange proposait d'élargir aux voisins</td>
+              <td>La cliente lisait une consigne et en voyait une autre. Défaut introduit par le lot 6.5, la session précédente</td>
+              <td><span class="chip c-ok">corrigé</span></td>
+            </tr>
+            <tr>
+              <td class="tid">m-03</td>
+              <td>Le sélecteur de gouvernorat n'a pas de champ de recherche&nbsp;: 24&nbsp;entrées à faire défiler</td>
+              <td>C'est le tout premier geste de l'entonnoir, répété à chaque recherche. Depuis Médenine ou Tataouine, vingt lignes à chaque fois</td>
+              <td><span class="chip c-neut">à faire</span></td>
+            </tr>
+            <tr>
+              <td class="tid">m-04</td>
+              <td><code>updates</code> absent de <code>app.json</code> alors que <code>eas.json</code> déclare trois canaux</td>
+              <td>Aucun correctif à chaud possible&nbsp;: le moindre texte à changer repasse par une soumission de store et son délai</td>
+              <td><span class="chip c-neut">à faire</span></td>
+            </tr>
+            <tr>
+              <td class="tid">m-05</td>
+              <td>Les fourchettes de prix portent deux décimales inutiles&nbsp;: «&nbsp;100.00&nbsp;–&nbsp;140.00&nbsp;»</td>
+              <td>Cosmétique, mais sur la ligne la plus regardée de la carte de résultat</td>
+              <td><span class="chip c-neut">à faire</span></td>
+            </tr>
+            <tr>
+              <td class="tid">m-06</td>
+              <td>Le jeu de données de test ne contient qu'<b>un seul</b> trajet retour réservable</td>
+              <td>Une seule réservation d'essai vide le catalogue&nbsp;; toute démonstration ultérieure tombe sur l'état vide. Gêne la recette, pas la production</td>
+              <td><span class="chip c-neut">à faire</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="subnote">Une remarque a été <b>retirée</b> après vérification. <code>android.versionCode</code> est absent de <code>app.json</code>, ce qui ressemblait à un oubli&nbsp;; il n'en est pas un — <code>eas.json</code> déclare <code>appVersionSource: "remote"</code> avec <code>autoIncrement</code>, donc EAS gère le numéro. La signaler aurait fait perdre du temps pour rien.</p>
+    </div>
+  </section>
+
+  <section id="vert">
+    <div class="shead"><span class="num">05</span><h2>Ce qui a été manipulé, et qui tient</h2></div>
+    <div class="stack-lg">
+      <p>Un audit qui ne liste que des défauts ne dit pas où en est le produit. Voici ce qui a été exercé pour de bon, et ce que chaque vérification prouve.</p>
+
+      <div class="callout vert">
+        <h3>L'arabe et le RTL sont complets, jusque dans le code le plus récent</h3>
+        <p>C'était le risque le plus élevé laissé par la session précédente, parce que le plus difficile à voir. L'interface bascule instantanément et se remet en miroir&nbsp;: cloche à gauche, avatar à droite, barre d'onglets inversée. Les écrans ajoutés récemment s'affichent bien en derja — «&nbsp;<span dir="rtl">لوين باش تبعث ؟</span>&nbsp;» sur la recherche d'accueil.</p>
+        <p>Le point sensible était l'interpolation dans un sens de lecture inversé. Elle est correcte&nbsp;: «&nbsp;<span dir="rtl">ولايات قريبة : سوسة.</span>&nbsp;» rend le nom du gouvernorat voisin traduit, et non translittéré. Mieux&nbsp;: la chaîne de corridor utilise la flèche <code>←</code> et non <code>→</code>. Quelqu'un a pensé à retourner la direction. C'est le genre de détail qu'on ne trouve qu'en regardant.</p>
+      </div>
+
+      <div class="callout vert">
+        <h3>L'état vide ne laisse jamais l'utilisateur sans suite</h3>
+        <p>La cascade à trois causes a été exercée sur un corridor réellement vide. L'écran a proposé d'élargir aux gouvernorats voisins, en les nommant. Après élargissement, la recherche est restée vide — et l'écran <b>n'a pas reproposé les voisins</b>&nbsp;: il est passé à l'alerte corridor, seule sortie restante. Le second passage est le vrai test, et il est juste.</p>
+      </div>
+
+      <div class="callout vert">
+        <h3>Refuser la localisation ne coûte rien</h3>
+        <p>La page d'aide rédigée hier promet&nbsp;: «&nbsp;Vous pouvez refuser sans rien perdre&nbsp;». La promesse a été mise à l'épreuve — permission refusée à l'invite système — et la recherche s'est exécutée, la carte s'est affichée avec ses deux marqueurs, le résultat est apparu. La page d'aide ne ment pas.</p>
+      </div>
+
+      <div class="callout vert">
+        <h3>Le parcours cliente fonctionne de bout en bout</h3>
+        <p>Accueil, saisie du corridor, recherche, carte, puis la carte de résultat avec le badge «&nbsp;Vérifié&nbsp;» du transporteur, l'économie annoncée, la fourchette de prix et le bouton d'envoi. Rien ne casse, rien n'attend indéfiniment.</p>
+      </div>
+
+      <div class="callout vert">
+        <h3>Les secrets et la configuration sont propres</h3>
+        <p><code>DEBUG</code> vaut False par défaut, l'endpoint de seed exige à la fois <code>DEBUG</code> et un opt-in explicite, aucun fichier <code>.env</code> n'est versionné, et les deux clés de signature font crasher le démarrage si elles gardent leur valeur de développement. C'est précisément la qualité de ces gardes-là qui a rendu l'absence des trois autres visible.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="corrections">
+    <div class="shead"><span class="num">06</span><h2>Corrigé pendant l'audit</h2></div>
+    <div class="stack">
+      <p>Trois commits. Les deux premiers touchent l'argent et la chaîne de tests&nbsp;; le troisième, le texte affiché.</p>
+      <div class="commits">
+        <div class="commit">
+          <span class="sha">5c94930</span>
+          <span class="sujet"><b>La production pouvait démarrer en bac à sable.</b> Trois gardes ajoutées sur le modèle de celles qui existaient déjà pour les clés de signature&nbsp;: passerelle, secret de webhook, URL de préproduction. Vérifiées dans les deux sens.</span>
+        </div>
+        <div class="commit">
+          <span class="sha">3f72cf7</span>
+          <span class="sujet"><b>La suite backend écrivait dans la base de développement.</b> Trois scénarios de bout en bout s'appelaient <code>test_*.py</code> sans être des tests&nbsp;: le découvreur les importait — donc les <em>exécutait</em> — avant la création de la base de test.</span>
+        </div>
+        <div class="commit">
+          <span class="sha">e2ca25d</span>
+          <span class="sujet"><b>Le sous-titre nommait une action, le bouton en proposait une autre.</b> État vide de la recherche et unité monétaire de la carte de résultat, dans les deux langues.</span>
+        </div>
+      </div>
+
+      <div class="callout">
+        <h3>Le second mérite un mot&nbsp;: la suite n'était pas seulement rouge</h3>
+        <p>Trois fichiers à la racine du backend portaient le préfixe <code>test_</code> sans contenir ni <code>TestCase</code> ni <code>def test_</code>. Ce sont des scripts de démonstration, et ils exécutent leurs mutations <b>au moment de l'import</b>.</p>
+        <p>Or le découvreur de Django construit la suite <em>avant</em> de créer la base de test. Ces scripts s'exécutaient donc contre la base configurée. La preuve est dans l'erreur elle-même&nbsp;: un <code>PermissionDenied</code> sur une conversation existante — une base de test vide aurait donné un <code>DoesNotExist</code>. C'est bien la base de développement qui était écrite.</p>
+        <p>Deux conséquences. La visible&nbsp;: <code>manage.py test</code> ne pouvait jamais être vert, puisque son résultat dépendait de l'état courant des données&nbsp;; aucune CI n'avait rien à garder. L'invisible&nbsp;: sur une machine pointant une vraie base, lancer les tests y aurait écrit aussi. Après déplacement&nbsp;: <b>347 tests, OK, sortie 0</b>.</p>
+      </div>
+
+      <div class="callout">
+        <h3>Et une note d'honnêteté sur le troisième</h3>
+        <p>Les deux défauts corrigés par <code>e2ca25d</code> sont dans du code écrit <em>la session précédente</em>, par moi. Le test de l'état vide affirmait l'ancienne formulation et a signalé le changement&nbsp;; il gagne l'assertion qui manquait — celle qui aurait vu la contradiction — plus sa contrepartie positive, sans laquelle le <code>toBeNull()</code> passerait sans rien prouver.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="vous">
+    <div class="shead"><span class="num">07</span><h2>Ce qui vous appartient</h2></div>
+    <div class="stack">
+      <p>Deux décisions ne sont pas techniques et ne peuvent pas être prises à votre place. Elles bloquent le lancement toutes les deux.</p>
+
+      <div class="callout rouge">
+        <h3>1. La durée de conservation des pièces KYC</h3>
+        <p>Combien de mois après la fermeture d'un compte gardez-vous la carte d'identité, le permis, la carte grise et l'attestation d'assurance&nbsp;? Il faut un nombre. Tant qu'il n'existe pas, la politique de confidentialité ne peut pas être publiée — et sans elle, pas de soumission de store.</p>
+        <p>Le jour où le nombre est arrêté, la purge s'implémente et se teste dans la foulée&nbsp;: le service de fermeture existe déjà, il lui manque une opération et son test.</p>
+      </div>
+
+      <div class="callout rouge">
+        <h3>2. Les 22 blancs des pages légales</h3>
+        <p>Les trois pages sont rédigées mais portent 22 encadrés ambre <code>[à compléter]</code>&nbsp;: raison sociale, matricule fiscal, adresse du siège, contact du responsable de traitement, téléphone, horaires, dates d'entrée en vigueur. Ils sont volontairement très visibles — un blanc discret finit par être publié tel quel.</p>
+        <p>Ensuite seulement vient le déploiement du site, qui lèvera <b>B-03</b>.</p>
+      </div>
+
+      <p class="subnote">Une troisième décision, moins urgente, reste ouverte depuis la session précédente&nbsp;: la moitié cliente du canal classique a été <b>différée</b>, pas abandonnée, avec un déclencheur nommé — le segment «&nbsp;sociétés de transport&nbsp;». Rien à faire aujourd'hui&nbsp;; à ressortir quand ce segment devient une cible.</p>
+    </div>
+  </section>
+
+  <section id="methode">
+    <div class="shead"><span class="num">08</span><h2>Méthode, et ce que cet audit ne prouve pas</h2></div>
+    <div class="stack">
+      <p>La recette a été menée sur un Pixel&nbsp;7 API&nbsp;35 émulé (1080×2400, 420&nbsp;dpi), contre le serveur Django local et le jeu de données de test, en français puis en arabe. Les constats de code ont été vérifiés en marche chaque fois que c'était possible&nbsp;: <b>B-02</b> a été prouvé par une requête réelle, pas déduit d'une lecture.</p>
+
+      <div class="callout">
+        <h3>Ce que cet audit ne couvre pas</h3>
+        <ul class="plain">
+          <li><b>iOS.</b> Rien n'a été exécuté sur un appareil ou un simulateur Apple. Les chaînes de justification des permissions y sont celles, anglaises, que les plugins Expo posent par défaut.</li>
+          <li><b>La charge.</b> Aucun test de montée en charge, sur aucune des deux plateformes.</li>
+          <li><b>Le paiement réel.</b> Par construction&nbsp;: le mode bac à sable était le seul disponible, et c'est précisément le sujet de <b>B-01</b>. Le parcours d'encaissement Konnect devra être exercé contre la préproduction avant lancement.</li>
+          <li><b>La notification poussée.</b> Elle demande des comptes externes qui n'existent pas encore, comme le notait déjà le plan.</li>
+          <li><b>Le web.</b> Seul le fait que les URL légales répondent <code>404</code> a été vérifié&nbsp;; l'application web n'a pas été auditée.</li>
+        </ul>
+      </div>
+
+      <div class="callout">
+        <h3>Trois constats retirés avant publication</h3>
+        <p>Un audit vaut aussi par ce qu'il refuse d'affirmer. Deux observations ont été écartées après vérification&nbsp;: un supposé chevauchement dans le menu du profil — il fallait simplement continuer à faire défiler — et un supposé problème de certificat sur le domaine, démenti par un <code>curl</code>. Un troisième, sur <code>versionCode</code>, est expliqué au §04.</p>
+        <p>Une quatrième remarque a été corrigée en cours de route. Le jeu de données semblait ne produire qu'un trajet retour daté dans le passé, donc introuvable. Vérification faite, la graine est correcte&nbsp;: c'est mon propre test qui avait consommé le seul trajet réservable. Ce qui reste vrai, et qui est consigné en <code>m-06</code>, c'est que ce seul trajet fait un catalogue trop mince pour une recette.</p>
+      </div>
+
+      <div class="callout rouge">
+        <h3>La chose à retenir</h3>
+        <p>Les trois bloquants ont un point commun&nbsp;: <b>aucun n'est dans l'application mobile</b>, celle sur laquelle tout le travail récent a porté. Deux sont des valeurs par défaut de configuration serveur&nbsp;; le troisième est un déploiement qui n'a pas eu lieu.</p>
+        <p>Le produit visible est prêt. C'est ce qu'il y a autour qui ne l'est pas — et c'est exactement le genre d'écart qu'un audit centré sur l'écran ne verrait jamais.</p>
+      </div>
+    </div>
+  </section>
+
+  <footer>
+    <span>Audit de lancement &middot; application mobile Transporti V1</span>
+    <span>06/09/2026</span>
+    <span>Pixel 7 API 35 &middot; fr &amp; ar</span>
+    <span>639 tests verts &middot; 3 commits</span>
+  </footer>
+
+</div>
