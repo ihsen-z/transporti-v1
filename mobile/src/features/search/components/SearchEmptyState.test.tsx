@@ -101,7 +101,25 @@ describe('SearchEmptyState', () => {
       // les transporteurs individuels.
       rendre(CORRIDOR, { voisins: ['Monastir', 'Mahdia'] });
       expect(screen.getByTestId('search-elargir-voisins')).toBeTruthy();
-      expect(screen.getByText('Départs voisins : Monastir, Mahdia.')).toBeTruthy();
+      expect(
+        screen.getByText(
+          'Le corridor est vide, mais des départs voisins ne le sont peut-être pas : Monastir, Mahdia.'
+        )
+      ).toBeTruthy();
+    });
+
+    it("ne renvoie pas vers l'alerte pendant qu'il propose les voisins", () => {
+      // Le sous-titre disait « Créez une alerte » alors que le CTA orange
+      // proposait d'élargir. La cliente lisait une consigne et en voyait une
+      // autre ; le bouton d'alerte reste la, en secondaire, mais l'indice
+      // nomme desormais l'action qu'on met en avant.
+      rendre(CORRIDOR, { voisins: ['Monastir'] });
+      expect(
+        screen.queryByText(
+          "Créez une alerte : on vous prévient dès qu'un trajet compatible est publié."
+        )
+      ).toBeNull();
+      expect(screen.getByTestId('search-create-alert')).toBeTruthy();
     });
 
     it('elargit quand on le demande', () => {
@@ -116,6 +134,13 @@ describe('SearchEmptyState', () => {
       rendre(CORRIDOR, { voisins: [] });
       expect(screen.queryByTestId('search-elargir-voisins')).toBeNull();
       expect(screen.getByTestId('search-create-alert')).toBeTruthy();
+      // Contrepartie du test precedent : cet indice-la DOIT apparaitre ici,
+      // sinon l'assertion `toBeNull()` d'a cote passerait sans rien prouver.
+      expect(
+        screen.getByText(
+          "Créez une alerte : on vous prévient dès qu'un trajet compatible est publié."
+        )
+      ).toBeTruthy();
     });
 
     it("laisse l'alerte corridor dans tous les cas", () => {

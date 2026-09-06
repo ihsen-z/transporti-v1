@@ -508,8 +508,8 @@
       "delete_title": "حذف التنبيه",
       "delete_msg": "ما باش تتعلم كي تتنشر رحلة على هذا المسار."
     },
-    "savings": "توفر {{amount}} دينار",
-    "savings_basis": "مقابل {{amount}} دينار لنقل مخصص",
+    "savings": "توفر {{amount}} د.ت",
+    "savings_basis": "مقابل {{amount}} د.ت لنقل مخصص",
     "map_expand": "كبّر الخريطة",
     "map_title": "المسارات الملقاة",
     "price_negotiable": "السعر بالتفاوض",
@@ -520,7 +520,7 @@
       "filtered_title": "ما فماش عودة تنجّم تاخو السلعة متاعك",
       "filtered_hint": "المسار موش فارغ : المعايير متاع السلعة هوما اللي ما لقاو حتّى حاجة.",
       "drop_filters": "شوف بلا فلتر السلعة",
-      "neighbours_hint": "ولايات قريبة : {{liste}}.",
+      "neighbours_hint": "المسار فارغ، أما ولايات قريبة يمكن ما همش فارغين : {{liste}}.",
       "widen_neighbours": "وسّع للولايات القريبة"
     },
     "filters": {

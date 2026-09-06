@@ -88,6 +88,10 @@ export function SearchEmptyState({
             ? t('search.empty.dated_title')
             : t('search.no_results_title')}
       </Txt>
+      {/* Le sous-titre doit nommer l'action que porte le CTA orange. Il
+          disait « Créez une alerte » alors que le bouton proposait d'élargir
+          aux voisins : la cliente lisait une consigne et en voyait une autre.
+          Chaque cause a maintenant son indice, y compris celle des voisins. */}
       <Txt style={styles.indice}>
         {leverFiltres
           ? t('search.empty.filtered_hint')
@@ -96,7 +100,9 @@ export function SearchEmptyState({
                 depart: params.pickup_governorate,
                 arrivee: params.dropoff_governorate,
               })
-            : t('search.no_results_hint')}
+            : elargirVoisins
+              ? t('search.empty.neighbours_hint', { liste: voisins.join(', ') })
+              : t('search.no_results_hint')}
       </Txt>
 
       {/* Sortie immédiate, quand elle existe. Elle passe avant l'alerte parce
@@ -119,17 +125,12 @@ export function SearchEmptyState({
         />
       ) : null}
       {elargirVoisins ? (
-        <>
-          <Txt style={styles.indice}>
-            {t('search.empty.neighbours_hint', { liste: voisins.join(', ') })}
-          </Txt>
-          <Button
-            testID="search-elargir-voisins"
-            label={t('search.empty.widen_neighbours')}
-            onPress={onElargirVoisins}
-            variant="cta"
-          />
-        </>
+        <Button
+          testID="search-elargir-voisins"
+          label={t('search.empty.widen_neighbours')}
+          onPress={onElargirVoisins}
+          variant="cta"
+        />
       ) : null}
 
       {alerteCreee ? (

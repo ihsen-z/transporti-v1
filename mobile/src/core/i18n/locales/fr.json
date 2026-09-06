@@ -492,8 +492,8 @@
       "delete_title": "Supprimer l'alerte",
       "delete_msg": "Vous ne serez plus notifié des trajets publiés sur ce corridor."
     },
-    "savings": "Vous économisez {{amount}} DT",
-    "savings_basis": "face à {{amount}} DT pour un transport dédié",
+    "savings": "Vous économisez {{amount}} TND",
+    "savings_basis": "face à {{amount}} TND pour un transport dédié",
     "map_expand": "Agrandir la carte",
     "map_title": "Corridors trouvés",
     "price_negotiable": "Prix à négocier",
@@ -504,7 +504,7 @@
       "filtered_title": "Aucun retour ne correspond à votre marchandise",
       "filtered_hint": "Le corridor n'est pas vide : ce sont vos critères de marchandise qui ne trouvent rien.",
       "drop_filters": "Voir sans filtre marchandise",
-      "neighbours_hint": "Départs voisins : {{liste}}.",
+      "neighbours_hint": "Le corridor est vide, mais des départs voisins ne le sont peut-être pas : {{liste}}.",
       "widen_neighbours": "Élargir aux gouvernorats voisins"
     },
     "filters": {
