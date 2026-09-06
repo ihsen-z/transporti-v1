@@ -464,6 +464,42 @@ COD_MAX_AMOUNT = Decimal(os.environ.get('COD_MAX_AMOUNT', '300'))
 # MUST be set in production to prevent forged webhook calls
 PAYMENT_WEBHOOK_SECRET = os.environ.get('PAYMENT_WEBHOOK_SECRET', '')
 
+# SECURITY: les trois gardes de production de l'argent.
+#
+# SECRET_KEY et JWT_SECRET_KEY font crasher le demarrage quand ils gardent leur
+# valeur par defaut. Les reglages de paiement, eux, ne le faisaient pas — alors
+# que leurs defauts sont tout aussi ininstallables en production :
+#
+#   * PAYMENT_GATEWAY='SANDBOX' : SandboxGateway.check_status() repond
+#     'completed' sans rien demander a personne. Tout paiement reussit, aucun
+#     dinar ne bouge, et les sequestres se liberent.
+#   * PAYMENT_WEBHOOK_SECRET='' : verify_webhook_signature() retourne sans rien
+#     verifier quand le secret est vide, et l'endpoint est public. N'importe qui
+#     connaissant une reference peut declarer un paiement abouti.
+#   * KONNECT_API_URL par defaut pointe la PREPROD. Passer PAYMENT_GATEWAY a
+#     'KONNECT' sans fixer l'URL ne fait donc toujours pas circuler d'argent.
+#
+# Un defaut de developpement doit empecher le demarrage, jamais se taire.
+if IS_PRODUCTION:
+    if PAYMENT_GATEWAY == 'SANDBOX':
+        raise RuntimeError(
+            "CRITICAL: PAYMENT_GATEWAY vaut 'SANDBOX' en production. "
+            "La passerelle bac a sable declare tout paiement abouti sans "
+            "encaisser. Definir PAYMENT_GATEWAY (ex. 'KONNECT') avant de "
+            "deployer."
+        )
+    if not PAYMENT_WEBHOOK_SECRET:
+        raise RuntimeError(
+            "CRITICAL: PAYMENT_WEBHOOK_SECRET est vide en production. "
+            "La validation de signature est alors ignoree sur un endpoint "
+            "public : un tiers peut declarer un paiement abouti."
+        )
+    if 'preprod' in KONNECT_API_URL and PAYMENT_GATEWAY == 'KONNECT':
+        raise RuntimeError(
+            "CRITICAL: KONNECT_API_URL pointe la preproduction en production. "
+            f"Valeur actuelle : {KONNECT_API_URL}"
+        )
+
 
 # =============================================================================
 # PUSH NOTIFICATION CONFIGURATION
