@@ -1,4 +1,4 @@
-import { Modal } from 'react-native';
+import { Modal, type RefreshControlProps } from 'react-native';
 import type { ReactElement, ReactNode } from 'react';
 import { AppScreen } from '@/shared/ui/AppScreen';
 import { AppHeader } from '@/shared/ui/AppHeader';
@@ -27,7 +27,7 @@ interface Props {
   footer?: ReactNode;
   /** `false` quand le contenu défile lui-même (FlatList). */
   scroll?: boolean;
-  refreshControl?: ReactElement;
+  refreshControl?: ReactElement<RefreshControlProps>;
   /** Marge basse du contenu (`scroll` seulement). */
   contentPaddingBottom?: number;
   testID?: string;
