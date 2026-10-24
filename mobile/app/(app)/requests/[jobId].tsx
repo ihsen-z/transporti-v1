@@ -1,11 +1,11 @@
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { FlatList, StyleSheet } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing, fontSize } from '@/shared/theme';
-import { Txt } from '@/shared/ui/Txt';
+import { spacing, SCREEN_PADDING } from '@/shared/theme';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
+import { BackButton } from '@/shared/ui/BackButton';
 import { RouteUnavailable } from '@/shared/ui/RouteUnavailable';
-import { Icon } from '@/shared/ui/icons';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
@@ -18,7 +18,6 @@ import { RequestCard } from '@/features/requests/components/RequestCard';
 // eux (arrivée directe par jobId) on retombe sur un libellé générique.
 export default function JobRequestsScreen() {
   const { t } = useTranslation();
-  const router = useRouter();
   const { jobId, pickup, dropoff } = useLocalSearchParams<{
     jobId: string;
     pickup?: string;
@@ -31,22 +30,16 @@ export default function JobRequestsScreen() {
   const title = pickup && dropoff ? `${pickup} → ${dropoff}` : t('requests.title');
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable
-          testID="requests-detail-back"
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-          hitSlop={12}
-        >
-          <Icon name="chevron-left" size={24} color={colors.neutral[900]} />
-        </Pressable>
-        <Txt style={styles.title} numberOfLines={1}>
-          {title}
-        </Txt>
-      </View>
-
+    <AppScreen
+      testID="job-requests-screen"
+      scroll={false}
+      header={
+        <AppHeader
+          leading={<BackButton testID="requests-detail-back" fallback="/requests" />}
+          title={title}
+        />
+      }
+    >
       {/* 7.6 — sans ce cas, un identifiant invalide affichait « Aucune
           demande » : le hook etant desactive, la liste etait vide et l'ecran
           concluait a une absence de demandes au lieu d'un lien casse. Pire
@@ -65,19 +58,15 @@ export default function JobRequestsScreen() {
           renderItem={({ item }) => <RequestCard request={item} jobId={numericJobId} />}
         />
       )}
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  list: {
+    paddingHorizontal: SCREEN_PADDING,
+    paddingTop: spacing.xl,
+    paddingBottom: spacing.xl,
     gap: spacing.md,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
   },
-  title: { flex: 1, fontSize: fontSize.xl, fontWeight: '800', color: colors.neutral[900] },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, gap: spacing.md },
 });

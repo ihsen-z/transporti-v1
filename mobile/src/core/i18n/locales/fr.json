@@ -88,6 +88,13 @@
       "new_password": "Nouveau mot de passe",
       "new_password_confirm": "Confirmer le nouveau mot de passe"
     },
+    "password_strength": {
+      "0": "Trop court",
+      "1": "Faible",
+      "2": "Moyen",
+      "3": "Bon",
+      "4": "Solide"
+    },
     "errors": {
       "email_required": "L'e-mail est requis",
       "current_password_required": "Le mot de passe actuel est requis",
@@ -768,6 +775,7 @@
     "pay_title": "Paiement à effectuer",
     "pay_hint": "La mission démarrera dès que le paiement sera sécurisé.",
     "pay_cta": "Payer maintenant",
+    "total": "Total à payer",
     "pay_opened": "Page de paiement ouverte.",
     "pay_sandbox": "Mode démonstration : aucun paiement réel n'a été effectué.",
     "confirm_title": "Confirmer la réception",

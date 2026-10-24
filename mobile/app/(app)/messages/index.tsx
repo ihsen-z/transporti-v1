@@ -1,10 +1,10 @@
-import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
+import { ActivityIndicator, FlatList, StyleSheet } from 'react-native';
+import { useTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing, fontSize } from '@/shared/theme';
-import { Txt } from '@/shared/ui/Txt';
+import { colors, spacing, SCREEN_PADDING } from '@/shared/theme';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
@@ -17,21 +17,23 @@ import { ConversationRow } from '@/features/messaging/components/ConversationRow
 // tapote l'utilisateur, ce que rouvre une notification, et ce que le bouton
 // retour Android referme sont maintenant la même chose.
 export default function MessagesScreen() {
-  // Marge basse reservee sous la liste : sans elle, le dernier element
-  // reste sous la barre flottante et son action devient inatteignable
-  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
-  const margeBasse = useFloatingTabBarClearance();
+  // Marge basse reservee sous le contenu : sans elle, le dernier element reste
+  // sous la barre de navigation et son action devient inatteignable (defaut
+  // mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useTabBarClearance();
   const { t } = useTranslation();
   const router = useRouter();
   const conversations = useConversations();
   const { items, onEndReached } = useFlatInfiniteList(conversations);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <Txt style={styles.title}>{t('tabs.messages')}</Txt>
-      </View>
-
+    // `scroll={false}` : la liste est paginée, elle garde son propre
+    // défilement (et donc sa virtualisation et son `onEndReached`).
+    <AppScreen
+      testID="messages-screen"
+      scroll={false}
+      header={<AppHeader title={t('tabs.messages')} />}
+    >
       {conversations.isLoading ? (
         <SkeletonList />
       ) : (
@@ -61,14 +63,15 @@ export default function MessagesScreen() {
           )}
         />
       )}
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
-  header: { padding: spacing.xl, gap: spacing.sm },
-  title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, gap: spacing.md },
+  list: {
+    paddingHorizontal: SCREEN_PADDING,
+    paddingTop: spacing.xl,
+    gap: spacing.md,
+  },
   loader: { marginTop: spacing.lg },
 });

@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
@@ -79,7 +79,7 @@ export function ReturnTripRow({
           onPress={() => onProlonger(trajet)}
           style={s.action}
         >
-          <Text style={s.actionLabel}>{t('trips.inventory.extend')}</Text>
+          <Txt style={s.actionLabel}>{t('trips.inventory.extend')}</Txt>
         </Pressable>
 
         <Pressable
@@ -88,7 +88,7 @@ export function ReturnTripRow({
           onPress={() => onDupliquer(trajet)}
           style={s.action}
         >
-          <Text style={s.actionLabel}>{t('trips.inventory.duplicate')}</Text>
+          <Txt style={s.actionLabel}>{t('trips.inventory.duplicate')}</Txt>
         </Pressable>
 
         {/* Dépublier est destructif et notifie les demandes en attente :
@@ -99,9 +99,9 @@ export function ReturnTripRow({
           onPress={() => onDepublier(trajet)}
           style={s.actionDanger}
         >
-          <Text style={s.actionDangerLabel}>
+          <Txt style={s.actionDangerLabel}>
             {t('trips.inventory.unpublish')}
-          </Text>
+          </Txt>
         </Pressable>
       </View>
     </View>

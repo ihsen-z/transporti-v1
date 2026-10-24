@@ -13,7 +13,11 @@ export function ChangePasswordPanel({ visible, onClose }: Props) {
   const { t } = useTranslation();
 
   return (
-    <FormModalPanel visible={visible} title={t('profile.change_password_title')} onClose={onClose}>
+    <FormModalPanel
+      visible={visible}
+      title={t('profile.change_password_title')}
+      onClose={onClose}
+    >
       {visible ? <ChangePasswordForm onDone={onClose} /> : null}
     </FormModalPanel>
   );

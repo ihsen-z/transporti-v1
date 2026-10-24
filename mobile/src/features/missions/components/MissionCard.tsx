@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { TextField } from '@/shared/ui/TextField';
@@ -16,6 +16,7 @@ import type { MissionDto } from '../api/dto';
 import { useConfirmStart } from '../api/useConfirmStart';
 import { useCompleteJob } from '../api/useCompleteJob';
 import { DeliveryProofPicker } from './DeliveryProofPicker';
+import { Txt } from '@/shared/ui/Txt';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -78,7 +79,7 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
     <Card>
       <View style={styles.headerRow}>
         <Badge label={t(`missions.status.${mission.status}`)} variant={statusVariant(mission.status)} />
-        <Text style={styles.when}>{formatWhen(mission.scheduled_time)}</Text>
+        <Txt style={styles.when}>{formatWhen(mission.scheduled_time)}</Txt>
       </View>
       {/* 7.1 — l'entree vers le detail de la mission (jalons, marchandise).
           Sur le corridor lui-meme : c'est ce qui identifie la mission, donc
@@ -96,21 +97,21 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
 
       {hasEarnings ? (
         <View style={styles.earnings}>
-          <Text style={styles.earningsNet}>
+          <Txt style={styles.earningsNet}>
             {t('missions.net', { amount: formatAmount(mission.offer_price_net) })}
-          </Text>
-          <Text style={styles.earningsDetail}>
+          </Txt>
+          <Txt style={styles.earningsDetail}>
             {t('missions.gross_commission', {
               gross: formatAmount(mission.offer_price),
               commission: formatAmount(mission.offer_commission),
             })}
-          </Text>
+          </Txt>
         </View>
       ) : null}
 
       {isMatched ? (
         <View style={styles.action}>
-          <Text style={styles.hint}>{t('missions.confirm_start_hint')}</Text>
+          <Txt style={styles.hint}>{t('missions.confirm_start_hint')}</Txt>
           <Button
             testID={`mission-${mission.id}-confirm-start`}
             label={t('missions.confirm_start')}
@@ -119,9 +120,9 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
             loading={confirmStart.isPending}
           />
           {confirmErrKey ? (
-            <Text testID={`mission-${mission.id}-confirm-start-error`} style={styles.error}>
+            <Txt testID={`mission-${mission.id}-confirm-start-error`} style={styles.error}>
               {t(`missions.errors.${confirmErrKey}`)}
-            </Text>
+            </Txt>
           ) : null}
         </View>
       ) : null}
@@ -149,16 +150,16 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
             loading={complete.isPending}
           />
           {completeErrKey ? (
-            <Text testID={`mission-${mission.id}-complete-error`} style={styles.error}>
+            <Txt testID={`mission-${mission.id}-complete-error`} style={styles.error}>
               {t(`missions.errors.${completeErrKey}`)}
-            </Text>
+            </Txt>
           ) : null}
           <Pressable
             testID={`mission-${mission.id}-open-dispute`}
             onPress={() => setDisputeOpen(true)}
             accessibilityRole="button"
           >
-            <Text style={styles.dispute}>{t('disputes.open')}</Text>
+            <Txt style={styles.dispute}>{t('disputes.open')}</Txt>
           </Pressable>
         </View>
       ) : null}
@@ -169,7 +170,7 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
           onPress={() => setCancelOpen(true)}
           accessibilityRole="button"
         >
-          <Text style={styles.cancel}>{t('missions.cancel.link')}</Text>
+          <Txt style={styles.cancel}>{t('missions.cancel.link')}</Txt>
         </Pressable>
       ) : null}
 

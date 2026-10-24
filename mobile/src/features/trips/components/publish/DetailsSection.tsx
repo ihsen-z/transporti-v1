@@ -1,4 +1,4 @@
-import { Pressable, Switch, Text, View } from 'react-native';
+import { Pressable, Switch, View } from 'react-native';
 import { Controller, type Control } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
@@ -10,6 +10,7 @@ import {
   type PartCapacite,
   type VehiculeProfil,
 } from './useVehiclePrefill';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   control: Control<PublishFormValues>;
@@ -36,8 +37,8 @@ export function DetailsSection({
           pas comme un champ à remplir. */}
       {vehicule.disponible && (
         <View style={s.prefillBanner} testID="publish-vehicule-prerempli">
-          <Text style={s.prefillText}>{libelleCapacite(vehicule)}</Text>
-          <Text style={s.hint}>{t('trips.prefill_from_profile')}</Text>
+          <Txt style={s.prefillText}>{libelleCapacite(vehicule)}</Txt>
+          <Txt style={s.hint}>{t('trips.prefill_from_profile')}</Txt>
         </View>
       )}
 
@@ -55,14 +56,14 @@ export function DetailsSection({
                 partCapacite === part && s.partChoiceActive,
               ]}
             >
-              <Text
+              <Txt
                 style={[
                   s.partLabel,
                   partCapacite === part && s.partLabelActive,
                 ]}
               >
                 {t(`trips.capacity_share_${part}`)}
-              </Text>
+              </Txt>
             </Pressable>
           ))}
         </View>
@@ -111,8 +112,8 @@ export function DetailsSection({
         render={({ field: { value, onChange } }) => (
           <View style={s.switchRow}>
             <View style={s.flex}>
-              <Text style={s.switchLabel}>{t('trips.instant_booking')}</Text>
-              <Text style={s.hint}>{t('trips.instant_booking_hint')}</Text>
+              <Txt style={s.switchLabel}>{t('trips.instant_booking')}</Txt>
+              <Txt style={s.hint}>{t('trips.instant_booking_hint')}</Txt>
             </View>
             <Switch
               value={value}

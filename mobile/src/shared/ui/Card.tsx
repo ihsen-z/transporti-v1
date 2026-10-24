@@ -1,11 +1,22 @@
 import { StyleSheet, View, type ViewProps } from 'react-native';
 import { colors, radii, spacing, shadows } from '@/shared/theme';
 
-// Carte surface. Charte (.card) : blanc, rayon 16, bordure 1 px #e5e7eb,
-// padding 16, ombre douce. La bordure porte le contour ; l'ombre ne fait que
-// détacher la carte du fond — les deux, jamais l'ombre seule.
-export function Card({ style, ...rest }: ViewProps) {
-  return <View style={[styles.card, style]} {...rest} />;
+// Carte surface de la famille APPLICATIVE : blanc opaque sur `neutral[50]`.
+//
+// Charte (.card) : rayon 22, padding 16, ombre `0 10px 26px rgba(15,29,78,.08)`
+// — et PAS de bordure. C'est le changement : la carte ne portait son contour
+// que parce que son ombre d'avant (0 4px 14px) était trop courte pour la
+// détacher seule. L'ombre de la charte est plus ample et plus basse ; elle
+// suffit, et la bordure ne faisait plus que salir le bord arrondi.
+interface Props extends ViewProps {
+  /** État sélectionné (charte : .card--selected, liseré bleu 1,5 px). */
+  selected?: boolean;
+}
+
+export function Card({ style, selected = false, ...rest }: Props) {
+  return (
+    <View style={[styles.card, selected ? styles.selected : null, style]} {...rest} />
+  );
 }
 
 const styles = StyleSheet.create({
@@ -13,8 +24,12 @@ const styles = StyleSheet.create({
     backgroundColor: colors.neutral[0],
     borderRadius: radii.card,
     padding: spacing.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[300], // #e5e7eb — --line de la charte
     ...shadows.card,
+  },
+  // Le liseré n'apparaît QU'À la sélection : il est alors porteur d'une
+  // information, pas décoratif.
+  selected: {
+    borderWidth: 1.5,
+    borderColor: colors.brand[600],
   },
 });

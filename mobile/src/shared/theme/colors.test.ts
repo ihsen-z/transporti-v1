@@ -51,6 +51,13 @@ describe('contraste des couleurs de texte', () => {
     ['texte doux, métadonnées', colors.neutral[500], colors.neutral[0]],
     ['encre principale', colors.neutral[900], colors.neutral[50]],
     ['lien de marque', colors.brand[600], colors.neutral[0]],
+    // Signalé par la charte elle-même (§9) : #CBD9F5 sur #2563B3 ne vaut que
+    // 4,21:1. `text.onBlue` est sa correction. Le milieu du dégradé est le
+    // point le plus CLAIR donc le pire cas ; les deux autres stops sont plus
+    // sombres, donc couverts d'office.
+    ['texte sur bleu (14,5 px, milieu du dégradé)', colors.text.onBlue, colors.brand[500]],
+    ['erreur de formulaire sur bleu (12,5 px)', colors.text.errorOnBlue, colors.brand[500]],
+    ['message de succès sur bleu (15 px)', colors.text.greenOnBlue, colors.brand[500]],
   ];
 
   it.each(CAS)('%s atteint AA', (_nom, avant, arriere) => {
@@ -72,7 +79,7 @@ describe('contraste des couleurs de texte', () => {
    * sont loin.
    *
    *   blanc sur cta[500]   #f97316   2,80:1
-   *   blanc sur green[600] #10b981   2,54:1
+   *   blanc sur green[600] #2FAC55   2,94:1
    *
    * Pourquoi ce n'est pas corrigé ici. Le lot 4 tenait à ne pas changer
    * l'identité de la charte : les variantes ci-dessus ne touchent que du
@@ -86,7 +93,7 @@ describe('contraste des couleurs de texte', () => {
    *   c) assumer l'écart pour une cible tactile de 44 dp très détachée de son
    *      environnement, et le documenter dans la déclaration d'accessibilité.
    *
-   * Le vert `accent` pose la même question (encre sur #10b981 = 6,99:1).
+   * Le vert `accent` pose la même question (encre sur #2FAC55 = 5,99:1).
    *
    * Ce test PIN les valeurs mesurées : il ne valide pas l'écart, il empêche
    * qu'il s'aggrave sans qu'on le voie, et il tombera dès qu'un arbitrage
@@ -95,7 +102,7 @@ describe('contraste des couleurs de texte', () => {
    */
   it('documente l écart de contraste des boutons pleins', () => {
     expect(contraste(colors.neutral[0], colors.cta[500])).toBeCloseTo(2.8, 1);
-    expect(contraste(colors.neutral[0], colors.green[600])).toBeCloseTo(2.54, 1);
+    expect(contraste(colors.neutral[0], colors.green[600])).toBeCloseTo(2.94, 1);
     // Les deux replis mesurés, pour que l'arbitrage se fasse sur des chiffres.
     expect(contraste(colors.neutral[900], colors.cta[500])).toBeGreaterThanOrEqual(AA);
     expect(contraste(colors.neutral[900], colors.green[600])).toBeGreaterThanOrEqual(AA);

@@ -1,4 +1,4 @@
-import { Text } from 'react-native';
+
 import { Controller, type Control, type FieldErrors } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
@@ -6,6 +6,7 @@ import { Select } from '@/shared/ui/Select';
 import { publishStyles as s } from './publishStyles';
 import type { FormOption, PublishFormValues } from './publishSchema';
 import { SavedAddressPicker } from '@/features/addresses/components/SavedAddressPicker';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   control: Control<PublishFormValues>;
@@ -53,8 +54,8 @@ export function RouteSection({
       />
 
       {/* Départ */}
-      <Text style={s.section}>{t('trips.pickup')}</Text>
-      <Text style={s.hint}>{t('trips.address_hint')}</Text>
+      <Txt style={s.section}>{t('trips.pickup')}</Txt>
+      <Txt style={s.hint}>{t('trips.address_hint')}</Txt>
       <SavedAddressPicker
         cible="pickup"
         onChoisir={(a) =>
@@ -97,7 +98,7 @@ export function RouteSection({
       />
 
       {/* Arrivée */}
-      <Text style={s.section}>{t('trips.dropoff')}</Text>
+      <Txt style={s.section}>{t('trips.dropoff')}</Txt>
       <SavedAddressPicker
         cible="dropoff"
         onChoisir={(a) =>

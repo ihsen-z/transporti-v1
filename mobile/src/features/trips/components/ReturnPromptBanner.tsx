@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { appStorage } from '@/core/storage/appStorage';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -80,9 +80,9 @@ export function ReturnPromptBanner() {
       <Txt style={s.corps}>{t('trips.prompt.body')}</Txt>
 
       <View style={s.corridor}>
-        <Text style={s.corridorTexte}>
+        <Txt style={s.corridorTexte}>
           {depuis} → {vers}
-        </Text>
+        </Txt>
       </View>
 
       <Button
@@ -99,18 +99,21 @@ export function ReturnPromptBanner() {
         accessibilityRole="button"
         style={s.plusTard}
       >
-        <Text style={s.plusTardTexte}>{t('trips.prompt.later')}</Text>
+        <Txt style={s.plusTardTexte}>{t('trips.prompt.later')}</Txt>
       </Pressable>
     </View>
   );
 }
 
 const s = StyleSheet.create({
+  // Gabarit de carte de la charte (rayon 22, padding 16), teinté chaud parce
+  // que c'est l'amorce commerciale — mais SANS le liseré orange de 2 px qu'il
+  // portait. Ce liseré redoublait un CTA orange déjà présent à l'intérieur :
+  // le bloc criait deux fois la même chose, et sur un écran où la charte
+  // n'autorise qu'un orange, c'est le bouton qui doit le porter.
   bandeau: {
-    borderWidth: 2,
-    borderColor: colors.cta[500],
     backgroundColor: colors.cta[50],
-    borderRadius: radii.lg,
+    borderRadius: radii.card,
     padding: spacing.lg,
     gap: spacing.sm,
   },
@@ -119,7 +122,7 @@ const s = StyleSheet.create({
   corridor: {
     alignSelf: 'flex-start',
     backgroundColor: colors.neutral[0],
-    borderRadius: radii.md,
+    borderRadius: radii.tag,
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.md,
     marginVertical: spacing.xs,

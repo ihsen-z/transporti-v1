@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Select } from '@/shared/ui/Select';
 import { Button } from '@/shared/ui/Button';
@@ -8,6 +8,7 @@ import { GOVERNORATES } from '@/features/trips/data/governorates';
 import { nextDays } from '@/features/trips/data/schedule';
 import { GoodsFilters, type GoodsFilterValues } from './GoodsFilters';
 import type { MatchParams } from '../api/dto';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   onSearch: (params: MatchParams) => void;
@@ -134,9 +135,9 @@ export function SearchForm({
         erreur={erreurFiltres}
       />
       {error ? (
-        <Text testID="search-error" style={styles.error}>
+        <Txt testID="search-error" style={styles.error}>
           {error}
-        </Text>
+        </Txt>
       ) : null}
       <Button
         testID="search-submit"

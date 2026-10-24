@@ -1,17 +1,10 @@
-import {
-  ActivityIndicator,
-  FlatList,
-  Modal,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTranslation } from 'react-i18next';
+import { ActivityIndicator, FlatList, Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from '@/shared/ui/icons';
+import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { Card } from '@/shared/ui/Card';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { PanelScreen } from '@/shared/ui/PanelScreen';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { colors, spacing, fontSize, TOUCH_TARGET } from '@/shared/theme';
 import { useFavorites } from '../api/useFavorites';
@@ -73,54 +66,37 @@ export function FavoritesPanel({ visible, onClose }: Props) {
   );
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <Txt style={styles.titre}>{t('favorites.title')}</Txt>
-          <Pressable
-            testID="favoris-panneau-fermer"
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel={t('common.close')}
-            hitSlop={12}
-          >
-            <Icon name="x" size={26} color={colors.neutral[700]} />
-          </Pressable>
-        </View>
-
-        {favoris.isLoading ? (
-          <ActivityIndicator style={styles.chargement} color={colors.brand[500]} />
-        ) : (
-          <FlatList
-            data={favoris.data ?? []}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={rendreFavori}
-            contentContainerStyle={styles.liste}
-            refreshControl={queryRefreshControl(favoris)}
-            ListEmptyComponent={
-              <EmptyState
-                icon="heart"
-                title={t('favorites.empty_title')}
-                subtitle={t('favorites.empty_body')}
-                testID="favoris-vide"
-              />
-            }
-          />
-        )}
-      </SafeAreaView>
-    </Modal>
+    <PanelScreen
+      visible={visible}
+      title={t('favorites.title')}
+      onClose={onClose}
+      testID="favorites-panel"
+      scroll={false}
+    >
+      {favoris.isLoading ? (
+        <ActivityIndicator style={styles.chargement} color={colors.brand[500]} />
+      ) : (
+        <FlatList
+          data={favoris.data ?? []}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={rendreFavori}
+          contentContainerStyle={styles.liste}
+          refreshControl={queryRefreshControl(favoris)}
+          ListEmptyComponent={
+            <EmptyState
+              icon="heart"
+              title={t('favorites.empty_title')}
+              subtitle={t('favorites.empty_body')}
+              testID="favoris-vide"
+            />
+          }
+        />
+      )}
+    </PanelScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  modal: { flex: 1, backgroundColor: colors.neutral[50] },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-  },
   titre: {
     fontSize: fontSize.xl,
     fontWeight: '800',

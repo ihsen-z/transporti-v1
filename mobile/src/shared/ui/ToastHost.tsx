@@ -15,11 +15,17 @@ export function ToastHost() {
 
   useEffect(() => {
     if (!message) return;
-    Animated.timing(opacity, { toValue: 1, duration: 180, useNativeDriver: true }).start();
+    Animated.timing(opacity, {
+      toValue: 1,
+      duration: 180,
+      useNativeDriver: true,
+    }).start();
     const timer = setTimeout(() => {
-      Animated.timing(opacity, { toValue: 0, duration: 180, useNativeDriver: true }).start(
-        () => hide(),
-      );
+      Animated.timing(opacity, {
+        toValue: 0,
+        duration: 180,
+        useNativeDriver: true,
+      }).start(() => hide());
     }, 2600);
     return () => clearTimeout(timer);
   }, [message, opacity, hide]);
@@ -66,5 +72,10 @@ const styles = StyleSheet.create({
     borderColor: colors.neutral[200],
     ...shadows.card,
   },
-  text: { flexShrink: 1, fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
+  text: {
+    flexShrink: 1,
+    fontSize: fontSize.md,
+    fontWeight: '700',
+    color: colors.neutral[900],
+  },
 });

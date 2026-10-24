@@ -1,10 +1,19 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
 import { useLocalSearchParams } from 'expo-router';
-import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
+import { useTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
-import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
+import {
+  colors,
+  spacing,
+  fontSize,
+  glass,
+  radii,
+  SCREEN_PADDING,
+  TOUCH_TARGET,
+} from '@/shared/theme';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
 import { Txt } from '@/shared/ui/Txt';
 import { Button } from '@/shared/ui/Button';
 import { Card } from '@/shared/ui/Card';
@@ -21,13 +30,19 @@ import { useReturnTripMatch } from '@/features/search/api/useReturnTripMatch';
 import { useCreateCorridorAlert } from '@/features/search/api/useCreateCorridorAlert';
 import type { MatchParams, TripResultDto } from '@/features/search/api/dto';
 
-// Onglet CLIENT : recherche « retour d'abord ». Header bleu (design-system),
-// formulaire en carte, résultats en cartes ; Cas B = repli alerte corridor.
+// Onglet CLIENT : recherche « retour d'abord ». Bandeau bleu, carte de
+// recherche qui le CHEVAUCHE (charte, §Anatomie), résultats en cartes ;
+// Cas B = repli alerte corridor.
+//
+// Le chevauchement n'est pas décoratif ici : le formulaire est ce que la
+// cliente vient faire, et le poser à cheval sur le bleu le sort de la liste
+// de résultats au lieu de l'y ranger comme un élément de plus.
+
 export default function SearchScreen() {
-  // Marge basse reservee sous la liste : sans elle, le dernier element
-  // reste sous la barre flottante et son action devient inatteignable
-  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
-  const margeBasse = useFloatingTabBarClearance();
+  // Marge basse reservee sous le contenu : sans elle, le dernier element reste
+  // sous la barre de navigation et son action devient inatteignable (defaut
+  // mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useTabBarClearance();
   const { t, i18n } = useTranslation();
   const isAr = i18n.language === 'ar';
   const match = useReturnTripMatch();
@@ -41,7 +56,11 @@ export default function SearchScreen() {
   // Lot 7.5 — l'accueil cliente porte le meme formulaire et transmet le
   // corridor ici. L'ecran s'ouvre donc DEJA rempli, et lance la recherche
   // tout seul : sans cela la cliente ressaisirait ce qu'elle vient de choisir.
-  const amorce = useLocalSearchParams<{ pickup?: string; dropoff?: string; day?: string }>();
+  const amorce = useLocalSearchParams<{
+    pickup?: string;
+    dropoff?: string;
+    day?: string;
+  }>();
   const [pickup, setPickup] = useState<string | null>(amorce.pickup ?? null);
   const [dropoff, setDropoff] = useState<string | null>(amorce.dropoff ?? null);
   // Idem pour les filtres marchandise : l'etat vide peut proposer de les
@@ -136,23 +155,28 @@ export default function SearchScreen() {
   const resteAVoir = match.isSuccess && items.length < total;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <View style={styles.headerRow}>
-          <Txt style={styles.title}>{t('search.title')}</Txt>
-          <Pressable
-            testID="search-open-alerts"
-            onPress={() => setAlertsOpen(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t('search.alerts.title')}
-            hitSlop={12}
-          >
-            <Icon name="bell" size={22} color={colors.neutral[0]} />
-          </Pressable>
-        </View>
-        <Txt style={styles.subtitle}>{t('search.subtitle')}</Txt>
-      </View>
-
+    <AppScreen
+      testID="search-screen"
+      scroll={false}
+      header={
+        <AppHeader
+          title={t('search.title')}
+          trailing={
+            <Pressable
+              testID="search-open-alerts"
+              onPress={() => setAlertsOpen(true)}
+              accessibilityRole="button"
+              accessibilityLabel={t('search.alerts.title')}
+              style={styles.cloche}
+            >
+              <Icon name="bell" size={22} color={colors.onBlue[100]} />
+            </Pressable>
+          }
+        >
+          <Txt style={styles.subtitle}>{t('search.subtitle')}</Txt>
+        </AppHeader>
+      }
+    >
       <FlatList
         data={items}
         keyExtractor={(item) => String(item.id)}
@@ -229,26 +253,28 @@ export default function SearchScreen() {
 
       <SendRequestSheet trip={selected} onClose={() => setSelected(null)} />
       <CorridorAlertsPanel visible={alertsOpen} onClose={() => setAlertsOpen(false)} />
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
-  header: {
-    backgroundColor: colors.brand[600],
-    paddingHorizontal: spacing.xl,
-    paddingTop: spacing.sm,
-    paddingBottom: spacing.lg,
-    borderBottomLeftRadius: radii.hero,
-    borderBottomRightRadius: radii.hero,
-    gap: spacing.xs,
-    ...shadows.brand,
+  // Rendus DANS le bandeau bleu.
+  subtitle: {
+    fontSize: fontSize.md,
+    lineHeight: fontSize.md * 1.5,
+    color: colors.text.onBlue,
   },
-  headerRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[0] },
-  subtitle: { fontSize: fontSize.md, color: colors.neutral[0], opacity: 0.85 },
-  content: { padding: spacing.xl, gap: spacing.md },
+  cloche: {
+    width: TOUCH_TARGET,
+    height: TOUCH_TARGET,
+    borderRadius: radii.chip,
+    borderWidth: 1,
+    borderColor: glass.chip.border,
+    backgroundColor: glass.chip.background,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  content: { paddingHorizontal: SCREEN_PADDING, paddingTop: spacing.lg, gap: spacing.md },
   formWrap: { gap: spacing.md, marginBottom: spacing.xs },
   count: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[600] },
   footer: { gap: spacing.sm, marginTop: spacing.sm },

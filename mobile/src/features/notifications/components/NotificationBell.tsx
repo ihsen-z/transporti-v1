@@ -1,10 +1,12 @@
 import { useState } from 'react';
-import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, FlatList, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii, TOUCH_TARGET } from '@/shared/theme';
+import { Txt } from '@/shared/ui/Txt';
+import { useOnBlue } from '@/shared/ui/SurfaceTone';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
@@ -22,6 +24,9 @@ export function NotificationBell() {
   const { t } = useTranslation();
   const router = useRouter();
   const role = useAuthStore((s) => s.user?.role);
+  // La cloche vit dans le bandeau bleu de l'Accueil : en `brand[600]` elle y
+  // était du bleu sur du bleu. Le panneau qu'elle ouvre, lui, reste clair.
+  const onBlue = useOnBlue();
   const [open, setOpen] = useState(false);
   const unread = useUnreadCount();
   const list = useNotifications(open); // fetch seulement à l'ouverture
@@ -54,12 +59,12 @@ export function NotificationBell() {
         accessibilityLabel={t('notifications.title')}
         accessibilityValue={count > 0 ? { text: t('a11y.unread', { count }) } : undefined}
       >
-        <Icon name="bell" size={26} color={colors.brand[600]} />
+        <Icon name="bell" size={26} color={onBlue ? colors.onBlue[100] : colors.brand[600]} />
         {count > 0 ? (
           <View style={styles.badge}>
-            <Text style={styles.badgeText} maxFontSizeMultiplier={1.3}>
+            <Txt style={styles.badgeText} maxFontSizeMultiplier={1.3}>
               {count > 99 ? '99+' : count}
-            </Text>
+            </Txt>
           </View>
         ) : null}
       </Pressable>
@@ -67,7 +72,7 @@ export function NotificationBell() {
       <Modal visible={open} animationType="slide" onRequestClose={() => setOpen(false)}>
         <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
           <View style={styles.header}>
-            <Text style={styles.title}>{t('notifications.title')}</Text>
+            <Txt style={styles.title}>{t('notifications.title')}</Txt>
             <Pressable
               testID="notification-bell-close"
               onPress={() => setOpen(false)}
@@ -86,7 +91,7 @@ export function NotificationBell() {
               style={styles.markAll}
               accessibilityRole="button"
             >
-              <Text style={styles.markAllText}>{t('notifications.mark_all')}</Text>
+              <Txt style={styles.markAllText}>{t('notifications.mark_all')}</Txt>
             </Pressable>
           ) : null}
 
@@ -142,7 +147,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 4,
   },
   badgeText: { color: colors.neutral[0], fontSize: fontSize.meta, fontWeight: '800' },
-  modal: { flex: 1, backgroundColor: colors.neutral[0] },
+  modal: { flex: 1, backgroundColor: colors.neutral[50] },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -159,5 +164,4 @@ const styles = StyleSheet.create({
   markAllText: { color: colors.brand[500], fontWeight: '700', fontSize: fontSize.md },
   loader: { marginTop: spacing['2xl'] },
   list: { paddingHorizontal: spacing.lg, paddingBottom: spacing.xl, gap: spacing.sm },
-  empty: { textAlign: 'center', color: colors.neutral[500], marginTop: spacing['2xl'] },
 });

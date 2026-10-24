@@ -1,7 +1,8 @@
 import { I18nManager, Pressable, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
-import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
+import { useOnBlue } from '@/shared/ui/SurfaceTone';
+import { TOUCH_TARGET, colors, fontSize, glass, radii, spacing } from '@/shared/theme';
 import { setStoredLang } from '@/core/i18n/langStorage';
 import { reloadApp } from '@/core/reloadApp';
 
@@ -11,6 +12,9 @@ import { reloadApp } from '@/core/reloadApp';
 // persistée (langStorage), l'app repart directement dans le bon sens.
 export function LanguageToggle() {
   const { i18n, t } = useTranslation();
+  // Sur le bleu, la bascule devient une pastille de verre : un contour bleu
+  // sur du bleu ne se voit pas, et c'est l'UNIQUE porte d'entrée de l'arabe.
+  const onBlue = useOnBlue();
 
   const onToggle = () => {
     const next = i18n.language === 'ar' ? 'fr' : 'ar';
@@ -27,10 +31,19 @@ export function LanguageToggle() {
     <Pressable
       testID="language-toggle"
       onPress={onToggle}
-      style={styles.btn}
+      style={[
+        styles.btn,
+        onBlue
+          ? { backgroundColor: glass.chip.background, borderColor: glass.chip.border }
+          : { borderColor: colors.brand[500] },
+      ]}
       accessibilityRole="button"
     >
-      <Txt style={styles.txt}>{t('lang.toggle')}</Txt>
+      <Txt
+        style={[styles.txt, { color: onBlue ? colors.onBlue[100] : colors.brand[500] }]}
+      >
+        {t('lang.toggle')}
+      </Txt>
     </Pressable>
   );
 }
@@ -45,10 +58,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     borderRadius: radii.full,
     borderWidth: 1,
-    borderColor: colors.brand[500],
   },
   txt: {
-    color: colors.brand[500],
     fontSize: fontSize.sm,
     fontWeight: '700',
   },

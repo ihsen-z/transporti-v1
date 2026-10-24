@@ -1,4 +1,4 @@
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
@@ -10,6 +10,7 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MyRequestDto } from '../api/dto';
 import { useAcceptCounter } from '../api/useAcceptCounter';
 import { useCancelRequest } from '../api/useCancelRequest';
+import { Txt } from '@/shared/ui/Txt';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -63,18 +64,18 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
     <Card>
       <View style={styles.headerRow}>
         <Badge label={t(`my_requests.status.${request.status}`)} variant={statusVariant(request.status)} />
-        <Text style={styles.when}>{formatWhen(request.job_date)}</Text>
+        <Txt style={styles.when}>{formatWhen(request.job_date)}</Txt>
       </View>
       <View style={styles.route}>
         <RouteRow from={request.job_pickup} to={request.job_dropoff} />
       </View>
-      <Text style={styles.price}>{t('my_requests.proposed', { price: request.proposed_price })}</Text>
+      <Txt style={styles.price}>{t('my_requests.proposed', { price: request.proposed_price })}</Txt>
 
       {isCountered && request.counter_price ? (
         <View style={styles.block}>
-          <Text style={styles.counter}>
+          <Txt style={styles.counter}>
             {t('my_requests.countered', { price: request.counter_price })}
-          </Text>
+          </Txt>
           <Button
             testID={`my-request-${request.id}-accept-counter`}
             label={t('my_requests.accept_counter')}
@@ -82,7 +83,7 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
             variant="cta"
             loading={accept.isPending}
           />
-          {errMsg ? <Text style={styles.error}>{errMsg}</Text> : null}
+          {errMsg ? <Txt style={styles.error}>{errMsg}</Txt> : null}
         </View>
       ) : null}
 
@@ -96,18 +97,18 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
             loading={cancel.isPending}
           />
           {cancelErrMsg ? (
-            <Text style={styles.error}>{cancelErrMsg}</Text>
+            <Txt style={styles.error}>{cancelErrMsg}</Txt>
           ) : null}
         </View>
       ) : null}
 
       {accepted ? (
         <View style={styles.block}>
-          <Text style={styles.payment}>
+          <Txt style={styles.payment}>
             {request.payment_method === 'DIGITAL'
               ? t('my_requests.accepted_digital')
               : t('my_requests.accepted_cod')}
-          </Text>
+          </Txt>
           {/* Tout ce qui suit l'acceptation — PIN, paiement, suivi, avis,
               litige — vit maintenant dans l'écran de mission. La carte
               affichait auparavant un PIN volatile (perdu au rechargement) et

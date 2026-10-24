@@ -1,98 +1,60 @@
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Link } from 'expo-router';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { LoginForm } from '@/features/auth/components/LoginForm';
+import { AuthHeading } from '@/features/auth/components/AuthHeading';
+import { AuthLink } from '@/features/auth/components/AuthLink';
 import { LanguageToggle } from '@/shared/ui/LanguageToggle';
-import { Logo } from '@/shared/ui/Logo';
+import { ImmersiveScreen } from '@/shared/ui/ImmersiveScreen';
+import { GlassCard } from '@/shared/ui/GlassCard';
+import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize } from '@/shared/theme';
 
 // Route mince : composition uniquement. La logique du formulaire vit dans
 // la feature auth (LoginForm).
+//
+// Famille IMMERSIVE (charte) : dégradé bleu plein écran, deux halos, carte de
+// verre. Les boutons sociaux que la charte dessine sur cet écran ne sont PAS
+// rendus : l'application n'a pas d'authentification Google ni Facebook. Un
+// bouton qui ne mène nulle part coûte plus cher qu'un bouton absent.
 export default function LoginScreen() {
   const { t } = useTranslation();
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}
-      >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
-          {/* Row + flex-end => se place au bord de fin de lecture (flip RTL). */}
-          <View style={styles.topBar}>
-            <LanguageToggle />
+    <ImmersiveScreen testID="login-screen">
+      {/* Row + flex-end => se place au bord de fin de lecture (flip RTL). */}
+      <View style={styles.topBar}>
+        <LanguageToggle />
+      </View>
+
+      <View style={styles.main}>
+        <AuthHeading title={t('auth.login.title')} subtitle={t('auth.login.subtitle')} />
+
+        <GlassCard>
+          <LoginForm />
+        </GlassCard>
+
+        <View style={styles.links}>
+          <AuthLink href="/forgot-password" label={t('auth.login.forgot_link')} />
+          <View style={styles.registerRow}>
+            <Txt style={styles.registerText}>{t('auth.login.no_account')} </Txt>
+            <AuthLink href="/register" label={t('auth.login.register_link')} />
           </View>
-
-          <View style={styles.main}>
-            {/* Identité de marque : logo officiel (charte). */}
-            <View style={styles.header}>
-              <Logo wordmark size={40} />
-              <Text style={styles.tagline}>{t('app.tagline')}</Text>
-            </View>
-
-            <View style={styles.titleBlock}>
-              <Text style={styles.title}>{t('auth.login.title')}</Text>
-              <Text style={styles.subtitle}>{t('auth.login.subtitle')}</Text>
-            </View>
-
-            <LoginForm />
-
-            <View style={styles.links}>
-              {/* `Link` rend un texte sans role : l'arbre d'accessibilite
-                  ne signalait pas que ces deux sorties etaient actionnables,
-                  dont la recuperation de mot de passe. */}
-              <Link
-                href="/forgot-password"
-                style={styles.link}
-                accessibilityRole="link"
-                accessibilityLabel={t('auth.login.forgot_link')}
-              >
-                {t('auth.login.forgot_link')}
-              </Link>
-              <View style={styles.registerRow}>
-                <Text style={styles.registerText}>{t('auth.login.no_account')} </Text>
-                <Link
-                  href="/register"
-                  style={styles.link}
-                  accessibilityRole="link"
-                  accessibilityLabel={t('auth.login.register_link')}
-                >
-                  {t('auth.login.register_link')}
-                </Link>
-              </View>
-            </View>
-          </View>
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+        </View>
+      </View>
+    </ImmersiveScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[0] },
-  flex: { flex: 1 },
-  content: { flexGrow: 1, padding: spacing.xl },
-  topBar: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: spacing.xl },
+  topBar: { flexDirection: 'row', justifyContent: 'flex-end' },
   // Bloc central : le formulaire est centré verticalement sur écran haut.
-  main: { flex: 1, justifyContent: 'center', gap: spacing['2xl'] },
-  header: { gap: spacing.sm },
-  tagline: { fontSize: fontSize.sm, color: colors.neutral[500] },
-  titleBlock: { gap: spacing.xs },
-  title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
-  subtitle: { fontSize: fontSize.md, color: colors.neutral[500] },
-  links: { gap: spacing.md, alignItems: 'center' },
-  registerRow: { flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' },
-  registerText: { fontSize: fontSize.md, color: colors.neutral[500] },
-  link: { fontSize: fontSize.md, fontWeight: '700', color: colors.brand[600] },
+  main: { flex: 1, justifyContent: 'center', gap: spacing.xl },
+  links: { gap: spacing.lg, alignItems: 'center' },
+  registerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+  },
+  registerText: { fontSize: fontSize.md, color: colors.text.onBlue },
 });

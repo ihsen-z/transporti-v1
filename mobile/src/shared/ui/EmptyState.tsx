@@ -53,7 +53,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: spacing.md,
   },
-  title: { fontSize: fontSize.lg, fontWeight: '800', color: colors.neutral[900], textAlign: 'center' },
+  title: {
+    fontSize: fontSize.lg,
+    fontWeight: '800',
+    color: colors.neutral[900],
+    textAlign: 'center',
+  },
   subtitle: { fontSize: fontSize.md, color: colors.neutral[500], textAlign: 'center' },
   cta: { marginTop: spacing.md },
 });

@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { MissionDto } from '@/features/missions/api/dto';
 import { useCompletedMissions } from '@/features/missions/api/useCompletedMissions';
 import { OpenReviewSheet } from './OpenReviewSheet';
+import { Txt } from '@/shared/ui/Txt';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -26,17 +27,17 @@ export function CompletedMissionsList() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.title}>{t('reviews.completed_title')}</Text>
+      <Txt style={styles.title}>{t('reviews.completed_title')}</Txt>
 
       {completed.isLoading ? (
         <ActivityIndicator color={colors.brand[500]} />
       ) : (
         data.map((m: MissionDto) => (
           <View key={m.id} style={styles.card}>
-            <Text style={styles.route} numberOfLines={1}>
+            <Txt style={styles.route} numberOfLines={1}>
               {m.pickup_governorate} → {m.dropoff_governorate}
-            </Text>
-            <Text style={styles.when}>{formatWhen(m.scheduled_time)}</Text>
+            </Txt>
+            <Txt style={styles.when}>{formatWhen(m.scheduled_time)}</Txt>
             <Button
               testID={`completed-mission-${m.id}-review`}
               label={t('reviews.open')}

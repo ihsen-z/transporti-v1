@@ -60,5 +60,10 @@ const styles = StyleSheet.create({
     borderTopWidth: 1,
     borderTopColor: colors.neutral[200],
   },
-  linkText: { flex: 1, fontSize: fontSize.md, fontWeight: '600', color: colors.neutral[900] },
+  linkText: {
+    flex: 1,
+    fontSize: fontSize.md,
+    fontWeight: '600',
+    color: colors.neutral[900],
+  },
 });

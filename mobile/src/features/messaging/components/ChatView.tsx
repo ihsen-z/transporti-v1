@@ -1,23 +1,14 @@
 import { useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { Icon } from '@/shared/ui/icons';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '@/core/auth/authStore';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { colors, spacing, fontSize, radii, TOUCH_TARGET } from '@/shared/theme';
 import type { MessageDto } from '../api/dto';
 import { useJobMessages } from '../api/useJobMessages';
 import { useSendMessage } from '../api/useSendMessage';
 import { MessageBubble } from './MessageBubble';
+import { Txt } from '@/shared/ui/Txt';
 
 export function ChatView({ jobId }: { jobId: number }) {
   const { t } = useTranslation();
@@ -52,12 +43,12 @@ export function ChatView({ jobId }: { jobId: number }) {
           data={messages}
           keyExtractor={(m: MessageDto) => String(m.id)}
           contentContainerStyle={styles.list}
-          ListEmptyComponent={<Text style={styles.empty}>{t('messaging.no_messages')}</Text>}
+          ListEmptyComponent={<Txt style={styles.empty}>{t('messaging.no_messages')}</Txt>}
           // Les messages arrivent du plus récent au plus ancien (pas de tri
           // côté mobile) : le dernier élément affiché est donc le plus ancien
           // chargé, l'endroit naturel pour signaler qu'il y en a d'autres.
           ListFooterComponent={
-            truncated ? <Text style={styles.truncated}>{t('messaging.truncated')}</Text> : null
+            truncated ? <Txt style={styles.truncated}>{t('messaging.truncated')}</Txt> : null
           }
           renderItem={({ item }) => (
             <MessageBubble message={item} mine={item.sender !== null && item.sender === userId} />
@@ -66,7 +57,7 @@ export function ChatView({ jobId }: { jobId: number }) {
       )}
 
       {locked ? (
-        <Text style={styles.locked}>{t('messaging.locked')}</Text>
+        <Txt style={styles.locked}>{t('messaging.locked')}</Txt>
       ) : (
         <View style={styles.inputRow}>
           <TextInput
@@ -124,10 +115,11 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     maxHeight: 120,
-    minHeight: 44,
+    minHeight: TOUCH_TARGET,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
+    borderColor: colors.neutral[300],
+    borderRadius: radii.input,
+    backgroundColor: colors.neutral[50],
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
     fontSize: fontSize.md,

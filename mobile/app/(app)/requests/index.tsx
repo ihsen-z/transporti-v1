@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { useTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
+import { colors, fontSize, spacing, SCREEN_PADDING } from '@/shared/theme';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
 import { Txt } from '@/shared/ui/Txt';
+import { Pill } from '@/shared/ui/Pill';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
@@ -33,10 +35,10 @@ import type { TripRequestDto } from '@/features/requests/api/dto';
 const ORDRE: OngletId[] = ['a-decider', 'negociation', 'archivees'];
 
 export default function RequestsScreen() {
-  // Marge basse reservee sous la liste : sans elle, le dernier element
-  // reste sous la barre flottante et son action devient inatteignable
-  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
-  const margeBasse = useFloatingTabBarClearance();
+  // Marge basse reservee sous le contenu : sans elle, le dernier element reste
+  // sous la barre de navigation et son action devient inatteignable (defaut
+  // mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useTabBarClearance();
   const { t } = useTranslation();
   const router = useRouter();
 
@@ -48,30 +50,25 @@ export default function RequestsScreen() {
   const liste: TripRequestDto[] = demandes.data ?? [];
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <Txt style={styles.title}>{t('requests.title')}</Txt>
-        <Txt style={styles.subtitle}>{t('requests.inbox_subtitle')}</Txt>
-      </View>
-
+    <AppScreen
+      testID="requests-screen"
+      scroll={false}
+      header={
+        <AppHeader title={t('requests.title')}>
+          <Txt style={styles.subtitle}>{t('requests.inbox_subtitle')}</Txt>
+        </AppHeader>
+      }
+    >
       <View style={styles.onglets}>
-        {ORDRE.map((cle) => {
-          const actif = onglet === cle;
-          return (
-            <Pressable
-              key={cle}
-              testID={`demandes-recues-onglet-${cle}`}
-              accessibilityRole="tab"
-              accessibilityState={{ selected: actif }}
-              onPress={() => setOnglet(cle)}
-              style={[styles.onglet, actif && styles.ongletActif]}
-            >
-              <Text style={[styles.ongletLabel, actif && styles.ongletLabelActif]}>
-                {t(`requests.tabs.${cle}`)}
-              </Text>
-            </Pressable>
-          );
-        })}
+        {ORDRE.map((cle) => (
+          <Pill
+            key={cle}
+            testID={`demandes-recues-onglet-${cle}`}
+            label={t(`requests.tabs.${cle}`)}
+            selected={onglet === cle}
+            onPress={() => setOnglet(cle)}
+          />
+        ))}
       </View>
 
       {demandes.isLoading ? (
@@ -95,10 +92,7 @@ export default function RequestsScreen() {
                 onCta={() => router.push('/publish')}
               />
             ) : (
-              <EmptyState
-                icon="package"
-                title={t('requests.tab_empty')}
-              />
+              <EmptyState icon="package" title={t('requests.tab_empty')} />
             )
           }
           renderItem={({ item }) => (
@@ -106,41 +100,23 @@ export default function RequestsScreen() {
           )}
         />
       )}
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
-  header: { paddingHorizontal: spacing.xl, paddingTop: spacing.xl, gap: spacing.xs },
-  title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
-  subtitle: { fontSize: fontSize.sm, color: colors.neutral[500] },
+  // Rendu DANS le bandeau bleu : le sous-titre y prend l'encre sur bleu.
+  subtitle: { fontSize: fontSize.sm, lineHeight: 19.5, color: colors.text.onBlue },
   onglets: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: spacing.sm,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
+    paddingHorizontal: SCREEN_PADDING,
+    paddingTop: spacing.lg,
   },
-  onglet: {
-    minHeight: TOUCH_TARGET,
-    justifyContent: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
-    backgroundColor: colors.neutral[0],
+  list: {
+    paddingHorizontal: SCREEN_PADDING,
+    paddingTop: spacing.lg,
+    gap: spacing.md,
   },
-  ongletActif: {
-    backgroundColor: colors.brand[600],
-    borderColor: colors.brand[600],
-  },
-  ongletLabel: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.neutral[700],
-  },
-  ongletLabelActif: { color: colors.neutral[0] },
-  list: { paddingHorizontal: spacing.xl, paddingBottom: spacing.xl, gap: spacing.md },
 });

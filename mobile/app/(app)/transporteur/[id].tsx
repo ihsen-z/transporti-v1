@@ -1,6 +1,5 @@
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { FlatList, StyleSheet, View } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useTransporterProfile } from '@/features/profiles/api/useTransporterProfile';
 import { useTransporterReviews } from '@/features/profiles/api/useTransporterReviews';
@@ -9,15 +8,20 @@ import { Avatar } from '@/shared/ui/Avatar';
 import { Badge } from '@/shared/ui/Badge';
 import { Card } from '@/shared/ui/Card';
 import { StarRating } from '@/shared/ui/StarRating';
-import { Icon } from '@/shared/ui/icons';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
+import { BackButton } from '@/shared/ui/BackButton';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { RouteUnavailable } from '@/shared/ui/RouteUnavailable';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { Txt } from '@/shared/ui/Txt';
 import { FavoriteButton } from '@/features/favorites/components/FavoriteButton';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { colors, spacing, fontSize, SCREEN_PADDING } from '@/shared/theme';
 import type { ReviewDto } from '@/features/reviews/api/dto';
+
+// La carte d'identité chevauche le bandeau bleu (charte, §Anatomie) : c'est la
+// personne à qui l'on va confier une marchandise, elle passe devant la liste.
 
 // Profil public d'un transporteur — consultable AVANT d'envoyer une demande.
 // Les deux endpoints (profil, avis) répondaient déjà 200 ; rien côté mobile ne
@@ -26,7 +30,6 @@ import type { ReviewDto } from '@/features/reviews/api/dto';
 // les hooks de `features/profiles`.
 export default function TransporterProfileScreen() {
   const { t } = useTranslation();
-  const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
   const userId = Number(id);
   const valid = Number.isFinite(userId) && userId > 0;
@@ -40,20 +43,16 @@ export default function TransporterProfileScreen() {
   const hasRating = !!p && p.review_count > 0;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable
-          testID="transporter-detail-back"
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-          hitSlop={12}
-        >
-          <Icon name="chevron-left" size={24} color={colors.neutral[900]} />
-        </Pressable>
-        <Txt style={styles.headerTitle}>{t('profiles.title')}</Txt>
-      </View>
-
+    <AppScreen
+      testID="transporter-profile-screen"
+      scroll={false}
+      header={
+        <AppHeader
+          leading={<BackButton testID="transporter-detail-back" />}
+          title={t('profiles.title')}
+        />
+      }
+    >
       {/* 7.6 — meme squelette perpetuel que sur mission/[id] quand
           l'identifiant ne mene nulle part. */}
       {!valid || profile.isError ? (
@@ -69,7 +68,11 @@ export default function TransporterProfileScreen() {
           ListHeaderComponent={
             <View style={styles.headerBlock}>
               <Card style={styles.identity}>
-                <Avatar name={`${p.first_name} ${p.last_name}`} size={64} imageUrl={p.avatar_url || null} />
+                <Avatar
+                  name={`${p.first_name} ${p.last_name}`}
+                  size={64}
+                  imageUrl={p.avatar_url || null}
+                />
                 <Txt style={styles.name}>{`${p.first_name} ${p.last_name}`}</Txt>
                 {/* E-04 — le seul point d'entrée pour AJOUTER un favori. Sans
                     lui, la rubrique du menu client reste inalimentable depuis
@@ -80,7 +83,11 @@ export default function TransporterProfileScreen() {
                 />
                 <View style={styles.badges}>
                   {p.is_verified ? (
-                    <Badge label={t('trust.status.VERIFIED')} variant="verified" icon="shield-check" />
+                    <Badge
+                      label={t('trust.status.VERIFIED')}
+                      variant="verified"
+                      icon="shield-check"
+                    />
                   ) : null}
                   {p.active_return_trips > 0 ? (
                     <Badge
@@ -114,7 +121,9 @@ export default function TransporterProfileScreen() {
                   </View>
                   <View style={styles.stat}>
                     <Txt style={styles.statValue}>
-                      {p.completion_rate !== null ? `${p.completion_rate}%` : t('home.kpi_unavailable')}
+                      {p.completion_rate !== null
+                        ? `${p.completion_rate}%`
+                        : t('home.kpi_unavailable')}
                     </Txt>
                     <Txt style={styles.statLabel}>{t('profiles.completion_rate')}</Txt>
                   </View>
@@ -141,21 +150,17 @@ export default function TransporterProfileScreen() {
           renderItem={({ item }: { item: ReviewDto }) => <ReviewRow review={item} />}
         />
       )}
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  content: {
+    paddingHorizontal: SCREEN_PADDING,
+    paddingTop: spacing.lg,
+    paddingBottom: spacing.xl,
     gap: spacing.md,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
   },
-  headerTitle: { fontSize: fontSize.xl, fontWeight: '800', color: colors.neutral[900] },
-  content: { padding: spacing.xl, paddingTop: 0, gap: spacing.md },
   headerBlock: { gap: spacing.md, marginBottom: spacing.xs },
   identity: { alignItems: 'center', gap: spacing.sm },
   name: { fontSize: fontSize.xl, fontWeight: '800', color: colors.neutral[900] },
@@ -163,7 +168,12 @@ const styles = StyleSheet.create({
   ratingRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
   ratingCount: { fontSize: fontSize.sm, color: colors.neutral[500] },
   noRating: { fontSize: fontSize.sm, color: colors.neutral[400] },
-  bio: { fontSize: fontSize.md, color: colors.neutral[700], textAlign: 'center', marginTop: spacing.xs },
+  bio: {
+    fontSize: fontSize.md,
+    color: colors.neutral[700],
+    textAlign: 'center',
+    marginTop: spacing.xs,
+  },
   statsCard: { gap: spacing.sm },
   statsRow: { flexDirection: 'row', justifyContent: 'space-between' },
   stat: { alignItems: 'center', gap: 2, flex: 1 },

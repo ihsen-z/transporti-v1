@@ -1,15 +1,8 @@
 import { useState } from 'react';
-import {
-  FlatList,
-  I18nManager,
-  Modal,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
+import { FlatList, I18nManager, Modal, Pressable, StyleSheet, View } from 'react-native';
 import { Icon } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, radii, spacing, fontSize } from '@/shared/theme';
+import { colors, radii, spacing, fontSize, FIELD_HEIGHT } from '@/shared/theme';
 
 export interface SelectOption<T> {
   value: T;
@@ -52,10 +45,7 @@ export function Select<T extends string | number>({
         style={[styles.field, error ? styles.fieldError : null]}
         onPress={() => setOpen(true)}
       >
-        <Txt
-          style={[styles.value, !selected && styles.placeholder]}
-          numberOfLines={1}
-        >
+        <Txt style={[styles.value, !selected && styles.placeholder]} numberOfLines={1}>
           {selected ? selected.label : placeholder}
         </Txt>
         <Icon name="chevron-down" size={18} color={colors.neutral[400]} />
@@ -100,23 +90,25 @@ export function Select<T extends string | number>({
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: spacing.xs },
-  label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.neutral[700] },
+  // Même gabarit que TextField : le sélecteur EST un champ, et deux champs
+  // empilés dans le même formulaire ne peuvent pas avoir deux rayons.
+  wrap: { gap: 7 },
+  label: { fontSize: fontSize.label, fontWeight: '600', color: colors.neutral[500] },
   field: {
-    minHeight: 52,
+    minHeight: FIELD_HEIGHT,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
-    paddingHorizontal: spacing.lg,
+    borderColor: colors.neutral[300],
+    borderRadius: radii.input,
+    paddingHorizontal: 15,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    backgroundColor: colors.neutral[0],
+    backgroundColor: colors.neutral[50],
   },
   fieldError: { borderColor: colors.error },
   value: { fontSize: fontSize.md, color: colors.neutral[900], flex: 1 },
   placeholder: { color: colors.neutral[400] },
-  error: { fontSize: fontSize.sm, color: colors.text.error },
+  error: { fontSize: fontSize.label, fontWeight: '600', color: colors.text.error },
   backdrop: {
     flex: 1,
     backgroundColor: 'rgba(0,0,0,0.4)',

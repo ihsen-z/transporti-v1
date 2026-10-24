@@ -1,10 +1,11 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MyRequestDto } from '../api/dto';
 import { useMyRequests } from '../api/useMyRequests';
 import { MyRequestCard } from './MyRequestCard';
 import { ongletDeLaDemande, type OngletDemande } from '../model/onglets';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   /** Onglet actif. Sans lui, toutes les demandes sont affichées. */
@@ -28,9 +29,9 @@ export function MyRequestsList({ onglet }: Props = {}) {
       {requests.isLoading ? (
         <ActivityIndicator color={colors.brand[500]} />
       ) : data.length === 0 ? (
-        <Text style={styles.empty} testID="mes-demandes-vide">
+        <Txt style={styles.empty} testID="mes-demandes-vide">
           {onglet ? t(`my_requests.empty_tabs.${onglet}`) : t('my_requests.empty')}
-        </Text>
+        </Txt>
       ) : (
         data.map((r: MyRequestDto) => <MyRequestCard key={r.id} request={r} />)
       )}

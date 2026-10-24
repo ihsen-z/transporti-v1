@@ -236,11 +236,7 @@ export function AddressBookPanel({ visible, onClose }: Props) {
 
               <Button
                 testID="carnet-enregistrer"
-                label={
-                  enregistrer.isPending
-                    ? t('profile.saving')
-                    : t('profile.save')
-                }
+                label={enregistrer.isPending ? t('profile.saving') : t('profile.save')}
                 loading={enregistrer.isPending}
                 disabled={
                   !brouillon.label.trim() ||

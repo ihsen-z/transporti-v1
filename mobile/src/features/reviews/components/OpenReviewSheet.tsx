@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { StarRating } from '@/shared/ui/StarRating';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { useCreateReview } from '../api/useCreateReview';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   jobId: number | null;
@@ -51,7 +52,7 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
         <Pressable style={styles.sheet} onPress={() => undefined}>
           {create.isSuccess ? (
             <View style={styles.successBox}>
-              <Text style={styles.successText}>{t('reviews.success')}</Text>
+              <Txt style={styles.successText}>{t('reviews.success')}</Txt>
               <Button
                 testID="open-review-close"
                 label={t('common.close')}
@@ -61,9 +62,9 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
             </View>
           ) : (
             <>
-              <Text style={styles.title}>{t('reviews.rate_title')}</Text>
+              <Txt style={styles.title}>{t('reviews.rate_title')}</Txt>
               <View style={styles.stars}>
-                <Text style={styles.label}>{t('reviews.rate_label')}</Text>
+                <Txt style={styles.label}>{t('reviews.rate_label')}</Txt>
                 <StarRating
                   testID="open-review-rating"
                   value={rating || null}
@@ -72,7 +73,7 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
                 />
               </View>
               <View>
-                <Text style={styles.label}>{t('reviews.comment_label')}</Text>
+                <Txt style={styles.label}>{t('reviews.comment_label')}</Txt>
                 <TextInput
                   testID="open-review-comment"
                   accessibilityLabel={t('reviews.comment_label')}
@@ -85,14 +86,14 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
                 />
               </View>
               {formError ? (
-                <Text testID="open-review-form-error" style={styles.error}>
+                <Txt testID="open-review-form-error" style={styles.error}>
                   {formError}
-                </Text>
+                </Txt>
               ) : null}
               {serverError ? (
-                <Text testID="open-review-server-error" style={styles.error}>
+                <Txt testID="open-review-server-error" style={styles.error}>
                   {serverError}
-                </Text>
+                </Txt>
               ) : null}
               <Button
                 testID="open-review-submit"
@@ -121,11 +122,13 @@ const styles = StyleSheet.create({
   title: { fontSize: fontSize.xl, fontWeight: '800', color: colors.neutral[900] },
   stars: { gap: spacing.sm },
   label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.neutral[700], marginBottom: spacing.xs },
+  // Champ de la charte (.field) : fond `bg-app`, liseré discret, rayon 14.
   textarea: {
     minHeight: 90,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
+    borderColor: colors.neutral[300],
+    borderRadius: radii.input,
+    backgroundColor: colors.neutral[50],
     padding: spacing.md,
     fontSize: fontSize.md,
     color: colors.neutral[900],

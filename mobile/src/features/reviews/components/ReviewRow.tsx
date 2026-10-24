@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { StarRating } from '@/shared/ui/StarRating';
 import { Card } from '@/shared/ui/Card';
 import { Avatar } from '@/shared/ui/Avatar';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import type { ReviewDto } from '../api/dto';
+import { Txt } from '@/shared/ui/Txt';
 
 export function ReviewRow({ review }: { review: ReviewDto }) {
   const { t } = useTranslation();
@@ -15,7 +16,7 @@ export function ReviewRow({ review }: { review: ReviewDto }) {
     <Card>
       <View style={styles.headerRow}>
         <Avatar name={review.reviewer_name} size={38} />
-        <Text style={styles.name} numberOfLines={1}>{review.reviewer_name}</Text>
+        <Txt style={styles.name} numberOfLines={1}>{review.reviewer_name}</Txt>
         <StarRating
           testID={`review-${review.id}-rating`}
           value={masked ? null : review.rating}
@@ -23,9 +24,9 @@ export function ReviewRow({ review }: { review: ReviewDto }) {
         />
       </View>
       {masked ? (
-        <Text style={styles.masked}>{t('reviews.masked')}</Text>
+        <Txt style={styles.masked}>{t('reviews.masked')}</Txt>
       ) : review.comment ? (
-        <Text style={styles.comment}>{review.comment}</Text>
+        <Txt style={styles.comment}>{review.comment}</Txt>
       ) : null}
     </Card>
   );
