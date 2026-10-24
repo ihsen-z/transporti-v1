@@ -1,0 +1,388 @@
+<title>Transporti, état des lieux</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  /* Cinquième document du dossier Transporti (après les audits du 02/09 et du
+     06/09) : même identité, même code de gravité.
+     Mise en page : une colonne de lecture, des tableaux pour les états, un
+     encadré verdict en tête. */
+  :root {
+    --ink:        #101828;
+    --ink-soft:   #475467;
+    --ink-faint:  #667085;
+    --ground:     #fbfbfd;
+    --surface:    #ffffff;
+    --line:       #e3e6ee;
+    --line-soft:  #eef0f5;
+    --brand:      #1E3A8A;
+    --brand-lite: #2563B3;
+    --crit:       #b3261e;
+    --crit-wash:  #fdf0ef;
+    --warn:       #a1600a;
+    --warn-wash:  #fdf6e9;
+    --good:       #06774a;
+    --good-wash:  #eef8f2;
+    --info-wash:  #eef2ff;
+    --display: Archivo, "Helvetica Neue", Arial, sans-serif;
+    --body: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --mono: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace;
+    --measure: 68ch;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ink: #eef1f7; --ink-soft: #a9b2c5; --ink-faint: #8b94a8;
+      --ground: #0c0f17; --surface: #141926; --line: #262d3d; --line-soft: #1d2331;
+      --brand: #8fabf0; --brand-lite: #a9c1f7;
+      --crit: #ff9e96; --crit-wash: #2c1615; --warn: #f0c07a; --warn-wash: #2a2013;
+      --good: #6fd6a5; --good-wash: #10241b; --info-wash: #182241;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ink: #eef1f7; --ink-soft: #a9b2c5; --ink-faint: #8b94a8;
+    --ground: #0c0f17; --surface: #141926; --line: #262d3d; --line-soft: #1d2331;
+    --brand: #8fabf0; --brand-lite: #a9c1f7;
+    --crit: #ff9e96; --crit-wash: #2c1615; --warn: #f0c07a; --warn-wash: #2a2013;
+    --good: #6fd6a5; --good-wash: #10241b; --info-wash: #182241;
+    color-scheme: dark;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--body); font-size: 17px; line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap {
+    max-width: 1040px; margin: 0 auto;
+    padding-block: 0 96px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  h1, h2, h3, .eyebrow, .num, th, .chip, .kpi-k, .score-k, .phase-w { font-family: var(--display); }
+  h1 { font-size: clamp(2.1rem, 5.2vw, 3.2rem); font-weight: 700; letter-spacing: -0.025em; line-height: 1.05; margin: 0; text-wrap: balance; }
+  h2 { font-size: clamp(1.3rem, 2.6vw, 1.65rem); font-weight: 700; letter-spacing: -0.015em; line-height: 1.15; margin: 0; text-wrap: balance; }
+  h3 { font-size: 1.05rem; font-weight: 600; margin: 0; text-wrap: balance; }
+  p { margin: 0; max-width: var(--measure); }
+  a { color: var(--brand-lite); }
+  a:focus-visible { outline: 2px solid var(--brand-lite); outline-offset: 3px; }
+  code { font-family: var(--mono); font-size: 0.84em; background: var(--line-soft); padding: 0.1em 0.35em; border-radius: 2px; color: var(--ink); overflow-wrap: anywhere; }
+  .eyebrow { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink-faint); }
+
+  .masthead { border-bottom: 3px solid var(--ink); padding-block: 64px 22px; display: flex; flex-direction: column; gap: 20px; }
+  .lede { font-size: 1.2rem; line-height: 1.5; color: var(--ink-soft); max-width: 62ch; }
+  .meta { display: flex; flex-wrap: wrap; gap: 8px 26px; font-family: var(--mono); font-size: 0.76rem; color: var(--ink-faint); }
+  .meta b { color: var(--ink-soft); font-weight: 600; }
+
+  .verdict { margin-top: 34px; border: 1px solid var(--line); border-top: 3px solid var(--warn); background: var(--surface); padding: 26px 28px; display: flex; flex-direction: column; gap: 14px; }
+  .verdict p { max-width: 76ch; }
+
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); margin-top: 30px; }
+  .kpi { background: var(--surface); padding: 18px; display: flex; flex-direction: column; gap: 4px; }
+  .kpi-n { font-family: var(--display); font-size: 2.1rem; font-weight: 700; letter-spacing: -0.03em; line-height: 1; font-variant-numeric: tabular-nums; }
+  .kpi-n small { font-size: 0.9rem; font-weight: 600; color: var(--ink-faint); }
+  .kpi-n.alert { color: var(--crit); }
+  .kpi-k { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-faint); line-height: 1.35; }
+
+  section { margin-top: 72px; }
+  .shead { display: flex; align-items: baseline; gap: 16px; border-bottom: 1px solid var(--ink); padding-bottom: 10px; margin-bottom: 24px; }
+  .shead .num { font-size: 0.78rem; font-weight: 700; color: var(--brand-lite); font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+  .stack { display: flex; flex-direction: column; gap: 18px; }
+  .subnote { font-size: 0.92rem; color: var(--ink-faint); max-width: 72ch; }
+
+  .scroller { overflow-x: auto; border: 1px solid var(--line); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 0.89rem; }
+  th { text-align: left; font-size: 0.69rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); padding: 11px 14px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  td { padding: 11px 14px; border-bottom: 1px solid var(--line-soft); vertical-align: top; color: var(--ink-soft); }
+  tr:last-child td { border-bottom: none; }
+  td b { color: var(--ink); font-weight: 600; }
+  .chip { display: inline-flex; font-size: 0.67rem; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border: 1px solid currentColor; border-radius: 2px; white-space: nowrap; }
+  .c-ok   { color: var(--good); background: var(--good-wash); }
+  .c-warn { color: var(--warn); background: var(--warn-wash); }
+  .c-crit { color: var(--crit); background: var(--crit-wash); }
+  .c-info { color: var(--brand-lite); background: var(--info-wash); }
+
+  .two { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .two > * { min-width: 0; }
+  .panel { border: 1px solid var(--line); background: var(--surface); padding: 20px 22px; display: flex; flex-direction: column; gap: 12px; }
+  .panel.plus { border-top: 3px solid var(--good); }
+  .panel.moins { border-top: 3px solid var(--crit); }
+  ul.plain { margin: 0; padding-left: 1.15em; display: flex; flex-direction: column; gap: 8px; }
+  ul.plain li { color: var(--ink-soft); }
+  ul.plain li::marker { color: var(--brand-lite); }
+  ul.plain b { color: var(--ink); }
+
+  .scores { display: flex; flex-direction: column; gap: 14px; border: 1px solid var(--line); background: var(--surface); padding: 22px; }
+  .score { display: grid; grid-template-columns: minmax(150px, 220px) 1fr 52px; gap: 6px 16px; align-items: center; }
+  .score-k { font-size: 0.86rem; font-weight: 600; color: var(--ink); }
+  .bar { height: 10px; background: var(--line-soft); position: relative; }
+  .bar span { position: absolute; inset: 0 auto 0 0; background: var(--brand-lite); }
+  .bar span.w { background: var(--warn); }
+  .bar span.c { background: var(--crit); }
+  .score-n { font-family: var(--mono); font-size: 0.86rem; color: var(--ink-soft); text-align: right; font-variant-numeric: tabular-nums; }
+  .score-why { grid-column: 1 / -1; font-size: 0.88rem; color: var(--ink-faint); max-width: 80ch; }
+
+  .callout { border: 1px solid var(--line); border-left: 3px solid var(--brand-lite); background: var(--surface); padding: 18px 22px; display: flex; flex-direction: column; gap: 9px; }
+  .callout.rouge { border-left-color: var(--crit); }
+  .callout p { font-size: 0.95rem; color: var(--ink-soft); max-width: 76ch; }
+  .callout h3 { color: var(--ink); }
+
+  ol.reco { margin: 0; padding: 0; list-style: none; counter-reset: r; display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  ol.reco li { counter-increment: r; background: var(--surface); padding: 16px 20px 16px 64px; position: relative; display: flex; flex-direction: column; gap: 6px; }
+  ol.reco li::before { content: counter(r); position: absolute; left: 20px; top: 14px; font-family: var(--display); font-weight: 700; font-size: 1.4rem; color: var(--brand-lite); font-variant-numeric: tabular-nums; }
+  ol.reco p { font-size: 0.95rem; color: var(--ink-soft); }
+
+  .phases { display: flex; flex-direction: column; gap: 1px; background: var(--line); border: 1px solid var(--line); }
+  .phase { background: var(--surface); display: grid; grid-template-columns: 96px 1fr 1fr; gap: 6px 20px; padding: 14px 18px; }
+  .phase > * { min-width: 0; }
+  .phase-w { font-size: 0.8rem; font-weight: 700; color: var(--brand-lite); font-variant-numeric: tabular-nums; }
+  .phase .who { font-family: var(--display); font-size: 0.66rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-faint); display: block; margin-bottom: 2px; }
+  .phase p { font-size: 0.9rem; color: var(--ink-soft); }
+  .phase-head { background: var(--line-soft); }
+  .phase-head .phase-w, .phase-head p { font-family: var(--display); font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink-faint); font-weight: 600; }
+
+  .sources { font-size: 0.85rem; color: var(--ink-faint); display: flex; flex-direction: column; gap: 6px; }
+  .sources a { overflow-wrap: anywhere; }
+  footer { margin-top: 80px; border-top: 1px solid var(--line); padding-top: 20px; font-family: var(--mono); font-size: 0.74rem; color: var(--ink-faint); display: flex; flex-wrap: wrap; gap: 6px 24px; }
+
+  @media (max-width: 720px) {
+    body { font-size: 16px; }
+    .two { grid-template-columns: 1fr; }
+    .score { grid-template-columns: 1fr 44px; }
+    .score .bar { grid-column: 1 / -1; grid-row: 2; }
+    .phase { grid-template-columns: 1fr; }
+    .phase-head { display: none; }
+    ol.reco li { padding-left: 52px; }
+  }
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <span class="eyebrow">Rapport de projet · Transporti V1 · 24 octobre 2026</span>
+    <h1>Transporti, état des lieux</h1>
+    <p class="lede">Ce que le projet est, ce qui est construit, ce qui manque pour le mettre en ligne, et mon avis franc sur ses chances. Rédigé avant de reprendre le travail, maintenant que l'équipe se résume à vous et moi.</p>
+    <div class="meta">
+      <span><b>Base</b> branche feature/plan-mise-a-niveau-mobile (f8f22a2)</span>
+      <span><b>Corridor</b> Tunis – Sousse – Sfax</span>
+      <span><b>Équipe</b> 2 · <b>Budget</b> 5 000 DT</span>
+    </div>
+  </header>
+
+  <div class="verdict">
+    <span class="eyebrow">Mon avis en bref</span>
+    <p><strong>Le projet vaut la peine d'être lancé, mais il faut changer de mode : arrêter de construire et commencer à vendre.</strong> Le produit est riche, solide et bien pensé. Il a pourtant été construit pour une place de marché qui tourne déjà, alors qu'aucune course réelle n'a encore eu lieu. Le risque n'est plus technique. Il est sur le terrain : trouver des transporteurs qui publient leurs retours et des clients qui les réservent.</p>
+    <p>Trois choses doivent être réglées avant tout lancement : <strong>l'app ne peut pas être publiée sur Google Play en l'état</strong> (sa version d'Expo est trop ancienne pour l'exigence Android en vigueur depuis le 31/08/2026), <strong>le modèle « espèces + commission » n'a pas de moyen d'encaisser la commission</strong>, et <strong>le cadre juridique</strong> (entité, pages légales, conservation des pièces d'identité) n'est pas posé.</p>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi"><span class="kpi-n">313</span><span class="kpi-k">commits depuis le 29/12/2025</span></div>
+    <div class="kpi"><span class="kpi-n">110<small> k</small></span><span class="kpi-k">lignes de code (serveur, web, mobile)</span></div>
+    <div class="kpi"><span class="kpi-n">639</span><span class="kpi-k">tests verts au dernier audit</span></div>
+    <div class="kpi"><span class="kpi-n">3</span><span class="kpi-k">surfaces à maintenir (mobile, web, admin)</span></div>
+    <div class="kpi"><span class="kpi-n alert">0</span><span class="kpi-k">course réelle réalisée</span></div>
+  </div>
+
+  <section>
+    <div class="shead"><span class="num">01</span><h2>Le projet en une page</h2></div>
+    <div class="stack">
+      <p><b>Le problème.</b> Un utilitaire qui livre à Sfax revient très souvent vide à Tunis. Ce retour est déjà payé par l'aller : chaque kilo transporté au retour est presque un revenu pur pour le transporteur. Un article de Kapitalis citait un taux de retour à vide de 60 % pour les petits tonnages et de 46 % pour les gros. Ce chiffre est ancien et non vérifié, mais il donne l'ordre de grandeur.</p>
+      <p><b>La réponse.</b> Transporti est une place de marché des retours à vide. Le transporteur publie son retour (départ, arrivée, date, capacité, prix indicatif). Le client cherche un trajet sur son corridor, envoie une demande, et paie moins cher qu'un transport dédié. Quand aucun retour ne correspond, il élargit aux gouvernorats voisins ou crée une alerte corridor.</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Élément</th><th>Choix actuel</th></tr></thead>
+          <tbody>
+            <tr><td><b>Indicateur principal</b></td><td>Kilomètres de retour à vide transformés en kilomètres chargés</td></tr>
+            <tr><td><b>Marché de lancement</b></td><td>Tunisie, corridor Tunis – Sousse – Sfax (A1 jusqu'à Gabès à 3 ans)</td></tr>
+            <tr><td><b>Transporteurs visés</b></td><td>Utilitaires 3,5 t, porteurs, camionnettes de déménagement</td></tr>
+            <tr><td><b>Clients visés</b></td><td>Particuliers et PME. Les sociétés de transport sont un segment futur</td></tr>
+            <tr><td><b>Revenu</b></td><td>Commission : 8 % sur un trajet retour, 12 % transport, 15 % déménagement (réglages actuels)</td></tr>
+            <tr><td><b>Paiement voulu en V1</b></td><td>Espèces, au départ ou à l'arrivée</td></tr>
+            <tr><td><b>Objectif à 6 mois</b></td><td>20 retours remplis par semaine sur le corridor</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">02</span><h2>Ce qui est construit</h2></div>
+    <div class="stack">
+      <p>Le socle est bien plus avancé que ne le suggère le mot « en développement ». Tout ce qui suit existe dans le code et a été exercé lors des audits de juillet à septembre.</p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Domaine</th><th>État</th><th>Contenu</th></tr></thead>
+          <tbody>
+            <tr><td><b>App mobile</b> (Expo, React Native)</td><td><span class="chip c-ok">solide</span></td><td>Parcours client et transporteur complets : publier un retour en 4 saisies, recherche avec carte, demande avec photos, suivi de mission, preuve de livraison, notifications, gains.</td></tr>
+            <tr><td><b>Serveur</b> (Django, 13 modules)</td><td><span class="chip c-ok">solide</span></td><td>Trajets, mise en relation par corridor (fenêtre de 48 h, voisins dans un rayon de 60 km), messagerie, avis, litiges, notifications, statistiques.</td></tr>
+            <tr><td><b>Confiance</b></td><td><span class="chip c-ok">solide</span></td><td>Vérification d'identité (CIN, permis, carte grise, assurance, selfie), dates d'expiration des documents, code de livraison à 4 chiffres, annulations tracées.</td></tr>
+            <tr><td><b>Arabe et RTL</b></td><td><span class="chip c-ok">solide</span></td><td>Français et derja complets, interface en miroir, vérifiés écran par écran.</td></tr>
+            <tr><td><b>Paiement en ligne</b> (Konnect)</td><td><span class="chip c-warn">jamais testé en réel</span></td><td>Séquestre, portefeuille, retraits, libération automatique après 48 h. Uniquement exercé en mode bac à sable.</td></tr>
+            <tr><td><b>Paiement en espèces</b></td><td><span class="chip c-warn">incomplet</span></td><td>Plafond à 300 DT. Chaque course crée une dette de commission, que seul un administrateur peut solder à la main. Rien ne bloque un transporteur qui ne paie pas.</td></tr>
+            <tr><td><b>Site web</b> (Next.js)</td><td><span class="chip c-info">surdimensionné</span></td><td>Application complète en double de la mobile, plus le back-office admin. La version en ligne date d'avant tout le travail récent.</td></tr>
+            <tr><td><b>Documentation</b></td><td><span class="chip c-ok">exceptionnelle</span></td><td>Vision fondatrice, pivot, registre de décisions, dictionnaire de KPI, audits successifs. Rare pour un projet de cette taille.</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="subnote">Attention : tout ce travail récent vit sur la branche <code>feature/plan-mise-a-niveau-mobile</code>. La branche <code>master</code> s'arrête au 25 août et n'a ni les 37 dernières tâches ni les correctifs de sécurité du paiement.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">03</span><h2>Ce qui empêche la mise en ligne</h2></div>
+    <div class="stack">
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Bloquant</th><th>Gravité</th><th>Qui</th><th>Détail</th></tr></thead>
+          <tbody>
+            <tr><td><b>Version d'Expo trop ancienne</b></td><td><span class="chip c-crit">bloquant</span></td><td>Moi</td><td>Depuis le 31/08/2026, Google Play exige qu'une nouvelle app cible Android 16 (API 36). L'app est sur Expo SDK 52, compilée pour l'API 35 au mieux. Une montée de version d'Expo est obligatoire avant toute soumission. C'est le plus gros chantier technique restant.</td></tr>
+            <tr><td><b>Encaissement de la commission</b></td><td><span class="chip c-crit">bloquant</span></td><td>Vous décidez, je code</td><td>Avec des paiements en espèces, la plateforme ne touche rien tant que le transporteur ne règle pas sa dette. Il faut un plafond, un blocage et un moyen de paiement.</td></tr>
+            <tr><td><b>Entité juridique et pages légales</b></td><td><span class="chip c-crit">bloquant</span></td><td>Vous</td><td>Les trois pages légales contiennent 22 blancs (raison sociale, matricule fiscal, adresse…) et renvoient une erreur 404 en production. Sans elles, aucun store n'accepte l'app.</td></tr>
+            <tr><td><b>Conservation des pièces d'identité</b></td><td><span class="chip c-crit">bloquant</span></td><td>Vous décidez, je code</td><td>Les pièces ne sont jamais supprimées. La loi 2004-63 exige une durée déterminée, et la politique de confidentialité ne peut pas être publiée sans elle.</td></tr>
+            <tr><td><b>Comptes externes</b></td><td><span class="chip c-warn">à créer</span></td><td>Vous</td><td>Google Play Console, Expo (EAS), Sentry, facturation Render, nom de domaine. Ils sont à votre nom, je ne peux pas les créer.</td></tr>
+            <tr><td><b>Branche non fusionnée</b></td><td><span class="chip c-warn">à faire</span></td><td>Moi</td><td>Fusionner dans <code>master</code>, puis tout revérifier.</td></tr>
+            <tr><td><b>Logo et réservation immédiate</b></td><td><span class="chip c-warn">majeur</span></td><td>Moi</td><td>Le logo se lit « ransporti ». Le commutateur « Réservation immédiate » ne fait rien côté client.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">04</span><h2>Le marché et la concurrence</h2></div>
+    <div class="stack">
+      <p><b>eFret.tn</b> existe depuis 2016 ou 2017 : une bourse de fret où l'expéditeur publie une annonce et reçoit des devis gratuits, avec le retour à vide dans son discours. Je n'ai trouvé aucune donnée récente sur son activité. C'est un signal utile : le problème est connu depuis longtemps et une bourse en ligne ne l'a pas résolu. Ce qui manque n'est donc pas un site de plus, c'est la densité sur un corridor et la confiance.</p>
+      <p><b>Le vrai concurrent reste informel.</b> Les groupes Facebook de déménagement, WhatsApp, les points de stationnement des camionnettes et le bouche-à-oreille sont gratuits, rapides et déjà adoptés. Transporti doit offrir ce qu'ils n'ont pas : un trajet trouvé sans dix appels, un transporteur vérifié, une preuve de livraison et un recours en cas de problème.</p>
+      <div class="callout">
+        <h3>Ce qui différencie Transporti</h3>
+        <p>Une entrée par le retour (le client cherche un trajet qui existe déjà) au lieu d'un appel d'offres, une app mobile pensée pour le transporteur sur la route, la derja, et une couche de confiance complète. Aucun de ces points n'a encore été confronté à un vrai utilisateur.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">05</span><h2>Mon avis</h2></div>
+    <div class="stack">
+      <div class="two">
+        <div class="panel plus">
+          <h3>Ce qui est fort</h3>
+          <ul class="plain">
+            <li><b>Une vision juste et tenue.</b> « Les retours d'abord » est un vrai positionnement, appliqué jusque dans le code.</li>
+            <li><b>Un produit de qualité.</b> Les parcours tiennent, l'état vide ne laisse jamais l'utilisateur sans suite, l'arabe est complet.</li>
+            <li><b>La confiance est déjà construite.</b> KYC, code de livraison, litiges : c'est ce que les groupes Facebook n'offrent pas.</li>
+            <li><b>Une discipline rare.</b> Décisions tracées, audits honnêtes, tests nombreux. Le projet est reprenable et vérifiable.</li>
+          </ul>
+        </div>
+        <div class="panel moins">
+          <h3>Ce qui m'inquiète</h3>
+          <ul class="plain">
+            <li><b>Beaucoup de produit, aucun marché.</b> Portefeuille, retraits, séquestre, CO₂, KPI avancés : tout cela a été construit avant la première course.</li>
+            <li><b>Trop de surfaces pour deux.</b> Mobile, web complet et admin à maintenir, plus le terrain, à deux personnes.</li>
+            <li><b>Le modèle espèces contredit l'architecture.</b> Le code est pensé pour le paiement en ligne. Le maillon qui fait rentrer l'argent en espèces n'existe pas.</li>
+            <li><b>Peu d'accès au terrain.</b> 1 à 3 transporteurs, et vous découvrez le secteur. C'est le vrai chemin critique.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="scores" role="list" aria-label="Évaluation par dimension, sur 10">
+        <div class="score" role="listitem">
+          <span class="score-k">Vision et positionnement</span>
+          <div class="bar"><span style="width:90%"></span></div>
+          <span class="score-n">9/10</span>
+          <span class="score-why">Claire, différenciante, alignée avec le code.</span>
+        </div>
+        <div class="score" role="listitem">
+          <span class="score-k">Qualité du produit</span>
+          <div class="bar"><span style="width:80%"></span></div>
+          <span class="score-n">8/10</span>
+          <span class="score-why">Parcours complets et vérifiés. Le retrait vient du web surdimensionné et du paiement jamais testé en réel.</span>
+        </div>
+        <div class="score" role="listitem">
+          <span class="score-k">Prêt technique au lancement</span>
+          <div class="bar"><span class="w" style="width:50%"></span></div>
+          <span class="score-n">5/10</span>
+          <span class="score-why">Montée d'Expo obligatoire, branche non fusionnée, production non redéployée.</span>
+        </div>
+        <div class="score" role="listitem">
+          <span class="score-k">Modèle économique</span>
+          <div class="bar"><span class="w" style="width:40%"></span></div>
+          <span class="score-n">4/10</span>
+          <span class="score-why">Commission cohérente en théorie, mais impossible à encaisser en espèces aujourd'hui.</span>
+        </div>
+        <div class="score" role="listitem">
+          <span class="score-k">Accès au marché</span>
+          <div class="bar"><span class="c" style="width:30%"></span></div>
+          <span class="score-n">3/10</span>
+          <span class="score-why">Très peu de transporteurs engagés, aucune donnée de prix ou de fréquence réelle.</span>
+        </div>
+      </div>
+      <p class="subnote">Ces notes sont mon jugement, pas une mesure. Elles servent à montrer où porter l'effort : les deux dernières lignes, pas les deux premières.</p>
+
+      <div class="callout rouge">
+        <h3>La phrase à retenir</h3>
+        <p>Le code n'est plus ce qui manque. Chaque heure passée à ajouter une fonctionnalité avant la première course réelle est une heure retirée au seul vrai risque du projet : la liquidité.</p>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">06</span><h2>Mes recommandations</h2></div>
+    <ol class="reco">
+      <li><h3>Geler les fonctionnalités</h3><p>Jusqu'au lancement, on ne code que ce qui bloque la mise en ligne ou ce qu'un vrai utilisateur réclame. Tout le reste attend.</p></li>
+      <li><h3>Faire de l'app mobile le seul produit</h3><p>Le web se réduit à une page d'accueil, aux pages légales et au back-office admin. Le reste de l'application web n'est plus maintenu. Deux personnes ne peuvent pas porter trois surfaces.</p></li>
+      <li><h3>Lancer en espèces, avec une commission qui rentre vraiment</h3><p>Pilote gratuit (dette enregistrée mais non exigée) pour supprimer la friction, puis un plafond de dette au-delà duquel le transporteur ne peut plus publier. Konnect et le séquestre attendent la V1.1.</p></li>
+      <li><h3>Poser le cadre juridique tôt</h3><p>Une entité, un avis d'avocat sur l'intermédiation en transport et sur la durée de conservation des pièces, puis les 22 blancs. Ce chemin est lent : il doit démarrer cette semaine.</p></li>
+      <li><h3>L'offre avant la demande</h3><p>Viser 30 transporteurs inscrits et vérifiés sur le corridor avant d'ouvrir aux clients. Pendant le pilote, trouver soi-même un client pour chaque retour publié. Votre « mode enquêteur » est un atout s'il est structuré : un script d'entretien et un carnet de prix réels.</p></li>
+    </ol>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">07</span><h2>Le chemin vers le lancement, à deux</h2></div>
+    <div class="stack">
+      <p>Le plan est révisé pour une équipe de deux. Je prends le code, la documentation et la mise en production. Vous prenez les décisions, les comptes externes, le juridique et le terrain. Il faut compter environ 12 semaines, contre 10 dans la version précédente, à cause de la montée d'Expo.</p>
+      <div class="phases">
+        <div class="phase phase-head"><span class="phase-w">Semaines</span><p>Moi : produit et technique</p><p>Vous : décisions et terrain</p></div>
+        <div class="phase"><span class="phase-w">S1</span><p>Fusion de la branche dans <code>master</code>, tests revérifiés, graphe à jour.</p><p>Entité juridique, rendez-vous avocat, décisions sur le paiement et la commission.</p></div>
+        <div class="phase"><span class="phase-w">S2 – S3</span><p>Montée d'Expo jusqu'à une version qui cible l'API 36, recette complète sur émulateur.</p><p>Premiers entretiens transporteurs (objectif 15), relevé des prix réels.</p></div>
+        <div class="phase"><span class="phase-w">S4 – S5</span><p>Mode espèces (plafond, dette, blocage), purge des pièces, logo, commutateur masqué, petits défauts, mises à jour à distance.</p><p>Remplissage des 22 blancs, création des comptes Play, Expo, Render et domaine.</p></div>
+        <div class="phase"><span class="phase-w">S6 – S7</span><p>Mise en production du serveur et du site, build Android, test fermé sur Google Play.</p><p>Recrutement des testeurs (au moins 12, règle de Play à vérifier pour un compte personnel). Objectif : 30 transporteurs pré-inscrits.</p></div>
+        <div class="phase"><span class="phase-w">S8 – S10</span><p>Corrections à chaud pendant le pilote, suivi des indicateurs.</p><p>Pilote sur Tunis – Sousse – Sfax : chaque retour publié est accompagné à la main jusqu'à la course.</p></div>
+        <div class="phase"><span class="phase-w">S11 – S12</span><p>Passage en production sur Play Store.</p><p>Ouverture aux clients : groupes Facebook, annonces ciblées, bouche-à-oreille.</p></div>
+      </div>
+      <p class="subnote">Paliers après le lancement : 5 courses à la fin du mois 2, 5 par semaine au mois 3, 10 au mois 4, 20 au mois 6. À 8 % sur un retour d'environ 120 DT, 20 retours par semaine rapportent à peu près 800 DT par mois. Cela ne couvre pas encore les coûts, mais prouve que le modèle fonctionne.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">08</span><h2>Les décisions qui vous attendent</h2></div>
+    <div class="scroller">
+      <table>
+        <thead><tr><th>Décision</th><th>Ma recommandation</th><th>Bloque</th></tr></thead>
+        <tbody>
+          <tr><td><b>Entité juridique</b></td><td>Statut le plus léger compatible avec l'intermédiation, validé par un avocat</td><td>Pages légales, store</td></tr>
+          <tr><td><b>Paiement en V1</b></td><td>Espèces uniquement, plafond relevé, paiement en ligne masqué</td><td>Sprint espèces</td></tr>
+          <tr><td><b>Commission pendant le pilote</b></td><td>Gratuite, dette enregistrée, puis plafond avec blocage</td><td>Sprint espèces</td></tr>
+          <tr><td><b>Durée de conservation des pièces</b></td><td>Un nombre de mois après fermeture du compte, fixé avec l'avocat</td><td>Politique de confidentialité</td></tr>
+          <tr><td><b>Logo</b></td><td>Écrire le mot entier à côté du symbole</td><td>Premier écran</td></tr>
+          <tr><td><b>Site web</b></td><td>Réduire à l'accueil, aux pages légales et à l'admin</td><td>Charge de maintenance</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="shead"><span class="num">09</span><h2>Sources</h2></div>
+    <div class="sources">
+      <span>Dépôt Transporti : <code>VISION_PRODUIT_FONDATRICE.md</code>, <code>PIVOT_STRATEGIQUE_TRAJETS_RETOUR_2026-07-14.md</code>, <code>BACKLOG.md</code>, <code>AUDIT_LANCEMENT_MOBILE_2026-09-06.html</code>, <code>backend/transporti_core/settings.py</code>, <code>backend/payments/services.py</code>.</span>
+      <a href="https://developer.android.com/google/play/requirements/target-sdk">Google : exigence de niveau d'API cible pour Google Play</a>
+      <a href="https://expo.dev/changelog/2024/11-12-sdk-52">Expo : notes de version du SDK 52</a>
+      <a href="https://kapitalis.com/tunisie/?p=83238">Kapitalis : eFret.tn, première bourse de transport en Tunisie</a>
+      <a href="https://www.wearetech.africa/fr/fils/solutions/tunisie-la-start-up-efret-tn-facilite-le-transport-et-le-transit">WeAreTech Africa : la start-up eFret.tn</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>Rapport de projet · Transporti V1</span>
+    <span>24/10/2026</span>
+    <span>Cinquième document du dossier</span>
+  </footer>
+</div>
