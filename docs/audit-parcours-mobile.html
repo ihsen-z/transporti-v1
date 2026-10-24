@@ -1,0 +1,746 @@
+<title>Recette des parcours mobiles</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap">
+
+<style>
+  :root {
+    --ground:  #F1F4FA;
+    --surface: #FFFFFF;
+    --sunk:    #E9EEF8;
+    --ink:     #111827;
+    --muted:   #5C6B85;
+    --faint:   #8A99B5;
+    --rule:    #DCE4F1;
+    --brand:   #1E3A8A;
+    --link:    #2563B3;
+    --mark:    #2E5FAC;
+    --good:    #0F7A3D;
+    --good-bg: #E7F6EC;
+    --warn:    #92400E;
+    --warn-bg: #FEF3C7;
+    --stop:    #9F1239;
+    --stop-bg: #FFE7EC;
+
+    --display: Archivo, "Helvetica Neue", Arial, sans-serif;
+    --body: Inter, "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:  #0A1630;
+      --surface: #101F42;
+      --sunk:    #0D1A38;
+      --ink:     #E8EFFC;
+      --muted:   #9FB3D6;
+      --faint:   #6F84AB;
+      --rule:    #22345E;
+      --brand:   #93B4F0;
+      --link:    #8FB6F2;
+      --mark:    #6E9BE0;
+      --good:    #6FD897;
+      --good-bg: #12321F;
+      --warn:    #F2C879;
+      --warn-bg: #382A11;
+      --stop:    #FF9DAF;
+      --stop-bg: #3A1620;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:  #0A1630;
+    --surface: #101F42;
+    --sunk:    #0D1A38;
+    --ink:     #E8EFFC;
+    --muted:   #9FB3D6;
+    --faint:   #6F84AB;
+    --rule:    #22345E;
+    --brand:   #93B4F0;
+    --link:    #8FB6F2;
+    --mark:    #6E9BE0;
+    --good:    #6FD897;
+    --good-bg: #12321F;
+    --warn:    #F2C879;
+    --warn-bg: #382A11;
+    --stop:    #FF9DAF;
+    --stop-bg: #3A1620;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { max-width: 940px; margin: 0 auto; padding: 0 24px 90px; }
+
+  header.top { padding: 54px 0 34px; border-bottom: 2px solid var(--ink); }
+  .eyebrow {
+    font-family: var(--mono); font-size: 12px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 16px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(34px, 5.4vw, 54px); line-height: 1.03;
+    letter-spacing: -0.035em; margin: 0 0 16px; text-wrap: balance;
+  }
+  .lede { font-size: 18.5px; line-height: 1.55; color: var(--muted); max-width: 60ch; margin: 0; }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  /* Chiffres de tête — ce sont eux le sujet de la page, donc ils ont droit aux tuiles */
+  .kpis {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: var(--rule); border: 1px solid var(--rule);
+    border-radius: 12px; overflow: hidden; margin: 34px 0 0;
+  }
+  @media (min-width: 700px) { .kpis { grid-template-columns: repeat(4, 1fr); } }
+  .kpi { background: var(--surface); padding: 16px 18px; }
+  .kpi .v {
+    font-family: var(--display); font-weight: 800; font-size: 28px;
+    letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.1;
+  }
+  .kpi .l {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.09em; text-transform: uppercase; color: var(--faint);
+    margin-top: 5px;
+  }
+
+  section { padding-top: 48px; }
+  h2 {
+    font-family: var(--display); font-weight: 700; font-size: 26px;
+    letter-spacing: -0.02em; line-height: 1.15; margin: 0 0 6px; text-wrap: balance;
+  }
+  h2 .num {
+    font-family: var(--mono); font-size: 13px; font-weight: 600;
+    color: var(--faint); margin-inline-end: 12px; letter-spacing: 0;
+  }
+  .sub { color: var(--muted); margin: 0 0 22px; max-width: 66ch; font-size: 15.5px; }
+  h3 {
+    font-family: var(--display); font-weight: 700; font-size: 17px;
+    letter-spacing: -0.01em; margin: 28px 0 8px;
+  }
+  p { max-width: 68ch; margin: 0 0 14px; }
+  ul.plain { margin: 0 0 16px; padding-inline-start: 20px; max-width: 68ch; }
+  ul.plain li { margin-bottom: 7px; }
+  code {
+    font-family: var(--mono); font-size: 0.87em;
+    background: var(--sunk); padding: 1px 5px; border-radius: 5px;
+  }
+
+  .verdict {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 5px 10px; border-radius: 7px;
+  }
+  .verdict.ok   { background: var(--good-bg); color: var(--good); }
+  .verdict.att  { background: var(--warn-bg); color: var(--warn); }
+  .verdict.non  { background: var(--stop-bg); color: var(--stop); }
+
+  /* ── Graphique de latence ─────────────────────────────────────────── */
+  figure.chart {
+    margin: 22px 0 8px; padding: 20px 22px 16px;
+    background: var(--surface); border: 1px solid var(--rule); border-radius: 12px;
+  }
+  figure.chart figcaption {
+    font-family: var(--mono); font-size: 11px; font-weight: 600;
+    letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 16px;
+  }
+  .bars { display: flex; flex-direction: column; gap: 2px; }
+  .bar-row {
+    display: grid; grid-template-columns: minmax(0, 15em) 1fr auto;
+    align-items: center; gap: 12px;
+  }
+  .bar-row .nm { font-size: 13.5px; color: var(--muted); }
+  .bar-track { position: relative; height: 20px; }
+  .bar {
+    height: 20px; background: var(--mark);
+    border-radius: 0 4px 4px 0; min-width: 2px;
+  }
+  .bar-row .vl {
+    font-family: var(--mono); font-size: 12.5px; font-weight: 600;
+    font-variant-numeric: tabular-nums; color: var(--ink); min-width: 4.4em;
+    text-align: end;
+  }
+  .axis {
+    display: grid; grid-template-columns: minmax(0, 15em) 1fr auto;
+    gap: 12px; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--rule);
+  }
+  .ticks { position: relative; height: 14px; }
+  .ticks span {
+    position: absolute; top: 0; transform: translateX(-50%);
+    font-family: var(--mono); font-size: 10.5px; color: var(--faint);
+    font-variant-numeric: tabular-nums;
+  }
+  .med {
+    position: absolute; top: -2px; bottom: -2px; width: 2px;
+    background: var(--ink); opacity: 0.5;
+  }
+  .med-note {
+    font-family: var(--mono); font-size: 11px; color: var(--muted);
+    margin-top: 12px;
+  }
+
+  /* ── Tableaux ─────────────────────────────────────────────────────── */
+  .scroller { overflow-x: auto; margin: 16px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 480px; }
+  th, td {
+    text-align: start; padding: 9px 14px 9px 0;
+    border-bottom: 1px solid var(--rule); vertical-align: top;
+  }
+  th {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--faint); border-bottom-color: var(--ink);
+  }
+  td.n { font-variant-numeric: tabular-nums; white-space: nowrap; font-family: var(--mono); font-size: 13px; }
+  td.m { font-family: var(--mono); font-size: 12.5px; color: var(--link); }
+
+  .note {
+    border-inline-start: 3px solid var(--brand);
+    padding: 2px 0 2px 16px; margin: 20px 0;
+    color: var(--muted); font-size: 14.5px; max-width: 66ch;
+  }
+  .note b { color: var(--ink); }
+  .note.alerte { border-inline-start-color: var(--stop); }
+
+  footer {
+    margin-top: 60px; padding-top: 22px; border-top: 1px solid var(--rule);
+    font-size: 13.5px; color: var(--faint); max-width: 70ch;
+  }
+  a { color: var(--link); }
+  a:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; border-radius: 3px; }
+</style>
+
+<div class="page">
+
+<header class="top">
+  <p class="eyebrow">Audit · parcours mobiles · 10 septembre 2026</p>
+  <h1>Ce que l'application fait vraiment quand on l'utilise</h1>
+  <p class="lede">
+    Vingt-cinq étapes jouées sur émulateur avec un compte de recette transporteur,
+    chacune mesurée sur trois indicateurs : <strong>elle aboutit</strong>,
+    <strong>en combien de temps</strong>, <strong>au prix de combien de requêtes</strong>.
+    Les chiffres viennent du journal d'accès du serveur, horodaté à la milliseconde,
+    pas d'une impression.
+  </p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v" style="color:var(--good)">25/25</div><div class="l">étapes abouties</div></div>
+    <div class="kpi"><div class="v" style="color:var(--good)">0</div><div class="l">erreur HTTP</div></div>
+    <div class="kpi"><div class="v">2,83 s</div><div class="l">latence médiane</div></div>
+    <div class="kpi"><div class="v" style="color:var(--warn)">43 %</div><div class="l">trafic de sondage</div></div>
+  </div>
+</header>
+
+<!-- 01 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">01</span>Verdict</h2>
+  <p class="sub">Trois constats, dans l'ordre de ce qu'ils coûtent.</p>
+
+  <p>
+    <span class="verdict ok">Fiabilité — bonne</span>
+  </p>
+  <p>
+    Aucune étape n'échoue. Aucune requête n'échoue : <b>zéro 4xx et zéro 5xx</b> sur les
+    26 appels que l'application a émis vers son API pendant toute la recette. Les deux
+    « blocages » qu'a signalés le premier passage venaient de mon banc de test, pas de
+    l'application — détail au point 05.
+  </p>
+
+  <p style="margin-top:26px">
+    <span class="verdict ok">Vitesse — bonne, avec une réserve au démarrage</span>
+  </p>
+  <p>
+    Médiane à <b>2,83 s</b> entre le geste et la dernière donnée servie. Surtout :
+    <b>14 étapes sur 25 n'ont déclenché aucune requête</b> — le cache persistant les
+    sert instantanément. Le démarrage à froid, lui, met <b>13,94 s</b> pour un accueil
+    complet, et c'est le seul chiffre franchement au-dessus des autres.
+  </p>
+
+  <p style="margin-top:26px">
+    <span class="verdict att">Efficacité réseau — à corriger</span>
+  </p>
+  <p>
+    <b>43 % du trafic mobile est du sondage de fond</b> que personne n'a demandé : la
+    barre d'onglets interroge les conversations toutes les 10 secondes et le compteur de
+    notifications toutes les 15, sur tous les écrans, en permanence. C'est le seul point
+    de cet audit qui coûte de l'argent aux utilisateurs — en données mobiles et en
+    batterie.
+  </p>
+</section>
+
+<!-- 02 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">02</span>Comment c'est mesuré</h2>
+  <p class="sub">
+    Trois indicateurs, trois sources distinctes. Les mélanger produit des chiffres
+    qui ont l'air précis et ne mesurent rien — c'est arrivé, et c'est corrigé.
+  </p>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Indicateur</th><th>Source</th><th>Pourquoi celle-là</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Vitesse</b></td>
+          <td class="m">journal d'accès Django</td>
+          <td>Horodaté à la milliseconde, sur la même machine que le banc. On note
+              l'instant du geste, puis celui de la dernière réponse utile.</td>
+        </tr>
+        <tr>
+          <td><b>Fiabilité</b></td>
+          <td class="m">uiautomator + journal</td>
+          <td>Le marqueur attendu apparaît-il à l'écran (binaire), et le serveur
+              a-t-il répondu sans erreur pendant l'étape.</td>
+        </tr>
+        <tr>
+          <td><b>Blocage</b></td>
+          <td class="m">uiautomator</td>
+          <td>Le marqueur n'apparaît jamais dans le délai. Une étape lente se
+              supporte ; une étape sans issue arrête le parcours.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Pourquoi la latence ne se lit pas à l'écran.</b> J'ai mesuré le coût d'une
+    observation avant de m'en servir : <code>uiautomator dump</code> prend
+    <b>2,19 s</b> sur cet émulateur — 2,42 s en passant par un fichier, 2,19 s en
+    sortie directe. Toute latence lue par cette sonde serait donc un plancher
+    d'instrumentation de deux secondes, pas une mesure. D'où le journal serveur.
+  </div>
+
+  <h3>Quatre défauts du banc, trouvés et corrigés</h3>
+  <p>
+    Ils comptent parce qu'ils expliquent pourquoi les chiffres ci-dessous sont
+    dignes de foi, et que les premiers ne l'étaient pas.
+  </p>
+  <ul class="plain">
+    <li>
+      <b>Le journal lu n'existait pas.</b> Le serveur est lancé depuis Git Bash, dont
+      <code>/tmp</code> est remappé sur le répertoire temporaire de l'utilisateur ;
+      Python, lui, cherchait <code>C:\tmp\dj.log</code>. Le banc annonçait
+      « 0 requête » sur des étapes qui en déclenchaient six.
+    </li>
+    <li>
+      <b>Le sondage de fond s'attribuait aux étapes.</b> Les deux sondeurs tombent au
+      hasard dans la fenêtre d'une étape. Une navigation d'onglet « mesurait » 43 s de
+      latence serveur qui n'étaient pas les siennes. Ils sont désormais comptés à part.
+    </li>
+    <li>
+      <b>Un client étranger polluait le journal.</b> Voir le point 06 — filtré sur
+      <code>/api/v1/</code>, la seule surface que le mobile consomme.
+    </li>
+    <li>
+      <b>Le banc accusait l'application de ses propres erreurs de navigation.</b> Un
+      <code>retour()</code> depuis une boîte de réception ne remonte pas à l'accueil :
+      huit étapes se sont déclarées bloquées alors que tout allait bien. Chaque bloc
+      repart maintenant d'un onglet vérifié.
+    </li>
+  </ul>
+</section>
+
+<!-- 03 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">03</span>Vitesse, étape par étape</h2>
+  <p class="sub">
+    Les onze étapes qui ont réellement interrogé le serveur. Les quatorze autres ont
+    été servies par le cache, sans aucune requête — elles n'ont pas de barre parce
+    qu'elles n'ont rien attendu.
+  </p>
+
+  <figure class="chart">
+    <figcaption>Latence serveur — du geste à la dernière donnée servie</figcaption>
+    <div class="bars">
+      <div class="bar-row">
+        <div class="nm">Démarrage à froid → accueil</div>
+        <div class="bar-track"><div class="bar" style="width:100%"></div></div>
+        <div class="vl">13,94 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Envoyer un message</div>
+        <div class="bar-track"><div class="bar" style="width:45.8%"></div></div>
+        <div class="vl">6,39 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Ouvrir « Gérer mes retours »</div>
+        <div class="bar-track"><div class="bar" style="width:30.8%"></div></div>
+        <div class="vl">4,29 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Ouvrir une mission</div>
+        <div class="bar-track"><div class="bar" style="width:22.0%"></div></div>
+        <div class="vl">3,07 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Ouvrir le formulaire de publication</div>
+        <div class="bar-track"><div class="bar" style="width:20.7%"></div></div>
+        <div class="vl">2,89 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Ouvrir un fil de conversation</div>
+        <div class="bar-track"><div class="bar" style="width:20.3%"></div></div>
+        <div class="vl">2,83 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Aller à « Demandes reçues »</div>
+        <div class="bar-track"><div class="bar" style="width:20.2%"></div></div>
+        <div class="vl">2,81 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Aller à « Gains »</div>
+        <div class="bar-track"><div class="bar" style="width:18.9%"></div></div>
+        <div class="vl">2,64 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Ouvrir « Mes avis »</div>
+        <div class="bar-track"><div class="bar" style="width:18.6%"></div></div>
+        <div class="vl">2,59 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Ouvrir « Vérification »</div>
+        <div class="bar-track"><div class="bar" style="width:18.5%"></div></div>
+        <div class="vl">2,58 s</div>
+      </div>
+      <div class="bar-row">
+        <div class="nm">Ouvrir le profil</div>
+        <div class="bar-track"><div class="bar" style="width:4.5%"></div></div>
+        <div class="vl">0,63 s</div>
+      </div>
+    </div>
+    <div class="axis">
+      <div></div>
+      <div class="ticks">
+        <span style="inset-inline-start:0">0</span>
+        <span style="inset-inline-start:35.9%">5 s</span>
+        <span style="inset-inline-start:71.7%">10 s</span>
+        <span style="inset-inline-start:100%">13,9 s</span>
+        <div class="med" style="inset-inline-start:20.3%" title="médiane 2,83 s"></div>
+      </div>
+      <div></div>
+    </div>
+    <div class="med-note">Le trait vertical marque la médiane, 2,83 s. p90 : 6,39 s.</div>
+  </figure>
+
+  <h3>Le démarrage à froid</h3>
+  <p>
+    13,94 s pour six requêtes, c'est le pire chiffre de la recette et il mérite une
+    nuance : il inclut la reconstruction du bundle de développement par Metro. Sur une
+    application compilée, cette part disparaît. Ce qui reste — six requêtes en
+    séquence avant que l'accueil soit complet — vaut quand même d'être regardé.
+  </p>
+
+  <h3>Le cache fait la moitié du travail</h3>
+  <p>
+    Quatorze étapes sur vingt-cinq, dont trois navigations d'onglet sur quatre en
+    deuxième visite, n'ont émis <b>aucune</b> requête. Le cache persistant de l'application
+    est ce qui rend la navigation instantanée après le premier passage. C'est le point
+    fort du produit sur le plan de la vitesse, et il est mesuré, pas supposé.
+  </p>
+</section>
+
+<!-- 04 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">04</span>Fiabilité</h2>
+  <p class="sub">Toutes les étapes, avec leur coût en requêtes.</p>
+
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr><th>Étape</th><th>Aboutit</th><th>Latence</th><th>Req.</th><th>Fond</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Démarrage à froid → accueil</td><td>oui</td><td class="n">13,94 s</td><td class="n">6</td><td class="n">1</td></tr>
+        <tr><td>Hero chiffré rendu</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><td>→ Demandes reçues</td><td>oui</td><td class="n">2,81 s</td><td class="n">1</td><td class="n">1</td></tr>
+        <tr><td>→ Messages</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">1</td></tr>
+        <tr><td>→ Gains</td><td>oui</td><td class="n">2,64 s</td><td class="n">2</td><td class="n">1</td></tr>
+        <tr><td>→ Accueil</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><td>Ouvrir le formulaire de publication</td><td>oui</td><td class="n">2,89 s</td><td class="n">2</td><td class="n">0</td></tr>
+        <tr><td>Sélecteur de départ</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">1</td></tr>
+        <tr><td>Choisir Tunis</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">1</td></tr>
+        <tr><td>Sélecteur d'arrivée</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">1</td></tr>
+        <tr><td>Fermer sans publier</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><td>→ Gérer mes retours</td><td>oui</td><td class="n">4,29 s</td><td class="n">3</td><td class="n">2</td></tr>
+        <tr><td>Échéance d'un retour lisible</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><td>Tuiles financières rendues</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">1</td></tr>
+        <tr><td>Ouvrir la demande de retrait</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">1</td></tr>
+        <tr><td>Fermer sans soumettre</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><td>Ouvrir un fil de conversation</td><td>oui</td><td class="n">2,83 s</td><td class="n">1</td><td class="n">2</td></tr>
+        <tr><td>Envoyer un message</td><td>oui</td><td class="n">6,39 s</td><td class="n">3</td><td class="n">1</td></tr>
+        <tr><td>Ouvrir une mission</td><td>oui</td><td class="n">3,07 s</td><td class="n">3</td><td class="n">1</td></tr>
+        <tr><td>Chronologie rendue</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">1</td></tr>
+        <tr><td>Aucune barre de paiement au transporteur</td><td>oui</td><td class="n">—</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><td>→ Profil par l'avatar</td><td>oui</td><td class="n">0,63 s</td><td class="n">1</td><td class="n">1</td></tr>
+        <tr><td>Ouvrir « Mes avis »</td><td>oui</td><td class="n">2,59 s</td><td class="n">2</td><td class="n">1</td></tr>
+        <tr><td>Fermer le panneau</td><td>oui</td><td class="n">cache</td><td class="n">0</td><td class="n">0</td></tr>
+        <tr><td>Ouvrir « Vérification »</td><td>oui</td><td class="n">2,58 s</td><td class="n">2</td><td class="n">2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Une assertion négative confirmée.</b> Le détail de mission ne propose
+    <b>aucune</b> barre de paiement au transporteur. C'est la vérification du correctif
+    posé deux jours plus tôt : la condition de paiement ne regardait que le statut de la
+    mission, et « Payer maintenant » s'affichait à celui qui doit encaisser.
+    Neuf tests unitaires verrouillent désormais cette règle.
+  </div>
+</section>
+
+<!-- 05 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">05</span>Blocages</h2>
+  <p class="sub">Aucun dans l'application. Deux dans mon banc, et il faut le dire.</p>
+
+  <p>
+    Le premier passage a signalé <b>« ouvrir une mission »</b> comme bloqué, puis le
+    deuxième passage l'a signalé de nouveau — deux échecs indépendants, ce qui ressemble
+    beaucoup à un vrai défaut. En regardant l'écran, la cause était ailleurs : mon script
+    cherchait le texte « Sousse » et tapait dessus. Or « Sousse&nbsp;→&nbsp;Tunis »
+    apparaît d'abord dans la section <b>« Mes retours en ligne »</b>, qui liste les
+    trajets publiés. Le script ouvrait donc un retour, pas une mission.
+  </p>
+  <p>
+    Avec la bonne poignée — le <code>testID</code> de la carte de mission — l'étape passe
+    en <b>3,07 s</b>, trois requêtes, zéro erreur, chronologie affichée.
+  </p>
+
+  <div class="note">
+    <b>Ce que cet incident dit du produit.</b> Deux entités distinctes — un retour publié
+    et une mission — portent le même libellé « Sousse → Tunis » sur le même écran, à
+    quelques centimètres l'une de l'autre. Mon script s'y est trompé deux fois ; un
+    utilisateur pressé peut s'y tromper aussi. Ce n'est pas un blocage, c'est une
+    ambiguïté de désignation qui vaut d'être regardée.
+  </div>
+</section>
+
+<!-- 06 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">06</span>Le sondage de fond</h2>
+  <p class="sub">Le seul point de cet audit qui coûte quelque chose aux utilisateurs.</p>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Sondeur</th><th>Cadence mesurée</th><th>Appels / recette</th></tr></thead>
+      <tbody>
+        <tr><td class="m">/api/v1/conversations/</td><td class="n">10,1 s</td><td class="n">68</td></tr>
+        <tr><td class="m">/api/v1/notifications/unread-count/</td><td class="n">15,1 s</td><td class="n">47</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Ces deux appels partent de la barre d'onglets, donc de <b>tous</b> les écrans de
+    section, sans interruption. Sur la recette instrumentée ils représentent
+    <b>20 requêtes contre 26 utiles — 43 % du trafic</b>. Sur la session complète, plus
+    longue, 115 appels sur 239.
+  </p>
+  <p>
+    Le but est légitime : la pastille de non-lus est le seul signal qui dit qu'une
+    décision attend. Mais un sondage toutes les dix secondes, en permanence, sur un
+    forfait de données tunisien et une batterie de téléphone, n'est pas le moyen le
+    moins cher d'y arriver.
+  </p>
+</section>
+
+<!-- 07 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">07</span>Un client étranger sur le backend</h2>
+  <p class="sub">
+    Trouvé en filtrant le journal. Ce n'est pas l'application mobile — et c'est
+    précisément pour ça qu'il faut le signaler.
+  </p>
+
+  <p>
+    Pendant la recette, le journal du serveur montrait une séquence qui n'avait rien à
+    voir avec mes étapes : un <code>/api/auth/profile/</code> en <b>401</b>, puis
+    <b>dix tentatives de connexion en trois secondes</b>, toutes en 400, puis
+    <b>trois 429</b> — le limiteur de débit qui les arrête. Retour à la normale
+    <b>85 secondes</b> plus tard.
+  </p>
+  <p>
+    Ce n'est pas le mobile. L'application mobile consomme <b>exclusivement</b>
+    <code>/api/v1</code> : son client HTTP suffixe la base une seule fois, et le dépôt ne
+    contient aucun chemin hors version — vérifié. Toute la séquence ci-dessus vit sur
+    <code>/api/…</code> sans <code>v1</code>. Elle vient d'un autre client branché sur le
+    même serveur, le plus probablement un onglet du frontend web laissé ouvert.
+  </p>
+
+  <div class="note alerte">
+    <b>Deux choses à en retenir.</b> Le limiteur de débit fonctionne — c'est une bonne
+    nouvelle, mesurée. Et un client tiers qui boucle sur l'authentification pendant une
+    campagne de mesure fausse toutes les mesures : c'est ce qui a produit les
+    « 43 secondes de latence » du premier passage. Un environnement de recette a besoin
+    d'un backend qui ne serve que lui.
+  </div>
+</section>
+
+<!-- 08 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">08</span>Analyse statique : ce que chaque écran coûte</h2>
+  <p class="sub">
+    Le nombre d'appels réseau atteignables depuis chaque écran, composants montés
+    compris. Un complément à la mesure, pas un substitut.
+  </p>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Écran</th><th>Requêtes au montage</th><th>Mutations</th></tr></thead>
+      <tbody>
+        <tr><td><b>Profil</b></td><td class="n">14</td><td class="n">8</td></tr>
+        <tr><td><b>Accueil</b></td><td class="n">9</td><td class="n">10</td></tr>
+        <tr><td>Mes retours</td><td class="n">4</td><td class="n">0</td></tr>
+        <tr><td>Gains</td><td class="n">3</td><td class="n">1</td></tr>
+        <tr><td>Détail de mission</td><td class="n">3</td><td class="n">5</td></tr>
+        <tr><td>Profil transporteur</td><td class="n">3</td><td class="n">1</td></tr>
+        <tr><td>Publier · Recherche</td><td class="n">2</td><td class="n">2 – 4</td></tr>
+        <tr><td>Les onze autres</td><td class="n">0 – 1</td><td class="n">0 – 2</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>
+    Médiane à 1, et deux écrans très au-dessus : le profil et l'accueil. Plus un plancher
+    de 2 sur tout écran de section, imposé par la barre d'onglets.
+  </p>
+
+  <div class="note">
+    <b>Ce chiffre est un majorant, pas une mesure.</b> 22 fichiers d'API sur 87 portent
+    une garde <code>enabled:</code> — la requête ne part que si une condition est vraie,
+    comme <code>useMyDisputes(visible)</code>, qui n'interroge rien tant que le panneau
+    est fermé. Une lecture statique ne peut pas trancher. À l'exécution, l'ouverture du
+    profil n'a coûté <b>qu'une seule requête</b> : l'écart entre 14 et 1 est exactement
+    ce que ces gardes évitent.
+  </div>
+</section>
+
+<!-- 09 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">09</span>Ce qui n'est pas testé</h2>
+  <p class="sub">Nommé plutôt que passé sous silence.</p>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Non couvert</th><th>Raison</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Tout le parcours client</b> — recherche, envoi de demande, paiement,
+              confirmation de réception</td>
+          <td>Demande une session cliente. Je ne saisis pas de mot de passe dans un
+              champ, y compris pour un compte de recette documenté.</td>
+        </tr>
+        <tr>
+          <td><b>Soumission d'une demande de retrait</b></td>
+          <td>Crée un enregistrement financier qu'aucune action de l'application ne
+              défait. Le formulaire est ouvert et mesuré ; le bouton n'est pas pressé.</td>
+        </tr>
+        <tr>
+          <td><b>Publication effective d'un retour</b></td>
+          <td>Ajouterait une annonce visible aux clients sur la base de recette. Le
+              formulaire et ses deux sélecteurs sont mesurés jusqu'avant l'envoi.</td>
+        </tr>
+        <tr>
+          <td><b>Bascule vers l'arabe</b></td>
+          <td>Elle force le RTL natif et redémarre l'application, ce qui interrompt la
+              campagne. Le contrôle est vérifié présent. Le rendu RTL avait été
+              contrôlé à l'écran le 8 septembre.</td>
+        </tr>
+        <tr>
+          <td><b>L'application web</b></td>
+          <td>Hors périmètre de cette recette, qui porte sur l'émulateur.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- 10 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">10</span>Recommandations</h2>
+  <p class="sub">Par ordre de ce qu'elles rapportent, chacune adossée à un chiffre mesuré.</p>
+
+  <h3>1 · Remplacer le sondage par des notifications poussées</h3>
+  <p>
+    43 % du trafic mobile, en permanence, pour deux compteurs. Le projet embarque déjà
+    <code>expo-notifications</code> et le backend a une table de jetons d'appareil : le
+    canal existe. À défaut, un intervalle qui s'allonge quand l'application est en
+    arrière-plan diviserait déjà la facture.
+  </p>
+
+  <h3>2 · Distinguer un retour publié d'une mission à l'écran</h3>
+  <p>
+    Deux entités différentes portent le même libellé sur le même écran. Mon banc s'y est
+    trompé deux fois de suite. Un préfixe, une icône ou une couleur de puce suffirait.
+  </p>
+
+  <h3>3 · Regarder les six requêtes du démarrage à froid</h3>
+  <p>
+    13,94 s en développement, dont une part revient à Metro et disparaîtra en
+    production. Reste que l'accueil attend six réponses avant d'être complet. Un
+    affichage progressif — le hero dès sa réponse, les sections ensuite — rendrait
+    l'écran utile plus tôt sans rien changer au serveur.
+  </p>
+
+  <h3>4 · Isoler le backend de recette</h3>
+  <p>
+    Un client tiers en boucle d'authentification a produit les faux chiffres du premier
+    passage. Une campagne de mesure a besoin d'un serveur qui ne serve qu'elle.
+  </p>
+
+  <h3>5 · Étendre la recette au parcours client</h3>
+  <p>
+    C'est la moitié du produit, et la moitié non mesurée. Il suffit d'une session
+    cliente ouverte sur l'émulateur : le banc est écrit, les scénarios se transposent.
+  </p>
+</section>
+
+<!-- 11 ───────────────────────────────────────────────────────────────── -->
+<section>
+  <h2><span class="num">11</span>État du graphe de connaissances</h2>
+  <p class="sub">Mis à jour avant la recette, pour que les requêtes portent sur le code réel.</p>
+
+  <div class="kpis">
+    <div class="kpi"><div class="v">6 506</div><div class="l">nœuds</div></div>
+    <div class="kpi"><div class="v">11 041</div><div class="l">arêtes</div></div>
+    <div class="kpi"><div class="v">867</div><div class="l">fichiers</div></div>
+    <div class="kpi"><div class="v">557</div><div class="l">communautés</div></div>
+  </div>
+
+  <p style="margin-top:22px">
+    Dont 328 fichiers mobiles. Vérifié que la mise à jour a bien pris : les six fichiers
+    créés pendant la refonte du design sont indexés, et le fichier d'icônes supprimé en
+    est sorti.
+  </p>
+  <p>
+    Deux points d'exploitation. <code>graphify . --update</code> <b>échoue</b> en l'état :
+    il réclame une clé LLM pour 58 documents et 20 images ; <code>--code-only</code> est le
+    drapeau qui passe. Et faute de cette clé, <b>393 communautés sur 557</b> sont nommées
+    d'après leur nœud pivot au lieu d'un libellé lisible — <code>graphify label</code> les
+    renommerait.
+  </p>
+</section>
+
+<footer>
+  Recette jouée le 10 septembre 2026 sur Pixel 7 API 35, compte de recette
+  <span style="font-family:var(--mono);font-size:12.5px">mehdi.khelifi@test.transporti.tn</span>,
+  backend Django local sur sqlite, bundle de développement servi par Metro.
+  Mesures brutes conservées dans <span style="font-family:var(--mono);font-size:12.5px">mobile/.recette-mesures*.json</span> ;
+  banc et scénarios dans <span style="font-family:var(--mono);font-size:12.5px">mobile/.recette.py</span> et
+  <span style="font-family:var(--mono);font-size:12.5px">mobile/.parcours-*.py</span>.
+  Suite de tests au même instant : 42 suites, 317 tests, <span style="font-family:var(--mono);font-size:12.5px">tsc</span> et
+  <span style="font-family:var(--mono);font-size:12.5px">eslint</span> sans avertissement.
+</footer>
+
+</div>
