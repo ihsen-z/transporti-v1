@@ -62,17 +62,17 @@ export default function Pagination({
     >
       {/* Item count */}
       {showCount && (
-        <p className="text-sm text-neutral-500 dark:text-neutral-400">
+        <p className="text-[13px] text-ink-500 dark:text-neutral-400">
           Affichage de{" "}
-          <span className="font-medium text-neutral-700 dark:text-neutral-200">
+          <span className="font-semibold text-ink-900 dark:text-neutral-200">
             {startItem}
           </span>{" "}
           à{" "}
-          <span className="font-medium text-neutral-700 dark:text-neutral-200">
+          <span className="font-semibold text-ink-900 dark:text-neutral-200">
             {endItem}
           </span>{" "}
           sur{" "}
-          <span className="font-medium text-neutral-700 dark:text-neutral-200">
+          <span className="font-semibold text-ink-900 dark:text-neutral-200">
             {totalItems}
           </span>{" "}
           résultats
@@ -84,7 +84,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="grid h-9 w-9 place-items-center rounded-chip text-ink-500 transition-colors hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
           aria-label="Page précédente"
         >
           <ChevronLeft className="w-4 h-4 rtl:-scale-x-100" />
@@ -94,7 +94,7 @@ export default function Pagination({
           page === "..." ? (
             <span
               key={`dots-${index}`}
-              className="px-2 text-neutral-400 text-sm"
+              className="px-2 text-[13px] text-ink-300"
             >
               …
             </span>
@@ -102,10 +102,10 @@ export default function Pagination({
             <button
               key={page}
               onClick={() => onPageChange(page as number)}
-              className={`min-w-[36px] h-9 rounded-lg text-sm font-medium transition-colors ${
+              className={`min-w-[36px] h-9 rounded-chip text-[13px] font-semibold transition-colors ${
                 page === currentPage
-                  ? "bg-brand-600 text-white shadow-sm"
-                  : "text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700"
+                  ? "bg-blue-700 text-white shadow-blue"
+                  : "text-ink-500 hover:bg-blue-50 hover:text-blue-700 dark:text-neutral-300 dark:hover:bg-neutral-700"
               }`}
             >
               {page}
@@ -116,7 +116,7 @@ export default function Pagination({
         <button
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="p-2 rounded-lg text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+          className="grid h-9 w-9 place-items-center rounded-chip text-ink-500 transition-colors hover:bg-blue-50 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-30 dark:text-neutral-400 dark:hover:bg-neutral-700"
           aria-label="Page suivante"
         >
           <ChevronRight className="w-4 h-4 rtl:-scale-x-100" />

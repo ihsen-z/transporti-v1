@@ -20,20 +20,23 @@ export function HeroSection() {
   const b = t.becomeTransporter;
 
   return (
-    <section className="relative bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 text-white overflow-hidden">
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm mb-6">
-          <span className="w-2 h-2 bg-accent-400 rounded-full animate-pulse" />
+    <section className="immersive relative overflow-hidden">
+      <div className="halo halo--green !top-[40px]" aria-hidden />
+      <div className="halo halo--orange !top-[220px]" aria-hidden />
+
+      <div className="relative z-[1] mx-auto max-w-4xl px-5 py-16 text-center sm:px-6 lg:px-8 lg:py-20">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/[0.16] px-3.5 py-1.5 text-[12.5px] font-semibold">
+          <span className="h-2 w-2 rounded-full bg-green-300" />
           {b.heroBadge}
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight">
+        <h1 className="mb-5 text-[34px] font-extrabold leading-[1.12] tracking-title sm:text-[44px]">
           {b.heroTitle1}
           <br />
-          <span className="text-accent-400">{b.heroTitle2}</span>
+          <span className="text-green-300">{b.heroTitle2}</span>
         </h1>
 
-        <p className="text-lg sm:text-xl text-primary-100 mb-8 max-w-2xl mx-auto">
+        <p className="mx-auto mb-8 max-w-2xl text-[16px] leading-[1.55] text-on-blue-300">
           {b.heroDesc}
         </p>
 
@@ -41,19 +44,16 @@ export function HeroSection() {
           <Link
             href="/register?role=transporter"
             data-testid="devenir-transporteur-cta-principal"
-            className="inline-block bg-accent-500 hover:bg-accent-600 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all hover:scale-105 shadow-lg"
+            className="cta btn-base px-8"
           >
             {b.heroCta}
           </Link>
-          <Link
-            href="/login"
-            className="inline-block bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-4 rounded-lg border border-white/30 text-lg transition-all"
-          >
+          <Link href="/login" className="btn-base btn-ghost-on-blue px-8">
             {b.heroSecondary}
           </Link>
         </div>
 
-        <p className="text-sm text-primary-200 mt-6">{b.heroNote}</p>
+        <p className="mt-6 text-[13px] text-on-blue-300">{b.heroNote}</p>
       </div>
     </section>
   );

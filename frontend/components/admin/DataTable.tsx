@@ -34,14 +34,14 @@ export default function DataTable<T extends { id: number | string }>({
 
   if (data.length === 0) {
     return (
-      <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center transition-colors duration-300">
+      <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center transition-colors duration-300">
         <p className="text-neutral-500 dark:text-neutral-400">{emptyMessage}</p>
       </div>
     );
   }
 
   return (
-    <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden transition-colors duration-300">
+    <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 overflow-hidden transition-colors duration-300">
       <div className="overflow-x-auto">
         <table className="w-full">
           <thead>
@@ -64,7 +64,7 @@ export default function DataTable<T extends { id: number | string }>({
               ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-neutral-700">
+          <tbody className="divide-y divide-line dark:divide-neutral-700">
             {data.map((item) => (
               <tr
                 key={item.id}

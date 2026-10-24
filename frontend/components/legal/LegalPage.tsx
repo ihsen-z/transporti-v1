@@ -30,20 +30,18 @@ export function LegalPage({
   return (
     <>
       <Header />
-      <main className="bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
-          <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 tracking-tight">
+      <main className="bg-surface">
+        <div className="mx-auto max-w-3xl px-5 py-14 sm:px-6 sm:py-20 lg:px-8">
+          <h1 className="text-[28px] font-extrabold tracking-title text-ink-900 sm:text-[34px]">
             {titre}
           </h1>
-          <p className="mt-4 text-lg text-neutral-600 leading-relaxed">
+          <p className="mt-4 text-[16px] leading-[1.55] text-ink-500">
             {chapeau}
           </p>
-          <p className="mt-6 text-sm text-neutral-500">
+          <p className="mt-6 text-[13px] text-ink-300">
             Dernière mise à jour&nbsp;: {maj}
           </p>
-          <div className="mt-10 border-t border-neutral-200 pt-10">
-            {children}
-          </div>
+          <div className="mt-10 border-t border-line pt-10">{children}</div>
         </div>
       </main>
       <Footer />
@@ -65,13 +63,13 @@ export function Section({
 }) {
   return (
     <section id={id} className="mb-12 scroll-mt-24">
-      <h2 className="text-xl font-bold text-neutral-900 flex items-baseline gap-3">
+      <h2 className="text-[19px] font-extrabold tracking-heading text-ink-900 flex items-baseline gap-3">
         <span className="text-sm font-semibold text-primary-600 tabular-nums">
           {String(numero).padStart(2, "0")}
         </span>
         {titre}
       </h2>
-      <div className="mt-4 space-y-4 text-neutral-700 leading-relaxed">
+      <div className="mt-4 flex flex-col gap-4 text-neutral-700 leading-relaxed">
         {children}
       </div>
     </section>
@@ -81,7 +79,7 @@ export function Section({
 /** Liste à puces, même rythme vertical que les paragraphes. */
 export function Liste({ children }: { children: React.ReactNode }) {
   return (
-    <ul className="space-y-2 pl-5 list-disc marker:text-primary-500">
+    <ul className="flex flex-col gap-2 pl-5 list-disc marker:text-primary-500">
       {children}
     </ul>
   );
@@ -98,7 +96,7 @@ export function Encadre({
   return (
     <div className="border border-neutral-200 border-l-4 border-l-primary-500 bg-neutral-50 px-5 py-4 rounded-r">
       <p className="font-semibold text-neutral-900">{titre}</p>
-      <div className="mt-2 space-y-2 text-sm text-neutral-700 leading-relaxed">
+      <div className="mt-2 flex flex-col gap-2 text-sm text-neutral-700 leading-relaxed">
         {children}
       </div>
     </div>
@@ -115,7 +113,7 @@ export function Encadre({
  */
 export function ARemplir({ children }: { children: React.ReactNode }) {
   return (
-    <mark className="bg-amber-100 text-amber-900 border border-amber-300 rounded px-1.5 py-0.5 font-medium">
+    <mark className="bg-warning-100 text-amber-900 border border-amber-300 rounded px-1.5 py-0.5 font-medium">
       [à compléter&nbsp;: {children}]
     </mark>
   );

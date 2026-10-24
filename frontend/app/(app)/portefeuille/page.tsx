@@ -9,12 +9,10 @@
 import React, { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  Wallet,
   Clock,
   Banknote,
   AlertTriangle,
   ArrowDownToLine,
-  CheckCircle,
   XCircle,
   Loader2,
   RefreshCw,
@@ -156,45 +154,43 @@ export default function WalletPage() {
 
   return (
     <div className="p-6 lg:p-8 max-w-5xl mx-auto">
-      <div className="flex items-center justify-between mb-2">
-        <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
-          <Wallet className="w-6 h-6 text-brand-600" />
-          {t.title}
-        </h1>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-3">
+        <p className="max-w-2xl text-[14.5px] leading-[1.55] text-ink-500">
+          {t.subtitle}
+        </p>
         <button
           onClick={fetchWallet}
-          className="inline-flex items-center gap-1.5 text-sm text-neutral-500 hover:text-brand-600"
+          className="inline-flex flex-shrink-0 items-center gap-1.5 rounded-chip px-2.5 py-1.5 text-[13px] font-semibold text-ink-500 transition-colors hover:bg-app hover:text-blue-700"
         >
-          <RefreshCw className="w-4 h-4" />
+          <RefreshCw className="h-4 w-4" strokeWidth={2} />
           {t.refresh}
         </button>
       </div>
-      <p className="text-neutral-500 mb-8">{t.subtitle}</p>
 
       {/* Balance cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-        <div className="bg-white rounded-2xl border border-neutral-100 p-5">
+        <div className="bg-surface rounded-card shadow-card p-5">
           <p className="text-xs font-medium uppercase tracking-wider text-neutral-400 mb-2">
             {t.available}
           </p>
-          <p className="text-2xl font-bold text-emerald-600">
+          <p className="text-2xl font-bold text-green-600">
             {formatTND(data.available)}
           </p>
         </div>
-        <div className="bg-white rounded-2xl border border-neutral-100 p-5">
+        <div className="bg-surface rounded-card shadow-card p-5">
           <p className="text-xs font-medium uppercase tracking-wider text-neutral-400 mb-2 flex items-center gap-1">
             <Clock className="w-3.5 h-3.5" /> {t.pending}
           </p>
-          <p className="text-2xl font-bold text-amber-600">
+          <p className="text-2xl font-bold text-warning-600">
             {formatTND(data.pending_net)}
           </p>
           <p className="text-xs text-neutral-400 mt-1">{t.pendingHint}</p>
         </div>
-        <div className="bg-white rounded-2xl border border-neutral-100 p-5">
+        <div className="bg-surface rounded-card shadow-card p-5">
           <p className="text-xs font-medium uppercase tracking-wider text-neutral-400 mb-2">
             {t.codDebt}
           </p>
-          <p className="text-2xl font-bold text-red-500">
+          <p className="text-2xl font-bold text-error-500">
             {formatTND(data.cod_debt)}
           </p>
           <p className="text-xs text-neutral-400 mt-1">{t.codDebtHint}</p>
@@ -203,17 +199,19 @@ export default function WalletPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Withdrawal request */}
-        <div className="bg-white rounded-2xl border border-neutral-100 p-6">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+        <div className="bg-surface rounded-card shadow-card p-6">
+          <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4 flex items-center gap-2">
             <ArrowDownToLine className="w-5 h-5 text-brand-600" />
             {t.withdrawTitle}
           </h2>
           <p className="text-sm text-neutral-500 mb-4">{t.withdrawDesc}</p>
-          <form onSubmit={handleWithdraw} className="space-y-4" noValidate>
+          <form
+            onSubmit={handleWithdraw}
+            className="flex flex-col gap-4"
+            noValidate
+          >
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                {t.amountLabel}
-              </label>
+              <label className="label mb-[7px]">{t.amountLabel}</label>
               <div className="relative">
                 <input
                   type="number"
@@ -221,7 +219,7 @@ export default function WalletPage() {
                   step="0.01"
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
-                  className="w-full ps-3 pe-12 py-2.5 border rounded-lg focus:ring-2 focus:ring-accent-500 font-semibold"
+                  className="w-full ps-3 pe-12 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-700 font-semibold"
                   placeholder="0.00"
                 />
                 <span className="absolute end-3 top-1/2 -translate-y-1/2 text-neutral-500 text-sm font-medium">
@@ -233,19 +231,17 @@ export default function WalletPage() {
               </p>
             </div>
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                {t.bankDetailsLabel}
-              </label>
+              <label className="label mb-[7px]">{t.bankDetailsLabel}</label>
               <input
                 type="text"
                 value={bankDetails}
                 onChange={(e) => setBankDetails(e.target.value)}
-                className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-accent-500"
+                className="w-full px-3 py-2.5 border rounded-lg focus:ring-2 focus:ring-blue-700"
                 placeholder={t.bankDetailsPlaceholder}
               />
             </div>
             {formError && (
-              <p className="text-xs font-medium text-red-600 flex items-center gap-1">
+              <p className="text-xs font-medium text-error-600 flex items-center gap-1">
                 <XCircle className="w-3.5 h-3.5 flex-shrink-0" />
                 {formError}
               </p>
@@ -262,8 +258,8 @@ export default function WalletPage() {
         </div>
 
         {/* History */}
-        <div className="bg-white rounded-2xl border border-neutral-100 p-6">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
+        <div className="bg-surface rounded-card shadow-card p-6">
+          <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4 flex items-center gap-2">
             <Banknote className="w-5 h-5 text-brand-600" />
             {t.historyTitle}
           </h2>
@@ -272,7 +268,7 @@ export default function WalletPage() {
               {t.historyEmpty}
             </p>
           ) : (
-            <ul className="divide-y divide-neutral-100 max-h-[420px] overflow-y-auto">
+            <ul className="divide-y divide-line max-h-[420px] overflow-y-auto">
               {data.history.map((h, idx) => (
                 <li
                   key={idx}
@@ -309,10 +305,10 @@ export default function WalletPage() {
                       <span
                         className={`text-sm font-bold ${
                           h.status === "RELEASED"
-                            ? "text-emerald-600"
+                            ? "text-green-600"
                             : h.status === "REFUNDED" || h.status === "FAILED"
                               ? "text-neutral-400 line-through"
-                              : "text-amber-600"
+                              : "text-warning-600"
                         }`}
                       >
                         +{formatTND(h.net ?? 0)}
@@ -322,7 +318,7 @@ export default function WalletPage() {
                         className={`text-sm font-bold ${
                           h.status === "REJECTED"
                             ? "text-neutral-400 line-through"
-                            : "text-red-500"
+                            : "text-error-500"
                         }`}
                       >
                         −{formatTND(h.amount ?? 0)}
@@ -338,12 +334,12 @@ export default function WalletPage() {
 
       {/* COD debts detail */}
       {data.cod_debts.length > 0 && (
-        <div className="mt-6 bg-amber-50 border border-amber-200 rounded-2xl p-5">
-          <h3 className="text-sm font-semibold text-amber-800 mb-2 flex items-center gap-2">
+        <div className="mt-6 bg-warning-50 rounded-tile p-5">
+          <h3 className="text-sm font-semibold text-warning-800 mb-2 flex items-center gap-2">
             <AlertTriangle className="w-4 h-4" />
             {t.codDebtsTitle}
           </h3>
-          <ul className="text-sm text-amber-700 space-y-1">
+          <ul className="text-sm text-warning-700 flex flex-col gap-1">
             {data.cod_debts.map((c) => (
               <li key={c.job_id} className="flex justify-between">
                 <Link
@@ -356,7 +352,7 @@ export default function WalletPage() {
               </li>
             ))}
           </ul>
-          <p className="text-xs text-amber-600 mt-2">{t.codDebtsHint}</p>
+          <p className="text-xs text-warning-600 mt-2">{t.codDebtsHint}</p>
         </div>
       )}
     </div>

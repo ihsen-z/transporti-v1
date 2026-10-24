@@ -30,8 +30,8 @@ import { useI18n } from "@/lib/i18n/useAppI18n";
 const severityColors: Record<string, string> = {
   LOW: "bg-neutral-100 text-neutral-600",
   MEDIUM: "bg-orange-100 text-orange-700",
-  HIGH: "bg-red-100 text-red-700",
-  CRITICAL: "bg-red-200 text-red-800 font-bold",
+  HIGH: "bg-error-100 text-error-700",
+  CRITICAL: "bg-red-200 text-error-700 font-bold",
 };
 
 function StarDisplay({ rating }: { rating: number }) {
@@ -40,7 +40,7 @@ function StarDisplay({ rating }: { rating: number }) {
       {[1, 2, 3, 4, 5].map((v) => (
         <Star
           key={v}
-          className={`w-3.5 h-3.5 ${v <= rating ? "text-amber-400 fill-amber-400" : "text-neutral-200"}`}
+          className={`w-3.5 h-3.5 ${v <= rating ? "text-warning-400 fill-warning-400" : "text-neutral-200"}`}
         />
       ))}
     </div>
@@ -159,11 +159,11 @@ export default function AdminReviewsPage() {
         <div className="flex items-center gap-2">
           <div
             className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              r.role === "CLIENT" ? "bg-brand-600/10" : "bg-purple-100"
+              r.role === "CLIENT" ? "bg-brand-600/10" : "bg-blue-100"
             }`}
           >
             <User
-              className={`w-4 h-4 ${r.role === "CLIENT" ? "text-brand-600" : "text-purple-600"}`}
+              className={`w-4 h-4 ${r.role === "CLIENT" ? "text-brand-600" : "text-blue-700"}`}
             />
           </div>
           <div>
@@ -195,8 +195,8 @@ export default function AdminReviewsPage() {
       render: (r: BackendReview) =>
         r.flagReason ? (
           <div className="flex items-center gap-1.5">
-            <Flag className="w-3.5 h-3.5 text-red-500" />
-            <span className="text-xs text-red-700 font-medium">
+            <Flag className="w-3.5 h-3.5 text-error-500" />
+            <span className="text-xs text-error-700 font-medium">
               {r.flagReason}
             </span>
           </div>
@@ -246,7 +246,7 @@ export default function AdminReviewsPage() {
             className={`p-1.5 rounded-lg transition-colors disabled:opacity-50 ${
               r.isHidden
                 ? "bg-green-100 text-green-600 hover:bg-green-200"
-                : "bg-red-100 text-red-600 hover:bg-red-200"
+                : "bg-error-100 text-error-600 hover:bg-red-200"
             }`}
           >
             {r.isHidden ? (
@@ -268,11 +268,11 @@ export default function AdminReviewsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
             {t.reviews.title}
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">
@@ -296,7 +296,7 @@ export default function AdminReviewsPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+        <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
           <p className="text-neutral-500 dark:text-neutral-400">
             Chargement des avis...
@@ -306,7 +306,7 @@ export default function AdminReviewsPage() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+        <div className="bg-error-50 border border-error-200 rounded-xl p-4 text-error-700 text-sm">
           ⚠️ Erreur de chargement: {error?.message}
         </div>
       )}
@@ -331,7 +331,7 @@ export default function AdminReviewsPage() {
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                       isActive
                         ? "bg-brand-600 text-white shadow-sm"
-                        : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
+                        : "bg-surface dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
                     }`}
                   >
                     {tab.label}
@@ -358,7 +358,7 @@ export default function AdminReviewsPage() {
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
                 <span className="text-neutral-500 dark:text-neutral-400">
@@ -380,7 +380,7 @@ export default function AdminReviewsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Masqués:
                 </span>
-                <span className="ms-2 font-semibold text-red-600">
+                <span className="ms-2 font-semibold text-error-600">
                   {allReviews.filter((r) => r.isHidden).length}
                 </span>
               </div>
@@ -399,9 +399,9 @@ export default function AdminReviewsPage() {
       {/* Detail Drawer */}
       {selectedReview && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-          <div className="bg-white dark:bg-[#1e293b] w-full max-w-lg h-full overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+          <div className="bg-surface dark:bg-[#1e293b] w-full max-w-lg h-full overflow-y-auto shadow-2xl">
+            <div className="p-6 border-b border-line dark:border-neutral-700 flex items-center justify-between">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                 Avis #{selectedReview.id}
               </h2>
               <button
@@ -412,11 +412,11 @@ export default function AdminReviewsPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-6 flex flex-col gap-6">
               {/* Rating */}
               <div className="flex items-center gap-3">
                 <StarDisplay rating={selectedReview.rating} />
-                <span className="text-lg font-bold text-neutral-900 dark:text-white">
+                <span className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                   {selectedReview.rating}/5
                 </span>
                 <StatusBadge
@@ -467,8 +467,8 @@ export default function AdminReviewsPage() {
 
               {/* Flag Reason */}
               {selectedReview.flagReason && (
-                <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3">
-                  <Flag className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                <div className="bg-error-50 border border-error-200 rounded-xl p-4 flex items-start gap-3">
+                  <Flag className="w-5 h-5 text-error-500 flex-shrink-0 mt-0.5" />
                   <div>
                     <p className="text-sm font-semibold text-red-900">
                       {selectedReview.flagReason}
@@ -484,12 +484,12 @@ export default function AdminReviewsPage() {
                     <p className="text-xs text-neutral-500 mb-2">
                       Détections d&apos;abus
                     </p>
-                    <div className="space-y-2">
+                    <div className="flex flex-col gap-2">
                       {selectedReview.abuseLogs.map(
                         (log: BackendReviewAbuseLog, idx: number) => (
                           <div
                             key={idx}
-                            className="bg-white dark:bg-[#1e293b] border border-neutral-100 dark:border-neutral-700 rounded-xl p-3"
+                            className="bg-surface dark:bg-[#1e293b] border border-line dark:border-neutral-700 rounded-xl p-3"
                           >
                             <div className="flex items-center gap-2 mb-1">
                               <StatusBadge
@@ -514,7 +514,7 @@ export default function AdminReviewsPage() {
                 )}
 
               {/* Actions */}
-              <div className="flex gap-3 pt-4 border-t border-neutral-100">
+              <div className="flex gap-3 pt-4 border-t border-line">
                 <button
                   onClick={() => {
                     handleToggleVisibility(selectedReview.id);
@@ -524,7 +524,7 @@ export default function AdminReviewsPage() {
                   className={`flex-1 py-2.5 rounded-xl font-medium transition-colors flex items-center justify-center gap-2 disabled:opacity-50 ${
                     selectedReview.isHidden
                       ? "bg-green-600 text-white hover:bg-green-700"
-                      : "bg-red-600 text-white hover:bg-red-700"
+                      : "bg-error-600 text-white hover:bg-red-700"
                   }`}
                 >
                   {selectedReview.isHidden ? (
@@ -554,14 +554,14 @@ export default function AdminReviewsPage() {
 
       {/* R1: Warn User Modal */}
       {warnModalOpen && warnTarget && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-2xl p-6 w-full max-w-md mx-4 shadow-xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="w-10 h-10 bg-orange-100 dark:bg-orange-900/30 rounded-full flex items-center justify-center">
                 <AlertTriangle className="w-5 h-5 text-orange-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                   Avertir l&apos;utilisateur
                 </h3>
                 <p className="text-sm text-neutral-500">{warnTarget.email}</p>

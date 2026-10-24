@@ -3,48 +3,110 @@
 @tailwind utilities;
 
 /* ============================================================================
-   TRANSPORTI V1 DESIGN TOKENS - CSS CUSTOM PROPERTIES
-   ============================================================================ */
+   TRANSPORTI — DESIGN SYSTEM « VERRE & LUMIÈRE »
+   ----------------------------------------------------------------------------
+   Une carte translucide (« verre ») posée sur un fond bleu Transporti traversé
+   de halos colorés flous (« lumière »).
+
+   Le bleu porte l'identité et la hiérarchie, l'orange porte UNE SEULE action
+   par écran, le vert porte la valeur (remise, vérification, gain).
+
+   Deux familles d'écrans :
+     IMMERSIF   — dégradé bleu plein écran + cartes verre
+                  (login, onboarding, OTP, mot de passe oublié)
+     APPLICATIF — fond #F6F8FC + bandeau bleu haut + cartes blanches opaques
+                  (home, listes, détail, réglages)
+
+   Le verre ne vit QUE sur le bleu. Jamais de verre sur blanc.
+   ========================================================================== */
+
+/* ============================================================================
+   1. JETONS — VARIABLES CSS
+   ========================================================================== */
 
 @layer base {
   :root {
-    /* Brand Royal Blue Charter */
-    --color-brand: #1e3a8a;
-    --color-brand-deep: #0f1d4e;
-    --color-brand-light: #2563b3;
+    /* --- Marque ----------------------------------------------------- */
+    --blue-900: #0e2058; /* fin de dégradé, textes très foncés sur clair */
+    --blue-800: #16307a;
+    --blue-700: #1e3a8a; /* Royal Blue — couleur primaire */
+    --blue-600: #2563b3; /* liens, accents secondaires */
 
-    /* Brand Colors */
-    --color-primary: #1e40af;
-    --color-primary-light: #3b82f6;
-    --color-primary-dark: #1e3a8a;
+    /* --- Action (CTA unique) ---------------------------------------- */
+    --orange-500: #f97316;
+    --orange-600: #ea6a0c;
 
-    --color-accent: #10b981;
-    --color-accent-light: #22c55e;
-    --color-accent-dark: #059669;
+    /* --- Valeur / succès -------------------------------------------- */
+    --green-500: #2fac55; /* remise, vérifié, jauge positive */
+    --green-300: #8ff0b6; /* texte vert sur fond bleu */
 
-    --color-cta: #f97316;
+    /* --- Neutres clairs --------------------------------------------- */
+    --bg-app: #f6f8fc;
+    --surface: #ffffff;
+    --border: #e6ebf3;
+    --border-strong: #d5dbe6;
+    --ink-900: #111827; /* titres */
+    --ink-500: #6b7280; /* texte secondaire */
+    --ink-300: #9aa3b2; /* texte tertiaire, prix barré */
+
+    /* --- Neutres sur bleu ------------------------------------------- */
+    --on-blue-100: #ffffff;
+    --on-blue-200: #dbe6fb;
+    --on-blue-300: #cbd9f5; /* texte secondaire sur bleu */
+
+    /* --- Info ------------------------------------------------------- */
+    --info-bg: #eef2ff;
+    --info-ink: #3b5fa4;
+
+    /* --- Alias historiques (ne plus étendre) ------------------------ */
+    --color-brand: var(--blue-700);
+    --color-brand-deep: var(--blue-900);
+    --color-brand-light: var(--blue-600);
+    --color-primary: var(--blue-700);
+    --color-primary-light: var(--blue-600);
+    --color-primary-dark: var(--blue-800);
+    --color-accent: var(--green-500);
+    --color-accent-light: var(--green-300);
+    --color-accent-dark: #279247;
+    --color-cta: var(--orange-500);
     --color-cta-light: #fb923c;
-    --color-cta-dark: #ea580c;
-
-    /* Neutral Colors */
-    --color-neutral-50: #f9fafb;
-    --color-neutral-100: #f3f4f6;
-    --color-neutral-200: #e5e7eb;
-    --color-neutral-300: #d1d5db;
-    --color-neutral-400: #9ca3af;
-    --color-neutral-500: #6b7280;
+    --color-cta-dark: var(--orange-600);
+    --color-neutral-50: var(--bg-app);
+    --color-neutral-100: #eef2f8;
+    --color-neutral-200: var(--border);
+    --color-neutral-300: var(--border-strong);
+    --color-neutral-400: var(--ink-300);
+    --color-neutral-500: var(--ink-500);
     --color-neutral-600: #4b5563;
     --color-neutral-700: #374151;
     --color-neutral-800: #1f2937;
-    --color-neutral-900: #111827;
-
-    /* Semantic Colors */
-    --color-success: #10b981;
+    --color-neutral-900: var(--ink-900);
+    --color-success: var(--green-500);
     --color-warning: #f59e0b;
     --color-error: #ef4444;
-    --color-info: #3b82f6;
+    --color-info: var(--blue-600);
 
-    /* Typography */
+    /* --- Fonds d'écran ---------------------------------------------- */
+    --gradient-immersive: linear-gradient(
+      155deg,
+      #1e3a8a 0%,
+      #2563b3 50%,
+      #0f2461 100%
+    );
+    --gradient-onboarding: linear-gradient(
+      160deg,
+      #16307a 0%,
+      #1e3a8a 45%,
+      #0e2058 100%
+    );
+    --gradient-band: linear-gradient(
+      160deg,
+      #1e3a8a 0%,
+      #2563b3 55%,
+      #16307a 100%
+    );
+
+    /* --- Typographie ------------------------------------------------ */
     --font-sans:
       "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto",
       sans-serif;
@@ -52,48 +114,47 @@
     --font-weight-medium: 500;
     --font-weight-semibold: 600;
     --font-weight-bold: 700;
+    --font-weight-extrabold: 800;
 
-    /* Spacing (8px base) */
-    --spacing-unit: 0.5rem;
-    /* 8px */
-    --spacing-xs: 0.25rem;
-    /* 4px */
-    --spacing-sm: 0.5rem;
-    /* 8px */
-    --spacing-md: 1rem;
-    /* 16px */
-    --spacing-lg: 1.5rem;
-    /* 24px */
-    --spacing-xl: 2rem;
-    /* 32px */
-    --spacing-2xl: 3rem;
-    /* 48px */
-
-    /* Border Radius */
-    --radius-sm: 0.25rem;
-    /* 4px */
-    --radius-md: 0.5rem;
-    /* 8px */
-    --radius-lg: 0.75rem;
-    /* 12px */
-    --radius-xl: 1rem;
-    /* 16px */
-    --radius-2xl: 1.5rem;
-    /* 24px */
+    /* --- Rayons ----------------------------------------------------- */
+    --radius-tag: 8px;
+    --radius-chip: 13px;
+    --radius-field: 14px;
+    --radius-cta: 16px;
+    --radius-tile: 18px;
+    --radius-card: 22px;
+    --radius-glass: 26px;
+    --radius-sheet: 30px;
+    --radius-band: 34px;
+    --radius-device: 42px;
     --radius-full: 9999px;
 
-    /* Shadows */
-    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
-    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1);
-    --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1);
+    /* --- Ombres ----------------------------------------------------- */
+    --shadow-glass: 0 18px 40px rgba(6, 17, 54, 0.28);
+    --shadow-card: 0 10px 26px rgba(15, 29, 78, 0.08);
+    --shadow-card-hover: 0 14px 34px rgba(15, 29, 78, 0.12);
+    --shadow-cta: 0 12px 26px rgba(249, 115, 22, 0.4);
+    --shadow-blue: 0 12px 26px rgba(30, 58, 138, 0.24);
+    --shadow-device: 0 30px 70px rgba(15, 29, 78, 0.3);
+    --shadow-sm: 0 1px 2px 0 rgba(15, 29, 78, 0.06);
+    --shadow-md: 0 6px 16px -2px rgba(15, 29, 78, 0.07);
+    --shadow-lg: var(--shadow-card);
+    --shadow-xl: 0 18px 40px rgba(15, 29, 78, 0.1);
 
-    /* Transitions */
-    --transition-fast: 150ms;
-    --transition-base: 200ms;
-    --transition-slow: 300ms;
+    /* --- Gouttières / gaps ------------------------------------------ */
+    --gutter: 20px; /* colonne d'écran */
+    --gap-app: 16px; /* entre blocs, famille applicative */
+    --gap-immersive: 24px; /* entre blocs, famille immersive */
 
-    /* Z-Index */
+    /* --- Mouvement (charte §5) -------------------------------------- */
+    --dur-press: 120ms;
+    --dur-focus: 150ms;
+    --dur-enter: 180ms;
+    --dur-sheet: 260ms;
+    --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+    --ease-enter: cubic-bezier(0.16, 1, 0.3, 1);
+
+    /* --- Z-index ---------------------------------------------------- */
     --z-dropdown: 1000;
     --z-sticky: 1020;
     --z-fixed: 1030;
@@ -105,22 +166,82 @@
 }
 
 /* ============================================================================
-   BASE STYLES
-   ============================================================================ */
+   2. STYLES DE BASE
+   ========================================================================== */
 
 @layer base {
   * {
-    @apply border-neutral-200;
+    @apply border-line;
+  }
+
+  html {
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
-    @apply bg-neutral-50 text-neutral-900 antialiased;
+    @apply bg-app text-ink-900 antialiased;
     font-family: var(--font-sans);
+    font-size: 15px;
+    line-height: 1.55;
   }
 
+  /* Titres — 700/800 avec interlettrage resserré (charte §2).
+     La COULEUR est héritée, jamais imposée : un titre posé dans une section
+     immersive ou dans le bandeau bleu doit prendre le blanc de son parent.
+     Fixer l'encre ici rendait les titres des fonds bleus illisibles. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-extrabold;
+    color: inherit;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  h1 {
+    letter-spacing: -0.03em;
+  }
+
+  a {
+    transition: color var(--dur-focus) ease-out;
+  }
+
+  button {
+    transition:
+      background-color var(--dur-press) ease-out,
+      box-shadow var(--dur-press) ease-out,
+      transform var(--dur-press) ease-out,
+      border-color var(--dur-press) ease-out,
+      color var(--dur-press) ease-out;
+  }
+
+  /* Cible tactile minimum 44px (charte §5) */
+  button,
+  [role="button"],
+  a[href],
+  input[type="checkbox"],
+  input[type="radio"] {
+    touch-action: manipulation;
+  }
+
+  /* Focus clavier visible et cohérent partout */
+  :focus-visible {
+    outline: 2px solid var(--blue-700);
+    outline-offset: 2px;
+  }
+
+  /* Chiffres tabulaires pour les montants et compteurs */
+  .tabular,
+  [data-numeric] {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Mode sombre (console d'administration uniquement) ------------ */
   .dark body,
   .dark {
-    /* Neutral (inverted) */
     --color-neutral-50: #0f172a;
     --color-neutral-100: #1e293b;
     --color-neutral-200: #334155;
@@ -131,19 +252,16 @@
     --color-neutral-700: #e2e8f0;
     --color-neutral-800: #f1f5f9;
     --color-neutral-900: #f8fafc;
-
-    /* Brand (lightened for contrast) */
-    --color-brand: #3b82f6;
-    --color-brand-deep: #1e3a8a;
-    --color-brand-light: #60a5fa;
-
-    /* Semantic */
-    --color-success: #34d399;
-    --color-warning: #fbbf24;
-    --color-error: #f87171;
-    --color-info: #60a5fa;
-
-    /* Shadows (lighter for dark bg) */
+    --bg-app: #0f172a;
+    --surface: #1e293b;
+    --border: #334155;
+    --border-strong: #475569;
+    --ink-900: #f8fafc;
+    --ink-500: #94a3b8;
+    --ink-300: #64748b;
+    --blue-700: #5a87d9;
+    --blue-600: #9fbaee;
+    --shadow-card: 0 10px 26px rgba(0, 0, 0, 0.4);
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4);
     --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4);
@@ -154,62 +272,903 @@
     @apply border-neutral-700;
   }
 
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-bold text-neutral-900 dark:text-neutral-100;
+  /* Les titres héritent de la couleur de leur parent : en mode sombre, le
+     `body` porte déjà l'encre inversée, il n'y a plus rien à reforcer ici. */
+}
+
+/* ============================================================================
+   3. COMPOSANTS — FAMILLE IMMERSIVE (sur dégradé bleu)
+   ========================================================================== */
+
+@layer components {
+  /* --- Fond immersif plein écran ---------------------------------- */
+  .immersive {
+    position: relative;
+    overflow: hidden;
+    background: var(--gradient-immersive);
+    color: var(--on-blue-100);
   }
 
-  a {
-    @apply transition-colors duration-200;
+  .immersive--onboarding {
+    background: var(--gradient-onboarding);
   }
 
-  button {
-    @apply transition-all duration-200;
+  /* --- Halos de lumière -------------------------------------------
+     Deux halos maximum par écran, jamais centrés, toujours
+     partiellement hors cadre. Statiques : ne pas animer (coût GPU). */
+  .halo {
+    position: absolute;
+    border-radius: 9999px;
+    filter: blur(60px);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .halo--green {
+    background: rgba(47, 172, 85, 0.28);
+    width: 260px;
+    height: 260px;
+    left: -70px;
+    top: 90px;
+  }
+
+  .halo--orange {
+    background: rgba(249, 115, 22, 0.3);
+    width: 240px;
+    height: 240px;
+    right: -60px;
+    top: 330px;
+  }
+
+  .halo--blue {
+    background: rgba(37, 99, 179, 0.32);
+    width: 280px;
+    height: 280px;
+    right: -80px;
+    top: -60px;
+  }
+
+  /* --- Verre ------------------------------------------------------
+     Pas de backdrop-filter : l'effet vient uniquement de l'alpha sur
+     le dégradé. C'est volontaire (perf mobile, rendu identique
+     partout). */
+  .glass {
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: var(--radius-glass);
+    box-shadow: var(--shadow-glass);
+    padding: 22px 20px;
+  }
+
+  .glass-flush {
+    /* verre sans padding imposé — pour les conteneurs qui gèrent le leur */
+    position: relative;
+    z-index: 1;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: var(--radius-glass);
+    box-shadow: var(--shadow-glass);
+  }
+
+  .glass-field {
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: var(--radius-field);
+    min-height: 52px;
+    color: var(--on-blue-100);
+    padding: 0 15px;
+    width: 100%;
+    font-size: 15.5px;
+    font-weight: 500;
+    transition:
+      background-color var(--dur-focus) ease-out,
+      border-color var(--dur-focus) ease-out,
+      box-shadow var(--dur-focus) ease-out;
+  }
+
+  .glass-field::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 400;
+  }
+
+  .glass-field:focus,
+  .glass-field--focus {
+    background: rgba(255, 255, 255, 0.22);
+    border: 1.5px solid rgba(255, 255, 255, 0.55);
+    outline: none;
+  }
+
+  .glass-chip {
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: var(--radius-chip);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* Tuile statistique sur verre */
+  .stat-tile {
+    background: rgba(255, 255, 255, 0.14);
+    border-radius: var(--radius-tile);
+    padding: 13px;
+  }
+
+  .stat-tile__value {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--on-blue-100);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .stat-tile__label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--on-blue-300);
+  }
+
+  .stat-tile__gauge {
+    height: 5px;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.22);
+    overflow: hidden;
+  }
+
+  .stat-tile__gauge > span {
+    display: block;
+    height: 100%;
+    border-radius: 9999px;
+    background: var(--green-500);
+  }
+
+  .stat-tile__gauge--warn > span {
+    background: var(--orange-500);
+  }
+
+  /* Libellé de champ sur bleu */
+  .label-on-blue {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--on-blue-200);
+    display: block;
+  }
+
+  /* Séparateur « ou continuer avec » */
+  .divider-on-blue {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--on-blue-300);
+    font-size: 12.5px;
+    font-weight: 500;
+  }
+
+  .divider-on-blue::before,
+  .divider-on-blue::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  /* Case de code OTP */
+  .otp-cell {
+    width: 100%;
+    aspect-ratio: 1;
+    min-height: 62px;
+    border-radius: 15px;
+    text-align: center;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--on-blue-100);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px dashed rgba(255, 255, 255, 0.35);
+    transition:
+      background-color var(--dur-focus) ease-out,
+      border-color var(--dur-focus) ease-out;
+  }
+
+  .otp-cell--filled {
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.28);
+  }
+
+  .otp-cell--active,
+  .otp-cell:focus {
+    background: rgba(255, 255, 255, 0.22);
+    border: 1.5px solid #fff;
+    outline: none;
   }
 }
 
 /* ============================================================================
-   UTILITY CLASSES
-   ============================================================================ */
+   4. COMPOSANTS — FAMILLE APPLICATIVE (sur #F6F8FC)
+   ========================================================================== */
+
+@layer components {
+  /* --- Bandeau bleu haut ------------------------------------------ */
+  .app-band {
+    position: relative;
+    color: var(--on-blue-100);
+  }
+
+  /* Le fond du bandeau : degrade, rayon bas de 34px et halos. C est LUI qui
+     rogne, pas le bandeau — sans quoi la carte qui chevauche serait coupee. */
+  .app-band::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background: var(--gradient-band);
+    border-radius: 0 0 var(--radius-band) var(--radius-band);
+  }
+
+  /* Conteneur des halos, seul element en overflow:hidden. */
+  .app-band__glow {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    border-radius: 0 0 var(--radius-band) var(--radius-band);
+    pointer-events: none;
+  }
+
+  /* Tout le contenu du bandeau passe au-dessus du fond. */
+  .app-band > *:not(.app-band__glow) {
+    position: relative;
+    z-index: 1;
+  }
+
+  .app-band__title {
+    font-size: 21px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--on-blue-100);
+  }
+
+  .app-band__subtitle {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--on-blue-300);
+  }
+
+  /* --- Carte blanche opaque --------------------------------------- */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius-card);
+    padding: 16px;
+    box-shadow: var(--shadow-card);
+  }
+
+  .card--flush {
+    padding: 0;
+  }
+
+  .card--selected {
+    border: 1.5px solid var(--blue-700);
+  }
+
+  .card-interactive {
+    cursor: pointer;
+    transition:
+      box-shadow var(--dur-press) ease-out,
+      transform var(--dur-press) ease-out;
+  }
+
+  .card-interactive:hover {
+    box-shadow: var(--shadow-card-hover);
+  }
+
+  .card-interactive:active {
+    transform: translateY(1px);
+    box-shadow: var(--shadow-sm);
+  }
+
+  /* --- Champ sur fond clair --------------------------------------- */
+  .field {
+    background: var(--bg-app);
+    border: 1px solid #e4e9f2;
+    border-radius: var(--radius-field);
+    min-height: 52px;
+    padding: 0 15px;
+    width: 100%;
+    font-size: 15px;
+    color: var(--ink-900);
+    transition:
+      background-color var(--dur-focus) ease-out,
+      border-color var(--dur-focus) ease-out,
+      box-shadow var(--dur-focus) ease-out;
+  }
+
+  .field::placeholder {
+    color: var(--ink-300);
+  }
+
+  .field:focus,
+  .field--focus {
+    background: var(--surface);
+    border: 1.5px solid var(--blue-700);
+    box-shadow: 0 0 0 4px rgba(30, 58, 138, 0.08);
+    outline: none;
+  }
+
+  .field--error {
+    border-color: #ef4444;
+  }
+
+  textarea.field {
+    padding: 13px 15px;
+    line-height: 1.55;
+  }
+
+  /* Un select porte le chevron de la charte, pas la fleche du systeme :
+     sinon chaque navigateur dessine la sienne et le champ perd son unite. */
+  select.field {
+    appearance: none;
+    padding-inline-end: 40px;
+    background-repeat: no-repeat;
+    background-size: 16px;
+    background-position: right 14px center;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2.5' stroke-linecap='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+  }
+
+  html[dir="rtl"] select.field {
+    background-position: left 14px center;
+  }
+
+  /* --- Libellé de champ sur clair --------------------------------- */
+  .label {
+    font-size: 12.5px;
+    font-weight: 600;
+    color: var(--ink-500);
+    display: block;
+  }
+
+  /* --- Message d'erreur sous le champ ----------------------------- */
+  .field-error {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #dc2626;
+  }
+}
+
+/* ============================================================================
+   5. COMPOSANTS — BOUTONS
+   ========================================================================== */
+
+@layer components {
+  .btn-base {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    border: 0;
+    border-radius: var(--radius-cta);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+
+  .btn-base:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  /* --- CTA primaire (ORANGE) — un seul par écran ------------------ */
+  .cta {
+    min-height: 56px;
+    padding: 0 20px;
+    background: var(--orange-500);
+    color: #fff;
+    font-size: 16.5px;
+    box-shadow: var(--shadow-cta);
+  }
+
+  .cta:hover:not(:disabled) {
+    background: var(--orange-600);
+  }
+
+  .cta:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.36);
+  }
+
+  /* --- Secondaire (BLEU plein) ------------------------------------ */
+  .btn-secondary {
+    min-height: 56px;
+    padding: 0 20px;
+    background: var(--blue-700);
+    color: #fff;
+    font-size: 16.5px;
+    box-shadow: var(--shadow-blue);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--blue-800);
+  }
+
+  .btn-secondary:active:not(:disabled) {
+    transform: translateY(1px);
+    box-shadow: 0 6px 16px rgba(30, 58, 138, 0.2);
+  }
+
+  /* --- Fantôme sur bleu ------------------------------------------- */
+  .btn-ghost-on-blue {
+    min-height: 56px;
+    padding: 0 20px;
+    background: rgba(255, 255, 255, 0.16);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: var(--on-blue-100);
+    font-size: 16.5px;
+  }
+
+  .btn-ghost-on-blue:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.24);
+  }
+
+  .btn-ghost-on-blue:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  /* --- Contour sur clair ------------------------------------------ */
+  .btn-outline-on-light {
+    min-height: 56px;
+    padding: 0 20px;
+    background: var(--surface);
+    border: 1px solid var(--border-strong);
+    color: var(--ink-900);
+    font-size: 16.5px;
+  }
+
+  .btn-outline-on-light:hover:not(:disabled) {
+    background: var(--bg-app);
+    border-color: var(--blue-700);
+  }
+
+  .btn-outline-on-light:active:not(:disabled) {
+    transform: translateY(1px);
+  }
+
+  /* --- Boutons sociaux -------------------------------------------- */
+  .btn-social {
+    min-height: 56px;
+    border-radius: var(--radius-cta);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .btn-social--google {
+    background: #fff;
+    color: var(--ink-900);
+    border: 1px solid transparent;
+  }
+
+  .btn-social--google:hover:not(:disabled) {
+    background: #f4f6fb;
+  }
+
+  /* Sur fond clair, Google prend un filet visible */
+  .on-light .btn-social--google,
+  .btn-social--google.on-light {
+    border-color: #e4e9f2;
+  }
+
+  .btn-social--facebook {
+    background: #1877f2;
+    color: #fff;
+    border: 0;
+  }
+
+  .btn-social--facebook:hover:not(:disabled) {
+    background: #1568d8;
+  }
+}
+
+/* ============================================================================
+   6. COMPOSANTS — TAGS, BADGES, BANDEAUX, ITINÉRAIRE
+   ========================================================================== */
+
+@layer components {
+  /* --- Tags : bleu = nature, gris = fait, vert = valeur ----------- */
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 28px;
+    padding: 6px 10px;
+    border-radius: var(--radius-tag);
+    font-size: 11.5px;
+    font-weight: 600;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  .tag--blue {
+    background: #eef2ff;
+    color: #2563b3;
+  }
+
+  .tag--gray {
+    background: #eef2f8;
+    color: #6b7280;
+  }
+
+  .tag--green {
+    background: #ecfdf5;
+    color: #0f9b6c;
+  }
+
+  .tag--orange {
+    background: #fff7ed;
+    color: #c2410c;
+  }
+
+  .tag--red {
+    background: #fef2f2;
+    color: #b91c1c;
+  }
+
+  /* Sur fond bleu, les tags passent en verre */
+  .tag--on-blue {
+    background: rgba(255, 255, 255, 0.16);
+    color: var(--on-blue-100);
+    border: 1px solid rgba(255, 255, 255, 0.22);
+  }
+
+  /* --- Pastille de remise (valeur) -------------------------------- */
+  .badge-discount {
+    display: inline-flex;
+    align-items: center;
+    height: 24px;
+    padding: 0 10px;
+    border-radius: 9999px;
+    background: var(--green-500);
+    color: #fff;
+    font-size: 11.5px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Bandeau info ----------------------------------------------- */
+  .info-banner {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    background: var(--info-bg);
+    border-radius: var(--radius-tile);
+    padding: 15px 16px;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--info-ink);
+  }
+
+  .info-banner::before {
+    content: "";
+    flex: 0 0 auto;
+    width: 8px;
+    height: 8px;
+    margin-top: 5px;
+    border-radius: 9999px;
+    background: var(--blue-600);
+  }
+
+  .info-banner--on-blue {
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--on-blue-300);
+  }
+
+  .info-banner--on-blue::before {
+    background: var(--green-500);
+  }
+
+  /* --- Ligne d'itinéraire (signature de la marque) ----------------
+     Point départ bleu -> tiret -> point arrivée vert, distance au
+     milieu de la ligne. */
+  .route-line {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .route-dot {
+    flex: 0 0 auto;
+    width: 9px;
+    height: 9px;
+    border-radius: 9999px;
+  }
+
+  .route-dot--start {
+    background: var(--blue-700);
+  }
+
+  .route-dot--end {
+    background: var(--green-500);
+  }
+
+  .route-dash {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .route-dash::before,
+  .route-dash::after {
+    content: "";
+    flex: 1;
+    border-top: 1.5px dashed var(--border-strong);
+  }
+
+  .route-distance {
+    flex: 0 0 auto;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-500);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Version verticale (écran détail) : colonne entre les deux points */
+  .route-vertical {
+    display: grid;
+    grid-template-columns: 9px 1fr;
+    column-gap: 12px;
+  }
+
+  .route-vertical__rail {
+    width: 1.5px;
+    margin: 4px auto;
+    background: #dfe4ee;
+    min-height: 26px;
+  }
+
+  /* Sur fond bleu */
+  .route-line--on-blue .route-dash::before,
+  .route-line--on-blue .route-dash::after {
+    border-top-color: rgba(255, 255, 255, 0.35);
+  }
+
+  .route-line--on-blue .route-distance {
+    color: var(--on-blue-300);
+  }
+
+  .route-line--on-blue .route-dot--start {
+    background: #fff;
+  }
+
+  /* --- Prix ------------------------------------------------------- */
+  .price {
+    font-size: 23px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink-900);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .price-was {
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-300);
+    text-decoration: line-through;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Chiffre héro ----------------------------------------------- */
+  .figure-hero {
+    font-size: 34px;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Jauge de force du mot de passe ----------------------------- */
+  .pwd-meter {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+  }
+
+  .pwd-meter__seg {
+    flex: 1;
+    height: 3px;
+    border-radius: 9999px;
+    background: #e4e9f2;
+    transition: background-color var(--dur-focus) ease-out;
+  }
+
+  .pwd-meter__seg--on {
+    background: var(--green-500);
+  }
+
+  /* Sur fond bleu */
+  .pwd-meter--on-blue .pwd-meter__seg {
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  .pwd-meter--on-blue .pwd-meter__seg--on {
+    background: var(--green-500);
+  }
+
+  /* --- Progression multi-étapes ----------------------------------- */
+  .stepper-track {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .stepper-seg {
+    flex: 1;
+    height: 3px;
+    border-radius: 9999px;
+    background: #e4e7ee;
+  }
+
+  .stepper-seg--done {
+    background: var(--blue-700);
+  }
+
+  .stepper-seg--current {
+    background: var(--orange-500);
+  }
+}
+
+/* ============================================================================
+   7. COMPOSANTS — NAVIGATION & BARRES FIXES
+   ========================================================================== */
+
+@layer components {
+  /* --- Navigation basse ------------------------------------------- */
+  .bottom-nav {
+    min-height: 86px;
+    background: rgba(255, 255, 255, 0.94);
+    border-top: 1px solid var(--border);
+  }
+
+  .bottom-nav__label {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  /* Bouton flottant central (le « + ») */
+  .nav-fab {
+    width: 58px;
+    height: 58px;
+    border-radius: 19px;
+    background: var(--orange-500);
+    color: #fff;
+    box-shadow: 0 10px 24px rgba(249, 115, 22, 0.42);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: 0;
+    cursor: pointer;
+  }
+
+  .nav-fab:hover {
+    background: var(--orange-600);
+  }
+
+  .nav-fab:active {
+    transform: translateY(1px);
+    box-shadow: 0 6px 16px rgba(249, 115, 22, 0.36);
+  }
+
+  /* --- Barre d'action fixe (écran détail) ------------------------- */
+  .action-bar {
+    background: rgba(255, 255, 255, 0.96);
+    border-top: 1px solid var(--border);
+    padding: 14px 20px 22px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .action-bar__label {
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--ink-500);
+  }
+
+  .action-bar__total {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: var(--ink-900);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* --- Feuille remontante ----------------------------------------- */
+  .sheet {
+    background: var(--surface);
+    border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+    box-shadow: 0 -18px 40px rgba(15, 29, 78, 0.14);
+    animation: sheetUp var(--dur-sheet) var(--ease-sheet) both;
+  }
+}
+
+/* ============================================================================
+   8. UTILITAIRES
+   ========================================================================== */
 
 @layer utilities {
-  /* Text Gradients */
-  .text-gradient-primary {
-    @apply bg-gradient-to-r from-primary-600 to-primary-800 bg-clip-text text-transparent;
+  /* Gouttière d'écran de la charte */
+  .gutter {
+    padding-inline: var(--gutter);
   }
 
-  .text-gradient-accent {
-    @apply bg-gradient-to-r from-accent-500 to-accent-700 bg-clip-text text-transparent;
+  /* Piles verticales — jamais de marges empilées (charte §2) */
+  .stack-app {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-app);
   }
 
-  /* Glassmorphism */
-  .glass {
-    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  .stack-immersive {
+    display: flex;
+    flex-direction: column;
+    gap: var(--gap-immersive);
   }
 
-  /* Focus Styles */
+  /* Texte sur bleu */
+  .text-on-blue {
+    color: var(--on-blue-100);
+  }
+
+  .text-on-blue-soft {
+    color: var(--on-blue-300);
+  }
+
+  /* Focus au clavier, version anneau bleu */
   .focus-ring {
-    @apply focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2;
   }
 
-  /* Smooth Scrolling */
+  .focus-ring-on-blue {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 focus-visible:ring-offset-0;
+  }
+
   .smooth-scroll {
     scroll-behavior: smooth;
   }
+
+  /* Le dégradé de texte est réservé aux titres marketing */
+  .text-gradient-primary {
+    @apply bg-gradient-to-r from-blue-700 to-blue-900 bg-clip-text text-transparent;
+  }
+
+  .text-gradient-accent {
+    @apply bg-gradient-to-r from-green-500 to-green-600 bg-clip-text text-transparent;
+  }
+
+  /* Interlettrage de la charte */
+  .tracking-title {
+    letter-spacing: -0.03em;
+  }
+
+  .tracking-heading {
+    letter-spacing: -0.02em;
+  }
 }
 
 /* ============================================================================
-   ENTRY ANIMATIONS & SKELETON LOADING
-   ============================================================================ */
+   9. ANIMATIONS & SQUELETTES DE CHARGEMENT
+   ========================================================================== */
 
 @keyframes fadeInUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -229,11 +1188,20 @@
 @keyframes slideInRight {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(12px);
   }
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes sheetUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
   }
 }
 
@@ -273,30 +1241,10 @@
   }
 }
 
-@keyframes bounceGentle {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes gradientShift {
-  0%,
-  100% {
-    background-position: 0% 50%;
-  }
-  50% {
-    background-position: 100% 50%;
-  }
-}
-
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.92);
+    transform: scale(0.97);
   }
   to {
     opacity: 1;
@@ -307,7 +1255,7 @@
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(12px);
   }
   to {
     opacity: 1;
@@ -318,10 +1266,10 @@
 @keyframes pulseGlow {
   0%,
   100% {
-    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.4);
+    box-shadow: 0 0 0 0 rgba(47, 172, 85, 0.4);
   }
   50% {
-    box-shadow: 0 0 20px 4px rgba(16, 185, 129, 0.2);
+    box-shadow: 0 0 20px 4px rgba(47, 172, 85, 0.2);
   }
 }
 
@@ -335,173 +1283,160 @@
 }
 
 @layer utilities {
-  /* Entry Animations */
+  /* --- Entrées — 180 ms, décalage 40 ms par carte (charte §5) ----- */
   .animate-fade-in-up {
-    animation: fadeInUp 0.6s ease-out both;
+    animation: fadeInUp var(--dur-enter) var(--ease-enter) both;
   }
   .animate-fade-in {
-    animation: fadeIn 0.4s ease-out both;
+    animation: fadeIn var(--dur-enter) ease-out both;
   }
   .animate-slide-in-r {
-    animation: slideInRight 0.5s ease-out both;
+    animation: slideInRight var(--dur-sheet) var(--ease-sheet) both;
   }
   .animate-float {
     animation: float 3s ease-in-out infinite;
   }
   .animate-count-up {
-    animation: countUp 0.4s ease-out both;
+    animation: countUp var(--dur-enter) var(--ease-enter) both;
+  }
+  .animate-scale-in {
+    animation: scaleIn var(--dur-enter) var(--ease-enter) both;
+  }
+  .animate-slide-up {
+    animation: slideUp var(--dur-enter) var(--ease-enter) both;
+  }
+  .animate-sheet-up {
+    animation: sheetUp var(--dur-sheet) var(--ease-sheet) both;
   }
 
-  /* Skeleton Loading */
+  /* --- Squelette de chargement (gris #EEF2F8, charte §9) ---------- */
   .skeleton {
-    @apply rounded;
-    background: linear-gradient(90deg, #e5e7eb 25%, #f3f4f6 50%, #e5e7eb 75%);
+    @apply rounded-lg;
+    background: linear-gradient(90deg, #eef2f8 25%, #f6f8fc 50%, #eef2f8 75%);
     background-size: 200% 100%;
     animation: shimmer 1.5s ease-in-out infinite;
   }
 
-  /* Stagger Delays */
+  /* --- Décalages d'apparition — 40 ms par carte ------------------- */
   .delay-100 {
-    animation-delay: 0.1s;
+    animation-delay: 0.04s;
   }
   .delay-200 {
-    animation-delay: 0.2s;
+    animation-delay: 0.08s;
   }
   .delay-300 {
-    animation-delay: 0.3s;
+    animation-delay: 0.12s;
   }
   .delay-400 {
-    animation-delay: 0.4s;
+    animation-delay: 0.16s;
   }
   .delay-500 {
-    animation-delay: 0.5s;
+    animation-delay: 0.2s;
   }
   .delay-600 {
-    animation-delay: 0.6s;
+    animation-delay: 0.24s;
   }
 
-  /* Progress bar fill animation */
   .animate-progress-fill {
     animation: progressFill 0.8s ease-out both;
     animation-delay: 0.3s;
   }
 
-  /* Card hover lift effect */
+  /* --- Survol d'une carte cliquable : ombre +30 % ----------------- */
   .hover-lift {
-    @apply transition-all duration-300;
+    transition:
+      box-shadow var(--dur-press) ease-out,
+      transform var(--dur-press) ease-out;
   }
   .hover-lift:hover {
-    transform: translateY(-4px);
-    @apply shadow-lg;
+    box-shadow: var(--shadow-card-hover);
+  }
+  .hover-lift:active {
+    transform: translateY(1px);
+    box-shadow: var(--shadow-sm);
   }
 
-  /* Enhanced hover-lift with scale */
   .hover-lift-scale {
-    @apply transition-all duration-300;
+    transition:
+      box-shadow var(--dur-press) ease-out,
+      transform var(--dur-press) ease-out;
   }
   .hover-lift-scale:hover {
-    transform: translateY(-6px) scale(1.02);
-    @apply shadow-xl;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-card-hover);
   }
 
-  /* Gentle bounce for CTA buttons */
+  /* Conservés pour compatibilité, sans excès décoratif */
   .animate-bounce-gentle {
-    animation: bounceGentle 2s ease-in-out infinite;
+    animation: none;
   }
-
-  /* Gradient shimmer for premium headers */
   .animate-gradient-shift {
     background-size: 200% 200%;
-    animation: gradientShift 4s ease-in-out infinite;
   }
 
-  /* Scale-in entry for cards */
-  .animate-scale-in {
-    animation: scaleIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  /* Slide up entry with spring */
-  .animate-slide-up {
-    animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-  }
-
-  /* Scroll reveal (hidden by default, shown by JS) */
   .scroll-reveal {
     opacity: 0;
-    transform: translateY(30px);
+    transform: translateY(8px);
     transition:
-      opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1),
-      transform 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+      opacity var(--dur-enter) var(--ease-enter),
+      transform var(--dur-enter) var(--ease-enter);
   }
   .scroll-reveal.visible {
     opacity: 1;
     transform: translateY(0);
   }
 
-  /* Pulse glow for important elements */
   .animate-pulse-glow {
     animation: pulseGlow 2s ease-in-out infinite;
   }
-
-  /* Parallax float variant */
   .animate-float-slow {
     animation: float 5s ease-in-out infinite;
   }
-
-  /* Smooth icon spin on hover */
   .hover-spin:hover svg {
     animation: spinOnce 0.5s ease-in-out;
   }
 }
 
 /* ============================================================================
-   MAP MARKER ANIMATIONS
-   ============================================================================ */
+   10. CARTE — MARQUEURS ET ITINÉRAIRES
+   ========================================================================== */
 
-/* Pulse animation for active transport markers */
 @keyframes markerPulse {
   0% {
     transform: scale(1);
     opacity: 0.8;
   }
-
   50% {
     transform: scale(1.3);
     opacity: 0;
   }
-
   100% {
     transform: scale(1);
     opacity: 0;
   }
 }
 
-/* Bounce animation for marker entry */
 @keyframes markerBounce {
   0%,
   100% {
     transform: translateY(0);
   }
-
   25% {
     transform: translateY(-8px);
   }
-
   50% {
     transform: translateY(-4px);
   }
 }
 
-/* Route dash animation for IN_PROGRESS status */
 @keyframes routeDash {
   to {
     stroke-dashoffset: -20;
   }
 }
 
-/* Map marker styles */
 .transporti-premium-marker {
-  transition: transform 0.2s ease;
+  transition: transform var(--dur-press) ease-out;
 }
 
 .transporti-premium-marker:hover {
@@ -512,37 +1447,41 @@
   animation: markerPulse 2s infinite;
 }
 
-/* Route animation class */
 .route-animated {
   animation: routeDash 1s linear infinite;
 }
 
-/* Subtle glow for active markers */
 .transporti-marker-active {
-  filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.5));
+  filter: drop-shadow(0 0 8px rgba(47, 172, 85, 0.5));
+}
+
+/* Cartouches Leaflet alignées sur la charte */
+.leaflet-container {
+  font-family: var(--font-sans);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-tile);
+  box-shadow: var(--shadow-card);
+}
+
+.leaflet-bar a {
+  border-radius: 10px;
 }
 
 /* ============================================================================
-   RTL SUPPORT (Arabic — دارجة تونسية)
-   ============================================================================ */
+   11. SUPPORT RTL (Arabe — دارجة تونسية)
+   ========================================================================== */
 
-/* Arabic font on body when dir=rtl */
 html[dir="rtl"] body {
   font-family: var(--font-cairo), var(--font-sans);
-}
-
-/* Text alignment */
-html[dir="rtl"] body {
   text-align: right;
 }
 
-/* Les marges/paddings directionnels sont désormais gérés par les propriétés
-   logiques Tailwind (ms-/me-/ps-/pe-/start-/end-/text-start/border-s), qui
-   s'inversent automatiquement en RTL. L'ancien patch manuel (whitelist de
-   classes physiques) a été retiré — il ne couvrait qu'une fraction des cas et
-   introduisait des bugs (padding appliqué au lieu de margin, sélecteur cassé). */
+/* Les marges/paddings directionnels sont gérés par les propriétés logiques
+   Tailwind (ms-/me-/ps-/pe-/start-/end-/text-start/border-s), qui s'inversent
+   automatiquement en RTL. */
 
-/* Input text direction */
 html[dir="rtl"] input[type="text"],
 html[dir="rtl"] input[type="email"],
 html[dir="rtl"] input[type="tel"],
@@ -552,32 +1491,85 @@ html[dir="rtl"] select {
   text-align: right;
 }
 
-/* Number inputs — keep numeric digits LTR */
+/* Les chiffres restent LTR : montants, codes, dates */
 html[dir="rtl"] input[type="number"] {
   direction: ltr;
   text-align: right;
 }
 
-/* Sidebar margin flip — handled dynamically in AppSidebar via isRTL */
-/* No static CSS needed; layout uses conditional classes */
-
-/* Scrollbar on the "start" side in RTL */
-html[dir="rtl"] ::-webkit-scrollbar {
-  /* keep default — modern browsers handle this */
+html[dir="rtl"] .otp-cell,
+html[dir="rtl"] .price,
+html[dir="rtl"] .price-was,
+html[dir="rtl"] .figure-hero,
+html[dir="rtl"] .action-bar__total,
+html[dir="rtl"] .stat-tile__value {
+  direction: ltr;
 }
 
-/* Dropdown/popover arrow flip */
+/* Les halos suivent le sens de lecture */
+html[dir="rtl"] .halo--green {
+  left: auto;
+  right: -70px;
+}
+
+html[dir="rtl"] .halo--orange {
+  right: auto;
+  left: -60px;
+}
+
+html[dir="rtl"] .halo--blue {
+  right: auto;
+  left: -80px;
+}
+
 html[dir="rtl"] .dropdown-arrow {
   transform: scaleX(-1);
 }
 
-/* Calendar picker date grid — keep numbers LTR */
 html[dir="rtl"] .calendar-grid {
   direction: ltr;
 }
 
-/* Table content — numbers should stay LTR even in RTL context */
 html[dir="rtl"] .table-numbers {
   direction: ltr;
   text-align: center;
+}
+
+/* ============================================================================
+   12. IMPRESSION — pas de verre, pas d'ombre
+   ========================================================================== */
+
+@media print {
+  .immersive,
+  .app-band {
+    background: #fff !important;
+    color: #111827 !important;
+  }
+  .halo,
+  .bottom-nav,
+  .action-bar,
+  .nav-fab {
+    display: none !important;
+  }
+  .card,
+  .glass {
+    box-shadow: none !important;
+    border: 1px solid #e6ebf3 !important;
+    background: #fff !important;
+  }
+}
+
+/* ============================================================================
+   13. MOUVEMENT RÉDUIT
+   ========================================================================== */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

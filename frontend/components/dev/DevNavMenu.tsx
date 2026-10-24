@@ -57,8 +57,8 @@ interface RouteGroup {
 const ROUTE_MAP: RouteGroup[] = [
   {
     title: "🏠 Public",
-    color: "text-emerald-400",
-    bg: "bg-emerald-500/10",
+    color: "text-green-400",
+    bg: "bg-green-500/10",
     routes: [
       { path: "/", label: "Landing Page", icon: Home },
       { path: "/access-denied", label: "Accès refusé", icon: Lock },
@@ -66,8 +66,8 @@ const ROUTE_MAP: RouteGroup[] = [
   },
   {
     title: "🔑 Authentification",
-    color: "text-amber-400",
-    bg: "bg-amber-500/10",
+    color: "text-warning-400",
+    bg: "bg-warning-500/10",
     routes: [
       { path: "/login", label: "Connexion", icon: LogIn },
       { path: "/register", label: "Inscription", icon: UserPlus },
@@ -130,8 +130,8 @@ const ROUTE_MAP: RouteGroup[] = [
   },
   {
     title: "👤 Profils",
-    color: "text-purple-400",
-    bg: "bg-purple-500/10",
+    color: "text-blue-500",
+    bg: "bg-blue-600/10",
     routes: [
       {
         path: "/profile/3",
@@ -149,8 +149,8 @@ const ROUTE_MAP: RouteGroup[] = [
   },
   {
     title: "⚙️ Admin Panel",
-    color: "text-red-400",
-    bg: "bg-red-500/10",
+    color: "text-error-400",
+    bg: "bg-error-500/10",
     routes: [
       { path: "/admin", label: "Admin — Accueil", icon: Shield },
       {
@@ -201,7 +201,7 @@ export function DevNavMenu() {
       {/* ── FAB Button ── */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-5 right-5 z-[9999] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300 hover:scale-110 active:scale-95"
+        className="fixed bottom-5 right-5 z-[9999] w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-all duration-300"
         style={{
           background: isOpen
             ? "linear-gradient(135deg, #EF4444, #DC2626)"
@@ -219,7 +219,7 @@ export function DevNavMenu() {
       {/* ── Overlay ── */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/40 backdrop-blur-sm z-[9998]"
+          className="fixed inset-0 bg-black/40 z-[9998]"
           onClick={() => setIsOpen(false)}
         />
       )}
@@ -257,14 +257,14 @@ export function DevNavMenu() {
             <p className="text-[10px] uppercase tracking-wider text-slate-500 font-semibold">
               Page actuelle
             </p>
-            <p className="text-sm text-cyan-400 font-mono mt-0.5 truncate">
+            <p className="text-sm text-blue-500 font-mono mt-0.5 truncate">
               {pathname || "/"}
             </p>
           </div>
         </div>
 
         {/* Routes List */}
-        <div className="overflow-y-auto h-[calc(100%-140px)] px-3 py-3 space-y-1">
+        <div className="overflow-y-auto h-[calc(100%-140px)] px-3 py-3 flex flex-col gap-1">
           {ROUTE_MAP.map((group) => {
             const isCollapsed = collapsed[group.title] ?? false;
             return (
@@ -295,7 +295,7 @@ export function DevNavMenu() {
 
                 {/* Route Items */}
                 {!isCollapsed && (
-                  <div className="mt-1 space-y-0.5">
+                  <div className="mt-1 flex flex-col gap-0.5">
                     {group.routes.map((route) => {
                       const isActive = pathname === route.path;
                       const Icon = route.icon;
@@ -313,7 +313,7 @@ export function DevNavMenu() {
                           <Icon
                             className={`w-4 h-4 flex-shrink-0 ${
                               isActive
-                                ? "text-cyan-400"
+                                ? "text-blue-500"
                                 : "text-slate-500 group-hover:text-slate-300"
                             }`}
                           />
@@ -324,7 +324,7 @@ export function DevNavMenu() {
                             </span>
                           )}
                           {isActive && (
-                            <span className="ms-auto w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0" />
+                            <span className="ms-auto w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0" />
                           )}
                         </Link>
                       );
@@ -337,7 +337,7 @@ export function DevNavMenu() {
         </div>
 
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 px-5 py-3 border-t border-white/10 bg-slate-900/80 backdrop-blur">
+        <div className="absolute bottom-0 left-0 right-0 px-5 py-3 border-t border-white/10 bg-slate-900/80">
           <p className="text-[10px] text-slate-500 text-center">
             ⚠️ Composant provisoire — supprimer avant production
           </p>

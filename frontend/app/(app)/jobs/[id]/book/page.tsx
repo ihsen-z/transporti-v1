@@ -154,18 +154,18 @@ export default function BookingPage() {
   if (step === "success") {
     return (
       <div className="p-6 lg:p-8 max-w-2xl mx-auto">
-        <div className="bg-white rounded-2xl border border-neutral-100 p-12 text-center">
-          <div className="w-20 h-20 rounded-full bg-emerald-50 flex items-center justify-center mx-auto mb-6">
-            <PartyPopper className="w-10 h-10 text-emerald-500" />
+        <div className="bg-surface rounded-card shadow-card p-12 text-center">
+          <div className="w-20 h-20 rounded-full bg-green-50 flex items-center justify-center mx-auto mb-6">
+            <PartyPopper className="w-10 h-10 text-green-500" />
           </div>
-          <h1 className="text-2xl font-bold text-neutral-900 mb-2">
+          <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900 mb-2">
             {t.bookingPage.successTitle}
-          </h1>
+          </h2>
           <p className="text-neutral-500 mb-8 max-w-md mx-auto">
             {t.bookingPage.successDesc}
           </p>
 
-          <div className="bg-neutral-50 rounded-xl p-4 mb-8 text-start space-y-2">
+          <div className="bg-neutral-50 rounded-xl p-4 mb-8 text-start flex flex-col gap-2">
             <div className="flex justify-between text-sm">
               <span className="text-neutral-500">
                 {t.bookingPage.orderNumber}
@@ -231,9 +231,9 @@ export default function BookingPage() {
           <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
           {t.bookingPage.back}
         </button>
-        <h1 className="text-2xl font-bold text-neutral-900">
+        <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900">
           {t.bookingPage.finalizeTitle}
-        </h1>
+        </h2>
         <p className="text-neutral-500 mt-1">
           {t.bookingPage.finalizeSubtitle}
         </p>
@@ -259,7 +259,7 @@ export default function BookingPage() {
               <div className="flex items-center gap-2">
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold
-                                    ${isDone ? "bg-brand-600 text-white" : isActive ? "bg-brand-600/10 text-brand-600 ring-2 ring-primary-500" : "bg-neutral-100 text-neutral-400"}`}
+                                    ${isDone ? "bg-brand-600 text-white" : isActive ? "bg-blue-50 text-blue-700 ring-2 ring-primary-500" : "bg-neutral-100 text-neutral-400"}`}
                 >
                   {isDone ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
                 </div>
@@ -276,17 +276,17 @@ export default function BookingPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-3 space-y-6">
+        <div className="lg:col-span-3 flex flex-col gap-6">
           {step === "review" && (
             <>
               <BookingSummary job={job} offer={offer} />
               {offer.message && (
-                <div className="bg-white rounded-2xl border border-neutral-100 p-6">
-                  <h3 className="text-sm font-semibold text-neutral-900 mb-2">
+                <div className="bg-surface rounded-card shadow-card p-6">
+                  <h3 className="text-[14px] font-bold text-ink-900 mb-2">
                     {t.bookingPage.transporterMessage}
                   </h3>
                   <p className="text-sm text-neutral-600 italic">
-                    "{offer.message}"
+                    &laquo;&nbsp;{offer.message}&nbsp;&raquo;
                   </p>
                 </div>
               )}
@@ -317,7 +317,7 @@ export default function BookingPage() {
 
               {/* Payment Gateway for digital payments */}
               {paymentMethod === "DIGITAL" && showGateway ? (
-                <div className="bg-white rounded-2xl border border-neutral-100 p-6">
+                <div className="bg-surface rounded-card shadow-card p-6">
                   <PaymentGateway
                     amount={offer.total_price}
                     jobId={jobId}
@@ -353,11 +353,11 @@ export default function BookingPage() {
 
           {step === "confirm" && (
             <>
-              <div className="bg-white rounded-2xl border border-neutral-100 p-6">
-                <h3 className="text-lg font-semibold text-neutral-900 mb-4">
+              <div className="bg-surface rounded-card shadow-card p-6">
+                <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4">
                   {t.bookingPage.finalConfirmation}
                 </h3>
-                <div className="space-y-3">
+                <div className="flex flex-col gap-3">
                   <div className="flex justify-between text-sm py-2 border-b border-neutral-50">
                     <span className="text-neutral-500">
                       {t.bookingPage.route}
@@ -395,7 +395,7 @@ export default function BookingPage() {
                 </div>
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+              <div className="bg-warning-50 rounded-tile p-4 text-sm text-warning-800">
                 {t.bookingPage.termsPre}
                 <a href="#" className="underline font-medium">
                   {t.bookingPage.termsLink}
@@ -413,7 +413,7 @@ export default function BookingPage() {
                 <button
                   onClick={handleConfirmBooking}
                   disabled={isSubmitting}
-                  className="flex-[2] bg-emerald-600 text-white py-3.5 rounded-xl font-semibold hover:bg-emerald-700 transition-colors shadow-lg shadow-emerald-600/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="flex-[2] bg-green-600 text-white py-3.5 rounded-xl font-semibold hover:bg-green-700 transition-colors shadow-lg shadow-green-600/20 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
@@ -434,11 +434,11 @@ export default function BookingPage() {
 
         {/* Sidebar - Always Visible Summary */}
         <div className="lg:col-span-2 space-y-4 hidden lg:block">
-          <div className="bg-white rounded-2xl border border-neutral-100 p-6 sticky top-24">
-            <h3 className="text-sm font-semibold text-neutral-900 mb-4">
+          <div className="bg-surface rounded-card shadow-card p-6 sticky top-24">
+            <h3 className="text-[14px] font-bold text-ink-900 mb-4">
               {t.bookingPage.yourOrder}
             </h3>
-            <div className="space-y-3 text-sm">
+            <div className="flex flex-col gap-3 text-sm">
               <div className="flex justify-between">
                 <span className="text-neutral-500">{t.bookingPage.type}</span>
                 <span className="font-medium text-neutral-900">

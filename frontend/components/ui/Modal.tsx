@@ -90,7 +90,7 @@ export function Modal({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm animate-fade-in"
+        className="fixed inset-0 z-50 bg-[#0E2058]/45 animate-fade-in"
         onClick={closeDisabled ? undefined : onClose}
         aria-hidden="true"
       />
@@ -100,24 +100,29 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="modal-title"
-        className="fixed inset-0 z-50 flex items-center justify-center p-4"
+        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center sm:p-4"
       >
         <div
           ref={panelRef}
-          className={`bg-white rounded-2xl shadow-2xl w-full ${SIZE_CLASSES[size]} animate-scale-in flex flex-col max-h-[90dvh]`}
+          className={`bg-surface w-full ${SIZE_CLASSES[size]} flex flex-col max-h-[90dvh] shadow-2xl
+            rounded-sheet rounded-b-none animate-sheet-up
+            sm:rounded-card sm:animate-scale-in`}
         >
           {/* Header */}
           <div className="flex items-center justify-between gap-3 px-6 pt-5 pb-3">
-            <h3 id="modal-title" className="text-lg font-bold text-neutral-900">
+            <h3
+              id="modal-title"
+              className="text-[17px] font-extrabold tracking-heading text-ink-900"
+            >
               {title}
             </h3>
             <button
               onClick={onClose}
               disabled={closeDisabled}
               aria-label="Fermer"
-              className="p-1.5 text-neutral-400 hover:text-neutral-600 rounded-lg transition-colors disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-neutral-400"
+              className="grid h-9 w-9 place-items-center rounded-chip text-ink-300 transition-colors hover:bg-app hover:text-ink-500 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700"
             >
-              <X className="w-4 h-4" />
+              <X className="w-4 h-4" strokeWidth={2} />
             </button>
           </div>
 
@@ -126,7 +131,7 @@ export function Modal({
 
           {/* Footer */}
           {footer && (
-            <div className="flex gap-3 px-6 pb-6 pt-2 border-t border-neutral-100">
+            <div className="flex gap-3 border-t border-line px-6 pb-6 pt-4">
               {footer}
             </div>
           )}

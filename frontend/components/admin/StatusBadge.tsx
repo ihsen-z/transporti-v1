@@ -35,7 +35,7 @@ export function JobStatusBadge({ status }: { status: string }) {
 export function UserStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     ACTIVE: "bg-green-100 text-green-700",
-    SUSPENDED: "bg-red-100 text-red-700",
+    SUSPENDED: "bg-error-100 text-error-700",
     PENDING_VERIFICATION: "bg-orange-100 text-orange-700",
   };
   const labels: Record<string, string> = {
@@ -54,16 +54,16 @@ export function UserStatusBadge({ status }: { status: string }) {
 export function TrustBadge({ level, score }: { level: string; score: number }) {
   const colors: Record<string, string> = {
     VERIFIED: "bg-accent-100 text-accent-700 border border-accent-200",
-    TRUSTED: "bg-brand-600/10 text-brand-600 border border-brand-600/20",
+    TRUSTED: "bg-blue-50 text-blue-700 border border-brand-600/20",
     NEW: "bg-neutral-100 text-neutral-600 border border-neutral-200",
-    BLOCKED: "bg-red-100 text-red-700 border border-red-200",
+    BLOCKED: "bg-error-100 text-error-700 border border-error-200",
   };
 
   const getScoreColor = (s: number) => {
     if (s >= 80) return "text-green-600";
     if (s >= 60) return "text-brand-600";
     if (s >= 40) return "text-orange-600";
-    return "text-red-600";
+    return "text-error-600";
   };
 
   return (
@@ -83,10 +83,10 @@ export function TrustBadge({ level, score }: { level: string; score: number }) {
 export function PaymentStatusBadge({ status }: { status: string }) {
   const colors: Record<string, string> = {
     PENDING: "bg-orange-100 text-orange-700",
-    HELD: "bg-brand-600/10 text-brand-600",
+    HELD: "bg-blue-50 text-blue-700",
     RELEASED: "bg-green-100 text-green-700",
-    REFUNDED: "bg-purple-100 text-purple-700",
-    BLOCKED: "bg-red-100 text-red-700",
+    REFUNDED: "bg-blue-100 text-blue-700",
+    BLOCKED: "bg-error-100 text-error-700",
   };
   const labels: Record<string, string> = {
     PENDING: "En attente",
@@ -105,8 +105,8 @@ export function PaymentStatusBadge({ status }: { status: string }) {
 
 export function RoleBadge({ role }: { role: string }) {
   const colors: Record<string, string> = {
-    CLIENT: "bg-brand-600/10 text-brand-600",
-    TRANSPORTER: "bg-purple-100 text-purple-700",
+    CLIENT: "bg-blue-50 text-blue-700",
+    TRANSPORTER: "bg-blue-100 text-blue-700",
     ADMIN: "bg-neutral-800 text-white",
   };
   const labels: Record<string, string> = {

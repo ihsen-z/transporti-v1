@@ -23,13 +23,13 @@ function JobCard({ job }: JobCardProps) {
 
   return (
     <Link href={urlJob(job.id, job.is_return_trip)}>
-      <div className="bg-white rounded-xl border border-neutral-200 px-5 py-4 hover:shadow-md hover:border-brand-600/20 transition-all cursor-pointer flex items-center gap-4">
+      <div className="bg-surface rounded-card shadow-card px-5 py-4 hover:shadow-md hover:border-brand-600/20 transition-all cursor-pointer flex items-center gap-4">
         {/* Job type icon */}
         <div
-          className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isMoving ? "bg-purple-100" : "bg-brand-600/10"}`}
+          className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${isMoving ? "bg-blue-100" : "bg-brand-600/10"}`}
         >
           {isMoving ? (
-            <Package className="w-5 h-5 text-purple-600" />
+            <Package className="w-5 h-5 text-blue-700" />
           ) : (
             <Truck className="w-5 h-5 text-brand-600" />
           )}

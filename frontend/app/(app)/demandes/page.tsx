@@ -82,7 +82,7 @@ export default function JobBrowsePage() {
   if (user?.role?.toUpperCase() !== "TRANSPORTER") {
     return (
       <div className="p-8 text-center">
-        <h2 className="text-xl font-bold text-red-600">
+        <h2 className="text-xl font-bold text-error-600">
           {t.browse.accessDenied}
         </h2>
         <p className="text-neutral-600">{t.browse.transportersOnly}</p>
@@ -93,7 +93,7 @@ export default function JobBrowsePage() {
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col md:flex-row gap-8">
           {/* Sidebar Filters */}
@@ -103,19 +103,14 @@ export default function JobBrowsePage() {
 
           {/* Main Feed */}
           <div className="flex-1">
-            <div className="mb-6 flex justify-between items-center">
-              <div>
-                <h1 className="text-2xl font-bold text-neutral-900">
-                  {t.browse.title}
-                </h1>
-                <span className="text-sm text-neutral-500">
-                  {totalCount}{" "}
-                  {totalCount > 1 ? t.browse.resultsPlural : t.browse.results}
-                </span>
-              </div>
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <span className="text-[13px] font-semibold text-ink-500 tabular">
+                {totalCount}{" "}
+                {totalCount > 1 ? t.browse.resultsPlural : t.browse.results}
+              </span>
               {/* Sort Dropdown */}
               <div className="flex items-center gap-2">
-                <SortAsc className="w-4 h-4 text-neutral-400" />
+                <SortAsc className="h-4 w-4 text-ink-300" strokeWidth={2} />
                 <select
                   value={sortBy}
                   onChange={(e) =>
@@ -133,18 +128,15 @@ export default function JobBrowsePage() {
             </div>
 
             {loading ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-48 bg-neutral-200 rounded-xl animate-pulse"
-                  />
+                  <div key={i} className="skeleton h-48 rounded-card" />
                 ))}
               </div>
             ) : fetchError ? (
               <div
                 role="alert"
-                className="bg-white rounded-xl p-12 text-center border border-error-200"
+                className="bg-surface rounded-tile p-12 text-center border border-error-200"
               >
                 <div className="mx-auto w-12 h-12 bg-error-50 rounded-full flex items-center justify-center mb-4">
                   <AlertTriangle className="w-6 h-6 text-error-600" />
@@ -163,7 +155,7 @@ export default function JobBrowsePage() {
               </div>
             ) : jobs.length > 0 ? (
               <>
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                   {jobs.map((job) => (
                     <JobFeedCard key={job.id} job={job} />
                   ))}
@@ -219,7 +211,7 @@ export default function JobBrowsePage() {
                 )}
               </>
             ) : (
-              <div className="bg-white rounded-xl p-12 text-center border">
+              <div className="bg-surface rounded-tile p-12 text-center border">
                 <div className="mx-auto w-12 h-12 bg-neutral-100 rounded-full flex items-center justify-center mb-4">
                   <Search className="w-6 h-6 text-neutral-400" />
                 </div>

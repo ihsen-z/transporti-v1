@@ -86,8 +86,16 @@ export default function AppSidebar() {
   };
 
   const transporterItems: NavItemDef[] = [
-    { href: "/retours", icon: RotateCcw, label: "Mes retours" },
-    { href: "/demandes-recues", icon: Inbox, label: "Demandes reçues" },
+    {
+      href: "/retours",
+      icon: RotateCcw,
+      label: t.header.pageTitles.returns,
+    },
+    {
+      href: "/demandes-recues",
+      icon: Inbox,
+      label: t.header.pageTitles.receivedRequests,
+    },
     { href: "/retours/nouveau", icon: PlusCircle, label: t.nav.returnTrip },
     { href: "/demandes", icon: Search, label: t.nav.findMission },
     { href: "/mes-offres", icon: FileText, label: t.nav.myOffers },
@@ -124,24 +132,28 @@ export default function AppSidebar() {
 
   return (
     <aside
-      className={`hidden lg:flex flex-col w-64 bg-white dark:bg-neutral-900 ${isRTL ? "border-s border-neutral-200 dark:border-neutral-800" : "border-e border-neutral-200 dark:border-neutral-800"} h-screen fixed ${isRTL ? "right-0" : "left-0"} top-0 pt-0 z-sidebar`}
+      className={`fixed top-0 z-sidebar hidden h-screen w-64 flex-col bg-surface lg:flex dark:bg-neutral-900 ${
+        isRTL
+          ? "right-0 border-s border-line dark:border-neutral-800"
+          : "left-0 border-e border-line dark:border-neutral-800"
+      }`}
     >
-      {/* Logo Area */}
-      <div className="px-6 py-4 border-b border-neutral-100 h-16 flex items-center overflow-hidden">
+      {/* Zone logo — même hauteur que la barre haute (64px) */}
+      <div className="flex h-16 items-center overflow-hidden border-b border-line px-5">
         <Link href="/dashboard">
           <SidebarLogo />
         </Link>
       </div>
 
-      {/* Main Navigation */}
-      <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto">
+      {/* Navigation principale — pile en flex, jamais de marges empilées */}
+      <nav className="flex flex-1 flex-col gap-1 overflow-y-auto px-3 py-5">
         {mainItems.map((item) => (
           <NavItem key={item.href} {...item} />
         ))}
       </nav>
 
-      {/* Bottom Navigation */}
-      <div className="px-4 py-2 border-t border-neutral-100 dark:border-neutral-800 space-y-1">
+      {/* Navigation basse */}
+      <div className="flex flex-col gap-1 border-t border-line px-3 py-2 dark:border-neutral-800">
         {bottomItems.map((item) => (
           <NavItem key={item.href} {...item} />
         ))}
@@ -153,22 +165,25 @@ export default function AppSidebar() {
             docs/PLAN_ACTION_MISE_A_NIVEAU_WEB_2026-08-26.md, lot 0.3. */}
       </div>
 
-      {/* Footer */}
-      <div className="px-4 py-4 border-t border-neutral-100">
-        <Link href="/compte">
-          <div className="px-4 py-3 bg-neutral-50 rounded-lg hover:bg-neutral-100 transition-colors cursor-pointer">
-            <p className="text-xs text-neutral-500 mb-1">{t.nav.connectedAs}</p>
-            <p className="text-sm font-bold text-neutral-900 truncate">
-              {user?.first_name || user?.name || t.nav.user}
-            </p>
-            <p className="text-xs text-brand-600 font-medium">
-              {role === "TRANSPORTER"
-                ? t.nav.transporter
-                : role === "CLIENT"
-                  ? t.nav.client
-                  : user?.role || "Guest"}
-            </p>
-          </div>
+      {/* Pied — identité de la session */}
+      <div className="border-t border-line px-3 py-3">
+        <Link
+          href="/compte"
+          className="block rounded-tile bg-app px-3.5 py-3 transition-colors duration-120 hover:bg-blue-50"
+        >
+          <p className="text-[11.5px] font-semibold text-ink-300">
+            {t.nav.connectedAs}
+          </p>
+          <p className="truncate text-[14.5px] font-bold text-ink-900">
+            {user?.first_name || user?.name || t.nav.user}
+          </p>
+          <p className="text-[11.5px] font-semibold text-blue-600">
+            {role === "TRANSPORTER"
+              ? t.nav.transporter
+              : role === "CLIENT"
+                ? t.nav.client
+                : user?.role || "Guest"}
+          </p>
         </Link>
       </div>
     </aside>

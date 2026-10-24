@@ -3,7 +3,6 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import {
-  BarChart3,
   Heart,
   Loader2,
   MapPin,
@@ -109,17 +108,17 @@ export default function PerformancePage() {
   }
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-8">
       <header>
-        <h1 className="text-3xl font-bold text-neutral-900 mb-2 flex items-center gap-2">
-          <BarChart3 className="w-7 h-7 text-brand-600" aria-hidden="true" />
-          {t.performance.title}
-        </h1>
-        <p className="text-neutral-600">{t.performance.subtitle}</p>
+        {/* Titre retire : le bandeau bleu l annonce deja (charte §4).
+            Seul le sous-titre reste, il porte une information neuve. */}
+        <p className="text-[14.5px] leading-[1.55] text-ink-500">
+          {t.performance.subtitle}
+        </p>
       </header>
 
-      <section className="bg-white rounded-xl border border-neutral-200 p-5">
-        <h2 className="text-lg font-semibold text-neutral-900 mb-1">
+      <section className="bg-surface rounded-card shadow-card p-5">
+        <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-1">
           {t.performance.revenueTitle}
         </h2>
         <p className="text-sm text-neutral-500 mb-4">
@@ -158,7 +157,7 @@ export default function PerformancePage() {
                   <tr
                     key={`${ligne.pickup_governorate}-${ligne.dropoff_governorate}`}
                     data-testid="performance-corridor-ligne"
-                    className="border-b border-neutral-100 last:border-0"
+                    className="border-b border-line last:border-0"
                   >
                     <td className="py-3 pe-4 font-medium text-neutral-900">
                       {ligne.pickup_governorate} &rarr;{" "}
@@ -189,8 +188,8 @@ export default function PerformancePage() {
         )}
       </section>
 
-      <section className="bg-white rounded-xl border border-neutral-200 p-5">
-        <h2 className="text-lg font-semibold text-neutral-900 mb-1 flex items-center gap-2">
+      <section className="bg-surface rounded-card shadow-card p-5">
+        <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-1 flex items-center gap-2">
           <TrendingUp className="w-5 h-5 text-brand-600" aria-hidden="true" />
           {t.performance.underservedTitle}
         </h2>
@@ -199,7 +198,10 @@ export default function PerformancePage() {
         </p>
 
         {opportunites.length > 0 ? (
-          <ul data-testid="performance-opportunites" className="space-y-3">
+          <ul
+            data-testid="performance-opportunites"
+            className="flex flex-col gap-3"
+          >
             {opportunites.map((corridor) => (
               <li
                 key={`${corridor.pickup_governorate}-${corridor.dropoff_governorate}`}
@@ -264,8 +266,8 @@ export default function PerformancePage() {
           que rendue vide : un portefeuille desert et une panne ne se disent
           pas de la meme facon. */}
       {fidelite && (
-        <section className="bg-white rounded-xl border border-neutral-200 p-5">
-          <h2 className="text-lg font-semibold text-neutral-900 mb-1 flex items-center gap-2">
+        <section className="bg-surface rounded-card shadow-card p-5">
+          <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-1 flex items-center gap-2">
             <Users className="w-5 h-5 text-brand-600" aria-hidden="true" />
             {t.performance.loyalTitle}
           </h2>
@@ -287,7 +289,10 @@ export default function PerformancePage() {
           </div>
 
           {fidelite.clients.length > 0 ? (
-            <ul data-testid="performance-clients" className="space-y-2">
+            <ul
+              data-testid="performance-clients"
+              className="flex flex-col gap-2"
+            >
               {fidelite.clients.map((client) => (
                 <li
                   key={client.client_id}
@@ -300,10 +305,10 @@ export default function PerformancePage() {
                       {client.is_favorite && (
                         <span
                           data-testid="performance-client-favori"
-                          className="inline-flex items-center gap-1 text-xs font-medium text-red-700"
+                          className="inline-flex items-center gap-1 text-xs font-medium text-error-700"
                         >
                           <Heart
-                            className="w-3.5 h-3.5 fill-red-600 text-red-600"
+                            className="w-3.5 h-3.5 fill-red-600 text-error-600"
                             aria-hidden="true"
                           />
                           {t.performance.loyalFavoriteBadge}

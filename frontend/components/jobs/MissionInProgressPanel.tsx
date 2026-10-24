@@ -70,10 +70,10 @@ export function MissionInProgressPanel({
 
       {/* D2' — mission timeline (visible to both parties) */}
       {(job.events?.length ?? 0) > 0 && (
-        <ul className="mt-3 space-y-1 text-xs">
+        <ul className="mt-3 flex flex-col gap-1 text-xs">
           {(job.events ?? []).map((e, i) => (
             <li key={i} className="flex items-center gap-2 text-brand-700">
-              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
+              <CheckCircle className="w-3.5 h-3.5 text-green-500 flex-shrink-0" />
               <span>
                 {(
                   {
@@ -106,7 +106,7 @@ export function MissionInProgressPanel({
         </div>
       )}
 
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 flex flex-col gap-2">
         {/* D2' — next milestone for the assigned transporter */}
         {estLeTransporteurAssigne &&
           !(job.events ?? []).some((e) => e.event === "ARRIVED_PICKUP") && (
@@ -136,7 +136,7 @@ export function MissionInProgressPanel({
           <button
             onClick={() => onDemanderLaLivraison()}
             disabled={livraisonEnCours}
-            className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-medium hover:bg-emerald-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 hover:shadow-md hover:shadow-emerald-600/20"
+            className="w-full py-2.5 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 flex items-center justify-center gap-2 transition-colors disabled:opacity-50 hover:shadow-md hover:shadow-green-600/20"
           >
             {livraisonEnCours ? (
               <Clock className="w-4 h-4 animate-spin" />
@@ -166,7 +166,7 @@ export function MissionInProgressPanel({
         {estLeTransporteurAssigne && (
           <button
             onClick={() => onDemanderLAnnulation()}
-            className="w-full py-2 border border-red-300 text-red-600 rounded-lg font-medium hover:bg-red-50 flex items-center justify-center gap-2 text-sm transition-colors"
+            className="w-full py-2 border border-error-300 text-error-600 rounded-lg font-medium hover:bg-error-50 flex items-center justify-center gap-2 text-sm transition-colors"
           >
             <XCircle className="w-4 h-4" />
             {t.jobDetail.cancelMission}

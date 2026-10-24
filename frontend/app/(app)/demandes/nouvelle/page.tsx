@@ -409,11 +409,9 @@ export default function NewJobPage() {
         );
       case 3:
         return (
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6">
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
-                {t.newJob.dateTimeLabel}
-              </label>
+              <label className="label mb-[7px]">{t.newJob.dateTimeLabel}</label>
               <input
                 type="datetime-local"
                 value={formData.scheduled_time}
@@ -424,14 +422,14 @@ export default function NewJobPage() {
                   updateFormData({ scheduled_time: e.target.value });
                   setValidationError(null);
                 }}
-                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-accent-500 transition-colors ${
+                className={`w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-700 transition-colors ${
                   validationError
-                    ? "border-red-400 bg-red-50"
+                    ? "border-red-400 bg-error-50"
                     : "border-neutral-300"
                 }`}
               />
               {validationError ? (
-                <p className="text-sm text-red-600 mt-1 flex items-center gap-1">
+                <p className="text-sm text-error-600 mt-1 flex items-center gap-1">
                   <AlertCircle className="w-4 h-4" />
                   {validationError}
                 </p>
@@ -470,7 +468,7 @@ export default function NewJobPage() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="label mb-[7px]">
                   {t.newJob.budgetMinShort}
                 </label>
                 <input
@@ -484,11 +482,11 @@ export default function NewJobPage() {
                       ? String(priceEstimate.min)
                       : t.newJob.budgetOptional
                   }
-                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
+                  className="field"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="label mb-[7px]">
                   {t.newJob.budgetMaxShort}
                 </label>
                 <input
@@ -502,7 +500,7 @@ export default function NewJobPage() {
                       ? String(priceEstimate.max)
                       : t.newJob.budgetOptional
                   }
-                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
+                  className="field"
                 />
               </div>
             </div>
@@ -510,7 +508,7 @@ export default function NewJobPage() {
             {/* Available capacity for return trips */}
             {isReturnTrip && (
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="label mb-[7px]">
                   {t.newJob.capacityLabel}
                 </label>
                 <input
@@ -520,7 +518,7 @@ export default function NewJobPage() {
                     updateFormData({ available_capacity: e.target.value })
                   }
                   placeholder={t.newJob.capacityPlaceholder}
-                  className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500"
+                  className="field"
                 />
                 <p className="text-sm text-neutral-500 mt-1">
                   {t.newJob.capacityHint}
@@ -537,7 +535,7 @@ export default function NewJobPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-12 px-4 sm:px-6 lg:px-8">
+    <div className=" py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Progress Bar */}
         <div className="mb-8">
@@ -578,8 +576,8 @@ export default function NewJobPage() {
         </div>
 
         {/* Content Card */}
-        <div className="bg-white rounded-2xl shadow-sm p-6 sm:p-8">
-          <h2 className="text-2xl font-bold text-neutral-900 mb-6">
+        <div className="bg-surface rounded-card shadow-card p-6 sm:p-8">
+          <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900 mb-6">
             {isReturnTrip && currentStep === 0
               ? t.newJob.returnTripTitle
               : stepTitles[currentStep]}
@@ -587,8 +585,8 @@ export default function NewJobPage() {
 
           {/* Return trip header info */}
           {isReturnTrip && currentStep <= 1 && (
-            <div className="mb-6 bg-purple-50 border border-purple-200 rounded-xl p-4">
-              <p className="text-sm text-purple-700 font-medium">
+            <div className="mb-6 bg-blue-50 rounded-tile p-4">
+              <p className="text-sm text-blue-700 font-medium">
                 {t.newJob.returnBannerPre}
                 <strong>{t.newJob.returnBannerBold}</strong>
                 {t.newJob.returnBannerPost}
@@ -612,21 +610,21 @@ export default function NewJobPage() {
 
           {/* Matching v1 (pivot) : des trajets retour existent sur ce corridor */}
           {!isReturnTrip && (matchCount ?? 0) > 0 && (
-            <div className="mb-6 flex items-start gap-3 bg-purple-50 border border-purple-200 rounded-xl p-4">
-              <Truck className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+            <div className="mb-6 flex items-start gap-3 bg-blue-50 rounded-tile p-4">
+              <Truck className="w-5 h-5 text-blue-700 mt-0.5 flex-shrink-0" />
               <div className="flex-1">
-                <p className="text-sm font-semibold text-purple-800">
+                <p className="text-sm font-semibold text-blue-800">
                   {interpolate(t.newJob.matchBannerTitle, {
                     count: matchCount as number,
                   })}
                 </p>
-                <p className="text-xs text-purple-600 mt-0.5">
+                <p className="text-xs text-blue-700 mt-0.5">
                   {t.newJob.matchBannerDesc}
                 </p>
               </div>
               <Link
                 href={`/recherche?pickup_governorate=${encodeURIComponent(formData.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(formData.dropoff_governorate)}`}
-                className="flex-shrink-0 px-4 py-2 bg-purple-600 text-white rounded-lg text-xs font-semibold hover:bg-purple-700 transition-colors"
+                className="flex-shrink-0 px-4 py-2 bg-blue-700 text-white rounded-lg text-xs font-semibold hover:bg-blue-700 transition-colors"
               >
                 {t.newJob.matchBannerCta}
               </Link>
@@ -639,7 +637,7 @@ export default function NewJobPage() {
           {validationError && currentStep !== 3 && (
             <div
               role="alert"
-              className="mt-6 flex items-start gap-2 bg-error-50 border border-error-200 rounded-xl p-3 text-sm text-error-700"
+              className="mt-6 flex items-start gap-2 bg-error-50 rounded-tile p-3 text-sm text-error-700"
             >
               <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
               <p>{validationError}</p>

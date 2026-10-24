@@ -4,7 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import DataTable from "@/components/admin/DataTable";
 import StatusBadge from "@/components/admin/StatusBadge";
-import { formatTimeAgoShort, formatCurrency } from "@/lib/format";
+import { formatTimeAgoShort } from "@/lib/format";
 import { useAdminDisputes } from "@/hooks/useAdminData";
 import {
   investigateDispute,
@@ -17,7 +17,6 @@ import {
   AlertTriangle,
   Eye,
   Search as SearchIcon,
-  MessageSquare,
   CheckCircle,
   XCircle,
   User,
@@ -36,8 +35,8 @@ import { useI18n } from "@/lib/i18n/useAppI18n";
 type DisputeStatus = "OPEN" | "INVESTIGATING" | "RESOLVED" | "REJECTED";
 
 const statusColors: Record<DisputeStatus, string> = {
-  OPEN: "bg-red-100 text-red-700",
-  INVESTIGATING: "bg-brand-600/10 text-brand-600",
+  OPEN: "bg-error-100 text-error-700",
+  INVESTIGATING: "bg-blue-50 text-blue-700",
   RESOLVED: "bg-green-100 text-green-700",
   REJECTED: "bg-neutral-100 text-neutral-600",
 };
@@ -289,7 +288,7 @@ export default function AdminDisputesPage() {
               onClick={() => handleInvestigate(d.id)}
               title="Investiguer"
               disabled={actionLoading}
-              className="p-1.5 rounded-lg bg-brand-600/10 text-brand-600 hover:bg-brand-600/20 transition-colors disabled:opacity-50"
+              className="p-1.5 rounded-lg bg-blue-50 text-blue-700 hover:bg-brand-600/20 transition-colors disabled:opacity-50"
             >
               <SearchIcon className="w-4 h-4" />
             </button>
@@ -308,7 +307,7 @@ export default function AdminDisputesPage() {
                 onClick={() => handleReject(d.id)}
                 title="Rejeter"
                 disabled={actionLoading}
-                className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-lg bg-error-100 text-error-600 hover:bg-red-200 transition-colors disabled:opacity-50"
               >
                 <XCircle className="w-4 h-4" />
               </button>
@@ -338,8 +337,8 @@ export default function AdminDisputesPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3 text-center">
-          <AlertCircle className="w-8 h-8 text-red-500" />
-          <p className="text-sm text-red-600">Erreur: {error.message}</p>
+          <AlertCircle className="w-8 h-8 text-error-500" />
+          <p className="text-sm text-error-600">Erreur: {error.message}</p>
           <button
             onClick={refetch}
             className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm hover:bg-brand-700"
@@ -354,14 +353,14 @@ export default function AdminDisputesPage() {
   // ─── Render ───────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Feedback Banner */}
       {feedback && (
         <div
           className={`rounded-xl p-4 text-sm font-medium ${
             feedback.type === "success"
               ? "bg-green-50 text-green-800 border border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800"
-              : "bg-red-50 text-red-800 border border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800"
+              : "bg-error-50 text-error-700 border border-error-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800"
           }`}
         >
           {feedback.message}
@@ -371,7 +370,7 @@ export default function AdminDisputesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
             {t.disputes.title}
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">
@@ -395,9 +394,9 @@ export default function AdminDisputesPage() {
             {source === "api" ? "API Live" : "Mock Data"}
           </div>
           {openCount > 0 && (
-            <div className="flex items-center gap-2 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 px-4 py-2 rounded-lg">
-              <AlertTriangle className="w-4 h-4 text-red-600" />
-              <span className="text-sm font-medium text-red-800 dark:text-red-300">
+            <div className="flex items-center gap-2 bg-error-50 dark:bg-red-900/20 border border-error-200 dark:border-red-800 px-4 py-2 rounded-lg">
+              <AlertTriangle className="w-4 h-4 text-error-600" />
+              <span className="text-sm font-medium text-error-700 dark:text-red-300">
                 {openCount} litige{openCount > 1 ? "s" : ""} ouvert
                 {openCount > 1 ? "s" : ""}
               </span>
@@ -422,7 +421,7 @@ export default function AdminDisputesPage() {
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                   isActive
                     ? "bg-brand-600 text-white shadow-sm"
-                    : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
+                    : "bg-surface dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
                 }`}
               >
                 {tab.label}
@@ -449,7 +448,7 @@ export default function AdminDisputesPage() {
       </div>
 
       {/* Stats Bar */}
-      <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+      <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
         <div className="flex flex-wrap gap-6 text-sm">
           <div>
             <span className="text-neutral-500 dark:text-neutral-400">
@@ -463,7 +462,9 @@ export default function AdminDisputesPage() {
             <span className="text-neutral-500 dark:text-neutral-400">
               Ouverts:
             </span>
-            <span className="ms-2 font-semibold text-red-600">{openCount}</span>
+            <span className="ms-2 font-semibold text-error-600">
+              {openCount}
+            </span>
           </div>
           <div>
             <span className="text-neutral-500 dark:text-neutral-400">
@@ -486,9 +487,9 @@ export default function AdminDisputesPage() {
       {/* Detail Drawer */}
       {selectedDispute && (
         <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-          <div className="bg-white dark:bg-[#1e293b] w-full max-w-lg h-full overflow-y-auto shadow-2xl">
-            <div className="p-6 border-b border-neutral-100 dark:border-neutral-700 flex items-center justify-between">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+          <div className="bg-surface dark:bg-[#1e293b] w-full max-w-lg h-full overflow-y-auto shadow-2xl">
+            <div className="p-6 border-b border-line dark:border-neutral-700 flex items-center justify-between">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                 Litige #{selectedDispute.id}
               </h2>
               <button
@@ -499,7 +500,7 @@ export default function AdminDisputesPage() {
               </button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-6 flex flex-col gap-6">
               {/* Status */}
               <div className="flex items-center gap-3">
                 <StatusBadge
@@ -555,7 +556,7 @@ export default function AdminDisputesPage() {
 
               {/* Resolution Notes */}
               {selectedDispute.resolution_notes && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <div className="bg-green-50 rounded-tile p-4">
                   <p className="text-xs text-green-600 mb-1">Résolution</p>
                   <p className="text-sm text-green-800">
                     {selectedDispute.resolution_notes}
@@ -571,7 +572,7 @@ export default function AdminDisputesPage() {
               {/* Actions */}
               {(selectedDispute.status === "OPEN" ||
                 selectedDispute.status === "INVESTIGATING") && (
-                <div className="flex gap-3 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+                <div className="flex gap-3 pt-4 border-t border-line dark:border-neutral-700">
                   {selectedDispute.status === "OPEN" && (
                     <button
                       onClick={() => handleInvestigate(selectedDispute.id)}
@@ -597,7 +598,7 @@ export default function AdminDisputesPage() {
                   <button
                     onClick={() => handleReject(selectedDispute.id)}
                     disabled={actionLoading}
-                    className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="flex-1 bg-error-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
                   >
                     <XCircle className="w-4 h-4" />
                     Rejeter
@@ -612,8 +613,8 @@ export default function AdminDisputesPage() {
       {/* Resolve Modal */}
       {showResolveModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-xl max-w-md w-full p-6 border border-neutral-200 dark:border-neutral-700">
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-2xl shadow-xl max-w-md w-full p-6 border border-neutral-200 dark:border-neutral-700">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-2">
               Résoudre le litige #{pendingActionId}
             </h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
@@ -625,7 +626,7 @@ export default function AdminDisputesPage() {
               onChange={(e) => setResolveNotes(e.target.value)}
               placeholder="Notes de résolution (min. 10 caractères)..."
               rows={3}
-              className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
+              className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:border-transparent resize-none"
             />
 
             {/* L1 — financial outcome that drives the escrow movement */}
@@ -638,7 +639,7 @@ export default function AdminDisputesPage() {
                 onChange={(e) =>
                   setResolveOutcome(e.target.value as DisputeResolutionOutcome)
                 }
-                className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-accent-500"
+                className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-700"
               >
                 <option value="NONE">Aucun mouvement (note seule)</option>
                 <option value="REFUND_CLIENT">
@@ -662,7 +663,7 @@ export default function AdminDisputesPage() {
                     value={refundAmount}
                     onChange={(e) => setRefundAmount(e.target.value)}
                     placeholder="Ex. 50.00"
-                    className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500"
+                    className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-700"
                   />
                   <p className="text-xs text-neutral-400 mt-1">
                     Le reste de la somme séquestrée est versé au transporteur.
@@ -671,7 +672,7 @@ export default function AdminDisputesPage() {
               )}
 
               {resolveOutcome !== "NONE" && (
-                <p className="text-xs text-amber-600 dark:text-amber-400 mt-2 flex items-start gap-1">
+                <p className="text-xs text-warning-600 dark:text-warning-400 mt-2 flex items-start gap-1">
                   <DollarSign className="w-3.5 h-3.5 mt-0.5 shrink-0" />
                   Cette décision déclenche un mouvement d&apos;argent réel sur
                   la mission.
@@ -702,8 +703,8 @@ export default function AdminDisputesPage() {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-xl max-w-md w-full p-6 border border-neutral-200 dark:border-neutral-700">
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-2xl shadow-xl max-w-md w-full p-6 border border-neutral-200 dark:border-neutral-700">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-2">
               Rejeter le litige #{pendingActionId}
             </h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
@@ -714,7 +715,7 @@ export default function AdminDisputesPage() {
               onChange={(e) => setResolveNotes(e.target.value)}
               placeholder="Raison du rejet (min. 10 caractères)..."
               rows={3}
-              className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
+              className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:border-transparent resize-none"
             />
             <div className="flex gap-3 mt-4">
               <button
@@ -726,7 +727,7 @@ export default function AdminDisputesPage() {
               <button
                 onClick={confirmReject}
                 disabled={resolveNotes.trim().length < 10 || actionLoading}
-                className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="flex-1 bg-error-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 Confirmer le rejet

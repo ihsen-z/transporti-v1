@@ -25,10 +25,6 @@ import {
   X,
   ChevronRight,
   MapPin,
-  Truck,
-  Package,
-  FileText,
-  MessageCircle,
 } from "lucide-react";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
 import { urlJob } from "@/lib/routes/jobs";
@@ -48,8 +44,8 @@ function getStatusConfig(
   return {
     OPEN: {
       label: t.statusOpen,
-      color: "text-amber-700",
-      bgColor: "bg-amber-50 border-amber-200",
+      color: "text-warning-700",
+      bgColor: "bg-warning-50 border-warning-200",
       icon: Clock,
     },
     INVESTIGATING: {
@@ -60,14 +56,14 @@ function getStatusConfig(
     },
     RESOLVED: {
       label: t.statusResolved,
-      color: "text-emerald-700",
-      bgColor: "bg-emerald-50 border-emerald-200",
+      color: "text-green-700",
+      bgColor: "bg-green-50 border-green-200",
       icon: CheckCircle,
     },
     REJECTED: {
       label: t.statusRejected,
-      color: "text-red-700",
-      bgColor: "bg-red-50 border-red-200",
+      color: "text-error-700",
+      bgColor: "bg-error-50 border-error-200",
       icon: XCircle,
     },
   };
@@ -176,10 +172,10 @@ function CreateDisputeModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+      <div className="bg-surface rounded-card shadow-2xl w-full max-w-lg overflow-hidden animate-fade-in">
         {/* Header */}
-        <div className="bg-gradient-to-r from-brand-600 to-brand-800 px-6 py-5 flex items-center justify-between">
+        <div className="bg-band px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3 text-white">
             <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
               <Scale className="w-5 h-5" />
@@ -198,7 +194,7 @@ function CreateDisputeModal({
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
           {/* ✅ P0-03: Dropdown with user's own jobs */}
           <div>
             <label className="block text-sm font-medium text-neutral-700 mb-1.5">
@@ -210,7 +206,7 @@ function CreateDisputeModal({
                 {t.loadingMissions}
               </div>
             ) : userJobs.length === 0 ? (
-              <div className="p-4 bg-amber-50 border border-amber-200 rounded-xl text-sm text-amber-700">
+              <div className="p-4 bg-warning-50 rounded-tile text-sm text-warning-700">
                 <p className="font-medium">{t.noEligibleMissions}</p>
                 <p className="text-xs mt-1">{t.noEligibleMissionsDesc}</p>
               </div>
@@ -218,7 +214,7 @@ function CreateDisputeModal({
               <select
                 value={selectedJobId}
                 onChange={(e) => setSelectedJobId(e.target.value)}
-                className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-600 outline-none bg-white"
+                className="field focus:ring-2 focus:ring-brand-500 focus:border-brand-600 outline-none bg-white"
                 required
               >
                 <option value="">{t.selectMission}</option>
@@ -246,7 +242,7 @@ function CreateDisputeModal({
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-xs text-neutral-600 mt-1">
-                  <MapPin className="w-3.5 h-3.5 text-emerald-600" />
+                  <MapPin className="w-3.5 h-3.5 text-green-600" />
                   <span className="font-medium">
                     {selectedJob.dropoff_address}
                   </span>
@@ -263,7 +259,7 @@ function CreateDisputeModal({
             <select
               value={reason}
               onChange={(e) => setReason(e.target.value)}
-              className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-600 outline-none bg-white"
+              className="field focus:ring-2 focus:ring-brand-500 focus:border-brand-600 outline-none bg-white"
               required
             >
               <option value="">{t.selectReason}</option>
@@ -287,7 +283,7 @@ function CreateDisputeModal({
               placeholder={t.descPlaceholder}
               className={`w-full p-3 border rounded-xl text-sm focus:ring-2 focus:ring-brand-500 focus:border-brand-600 outline-none resize-none ${
                 descriptionLength > 0 && !isDescriptionValid
-                  ? "border-red-300 bg-red-50/30"
+                  ? "border-error-300 bg-error-50/30"
                   : "border-neutral-300"
               }`}
               required
@@ -296,7 +292,7 @@ function CreateDisputeModal({
               <span
                 className={`text-xs ${
                   descriptionLength > 0 && !isDescriptionValid
-                    ? "text-red-500"
+                    ? "text-error-500"
                     : "text-neutral-400"
                 }`}
               >
@@ -314,7 +310,7 @@ function CreateDisputeModal({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 py-3 px-4 border border-neutral-300 rounded-xl text-sm font-semibold text-neutral-700 hover:bg-neutral-50 transition-colors"
+              className="flex-1 py-3 px-4 border border-neutral-300 rounded-xl text-[14px] font-bold text-ink-700 hover:bg-neutral-50 transition-colors"
             >
               {t.cancel}
             </button>
@@ -411,12 +407,14 @@ export default function DisputesPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900">{t.pageTitle}</h1>
+          <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900">
+            {t.pageTitle}
+          </h2>
           <p className="text-neutral-500 mt-1 text-sm">{t.pageSubtitle}</p>
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 px-5 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-all hover:shadow-lg hover:shadow-brand-600/20 hover:scale-[1.02]"
+          className="flex items-center gap-2 px-5 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-all hover:shadow-lg"
         >
           <Plus className="w-5 h-5" />
           {t.newDispute}
@@ -453,20 +451,17 @@ export default function DisputesPage() {
 
       {/* Disputes List */}
       {loading ? (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {[1, 2, 3].map((i) => (
-            <div
-              key={i}
-              className="h-28 bg-neutral-100 rounded-2xl animate-pulse"
-            />
+            <div key={i} className="skeleton h-28 rounded-card" />
           ))}
         </div>
       ) : filteredDisputes.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-neutral-100 p-12 text-center">
+        <div className="bg-surface rounded-card shadow-card p-12 text-center">
           <div className="w-16 h-16 bg-neutral-50 rounded-full flex items-center justify-center mx-auto mb-4">
             <Scale className="w-8 h-8 text-neutral-300" />
           </div>
-          <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+          <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-2">
             {statusFilter === "ALL" ? t.noDisputes : t.noDisputesInCategory}
           </h3>
           <p className="text-neutral-500 text-sm mb-6">
@@ -482,7 +477,7 @@ export default function DisputesPage() {
           )}
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {filteredDisputes.map((dispute) => {
             const config = statusConfig[dispute.status] || statusConfig.OPEN;
             const StatusIcon = config.icon;
@@ -490,7 +485,7 @@ export default function DisputesPage() {
             return (
               <div
                 key={dispute.id}
-                className="bg-white rounded-2xl border border-neutral-100 p-5 hover:shadow-md transition-all hover:-translate-y-0.5 group"
+                className="bg-surface rounded-card shadow-card p-5 hover-lift group"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-start gap-4 min-w-0">
@@ -501,7 +496,7 @@ export default function DisputesPage() {
                     </div>
                     <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="text-sm font-semibold text-neutral-900">
+                        <h3 className="text-[14px] font-bold text-ink-900">
                           {reasonLabels[dispute.reason] || dispute.reason}
                         </h3>
                         <span
@@ -545,15 +540,15 @@ export default function DisputesPage() {
                         <div
                           className={`mt-3 p-3 rounded-lg border ${
                             dispute.status === "RESOLVED"
-                              ? "bg-emerald-50 border-emerald-200"
-                              : "bg-red-50 border-red-200"
+                              ? "bg-green-50 border-green-200"
+                              : "bg-error-50 border-error-200"
                           }`}
                         >
                           <p
                             className={`text-xs font-medium mb-0.5 ${
                               dispute.status === "RESOLVED"
-                                ? "text-emerald-800"
-                                : "text-red-800"
+                                ? "text-green-800"
+                                : "text-error-700"
                             }`}
                           >
                             {dispute.status === "RESOLVED"
@@ -563,8 +558,8 @@ export default function DisputesPage() {
                           <p
                             className={`text-xs ${
                               dispute.status === "RESOLVED"
-                                ? "text-emerald-700"
-                                : "text-red-700"
+                                ? "text-green-700"
+                                : "text-error-700"
                             }`}
                           >
                             {dispute.resolution_notes}
@@ -598,7 +593,7 @@ export default function DisputesPage() {
           <AlertTriangle className="w-5 h-5 text-brand-600" />
           {t.howItWorks}
         </h3>
-        <ul className="text-sm text-neutral-600 space-y-2 ms-7">
+        <ul className="text-sm text-neutral-600 flex flex-col gap-2 ms-7">
           <li className="list-disc">{t.how1}</li>
           <li className="list-disc">{t.how2}</li>
           <li className="list-disc">{t.how3}</li>

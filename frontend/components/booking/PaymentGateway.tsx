@@ -100,11 +100,11 @@ export function PaymentGateway({
   // Error screen
   if (status === "error") {
     return (
-      <div role="alert" className="text-center py-12 space-y-4">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto">
-          <XCircle className="w-8 h-8 text-red-600" />
+      <div role="alert" className="text-center py-12 flex flex-col gap-4">
+        <div className="w-16 h-16 bg-error-50 rounded-full flex items-center justify-center mx-auto">
+          <XCircle className="w-8 h-8 text-error-600" />
         </div>
-        <h3 className="text-lg font-semibold text-neutral-900">
+        <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
           {t.booking.paymentImpossible}
         </h3>
         <p className="text-sm text-neutral-500">
@@ -129,7 +129,7 @@ export function PaymentGateway({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Amount */}
       <div className="bg-brand-600/5 border border-brand-600/20 rounded-xl p-4 text-center">
         <p className="text-sm text-brand-600 font-medium">
@@ -144,7 +144,7 @@ export function PaymentGateway({
       </div>
 
       {/* How it works */}
-      <div className="bg-neutral-50 rounded-xl p-4 space-y-2">
+      <div className="bg-neutral-50 rounded-xl p-4 flex flex-col gap-2">
         <p className="text-sm text-neutral-700 font-medium flex items-center gap-2">
           <ExternalLink className="w-4 h-4 text-brand-600" />
           {t.booking.redirectSecurePlatform}
@@ -156,9 +156,7 @@ export function PaymentGateway({
 
       {/* Supported methods */}
       <div>
-        <p className="block text-sm font-medium text-neutral-700 mb-2">
-          {t.booking.acceptedMethods}
-        </p>
+        <p className="label mb-[7px]">{t.booking.acceptedMethods}</p>
         <div className="grid grid-cols-2 gap-2">
           {SUPPORTED_METHODS.map((m) => (
             <div

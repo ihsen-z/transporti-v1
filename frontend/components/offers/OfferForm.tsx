@@ -1,5 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { Send, CheckCircle, AlertTriangle, XCircle, Info } from "lucide-react";
+import {
+  AlertTriangle,
+  CheckCircle,
+  Info,
+  Lightbulb,
+  Send,
+  XCircle,
+} from "lucide-react";
 import { ApiError } from "@/lib/api/client";
 import { countActiveOffers, submitOffer } from "@/lib/services/offers";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
@@ -183,7 +190,7 @@ export function OfferForm({
   return (
     <div className="bg-white border rounded-xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+        <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 flex items-center gap-2">
           <Send className="w-5 h-5 text-brand-600" />
           {t.submitOffer}
         </h3>
@@ -191,9 +198,9 @@ export function OfferForm({
           <span
             className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
               isAtLimit
-                ? "bg-red-100 text-red-700"
+                ? "bg-error-100 text-error-700"
                 : isNearLimit
-                  ? "bg-amber-100 text-amber-700"
+                  ? "bg-warning-100 text-warning-700"
                   : "bg-green-100 text-green-700"
             }`}
           >
@@ -208,7 +215,7 @@ export function OfferForm({
 
       {/* L1: Limit warning banner */}
       {isAtLimit && (
-        <div className="mb-4 p-3 rounded-lg bg-red-50 text-red-800 border border-red-200 flex items-start gap-2 text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-error-50 text-error-700 border border-error-200 flex items-start gap-2 text-sm">
           <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <div>
             <p className="font-semibold">
@@ -219,7 +226,7 @@ export function OfferForm({
         </div>
       )}
       {isNearLimit && (
-        <div className="mb-4 p-3 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 flex items-start gap-2 text-sm">
+        <div className="mb-4 p-3 rounded-lg bg-warning-50 text-warning-800 border border-warning-200 flex items-start gap-2 text-sm">
           <Info className="w-4 h-4 mt-0.5 flex-shrink-0" />
           <span>{t.nearLimitDesc}</span>
         </div>
@@ -232,8 +239,8 @@ export function OfferForm({
             feedback.type === "success"
               ? "bg-green-50 text-green-800 border border-green-200"
               : feedback.type === "warning"
-                ? "bg-amber-50 text-amber-800 border border-amber-200"
-                : "bg-red-50 text-red-800 border border-red-200"
+                ? "bg-warning-50 text-warning-800 border border-warning-200"
+                : "bg-error-50 text-error-700 border border-error-200"
           }`}
         >
           {feedback.type === "success" && (
@@ -249,11 +256,9 @@ export function OfferForm({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6" noValidate>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            {t.netTariff}
-          </label>
+          <label className="label mb-[7px]">{t.netTariff}</label>
           <div className="relative">
             <input
               type="number"
@@ -270,7 +275,7 @@ export function OfferForm({
               className={`w-full ps-3 pe-12 py-3 border rounded-lg focus:ring-2 font-bold text-lg ${
                 priceError
                   ? "border-red-400 focus:ring-red-400"
-                  : "focus:ring-accent-500"
+                  : "focus:ring-blue-700"
               }`}
               placeholder="0.00"
             />
@@ -280,14 +285,14 @@ export function OfferForm({
           </div>
           {/* A4: inline price validation */}
           {priceError && (
-            <p className="mt-1.5 text-xs font-medium text-red-600 flex items-center gap-1">
+            <p className="mt-1.5 text-xs font-medium text-error-600 flex items-center gap-1">
               <XCircle className="w-3.5 h-3.5 flex-shrink-0" />
               {priceError}
             </p>
           )}
           {/* P1-04: Budget indicatif du client */}
           {(priceTndMin || priceTndMax) && (
-            <div className="mt-2 p-2.5 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2">
+            <div className="mt-2 p-2.5 bg-blue-50 rounded-tile flex items-start gap-2">
               <Info className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
               <p className="text-xs text-blue-700">
                 {t.indicativeBudget}{" "}
@@ -303,20 +308,26 @@ export function OfferForm({
           )}
           {/* A4: non-blocking warning when the client total exceeds the budget */}
           {budgetExceeded && (
-            <div className="mt-2 p-2.5 bg-amber-50 border border-amber-200 rounded-lg flex items-start gap-2">
-              <AlertTriangle className="w-4 h-4 text-amber-600 mt-0.5 flex-shrink-0" />
-              <p className="text-xs text-amber-700">
+            <div className="mt-2 p-2.5 bg-warning-50 rounded-tile flex items-start gap-2">
+              <AlertTriangle className="w-4 h-4 text-warning-600 mt-0.5 flex-shrink-0" />
+              <p className="text-xs text-warning-700">
                 {t.budgetExceededWarning}
               </p>
             </div>
           )}
           {/* P2-10: COD threshold note */}
-          <p className="text-xs text-neutral-400 mt-1.5">{t.codNote}</p>
+          <p className="mt-1.5 inline-flex items-start gap-1.5 text-[12.5px] text-ink-500">
+            <Lightbulb
+              className="mt-px h-3.5 w-3.5 flex-shrink-0"
+              strokeWidth={2}
+            />
+            {t.codNote}
+          </p>
         </div>
 
         {/* Pricing Breakdown — display-only, rate served by the API */}
         {rate !== null && (
-          <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm">
+          <div className="bg-neutral-50 rounded-lg p-4 flex flex-col gap-2 text-sm">
             <div className="flex justify-between text-neutral-600">
               <span>
                 {t.platformCommission} ({commissionPct}%)
@@ -335,14 +346,12 @@ export function OfferForm({
         )}
 
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
-            {t.messageLabel}
-          </label>
+          <label className="label mb-[7px]">{t.messageLabel}</label>
           <textarea
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder={t.messagePlaceholder}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500 h-24"
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-700 h-24"
           />
         </div>
 

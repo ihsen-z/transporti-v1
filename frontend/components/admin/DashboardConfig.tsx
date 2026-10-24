@@ -180,7 +180,7 @@ export function DashboardSettingsButton() {
   return (
     <button
       onClick={() => setShowConfigPanel(true)}
-      className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+      className="flex items-center gap-2 px-3 py-2 bg-surface dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
       title={t.config.title}
     >
       <Settings2 className="w-4 h-4" />
@@ -269,9 +269,9 @@ export function DashboardConfigPanel() {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex justify-end">
-      <div className="bg-white dark:bg-[#1e293b] w-full max-w-md h-full overflow-y-auto shadow-2xl animate-in slide-in-from-right duration-300">
+      <div className="bg-surface dark:bg-[#1e293b] w-full max-w-md h-full overflow-y-auto shadow-2xl animate-in slide-in-from-right duration-300">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-[#1e293b] border-b border-neutral-200 dark:border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
+        <div className="sticky top-0 bg-surface dark:bg-[#1e293b] border-b border-neutral-200 dark:border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-brand-600/10 flex items-center justify-center">
               <Settings2 className="w-5 h-5 text-brand-600" />
@@ -294,21 +294,21 @@ export function DashboardConfigPanel() {
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-6">
+        <div className="p-6 flex flex-col gap-6">
           {/* Widget List */}
           <div>
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3 flex items-center gap-2">
+            <h3 className="text-[14px] font-bold text-ink-900 dark:text-white mb-3 flex items-center gap-2">
               <GripVertical className="w-4 h-4 text-neutral-400" />
               {t.config.widgetsAndSections}
             </h3>
-            <div className="space-y-2">
+            <div className="flex flex-col gap-2">
               {localWidgets.map((widget, index) => (
                 <div
                   key={widget.id}
                   className={`flex items-center gap-3 px-4 py-3 rounded-xl border transition-all ${
                     widget.visible
                       ? "bg-white dark:bg-[#0f172a] border-neutral-200 dark:border-neutral-600"
-                      : "bg-neutral-50 dark:bg-neutral-800/50 border-neutral-100 dark:border-neutral-700 opacity-60"
+                      : "bg-neutral-50 dark:bg-neutral-800/50 border-line dark:border-neutral-700 opacity-60"
                   }`}
                 >
                   {/* Reorder buttons */}
@@ -367,10 +367,10 @@ export function DashboardConfigPanel() {
 
           {/* Display Options */}
           <div>
-            <h3 className="text-sm font-semibold text-neutral-900 dark:text-white mb-3">
+            <h3 className="text-[14px] font-bold text-ink-900 dark:text-white mb-3">
               {t.config.displayOptions}
             </h3>
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {/* Compact Mode */}
               <label className="flex items-center justify-between px-4 py-3 rounded-xl bg-white dark:bg-[#0f172a] border border-neutral-200 dark:border-neutral-600 cursor-pointer">
                 <div>
@@ -448,7 +448,7 @@ export function DashboardConfigPanel() {
         </div>
 
         {/* Footer */}
-        <div className="sticky bottom-0 bg-white dark:bg-[#1e293b] border-t border-neutral-200 dark:border-neutral-700 px-6 py-4 flex items-center justify-between">
+        <div className="sticky bottom-0 bg-surface dark:bg-[#1e293b] border-t border-neutral-200 dark:border-neutral-700 px-6 py-4 flex items-center justify-between">
           <button
             onClick={handleReset}
             className="flex items-center gap-2 px-3 py-2 text-sm text-neutral-500 dark:text-neutral-400 hover:bg-neutral-100 dark:hover:bg-neutral-700 rounded-lg transition-colors"

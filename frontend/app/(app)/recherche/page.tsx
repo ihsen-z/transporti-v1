@@ -15,6 +15,7 @@ import {
 } from "@/lib/services/search";
 import type { JobFeedItem } from "@/components/jobs/JobFeedCard";
 import { JobFeedCard } from "@/components/jobs/JobFeedCard";
+import { BandHeroCard } from "@/components/dashboard/BandHeroCard";
 import { useToast } from "@/components/ui/Toast";
 import {
   RotateCcw,
@@ -179,54 +180,52 @@ export default function ReturnTripsPage() {
   const totalPages = Math.ceil(totalCount / PAGE_SIZE);
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-7xl mx-auto">
-        {/* Header */}
-        <div className="mb-8 animate-fade-in-up">
-          <div className="flex items-center gap-3 mb-3">
-            <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-700 rounded-xl flex items-center justify-center shadow-lg">
-              <RotateCcw className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-neutral-900">
+    <div className="mx-auto max-w-7xl px-5 pb-10 pt-12 sm:px-6 lg:px-8">
+      <div className="flex flex-col gap-4">
+        {/* Carte verre chevauchant le bandeau : la promesse du pivot */}
+        <BandHeroCard>
+          <div className="flex items-center gap-3">
+            <span className="glass-chip h-11 w-11 flex-shrink-0">
+              <RotateCcw className="h-5 w-5 text-white" strokeWidth={2} />
+            </span>
+            <div className="flex min-w-0 flex-col gap-0.5">
+              <h2 className="text-[19px] font-extrabold tracking-heading text-white">
                 {t.returnTrips.title}
-              </h1>
-              <p className="text-sm text-neutral-500">
+              </h2>
+              <p className="text-[13px] text-on-blue-300">
                 {t.returnTrips.subtitle}
               </p>
             </div>
           </div>
 
-          {/* Value proposition banner */}
-          <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-100 rounded-xl p-4 mt-4">
-            <div className="flex flex-wrap items-center gap-6 text-sm">
-              <div className="flex items-center gap-2 text-purple-700">
-                <TrendingDown className="w-4 h-4" />
-                <span className="font-medium">{t.returnTrips.discount}</span>
-              </div>
-              <div className="flex items-center gap-2 text-purple-700">
-                <Truck className="w-4 h-4" />
-                <span>{t.returnTrips.verified}</span>
-              </div>
-              <div className="flex items-center gap-2 text-purple-700">
-                <MapPin className="w-4 h-4" />
-                <span>{t.returnTrips.allTunisia}</span>
-              </div>
-            </div>
+          {/* Les trois arguments passent en tags de verre */}
+          <div className="flex flex-wrap gap-2">
+            <span className="tag tag--on-blue">
+              <TrendingDown className="h-3.5 w-3.5" strokeWidth={2.2} />
+              {t.returnTrips.discount}
+            </span>
+            <span className="tag tag--on-blue">
+              <Truck className="h-3.5 w-3.5" strokeWidth={2.2} />
+              {t.returnTrips.verified}
+            </span>
+            <span className="tag tag--on-blue">
+              <MapPin className="h-3.5 w-3.5" strokeWidth={2.2} />
+              {t.returnTrips.allTunisia}
+            </span>
           </div>
-        </div>
+        </BandHeroCard>
 
-        <div className="flex flex-col md:flex-row gap-8">
+        <div className="flex flex-col gap-4 md:flex-row">
           {/* Sidebar Filters */}
-          <div className="w-full md:w-64 flex-shrink-0 animate-fade-in-up delay-100">
-            <div className="bg-white rounded-xl border border-neutral-200 p-5 sticky top-20">
-              <h3 className="font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-                <Search className="w-4 h-4" />
+          <div className="w-full flex-shrink-0 md:w-64">
+            <div className="card sticky top-5 flex flex-col gap-4 p-5">
+              <h3 className="flex items-center gap-2 text-[15.5px] font-extrabold tracking-heading text-ink-900">
+                <Search className="h-4 w-4 text-blue-700" strokeWidth={2.2} />
                 {t.returnTrips.filter}
               </h3>
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="label mb-[7px]">
                     {t.returnTrips.departure}
                   </label>
                   <select
@@ -238,7 +237,7 @@ export default function ReturnTripsPage() {
                         pickup_governorate: e.target.value,
                       }))
                     }
-                    className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none transition-shadow"
+                    className="field"
                   >
                     <option value="">{t.returnTrips.allGovernorates}</option>
                     {GOVERNORATES.map((g) => (
@@ -249,7 +248,7 @@ export default function ReturnTripsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
+                  <label className="label mb-[7px]">
                     {t.returnTrips.destination}
                   </label>
                   <select
@@ -261,7 +260,7 @@ export default function ReturnTripsPage() {
                         dropoff_governorate: e.target.value,
                       }))
                     }
-                    className="w-full border border-neutral-200 rounded-lg px-3 py-2 text-sm bg-white focus:ring-2 focus:ring-purple-500 outline-none transition-shadow"
+                    className="field"
                   >
                     <option value="">{t.returnTrips.allGovernorates}</option>
                     {GOVERNORATES.map((g) => (
@@ -280,7 +279,7 @@ export default function ReturnTripsPage() {
                         dropoff_governorate: "",
                       })
                     }
-                    className="text-sm text-purple-600 hover:text-purple-800 font-medium transition-colors"
+                    className="text-start text-[13px] font-bold text-blue-700 underline-offset-4 transition-colors hover:underline"
                   >
                     {t.returnTrips.resetFilters}
                   </button>
@@ -289,23 +288,23 @@ export default function ReturnTripsPage() {
 
               {/* Sprint 5 — client's active corridor alerts */}
               {myAlerts.length > 0 && (
-                <div className="mt-5 pt-4 border-t border-neutral-100">
+                <div className="mt-5 pt-4 border-t border-line">
                   <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2 flex items-center gap-1">
                     <Bell className="w-3.5 h-3.5" />
                     {t.returnTrips.myAlerts}
                   </p>
-                  <ul className="space-y-1.5">
+                  <ul className="flex flex-col gap-1.5">
                     {myAlerts.map((a) => (
                       <li
                         key={a.id}
-                        className="flex items-center justify-between text-xs bg-purple-50 border border-purple-100 rounded-lg px-2.5 py-1.5"
+                        className="flex items-center justify-between text-xs bg-blue-50 rounded-tile px-2.5 py-1.5"
                       >
-                        <span className="text-purple-700 font-medium truncate">
+                        <span className="text-blue-700 font-medium truncate">
                           {a.pickup_governorate} → {a.dropoff_governorate}
                         </span>
                         <button
                           onClick={() => handleDeleteAlert(a.id)}
-                          className="text-neutral-400 hover:text-red-500 ms-2 flex-shrink-0"
+                          className="text-neutral-400 hover:text-error-500 ms-2 flex-shrink-0"
                           title={t.returnTrips.deleteAlert}
                         >
                           ✕
@@ -328,7 +327,7 @@ export default function ReturnTripsPage() {
                   : t.returnTrips.count}
               </span>
               <div className="flex items-center gap-2">
-                <SortAsc className="w-4 h-4 text-neutral-400" />
+                <SortAsc className="h-4 w-4 text-ink-300" strokeWidth={2} />
                 <select
                   value={sortBy}
                   onChange={(e) =>
@@ -336,7 +335,7 @@ export default function ReturnTripsPage() {
                       e.target.value as "newest" | "price_asc" | "price_desc",
                     )
                   }
-                  className="text-sm border border-neutral-200 rounded-lg px-3 py-2 bg-white text-neutral-700 focus:ring-2 focus:ring-purple-500 outline-none"
+                  className="field h-11 min-h-[44px] w-auto text-[13px]"
                 >
                   <option value="newest">{t.returnTrips.sortNewest}</option>
                   <option value="price_asc">
@@ -350,17 +349,17 @@ export default function ReturnTripsPage() {
             </div>
 
             {loading ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 {[1, 2, 3].map((i) => (
-                  <div
-                    key={i}
-                    className="h-48 bg-neutral-200 rounded-xl skeleton"
-                  />
+                  <div key={i} className="skeleton h-44 rounded-card" />
                 ))}
               </div>
             ) : jobs.length > 0 ? (
               <>
-                <div data-testid="recherche-resultats" className="space-y-4">
+                <div
+                  data-testid="recherche-resultats"
+                  className="flex flex-col gap-4"
+                >
                   {jobs.map((job, index) => (
                     <div
                       key={job.id}
@@ -379,7 +378,7 @@ export default function ReturnTripsPage() {
                     <button
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="grid h-11 w-11 place-items-center rounded-chip border border-line bg-surface text-ink-500 transition-colors hover:border-blue-700 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <ChevronLeft className="w-5 h-5 rtl:-scale-x-100" />
                     </button>
@@ -394,10 +393,10 @@ export default function ReturnTripsPage() {
                         <button
                           key={pageNum}
                           onClick={() => setCurrentPage(pageNum)}
-                          className={`w-10 h-10 rounded-lg text-sm font-medium transition-all ${
+                          className={`h-11 w-11 rounded-chip text-[14px] font-bold transition-colors duration-120 ${
                             currentPage === pageNum
-                              ? "bg-purple-600 text-white shadow-sm"
-                              : "border border-neutral-200 text-neutral-600 hover:bg-neutral-50"
+                              ? "bg-blue-700 text-white shadow-blue"
+                              : "border border-line bg-surface text-ink-500 hover:border-blue-700 hover:text-blue-700"
                           }`}
                         >
                           {pageNum}
@@ -409,7 +408,7 @@ export default function ReturnTripsPage() {
                         setCurrentPage((p) => Math.min(totalPages, p + 1))
                       }
                       disabled={currentPage === totalPages}
-                      className="p-2 rounded-lg border border-neutral-200 text-neutral-600 hover:bg-neutral-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                      className="grid h-11 w-11 place-items-center rounded-chip border border-line bg-surface text-ink-500 transition-colors hover:border-blue-700 hover:text-blue-700 disabled:cursor-not-allowed disabled:opacity-40"
                     >
                       <ChevronRight className="w-5 h-5 rtl:-scale-x-100" />
                     </button>
@@ -419,15 +418,18 @@ export default function ReturnTripsPage() {
             ) : (
               <div
                 data-testid="recherche-repli"
-                className="bg-white rounded-xl p-12 text-center border animate-fade-in-up"
+                className="card animate-fade-in-up p-8 text-center sm:p-12"
               >
-                <div className="mx-auto w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
-                  <RotateCcw className="w-8 h-8 text-purple-400" />
+                <div className="mx-auto mb-4 grid h-16 w-16 place-items-center rounded-full bg-blue-50">
+                  <RotateCcw
+                    className="h-7 w-7 text-blue-700"
+                    strokeWidth={2}
+                  />
                 </div>
-                <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+                <h3 className="mb-2 text-[17px] font-extrabold tracking-heading text-ink-900">
                   {t.returnTrips.noTrips}
                 </h3>
-                <p className="text-neutral-500 max-w-md mx-auto mb-6">
+                <p className="mx-auto mb-6 max-w-md text-[14.5px] leading-[1.55] text-ink-500">
                   {t.returnTrips.noTripsDesc}
                 </p>
                 {/* Funnel fallback (pivot §5.2, cas B) : jamais de cul-de-sac */}
@@ -435,7 +437,7 @@ export default function ReturnTripsPage() {
                   <Link
                     data-testid="recherche-repli-publier"
                     href={`/demandes/nouvelle?pickup_governorate=${encodeURIComponent(filters.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(filters.dropoff_governorate)}`}
-                    className="inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors"
+                    className="btn-base min-h-[48px] rounded-cta bg-blue-700 px-5 text-[15px] text-white shadow-blue transition-colors hover:bg-blue-800 active:translate-y-px"
                   >
                     <PlusCircle className="w-4 h-4" />
                     {t.returnTrips.publishFallback}
@@ -446,7 +448,7 @@ export default function ReturnTripsPage() {
                         data-testid="recherche-repli-alerte"
                         onClick={handleCreateAlert}
                         disabled={alertLoading}
-                        className="inline-flex items-center gap-2 px-5 py-2.5 border-2 border-purple-300 text-purple-700 rounded-xl text-sm font-semibold hover:bg-purple-50 transition-colors disabled:opacity-50"
+                        className="btn-base min-h-[48px] rounded-cta border border-line-strong bg-surface px-5 text-[15px] text-ink-900 transition-colors hover:border-blue-700 hover:bg-app active:translate-y-px disabled:opacity-50"
                       >
                         <Bell className="w-4 h-4" />
                         {alertLoading

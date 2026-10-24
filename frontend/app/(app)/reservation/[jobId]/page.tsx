@@ -33,9 +33,9 @@ import {
   Star,
   Wallet,
   FileText,
-  ExternalLink,
 } from "lucide-react";
 import { urlJob } from "@/lib/routes/jobs";
+import { ActionBar } from "@/components/ui/ActionBar";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                     */
@@ -132,8 +132,8 @@ export default function BookingPage() {
   > = {
     INITIATED: {
       label: t.booking.escrowInitiated,
-      color: "text-amber-700",
-      bg: "bg-amber-50 border-amber-200",
+      color: "text-warning-700",
+      bg: "bg-warning-50 border-warning-200",
     },
     HELD: {
       label: t.booking.escrowHeld,
@@ -147,13 +147,13 @@ export default function BookingPage() {
     },
     REFUNDED: {
       label: t.booking.escrowRefunded,
-      color: "text-purple-700",
-      bg: "bg-purple-50 border-purple-200",
+      color: "text-blue-700",
+      bg: "bg-blue-50 border-blue-200",
     },
     FAILED: {
       label: t.booking.escrowFailed,
-      color: "text-red-700",
-      bg: "bg-red-50 border-red-200",
+      color: "text-error-700",
+      bg: "bg-error-50 border-error-200",
     },
   };
 
@@ -174,8 +174,8 @@ export default function BookingPage() {
   if (!job) {
     return (
       <div className="p-8 text-center">
-        <AlertCircle className="w-12 h-12 text-red-400 mx-auto mb-3" />
-        <h2 className="text-lg font-bold text-neutral-900 mb-1">
+        <AlertCircle className="w-12 h-12 text-error-400 mx-auto mb-3" />
+        <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-1">
           {t.booking.reservationNotFound}
         </h2>
         <p className="text-neutral-500 text-sm mb-4">
@@ -209,7 +209,7 @@ export default function BookingPage() {
   const escrowReleased = escrow?.status === "RELEASED";
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
         {/* Back link */}
         <Link
@@ -224,12 +224,12 @@ export default function BookingPage() {
 
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-3">
+          <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900 flex items-center gap-3">
             <div className="w-10 h-10 bg-brand-600/10 rounded-xl flex items-center justify-center">
               <FileText className="w-5 h-5 text-brand-600" />
             </div>
             {t.booking.pageTitle}
-          </h1>
+          </h2>
           <p className="text-neutral-500 mt-1 text-sm">
             {interpolate(t.booking.missionSubtitle, {
               id: jobId ?? "",
@@ -238,16 +238,16 @@ export default function BookingPage() {
           </p>
         </div>
 
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {/* ======================================== */}
           {/* CARD 1: Route Summary                    */}
           {/* ======================================== */}
-          <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+          <div className="bg-surface rounded-card shadow-card shadow-sm p-6">
+            <h2 className="text-[14px] font-bold text-ink-700 mb-4 flex items-center gap-2">
               <Truck className="w-4 h-4 text-brand-600" />
               {t.booking.routeDetails}
             </h2>
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center flex-shrink-0">
                   <MapPin className="w-4 h-4 text-orange-500" />
@@ -278,7 +278,7 @@ export default function BookingPage() {
             </div>
 
             {job.scheduled_time && (
-              <div className="mt-4 pt-4 border-t border-neutral-100 flex items-center gap-2 text-sm text-neutral-600">
+              <div className="mt-4 pt-4 border-t border-line flex items-center gap-2 text-sm text-neutral-600">
                 <Clock className="w-4 h-4 text-neutral-400" />
                 {formatDate(job.scheduled_time)}
               </div>
@@ -289,8 +289,8 @@ export default function BookingPage() {
           {/* CARD 2: Transporter Info                 */}
           {/* ======================================== */}
           {job.accepted_transporter && (
-            <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
-              <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+            <div className="bg-surface rounded-card shadow-card shadow-sm p-6">
+              <h2 className="text-[14px] font-bold text-ink-700 mb-4 flex items-center gap-2">
                 <User className="w-4 h-4 text-brand-600" />
                 {t.booking.transportAssigned}
               </h2>
@@ -318,13 +318,13 @@ export default function BookingPage() {
           {/* ======================================== */}
           {/* CARD 3: Financial Breakdown              */}
           {/* ======================================== */}
-          <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
-            <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+          <div className="bg-surface rounded-card shadow-card shadow-sm p-6">
+            <h2 className="text-[14px] font-bold text-ink-700 mb-4 flex items-center gap-2">
               <Wallet className="w-4 h-4 text-brand-600" />
               {t.booking.financialDetails}
             </h2>
 
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               <div className="flex justify-between text-sm">
                 <span className="text-neutral-600">
                   {t.booking.transportPrice}
@@ -351,7 +351,7 @@ export default function BookingPage() {
                   {formatTND(netTransporteur)}
                 </span>
               </div>
-              <div className="border-t border-neutral-100 pt-3 flex justify-between">
+              <div className="border-t border-line pt-3 flex justify-between">
                 <span className="font-semibold text-neutral-900">
                   {t.booking.totalPayClient}
                 </span>
@@ -362,12 +362,12 @@ export default function BookingPage() {
             </div>
 
             {/* Payment Method Badge */}
-            <div className="mt-4 pt-4 border-t border-neutral-100">
+            <div className="mt-4 pt-4 border-t border-line">
               {isDigital ? (
                 <div className="flex items-center gap-3 p-3 bg-brand-600/5 rounded-xl border border-brand-600/10">
                   <CreditCard className="w-5 h-5 text-brand-600" />
                   <div>
-                    <p className="text-sm font-semibold text-neutral-900">
+                    <p className="text-[14px] font-bold text-ink-900">
                       {t.booking.paymentDigital}
                     </p>
                     <p className="text-xs text-neutral-500">
@@ -379,7 +379,7 @@ export default function BookingPage() {
                 <div className="flex items-center gap-3 p-3 bg-green-50 rounded-xl border border-green-200">
                   <Banknote className="w-5 h-5 text-green-600" />
                   <div>
-                    <p className="text-sm font-semibold text-neutral-900">
+                    <p className="text-[14px] font-bold text-ink-900">
                       {t.booking.paymentCODParen}
                     </p>
                     <p className="text-xs text-neutral-500">
@@ -391,7 +391,7 @@ export default function BookingPage() {
                 <div className="flex items-center gap-3 p-3 bg-neutral-50 rounded-xl border border-neutral-200">
                   <Clock className="w-5 h-5 text-neutral-400" />
                   <div>
-                    <p className="text-sm font-semibold text-neutral-900">
+                    <p className="text-[14px] font-bold text-ink-900">
                       {t.booking.paymentPending}
                     </p>
                     <p className="text-xs text-neutral-500">
@@ -407,8 +407,8 @@ export default function BookingPage() {
           {/* CARD 4: Escrow Status (Digital Only)     */}
           {/* ======================================== */}
           {isDigital && (
-            <div className="bg-white rounded-2xl border border-neutral-200 shadow-sm p-6">
-              <h2 className="text-sm font-semibold text-neutral-700 mb-4 flex items-center gap-2">
+            <div className="bg-surface rounded-card shadow-card shadow-sm p-6">
+              <h2 className="text-[14px] font-bold text-ink-700 mb-4 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-green-600" />
                 {t.booking.escrowStatusTitle}
               </h2>
@@ -423,7 +423,7 @@ export default function BookingPage() {
                     ) : escrow.status === "RELEASED" ? (
                       <CheckCircle className="w-5 h-5 text-blue-600" />
                     ) : (
-                      <Clock className="w-5 h-5 text-amber-600" />
+                      <Clock className="w-5 h-5 text-warning-600" />
                     )}
                     <span
                       className={`font-semibold ${escrowStatusConfig[escrow.status]?.color || "text-neutral-700"}`}
@@ -439,12 +439,12 @@ export default function BookingPage() {
                   </p>
 
                   {/* Timeline */}
-                  <div className="space-y-3 relative before:absolute before:inset-0 before:ms-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-neutral-200 before:to-transparent">
+                  <div className="space-y-3 relative before:absolute before:inset-0 before:ms-2 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-[1.5px] before:bg-[#DFE4EE]">
                     {/* Booking Created */}
                     {booking?.created_at && (
                       <div className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                         <div className="flex items-center justify-center w-4 h-4 rounded-full border-2 border-white bg-neutral-300 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2" />
-                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
+                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-line bg-white shadow-sm">
                           <div className="flex items-center justify-between mb-1">
                             <div className="font-medium text-xs text-neutral-900">
                               {t.booking.timelineBookingCreated}
@@ -462,7 +462,7 @@ export default function BookingPage() {
                         <div
                           className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "HELD" || escrow.status === "RELEASED" ? "bg-green-500" : "bg-neutral-300"}`}
                         />
-                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
+                        <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-line bg-white shadow-sm">
                           <div className="flex items-center justify-between mb-1">
                             <div className="font-medium text-xs text-neutral-900">
                               {t.booking.timelineFundsSecured}
@@ -479,7 +479,7 @@ export default function BookingPage() {
                       <div
                         className={`flex items-center justify-center w-4 h-4 rounded-full border-2 border-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 ${escrow.status === "RELEASED" ? "bg-blue-500" : "bg-neutral-300"}`}
                       />
-                      <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-neutral-100 bg-white shadow-sm">
+                      <div className="w-[calc(100%-2rem)] md:w-[calc(50%-1.5rem)] p-2 rounded border border-line bg-white shadow-sm">
                         <div className="flex items-center justify-between mb-1">
                           <div className="font-medium text-xs text-neutral-900">
                             {t.booking.timelineFundsReleased}
@@ -490,46 +490,24 @@ export default function BookingPage() {
                   </div>
                 </div>
               ) : (
-                <div className="p-4 rounded-xl border border-amber-200 bg-amber-50">
-                  <div className="flex items-center gap-2 text-amber-700">
-                    <AlertCircle className="w-5 h-5" />
-                    <span className="font-semibold">
+                <div className="rounded-tile bg-warning-50 p-4">
+                  <div className="flex items-center gap-2 text-warning-700">
+                    <AlertCircle className="h-5 w-5" strokeWidth={2} />
+                    <span className="text-[14.5px] font-bold">
                       {t.booking.paymentNotYetDone}
                     </span>
                   </div>
-                  <p className="text-xs text-amber-600 mt-1">
+                  <p className="mt-1 text-[12.5px] text-warning-700/80">
                     {t.booking.clickPayToSecure}
                   </p>
                 </div>
               )}
 
-              {/* Pay Now Button */}
-              {isOwner && needsPayment && (
-                <button
-                  onClick={handleInitiatePayment}
-                  disabled={initiatingPayment}
-                  className="mt-4 w-full py-3 bg-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-lg hover:shadow-brand-600/20"
-                >
-                  {initiatingPayment ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                      {t.booking.redirecting}
-                    </>
-                  ) : (
-                    <>
-                      <CreditCard className="w-5 h-5" />
-                      {interpolate(t.booking.payNowAmount, {
-                        amount: price.toFixed(2),
-                      })}
-                    </>
-                  )}
-                </button>
-              )}
-
               {/* Escrow Active Confirmation */}
               {escrowActive && (
-                <div className="mt-4 p-3 bg-green-50 border border-green-200 rounded-xl text-center">
-                  <p className="text-sm font-semibold text-green-800">
+                <div className="mt-4 rounded-tile bg-green-50 p-3.5 text-center">
+                  <p className="inline-flex items-center gap-2 text-[14px] font-bold text-green-800">
+                    <ShieldCheck className="h-4 w-4" strokeWidth={2.2} />
                     {t.booking.escrowSecuredTitle}
                   </p>
                   <p className="text-xs text-green-600 mt-1">
@@ -539,8 +517,9 @@ export default function BookingPage() {
               )}
 
               {escrowReleased && (
-                <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-xl text-center">
-                  <p className="text-sm font-semibold text-blue-800">
+                <div className="mt-4 rounded-tile bg-blue-50 p-3.5 text-center">
+                  <p className="inline-flex items-center gap-2 text-[14px] font-bold text-blue-800">
+                    <Banknote className="h-4 w-4" strokeWidth={2.2} />
                     {t.booking.escrowReleasedTitle}
                   </p>
                   <p className="text-xs text-blue-600 mt-1">
@@ -554,7 +533,7 @@ export default function BookingPage() {
           {/* ======================================== */}
           {/* Trust & Security Footer                  */}
           {/* ======================================== */}
-          <div className="bg-brand-600/5 border border-brand-600/10 rounded-2xl p-5">
+          <div className="card p-5">
             <div className="flex items-center gap-2 mb-3">
               <ShieldCheck className="w-5 h-5 text-brand-600" />
               <h3 className="font-semibold text-neutral-900 text-sm">
@@ -575,7 +554,7 @@ export default function BookingPage() {
                 </p>
               </div>
               <div className="flex items-start gap-2">
-                <Star className="w-4 h-4 text-amber-400 flex-shrink-0 mt-0.5" />
+                <Star className="w-4 h-4 text-warning-400 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-neutral-600">
                   {t.booking.protectedSupport}
                 </p>
@@ -584,6 +563,36 @@ export default function BookingPage() {
           </div>
         </div>
       </div>
+
+      {/* Barre d'action fixe (charte §3) : total à gauche, CTA orange à
+          droite. C'est le seul orange de l'écran ; tant qu'elle est montée,
+          la coquille applicative masque la navigation basse. */}
+      {isOwner && needsPayment && (
+        <ActionBar
+          totalLabel={t.booking.totalPay}
+          totalValue={formatTND(price)}
+        >
+          <button
+            onClick={handleInitiatePayment}
+            disabled={initiatingPayment}
+            className="cta btn-base w-full max-w-[260px] disabled:cursor-not-allowed"
+          >
+            {initiatingPayment ? (
+              <>
+                <Loader2 className="h-[18px] w-[18px] animate-spin" />
+                {t.booking.redirecting}
+              </>
+            ) : (
+              <>
+                <CreditCard className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                {interpolate(t.booking.payNowAmount, {
+                  amount: price.toFixed(2),
+                })}
+              </>
+            )}
+          </button>
+        </ActionBar>
+      )}
     </div>
   );
 }

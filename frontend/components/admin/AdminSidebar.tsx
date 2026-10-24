@@ -102,7 +102,7 @@ export default function AdminSidebar() {
       {/* Mobile hamburger button */}
       <button
         onClick={() => setMobileOpen(true)}
-        className={`lg:hidden fixed top-4 ${isRTL ? 'right-4' : 'left-4'} z-50 p-2 rounded-lg bg-brand-600 text-white shadow-lg hover:bg-brand-700 transition-colors`}
+        className={`lg:hidden fixed top-4 ${isRTL ? "right-4" : "left-4"} z-50 p-2 rounded-lg bg-brand-600 text-white shadow-lg hover:bg-brand-700 transition-colors`}
         aria-label="Open menu"
       >
         <Menu className="w-5 h-5" />
@@ -111,7 +111,7 @@ export default function AdminSidebar() {
       {/* Mobile overlay */}
       {mobileOpen && (
         <div
-          className="lg:hidden fixed inset-0 bg-black/50 z-50 backdrop-blur-sm"
+          className="lg:hidden fixed inset-0 bg-black/50 z-50"
           onClick={() => setMobileOpen(false)}
         />
       )}
@@ -119,14 +119,14 @@ export default function AdminSidebar() {
       {/* Mobile sidebar (slide-in) */}
       <aside
         className={`lg:hidden fixed top-0 h-screen w-64 bg-brand-600 dark:bg-[#0c1f4d] text-white z-[60] transition-transform duration-300 flex flex-col
-          ${isRTL ? 'right-0' : 'left-0'}
-          ${mobileOpen ? 'translate-x-0' : (isRTL ? 'translate-x-full' : '-translate-x-full')}
+          ${isRTL ? "right-0" : "left-0"}
+          ${mobileOpen ? "translate-x-0" : isRTL ? "translate-x-full" : "-translate-x-full"}
         `}
       >
         {/* Close button */}
         <button
           onClick={() => setMobileOpen(false)}
-          className={`absolute top-4 ${isRTL ? 'left-4' : 'right-4'} p-2 rounded-lg hover:bg-white/10 transition-colors`}
+          className={`absolute top-4 ${isRTL ? "left-4" : "right-4"} p-2 rounded-lg hover:bg-white/10 transition-colors`}
           aria-label="Close menu"
         >
           <X className="w-5 h-5" />

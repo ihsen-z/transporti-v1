@@ -15,12 +15,9 @@ import {
 } from "@/lib/services/account";
 import {
   User,
-  Mail,
-  Phone,
   MapPin,
   Bell,
   Shield,
-  Camera,
   Save,
   CheckCircle,
   Eye,
@@ -302,13 +299,10 @@ export default function SettingsPage() {
   );
 
   return (
-    <div className="p-6 lg:p-8 max-w-4xl mx-auto">
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900">Paramètres</h1>
-        <p className="text-neutral-500 mt-1">{t.settings.title}</p>
-      </div>
-
-      <div className="flex flex-col lg:flex-row gap-6">
+    <div className="mx-auto max-w-4xl px-5 pb-10 pt-6 sm:px-6 lg:px-8">
+      {/* Pas de titre ici : le bandeau bleu porte deja le titre d ecran, et
+          le repeter en tete de page le disait trois fois de suite. */}
+      <div className="flex flex-col gap-4 lg:flex-row lg:gap-6">
         {/* Sidebar Tabs */}
         <div className="lg:w-56 flex-shrink-0">
           <div className="flex lg:flex-col gap-1 bg-neutral-100 lg:bg-transparent rounded-xl lg:rounded-none p-1 lg:p-0 overflow-x-auto">
@@ -334,9 +328,9 @@ export default function SettingsPage() {
         {/* Content */}
         <div className="flex-1">
           {activeTab === "profile" && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-6">
+            <div className="bg-surface rounded-card shadow-card p-6 flex flex-col gap-6">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-neutral-900">
+                <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   Informations personnelles
                 </h2>
                 <Link
@@ -376,10 +370,10 @@ export default function SettingsPage() {
                   </span>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="flex flex-col gap-4">
                   {/* Avatar + Name */}
                   <div className="flex items-center gap-4">
-                    <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden">
+                    <div className="w-16 h-16 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xl overflow-hidden">
                       {avatarPreview ? (
                         <Image
                           src={getMediaUrl(avatarPreview)}
@@ -393,7 +387,7 @@ export default function SettingsPage() {
                       )}
                     </div>
                     <div>
-                      <p className="text-lg font-semibold text-neutral-900">
+                      <p className="text-[17px] font-extrabold tracking-heading text-ink-900">
                         {firstName} {lastName}
                       </p>
                       <p className="text-sm text-neutral-500">{email}</p>
@@ -401,7 +395,7 @@ export default function SettingsPage() {
                   </div>
 
                   {/* Info Grid */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-neutral-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-line">
                     <div>
                       <p className="text-xs text-neutral-400 uppercase tracking-wider mb-1">
                         Téléphone
@@ -431,11 +425,11 @@ export default function SettingsPage() {
 
           {/* Notifications Tab */}
           {activeTab === "notifications" && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-neutral-900">
+            <div className="bg-surface rounded-card shadow-card p-6 flex flex-col gap-6">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                 Canaux de notification
               </h2>
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between py-2">
                   <div>
                     <p className="text-sm font-medium text-neutral-900">
@@ -471,10 +465,10 @@ export default function SettingsPage() {
 
               <hr className="border-neutral-100" />
 
-              <h2 className="text-lg font-semibold text-neutral-900">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                 Types de notification
               </h2>
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 <div className="flex items-center justify-between py-2">
                   <div>
                     <p className="text-sm font-medium text-neutral-900">
@@ -528,21 +522,19 @@ export default function SettingsPage() {
 
           {/* Security Tab */}
           {activeTab === "security" && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-neutral-900">
+            <div className="bg-surface rounded-card shadow-card p-6 flex flex-col gap-6">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                 Changer le mot de passe
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Mot de passe actuel
-                </label>
+                <label className="label mb-[7px]">Mot de passe actuel</label>
                 <div className="relative">
                   <input
                     type={showPasswords ? "text" : "password"}
                     value={currentPassword}
                     onChange={(e) => setCurrentPassword(e.target.value)}
-                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 pe-10 outline-none"
+                    className="field pe-10 outline-none"
                   />
                   <button
                     type="button"
@@ -560,25 +552,21 @@ export default function SettingsPage() {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    Nouveau mot de passe
-                  </label>
+                  <label className="label mb-[7px]">Nouveau mot de passe</label>
                   <input
                     type={showPasswords ? "text" : "password"}
                     value={newPassword}
                     onChange={(e) => setNewPassword(e.target.value)}
-                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 outline-none"
+                    className="field outline-none"
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-neutral-700 mb-1">
-                    Confirmer
-                  </label>
+                  <label className="label mb-[7px]">Confirmer</label>
                   <input
                     type={showPasswords ? "text" : "password"}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
-                    className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 outline-none"
+                    className="field outline-none"
                   />
                 </div>
               </div>
@@ -586,20 +574,20 @@ export default function SettingsPage() {
               {newPassword &&
                 confirmPassword &&
                 newPassword !== confirmPassword && (
-                  <p className="text-sm text-red-500">
+                  <p className="text-sm text-error-500">
                     Les mots de passe ne correspondent pas.
                   </p>
                 )}
 
               {/* Password status messages */}
               {pwStatus === "success" && (
-                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-xl text-green-700 text-sm">
+                <div className="flex items-center gap-2 p-3 bg-green-50 rounded-tile text-green-700 text-sm">
                   <CheckCircle className="w-4 h-4 flex-shrink-0" />
                   Mot de passe modifié avec succès !
                 </div>
               )}
               {pwStatus === "error" && (
-                <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-xl text-red-700 text-sm">
+                <div className="flex items-center gap-2 p-3 bg-error-50 border border-error-200 rounded-xl text-error-700 text-sm">
                   <AlertCircle className="w-4 h-4 flex-shrink-0" />
                   {pwError}
                 </div>
@@ -633,19 +621,17 @@ export default function SettingsPage() {
 
           {/* Preferences Tab */}
           {activeTab === "preferences" && (
-            <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-6">
-              <h2 className="text-lg font-semibold text-neutral-900">
+            <div className="bg-surface rounded-card shadow-card p-6 flex flex-col gap-6">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                 Préférences
               </h2>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Langue
-                </label>
+                <label className="label mb-[7px]">Langue</label>
                 <select
                   value={language}
                   onChange={(e) => setLanguage(e.target.value)}
-                  className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 outline-none"
+                  className="field outline-none"
                 >
                   <option value="fr">Français</option>
                   <option value="ar" disabled>
@@ -658,13 +644,11 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  Devise
-                </label>
+                <label className="label mb-[7px]">Devise</label>
                 <select
                   value={currency}
                   onChange={(e) => setCurrency(e.target.value)}
-                  className="w-full p-3 border border-neutral-300 rounded-xl text-sm focus:ring-2 focus:ring-accent-500 outline-none"
+                  className="field outline-none"
                 >
                   <option value="TND">Dinar Tunisien (TND)</option>
                 </select>

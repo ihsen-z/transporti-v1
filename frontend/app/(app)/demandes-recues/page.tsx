@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Inbox } from "lucide-react";
 import { useToast } from "@/components/ui/Toast";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
@@ -124,11 +123,9 @@ export default function DemandesRecuesPage() {
   return (
     <div className="max-w-3xl mx-auto px-4 py-6">
       <header className="mb-6">
-        <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
-          <Inbox className="w-6 h-6 text-brand-600" aria-hidden="true" />
-          Demandes reçues
-        </h1>
-        <p className="text-sm text-neutral-500 mt-1">
+        {/* Titre retire : le bandeau bleu l annonce deja (charte §4).
+            Seul le sous-titre reste, il porte une information neuve. */}
+        <p className="text-[14px] text-ink-500">
           Toutes vos demandes, tous trajets confondus.
         </p>
       </header>
@@ -149,7 +146,7 @@ export default function DemandesRecuesPage() {
               aria-selected={actif}
               data-testid={`demandes-recues-onglet-${cle}`}
               onClick={() => setOnglet(cle)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold border focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none ${
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none ${
                 actif
                   ? "bg-brand-600 text-white border-brand-600"
                   : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50"
@@ -165,12 +162,9 @@ export default function DemandesRecuesPage() {
       </div>
 
       {demandes === null && !erreur && (
-        <div className="space-y-3" aria-busy="true">
+        <div className="flex flex-col gap-3" aria-busy="true">
           {[0, 1].map((i) => (
-            <div
-              key={i}
-              className="h-32 rounded-xl bg-neutral-100 animate-pulse"
-            />
+            <div key={i} className="skeleton h-32 rounded-card" />
           ))}
         </div>
       )}
@@ -183,7 +177,7 @@ export default function DemandesRecuesPage() {
           <button
             type="button"
             onClick={() => void charger()}
-            className="mt-3 px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none"
+            className="mt-3 px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none"
           >
             Réessayer
           </button>
@@ -210,7 +204,7 @@ export default function DemandesRecuesPage() {
               </p>
               <Link
                 href="/retours/nouveau"
-                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cta-500 text-white font-semibold hover:bg-cta-600 focus-visible:ring-2 focus-visible:ring-cta-500/40 outline-none"
+                className="cta btn-base min-h-[48px] px-5 text-[15px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
               >
                 Publier un retour
               </Link>
@@ -220,7 +214,10 @@ export default function DemandesRecuesPage() {
       )}
 
       {demandes && demandes.length > 0 && (
-        <div data-testid="demandes-recues-liste" className="space-y-3">
+        <div
+          data-testid="demandes-recues-liste"
+          className="flex flex-col gap-3"
+        >
           {demandes.map((demande) => (
             <ReceivedRequestCard
               key={demande.id}
@@ -251,7 +248,7 @@ export default function DemandesRecuesPage() {
         onClose={() => setContreProposition(null)}
         title="Contre-proposer un prix"
       >
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           <p className="text-sm text-neutral-600">
             {contreProposition?.client_name} propose{" "}
             <strong className="tabular-nums">

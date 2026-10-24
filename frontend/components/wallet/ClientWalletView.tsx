@@ -99,9 +99,9 @@ export function ClientWalletView() {
   ];
 
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
       <header>
-        <h1 className="text-3xl font-bold text-neutral-900 mb-2">
+        <h1 className="text-[28px] font-extrabold tracking-title text-ink-900 mb-2">
           {t.clientWallet.title}
         </h1>
         <p className="text-neutral-600">{t.clientWallet.subtitle}</p>
@@ -115,13 +115,13 @@ export function ClientWalletView() {
           <div
             key={cle}
             data-testid={`portefeuille-client-${cle}`}
-            className="bg-white rounded-xl border border-neutral-200 p-4"
+            className="bg-surface rounded-card shadow-card p-4"
           >
             <p className="text-sm text-neutral-500 flex items-center gap-2 mb-1">
               <Icone className="w-4 h-4 text-neutral-400" aria-hidden="true" />
               {libelle}
             </p>
-            <p className="text-2xl font-bold text-neutral-900 tabular-nums">
+            <p className="text-[21px] font-extrabold tracking-heading text-ink-900 tabular-nums">
               {formatTND(montant)}
             </p>
             <p className="text-xs text-neutral-500 mt-1">{aide}</p>
@@ -132,8 +132,8 @@ export function ClientWalletView() {
       {/* Dit explicitement ce que les tuiles ne doivent PAS suggérer. */}
       <p className="text-xs text-neutral-500">{t.clientWallet.noTotal}</p>
 
-      <section className="bg-white rounded-xl border border-neutral-200 p-5">
-        <h2 className="text-lg font-semibold text-neutral-900 mb-4">
+      <section className="bg-surface rounded-card shadow-card p-5">
+        <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4">
           {t.clientWallet.historyTitle}
         </h2>
 
@@ -147,7 +147,7 @@ export function ClientWalletView() {
         ) : (
           <ul
             data-testid="portefeuille-client-historique"
-            className="divide-y divide-neutral-100"
+            className="divide-y divide-line"
           >
             {donnees.history.map((ligne) => (
               <li

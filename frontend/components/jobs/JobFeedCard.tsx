@@ -2,21 +2,13 @@
 
 import React from "react";
 import Link from "next/link";
-import {
-  MapPin,
-  Calendar,
-  Clock,
-  Truck,
-  Home,
-  UserCheck,
-  ShieldCheck,
-  Users,
-  Zap,
-} from "lucide-react";
-import { formatDate } from "@/lib/format";
+import { Calendar, Home, Users, Zap, RotateCcw, Truck } from "lucide-react";
+import { formatAmountCompact, formatDate } from "@/lib/format";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { urlJob } from "@/lib/routes/jobs";
+import { RouteLine } from "@/components/ui/RouteLine";
+import { Tag, DiscountBadge } from "@/components/ui/Tag";
 
 /**
  * Le sous-ensemble reellement lu par cette carte. Typage explicite plutot que
@@ -45,6 +37,18 @@ interface JobFeedCardProps {
   job: JobFeedItem;
 }
 
+/* -------------------------------------------------------------------------- */
+/*  Carte de trajet — ORDRE IMPOSÉ PAR LA CHARTE (§3)                         */
+/*                                                                            */
+/*    (1) identité + nature + badge remise vert en pill                       */
+/*    (2) ligne d'itinéraire                                                  */
+/*    (3) tags                                                                */
+/*    (4) pied de carte : prix + action                                       */
+/*                                                                            */
+/*  Prix : ancien prix barré #9AA3B2 12.5px AU-DESSUS, prix courant 23px/800. */
+/*  Le vert ne sert qu'à la valeur (la remise), jamais à l'action.            */
+/* -------------------------------------------------------------------------- */
+
 export function JobFeedCard({ job }: JobFeedCardProps) {
   const { t } = useAppI18n();
   const isTransport = job.job_type === "TRANSPORT";
@@ -56,247 +60,191 @@ export function JobFeedCard({ job }: JobFeedCardProps) {
   const isUrgent = hoursUntilJob > 0 && hoursUntilJob < 48;
   const offerCount = job.offer_count || 0;
 
-  return (
-    <div className="bg-white border rounded-xl p-5 hover:shadow-md transition-shadow relative overflow-hidden group">
-      {/* Type Indicator Strip */}
-      <div
-        className={`absolute start-0 top-0 bottom-0 w-1 ${isTransport ? "bg-brand-600" : "bg-orange-500"}`}
-      />
+  // La remise se DÉDUIT de l'economie et de sa base : c'est le meme couple de
+  // champs qu'avant, rendu comme la charte l'attend (pill verte + prix barre)
+  // au lieu d'une phrase dans un encadre.
+  const economie =
+    job.estimated_savings != null ? Math.round(job.estimated_savings) : null;
+  const base = job.savings_basis != null ? Math.round(job.savings_basis) : null;
+  const remisePourcent =
+    economie != null && base != null && base > 0
+      ? Math.round((economie / base) * 100)
+      : null;
 
-      <div className="ps-3">
-        {/* Header */}
-        <div className="flex justify-between items-start mb-3">
-          <div className="flex items-center gap-2">
-            <span
-              className={`px-2 py-0.5 rounded text-xs font-semibold ${
-                isTransport
-                  ? "bg-brand-600/10 text-brand-700"
-                  : "bg-orange-100 text-orange-800"
-              }`}
+  // L API sert des decimales en chaine : la fourchette est formatee sans
+  // centimes superflus, sinon la carte affiche « 100,00 – 300,00 ».
+  const aUnPrix = job.price_tnd_min || job.price_tnd_max;
+  const borne = (v: string | number | null | undefined) =>
+    v == null || v === "" ? null : formatAmountCompact(Number(v));
+  const prixMin = borne(job.price_tnd_min);
+  const prixMax = borne(job.price_tnd_max);
+  const prixCourant = !aUnPrix
+    ? null
+    : prixMin && prixMax && prixMin !== prixMax
+      ? `${prixMin} – ${prixMax}`
+      : (prixMin ?? prixMax);
+
+  const distance =
+    job.distance_km != null && Number(job.distance_km) > 0
+      ? `${Math.round(Number(job.distance_km))} km`
+      : null;
+
+  return (
+    <article className="card hover-lift flex flex-col gap-4 p-4 sm:p-5">
+      {/* -------- (1) Nature du trajet, urgence, remise ------------------- */}
+      <header className="flex items-start justify-between gap-2">
+        <div className="flex flex-wrap items-center gap-2">
+          <Tag
+            tone="blue"
+            icon={
+              isTransport ? (
+                <Truck className="h-3.5 w-3.5" strokeWidth={2.2} />
+              ) : (
+                <Home className="h-3.5 w-3.5" strokeWidth={2.2} />
+              )
+            }
+          >
+            {isTransport ? t.jobsComponents.feed.transport : t.newJob.moving}
+          </Tag>
+
+          {job.is_return_trip && (
+            <Tag
+              tone="blue"
+              icon={<RotateCcw className="h-3.5 w-3.5" strokeWidth={2.2} />}
             >
-              {isTransport ? t.jobsComponents.feed.transport : t.newJob.moving}
-            </span>
-            <span className="text-xs text-neutral-500 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              {interpolate(t.jobsComponents.feed.publishedOn, {
-                date: formatDate(job.created_at, undefined, {
-                  day: "numeric",
-                  month: "short",
-                }),
-              })}
-            </span>
-            {isUrgent && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-50 text-red-600 border border-red-200">
-                <Zap className="w-3 h-3" />
-                {t.jobsComponents.feed.urgent}
-              </span>
-            )}
-            {job.is_return_trip && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
-                {t.jobsComponents.feed.returnTrip}
-              </span>
-            )}
-            {/* G2 (NSM) — road distance estimate */}
-            {job.distance_km != null && Number(job.distance_km) > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-sky-50 text-sky-700 border border-sky-200">
-                ≈ {Math.round(Number(job.distance_km))} km
-              </span>
-            )}
-            {offerCount > 0 && (
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium bg-amber-50 text-amber-700 border border-amber-200">
-                <Users className="w-3 h-3" />
-                {interpolate(
-                  offerCount > 1
-                    ? t.jobsComponents.feed.offers
-                    : t.jobsComponents.feed.offer,
-                  { n: offerCount },
-                )}
-              </span>
-            )}
-          </div>
-          <div className="text-end">
-            {job.price_tnd_min || job.price_tnd_max ? (
-              <p className="font-bold text-neutral-900">
-                {job.price_tnd_min || "0"} - {job.price_tnd_max || "?"}{" "}
-                <span className="text-xs font-normal text-neutral-500">
-                  {t.jobsComponents.feed.tnd}
-                </span>
-              </p>
-            ) : (
-              <p className="text-sm font-medium text-neutral-400">
-                {t.jobsComponents.feed.budgetUnspecified}
-              </p>
-            )}
-          </div>
+              {t.jobsComponents.feed.returnTrip}
+            </Tag>
+          )}
+
+          {isUrgent && (
+            <Tag
+              tone="orange"
+              icon={<Zap className="h-3.5 w-3.5" strokeWidth={2.2} />}
+            >
+              {t.jobsComponents.feed.urgent}
+            </Tag>
+          )}
         </div>
 
-        {/* C1.2 — l'economie estimee : une LIGNE DEDIEE, pas une mention noyee
-            (IA-5). C'est l'argument de conversion du pivot — « vous payez
-            moins parce que le camion roulait deja ».
-            Le montant n'est jamais nu : la base de comparaison l'accompagne,
-            sans quoi le chiffre n'est pas verifiable donc pas credible. */}
-        {job.estimated_savings != null && job.savings_basis != null && (
-          <p
-            data-testid="recherche-trajet-economie"
-            className="mt-3 px-3 py-2 rounded-lg bg-accent-50 border border-accent-600/25 text-sm font-semibold text-accent-700 flex flex-wrap items-baseline gap-x-2"
+        {/* La remise ferme la rangée, à droite : c'est la valeur de l'offre */}
+        {remisePourcent != null && remisePourcent > 0 && (
+          <DiscountBadge percent={remisePourcent} className="flex-shrink-0" />
+        )}
+      </header>
+
+      {/* -------- (2) Ligne d'itinéraire ---------------------------------- */}
+      <RouteLine
+        from={job.pickup_address}
+        to={job.dropoff_address}
+        distance={distance}
+      />
+
+      {/* -------- (3) Tags de faits --------------------------------------- */}
+      <div className="flex flex-wrap gap-2">
+        <Tag
+          tone="gray"
+          icon={<Calendar className="h-3.5 w-3.5" strokeWidth={2.2} />}
+        >
+          {formatDate(job.scheduled_time, undefined, {
+            weekday: "short",
+            day: "numeric",
+            month: "short",
+            hour: "2-digit",
+            minute: "2-digit",
+          })}
+        </Tag>
+
+        {isTransport ? (
+          <>
+            {job.specifications?.weight && (
+              <Tag tone="gray">{`${job.specifications.weight} kg`}</Tag>
+            )}
+            {job.specifications?.volume && (
+              <Tag tone="gray">{`${job.specifications.volume} m³`}</Tag>
+            )}
+          </>
+        ) : (
+          <>
+            {job.specifications?.rooms && (
+              <Tag tone="gray">
+                {interpolate(t.jobsComponents.feed.rooms, {
+                  n: job.specifications.rooms,
+                })}
+              </Tag>
+            )}
+            {job.specifications?.floor_pickup != null && (
+              <Tag tone="gray">
+                {interpolate(t.jobsComponents.feed.floor, {
+                  n: job.specifications.floor_pickup,
+                })}
+              </Tag>
+            )}
+          </>
+        )}
+
+        {offerCount > 0 && (
+          <Tag
+            tone="gray"
+            icon={<Users className="h-3.5 w-3.5" strokeWidth={2.2} />}
           >
-            <span className="tabular-nums">
-              Vous economisez {Math.round(job.estimated_savings)} DT
+            {interpolate(
+              offerCount > 1
+                ? t.jobsComponents.feed.offers
+                : t.jobsComponents.feed.offer,
+              { n: offerCount },
+            )}
+          </Tag>
+        )}
+
+        {/* L'économie garde sa base de comparaison : un montant nu ne serait
+            pas vérifiable, donc pas crédible. */}
+        {economie != null && base != null && (
+          <Tag tone="green" className="tabular">
+            <span data-testid="recherche-trajet-economie">
+              {interpolate("Vous économisez {n} TND", { n: economie })}
             </span>
             <span
               data-testid="recherche-trajet-economie-base"
-              className="font-normal text-accent-700/80"
+              className="font-semibold opacity-70"
             >
-              face a {Math.round(job.savings_basis)} DT pour un transport dedie
+              {interpolate("· dédié {n} TND", { n: base })}
             </span>
-          </p>
+          </Tag>
         )}
-
-        {/* Route */}
-        <div className="space-y-3 mb-4">
-          <div className="flex items-start gap-3">
-            <div className="flex flex-col items-center mt-1">
-              <div className="w-2 h-2 rounded-full bg-orange-500" />
-              <div className="w-0.5 h-6 bg-neutral-200 my-0.5" />
-              <div className="w-2 h-2 rounded-full bg-green-500" />
-            </div>
-            <div className="flex-1 space-y-2">
-              <div>
-                <p className="font-medium text-neutral-900 line-clamp-1">
-                  {job.pickup_address}
-                </p>
-                <div className="flex items-center gap-2 text-xs text-brand-600 mt-0.5">
-                  <Calendar className="w-3 h-3" />
-                  {formatDate(job.scheduled_time, undefined, {
-                    weekday: "long",
-                    day: "numeric",
-                    month: "long",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </div>
-              </div>
-              <div>
-                <p className="font-medium text-neutral-900 line-clamp-1">
-                  {job.dropoff_address}
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Details & Action */}
-        <div className="flex items-end justify-between border-t pt-3 mt-2">
-          <div className="flex items-center gap-4 text-sm text-neutral-600">
-            {isTransport ? (
-              <>
-                <span className="flex items-center gap-1">
-                  <PackageIcon className="w-4 h-4 text-neutral-400" />
-                  {job.specifications?.weight
-                    ? `${job.specifications.weight} kg`
-                    : "- kg"}
-                </span>
-                <span className="flex items-center gap-1">
-                  <BoxIcon className="w-4 h-4 text-neutral-400" />
-                  {job.specifications?.volume
-                    ? `${job.specifications.volume} m³`
-                    : "- m³"}
-                </span>
-              </>
-            ) : (
-              <>
-                <span className="flex items-center gap-1">
-                  <Home className="w-4 h-4 text-neutral-400" />
-                  {interpolate(t.jobsComponents.feed.rooms, {
-                    n: job.specifications?.rooms || "?",
-                  })}
-                </span>
-                <span className="flex items-center gap-1">
-                  <BuildingIcon className="w-4 h-4 text-neutral-400" />
-                  {interpolate(t.jobsComponents.feed.floor, {
-                    n: job.specifications?.floor_pickup || "0",
-                  })}
-                </span>
-              </>
-            )}
-          </div>
-
-          <Link
-            // Seul element navigable de la carte : le conteneur n'est pas
-            // cliquable. Les parcours ciblaient la carte entiere et le clic
-            // tombait a cote, sans erreur ni navigation.
-            data-testid="job-card-ouvrir"
-            href={urlJob(job.id, job.is_return_trip)}
-            className="px-4 py-2 bg-neutral-900 text-white text-sm font-medium rounded-lg hover:bg-neutral-800 transition-colors"
-          >
-            {t.common.viewOffer}
-          </Link>
-        </div>
       </div>
-    </div>
+
+      {/* -------- (4) Pied de carte : prix + action ----------------------- */}
+      <footer className="flex items-end justify-between gap-4 border-t border-line pt-4">
+        <div className="flex min-w-0 flex-col">
+          {/* Ancien prix barré, AU-DESSUS du prix courant */}
+          {base != null && remisePourcent != null && remisePourcent > 0 && (
+            <span className="price-was">{base} TND</span>
+          )}
+          {prixCourant ? (
+            <span className="price">
+              {prixCourant}{" "}
+              <span className="text-[13px] font-semibold text-ink-500">
+                {t.jobsComponents.feed.tnd}
+              </span>
+            </span>
+          ) : (
+            <span className="text-[14px] font-semibold text-ink-300">
+              {t.jobsComponents.feed.budgetUnspecified}
+            </span>
+          )}
+        </div>
+
+        <Link
+          // Seul element navigable de la carte : le conteneur n'est pas
+          // cliquable. Les parcours ciblaient la carte entiere et le clic
+          // tombait a cote, sans erreur ni navigation.
+          data-testid="job-card-ouvrir"
+          href={urlJob(job.id, job.is_return_trip)}
+          className="btn-base min-h-[44px] flex-shrink-0 rounded-cta bg-blue-700 px-4 text-[14.5px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px"
+        >
+          {t.common.viewOffer}
+        </Link>
+      </footer>
+    </article>
   );
 }
-
-// Helper Icons
-const PackageIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M16.5 9.4 7.5 4.21" />
-    <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
-    <path d="M3.27 6.96 12 12.01l8.73-5.05" />
-    <path d="M12 22.08V12" />
-  </svg>
-);
-
-const BoxIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z" />
-    <path d="m3.3 7 8.7 5 8.7-5" />
-    <path d="M12 22V12" />
-  </svg>
-);
-
-const BuildingIcon = ({ className }: { className?: string }) => (
-  <svg
-    className={className}
-    width="24"
-    height="24"
-    viewBox="0 0 24 24"
-    fill="none"
-    stroke="currentColor"
-    strokeWidth="2"
-    strokeLinecap="round"
-    strokeLinejoin="round"
-  >
-    <rect width="16" height="20" x="4" y="2" rx="2" ry="2" />
-    <path d="M9 22v-4h6v4" />
-    <path d="M8 6h.01" />
-    <path d="M16 6h.01" />
-    <path d="M12 6h.01" />
-    <path d="M12 10h.01" />
-    <path d="M12 14h.01" />
-    <path d="M16 10h.01" />
-    <path d="M16 14h.01" />
-    <path d="M8 10h.01" />
-    <path d="M8 14h.01" />
-  </svg>
-);

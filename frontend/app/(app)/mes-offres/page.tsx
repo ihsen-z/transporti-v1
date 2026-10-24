@@ -27,7 +27,6 @@ import {
   Undo2,
   Search,
   ArrowRight,
-  Wallet,
 } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND } from "@/lib/format";
@@ -150,15 +149,15 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border p-4 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-200 group ${
+      className={`rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all duration-200 group ${
         highlight
-          ? "bg-gradient-to-br from-emerald-50 to-white border-emerald-200"
+          ? "bg-green-50 border-green-200"
           : "bg-white border-neutral-100"
       }`}
     >
       <div className="flex items-center gap-3 mb-2">
         <div
-          className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconColor} transition-transform group-hover:scale-110`}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconColor} transition-transform`}
         >
           <Icon className="w-4 h-4" />
         </div>
@@ -287,7 +286,7 @@ export default function MyOffersPage() {
         <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
           <FileText className="w-8 h-8 text-neutral-400" />
         </div>
-        <h3 className="text-lg font-bold text-neutral-900 mb-1">
+        <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-1">
           {t.offers.emptyStateTitle}
         </h3>
         <p className="text-neutral-500 mb-6 max-w-sm mx-auto">
@@ -309,10 +308,7 @@ export default function MyOffersPage() {
     return (
       <div className="p-6 lg:p-8 max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-            Mes offres
-          </h1>
-          <p className="text-neutral-500 mt-1">Chargement...</p>
+          <p className="text-[14px] text-ink-500">Chargement...</p>
         </div>
         <div className="flex items-center justify-center py-20">
           <div className="w-16 h-16 bg-brand-600/5 rounded-2xl flex items-center justify-center">
@@ -374,10 +370,9 @@ export default function MyOffersPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 mb-2">
-            {t.offers.title}
-          </h1>
-          <p className="text-neutral-500 max-w-2xl">{t.offers.subtitle}</p>
+          <p className="max-w-2xl text-[14px] text-ink-500">
+            {t.offers.subtitle}
+          </p>
         </div>
         <button
           onClick={() => fetchOffers()}
@@ -404,16 +399,16 @@ export default function MyOffersPage() {
           icon={CheckCircle}
           label={t.offers.statsAccepted}
           value={String(acceptedCount)}
-          iconColor="bg-emerald-50 text-emerald-600"
-          valueColor="text-emerald-700"
+          iconColor="bg-green-50 text-green-600"
+          valueColor="text-green-700"
           highlight
         />
         <StatCard
           icon={DollarSign}
           label={t.offers.statsEarnings}
           value={`${formatTND(kpis?.potential_earnings ?? potentialEarnings)}`}
-          iconColor="bg-amber-50 text-amber-600"
-          valueColor="text-amber-700"
+          iconColor="bg-warning-50 text-warning-600"
+          valueColor="text-warning-700"
         />
       </div>
 
@@ -454,11 +449,11 @@ export default function MyOffersPage() {
       </div>
 
       {/* Offer List */}
-      <div className="space-y-3">
+      <div className="flex flex-col gap-3">
         {filtered.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-neutral-100 shadow-sm">
+          <div className="text-center py-20 bg-surface rounded-card shadow-card shadow-sm">
             <div className="relative w-20 h-20 mx-auto mb-5">
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-600/10 to-accent-500/10 rounded-2xl rotate-6" />
+              <div className="absolute inset-0 bg-blue-50 rounded-2xl rotate-6" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <Search className="w-10 h-10 text-brand-600 -rotate-6" />
               </div>
@@ -471,7 +466,7 @@ export default function MyOffersPage() {
             </p>
             <Link
               href="/demandes"
-              className="inline-flex items-center gap-2 mt-5 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 mt-5 text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
               {t.offers.emptyStateFind}
               <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />

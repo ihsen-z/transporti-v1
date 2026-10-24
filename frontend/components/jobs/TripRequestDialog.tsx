@@ -55,10 +55,10 @@ export function TripRequestDialog({
   if (!ouvert) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-fade-in-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 animate-fade-in">
+      <div className="bg-surface rounded-card shadow-2xl w-full max-w-md mx-4 overflow-hidden animate-fade-in-up">
         {/* Modal Header */}
-        <div className="bg-gradient-to-r from-purple-600 to-indigo-600 px-6 py-5">
+        <div className="bg-blue-700 px-6 py-5">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-white/20 flex items-center justify-center">
               <RotateCcw className="w-5 h-5 text-white" />
@@ -69,7 +69,7 @@ export function TripRequestDialog({
                   ? t.jobDetail.confirmBooking
                   : t.jobDetail.sendRequestTitle}
               </h3>
-              <p className="text-sm text-purple-200">
+              <p className="text-sm text-blue-200">
                 {interpolate(t.jobDetail.returnTripRef, {
                   id: job.id,
                 })}
@@ -79,7 +79,7 @@ export function TripRequestDialog({
         </div>
 
         {/* Modal Body */}
-        <div className="px-6 py-5 space-y-4">
+        <div className="px-6 py-5 flex flex-col gap-4">
           {/* Route summary */}
           <div className="bg-neutral-50 rounded-xl p-4">
             <div className="flex items-center gap-3 text-sm">
@@ -88,7 +88,7 @@ export function TripRequestDialog({
                 <div className="w-0.5 h-5 bg-neutral-300 my-0.5" />
                 <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
               </div>
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2">
                 <p className="font-medium text-neutral-900">
                   {job.pickup_address}
                 </p>
@@ -102,7 +102,7 @@ export function TripRequestDialog({
           {/* D5 — goods description (structured request mode) */}
           {!job.instant_booking && (
             <div>
-              <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
+              <label className="block text-[14px] font-bold text-ink-700 mb-1.5">
                 {t.jobDetail.requestDescriptionLabel}
               </label>
               <textarea
@@ -110,7 +110,7 @@ export function TripRequestDialog({
                 value={description}
                 onChange={(e) => onDescriptionChange(e.target.value)}
                 maxLength={1000}
-                className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all h-20"
+                className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all h-20"
                 placeholder={t.jobDetail.requestDescriptionPlaceholder}
               />
             </div>
@@ -118,7 +118,7 @@ export function TripRequestDialog({
 
           {/* Price input (negotiable) */}
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
+            <label className="block text-[14px] font-bold text-ink-700 mb-1.5">
               {t.jobDetail.proposedPrice}
             </label>
             <div className="relative">
@@ -129,7 +129,7 @@ export function TripRequestDialog({
                 step="0.01"
                 value={prix}
                 onChange={(e) => onPrixChange(e.target.value)}
-                className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-lg font-bold text-center focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
+                className="w-full border-2 border-neutral-200 rounded-xl px-4 py-3 text-lg font-bold text-center focus:ring-2 focus:ring-blue-600 focus:border-blue-600 outline-none transition-all"
                 placeholder={t.jobDetail.priceExample}
               />
               <span className="absolute end-4 top-1/2 -translate-y-1/2 text-sm font-medium text-neutral-400">
@@ -145,7 +145,7 @@ export function TripRequestDialog({
 
           {/* Payment method */}
           <div>
-            <label className="block text-sm font-semibold text-neutral-700 mb-1.5">
+            <label className="block text-[14px] font-bold text-ink-700 mb-1.5">
               {t.jobDetail.paymentMethod}
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -154,7 +154,7 @@ export function TripRequestDialog({
                 onClick={() => onPaiementChange("DIGITAL")}
                 className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-all ${
                   paiement === "DIGITAL"
-                    ? "border-purple-500 bg-purple-50 text-purple-700"
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
                     : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
                 }`}
               >
@@ -166,7 +166,7 @@ export function TripRequestDialog({
                 onClick={() => onPaiementChange("COD")}
                 className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-all ${
                   paiement === "COD"
-                    ? "border-purple-500 bg-purple-50 text-purple-700"
+                    ? "border-blue-600 bg-blue-50 text-blue-700"
                     : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
                 }`}
               >
@@ -175,7 +175,7 @@ export function TripRequestDialog({
               </button>
             </div>
             {paiement === "COD" && parseFloat(prix) > 300 && (
-              <p className="text-xs text-red-500 mt-1 flex items-center gap-1">
+              <p className="text-xs text-error-500 mt-1 flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
                 {t.jobDetail.codMax}
               </p>
@@ -184,7 +184,7 @@ export function TripRequestDialog({
         </div>
 
         {/* Modal Footer */}
-        <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-100 flex gap-3">
+        <div className="px-6 py-4 bg-neutral-50 border-t border-line flex gap-3">
           <button
             onClick={() => onFermer()}
             disabled={enCours}
@@ -202,7 +202,7 @@ export function TripRequestDialog({
               (!job.instant_booking && !description.trim()) ||
               (paiement === "COD" && parseFloat(prix) > 300)
             }
-            className="flex-1 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+            className="flex-1 py-3 bg-blue-700 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >
             {enCours ? (
               <span className="flex items-center gap-2">

@@ -28,13 +28,13 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
         <h3>{t.jobsComponents.filters.title}</h3>
       </div>
 
-      <div className="space-y-6">
+      <div className="flex flex-col gap-6">
         {/* Type of Service */}
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
+          <label className="label mb-[7px]">
             {t.jobsComponents.filters.serviceType}
           </label>
-          <div className="space-y-2">
+          <div className="flex flex-col gap-2">
             <label className="flex items-center gap-2 cursor-pointer">
               <input
                 type="radio"
@@ -74,14 +74,14 @@ export function JobFilters({ filters, onChange }: JobFiltersProps) {
 
         {/* Location (Governorate) */}
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
+          <label className="label mb-[7px]">
             <MapPin className="inline w-4 h-4 me-1" />
             {t.jobsComponents.filters.pickupGov}
           </label>
           <select
             value={filters.pickup_governorate || ""}
             onChange={(e) => handleChange("pickup_governorate", e.target.value)}
-            className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-accent-500"
+            className="w-full p-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-700"
           >
             <option value="">{t.jobsComponents.filters.all}</option>
             <option value="Tunis">Tunis</option>

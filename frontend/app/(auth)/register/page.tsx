@@ -3,21 +3,19 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  User,
-  Truck,
-  ArrowRight,
-  Mail,
-  Lock,
-  Eye,
-  EyeOff,
-  Phone,
-  UserCircle,
-} from "lucide-react";
-import { AuthLogo } from "@/components/brand/TransportiLogo";
+import { User, Truck, AlertCircle } from "lucide-react";
 import { useAuth, getDefaultRedirect } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+
+/* -------------------------------------------------------------------------- */
+/*  Inscription — FAMILLE APPLICATIVE (charte §7)                             */
+/*                                                                            */
+/*  Le bandeau bleu et le fond #F6F8FC viennent de app/(auth)/layout.tsx.     */
+/*  Cette page pose la carte blanche qui chevauche le bandeau, les champs      */
+/*  clairs (52px, focus bleu + halo 4px) et le CTA orange unique de l'écran.  */
+/*  Aucun verre ici : on est sur fond clair.                                  */
+/* -------------------------------------------------------------------------- */
 
 type RegisterRole = "client" | "transporter";
 
@@ -120,97 +118,96 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-brand-600 to-brand-900 px-6 py-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <AuthLogo />
-        </div>
-        <h1 className="text-2xl font-bold text-white mb-2">
-          {t.auth.registerTitle}
-        </h1>
-        <p className="text-blue-200 text-sm">{t.auth.registerSubtitle}</p>
-      </div>
+    <div className="flex flex-col gap-4">
+      {/* --- Carte blanche : le formulaire ------------------------------ */}
+      <section className="card flex flex-col gap-5 p-5 sm:p-6">
+        <header className="flex flex-col gap-1">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900">
+            {t.auth.registerTitle}
+          </h1>
+          <p className="text-[14px] leading-[1.5] text-ink-500">
+            {t.auth.registerSubtitle}
+          </p>
+        </header>
 
-      <>
-        {/* Real Registration Form */}
-        <form
-          onSubmit={handleRealRegister}
-          className="px-6 pt-6 pb-4 space-y-4"
-        >
+        <form onSubmit={handleRealRegister} className="flex flex-col gap-4">
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
+            <p
+              role="alert"
+              className="flex items-start gap-2 rounded-field border border-error-200 bg-error-50 px-3.5 py-3 text-[13px] font-medium leading-[1.45] text-error-700"
+            >
+              <AlertCircle
+                className="mt-0.5 h-4 w-4 flex-shrink-0"
+                aria-hidden
+              />
               {error}
-            </div>
+            </p>
           )}
 
-          {/* Role Selection */}
-          <div>
-            <p className="text-sm font-medium text-neutral-700 mb-2">
-              {t.auth.iAmA}
-            </p>
+          {/* --- Rôle : deux cartes de choix ------------------------- */}
+          <fieldset className="flex flex-col gap-[7px]">
+            <legend className="label mb-[7px]">{t.auth.iAmA}</legend>
             <div className="grid grid-cols-2 gap-3">
-              {roleOptions.map(({ value, icon: Icon }) => (
-                <button
-                  key={value}
-                  type="button"
-                  data-testid={`register-role-${value}`}
-                  // `aria-pressed` porte l'etat de selection : sans lui, un
-                  // test ne peut lire le role choisi que par ses classes CSS,
-                  // qui changent au moindre ajustement de style.
-                  aria-pressed={selectedRole === value}
-                  onClick={() => setSelectedRole(value)}
-                  className={`
-                                            flex flex-col items-center gap-2 p-3 rounded-xl border-2 transition-all text-center
-                                            ${
-                                              selectedRole === value
-                                                ? "border-accent-500 bg-accent-50"
-                                                : "border-neutral-200 hover:border-neutral-300 bg-white"
-                                            }
-                                        `}
-                >
-                  <Icon
-                    className={`w-6 h-6 ${selectedRole === value ? "text-accent-600" : "text-neutral-400"}`}
-                  />
-                  <span
-                    className={`text-sm font-medium ${selectedRole === value ? "text-accent-700" : "text-neutral-600"}`}
+              {roleOptions.map(({ value, icon: Icon }) => {
+                const isSelected = selectedRole === value;
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    data-testid={`register-role-${value}`}
+                    // `aria-pressed` porte l'etat de selection : sans lui, un
+                    // test ne peut lire le role choisi que par ses classes CSS,
+                    // qui changent au moindre ajustement de style.
+                    aria-pressed={isSelected}
+                    onClick={() => setSelectedRole(value)}
+                    className={`flex min-h-[92px] flex-col items-center justify-center gap-2 rounded-tile p-3
+                      text-center transition-all duration-120 ease-out
+                      ${
+                        isSelected
+                          ? "border-[1.5px] border-blue-700 bg-blue-50"
+                          : "border border-line bg-app hover:border-line-strong"
+                      }`}
                   >
-                    {(t.auth.roles as unknown as Record<string, string>)[
-                      value
-                    ] || value}
-                  </span>
-                </button>
-              ))}
+                    <Icon
+                      className={`h-[22px] w-[22px] ${
+                        isSelected ? "text-blue-700" : "text-ink-300"
+                      }`}
+                      strokeWidth={2}
+                    />
+                    <span
+                      className={`text-[14px] font-bold ${
+                        isSelected ? "text-blue-700" : "text-ink-500"
+                      }`}
+                    >
+                      {(t.auth.roles as unknown as Record<string, string>)[
+                        value
+                      ] || value}
+                    </span>
+                  </button>
+                );
+              })}
             </div>
-          </div>
+          </fieldset>
 
-          {/* Name */}
+          {/* --- Prénom / Nom --------------------------------------- */}
           <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label
-                htmlFor="firstName"
-                className="block text-sm font-medium text-neutral-700 mb-1"
-              >
+            <div className="flex flex-col gap-[7px]">
+              <label htmlFor="firstName" className="label">
                 {t.auth.firstName}
               </label>
-              <div className="relative">
-                <UserCircle className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                <input
-                  id="firstName"
-                  type="text"
-                  value={firstName}
-                  onChange={(e) => setFirstName(e.target.value)}
-                  placeholder="Leila"
-                  className="w-full ps-11 pe-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
-                  required
-                />
-              </div>
+              <input
+                id="firstName"
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                placeholder="Leila"
+                className="field"
+                autoComplete="given-name"
+                required
+              />
             </div>
-            <div>
-              <label
-                htmlFor="lastName"
-                className="block text-sm font-medium text-neutral-700 mb-1"
-              >
+            <div className="flex flex-col gap-[7px]">
+              <label htmlFor="lastName" className="label">
                 {t.auth.lastName}
               </label>
               <input
@@ -219,144 +216,122 @@ export default function RegisterPage() {
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 placeholder="Ben Ali"
-                className="w-full px-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
+                className="field"
+                autoComplete="family-name"
                 required
               />
             </div>
           </div>
 
-          {/* Email */}
-          <div>
-            <label
-              htmlFor="email"
-              className="block text-sm font-medium text-neutral-700 mb-1"
-            >
+          {/* --- Email ---------------------------------------------- */}
+          <div className="flex flex-col gap-[7px]">
+            <label htmlFor="email" className="label">
               {t.auth.emailLabel}
             </label>
-            <div className="relative">
-              <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-              <input
-                id="email"
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="leila@email.com"
-                className="w-full ps-11 pe-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
-                autoComplete="email"
-                required
-              />
-            </div>
+            <input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="leila@email.com"
+              className="field"
+              autoComplete="email"
+              required
+            />
           </div>
 
-          {/* Phone */}
-          <div>
-            <label
-              htmlFor="phone"
-              className="block text-sm font-medium text-neutral-700 mb-1"
-            >
+          {/* --- Téléphone ------------------------------------------ */}
+          <div className="flex flex-col gap-[7px]">
+            <label htmlFor="phone" className="label">
               {t.auth.phoneLabel}
             </label>
-            <div className="relative">
-              <Phone className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-              <input
-                id="phone"
-                type="tel"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                placeholder="98 765 432"
-                className="w-full ps-11 pe-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
-                required
-              />
-            </div>
+            <input
+              id="phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="98 765 432"
+              className="field"
+              autoComplete="tel"
+              required
+            />
           </div>
 
-          {/* Password */}
-          <div>
-            <label
-              htmlFor="password"
-              className="block text-sm font-medium text-neutral-700 mb-1"
-            >
-              {t.auth.passwordLabel}
-            </label>
-            <div className="relative">
-              <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-              <input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="••••••••"
-                className="w-full ps-11 pe-12 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
-                required
-              />
+          {/* --- Mot de passe --------------------------------------- */}
+          <div className="flex flex-col gap-[7px]">
+            <div className="flex items-baseline justify-between gap-3">
+              <label htmlFor="password" className="label">
+                {t.auth.passwordLabel}
+              </label>
+              {/* Lien « Afficher » à droite du champ (charte §3) */}
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
-                className="absolute end-3 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600"
+                className="text-[12.5px] font-semibold text-blue-600 underline-offset-4 transition-colors hover:text-blue-700 hover:underline"
               >
-                {showPassword ? (
-                  <EyeOff className="w-5 h-5" />
-                ) : (
-                  <Eye className="w-5 h-5" />
-                )}
+                {showPassword ? t.auth.hidePassword : t.auth.showPassword}
               </button>
             </div>
+            <input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              className="field"
+              autoComplete="new-password"
+              required
+            />
           </div>
 
-          {/* Confirm Password */}
-          <div>
-            <label
-              htmlFor="passwordConfirm"
-              className="block text-sm font-medium text-neutral-700 mb-1"
-            >
+          {/* --- Confirmation --------------------------------------- */}
+          <div className="flex flex-col gap-[7px]">
+            <label htmlFor="passwordConfirm" className="label">
               {t.auth.passwordConfirmLabel}
             </label>
-            <div className="relative">
-              <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-              <input
-                id="passwordConfirm"
-                type={showPassword ? "text" : "password"}
-                value={passwordConfirm}
-                onChange={(e) => setPasswordConfirm(e.target.value)}
-                placeholder="••••••••"
-                className="w-full ps-11 pe-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
-                required
-              />
-            </div>
+            <input
+              id="passwordConfirm"
+              type={showPassword ? "text" : "password"}
+              value={passwordConfirm}
+              onChange={(e) => setPasswordConfirm(e.target.value)}
+              placeholder="••••••••"
+              className="field"
+              autoComplete="new-password"
+              required
+            />
           </div>
 
+          {/* --- CTA UNIQUE de l'écran ------------------------------ */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 bg-accent-600 text-white py-3 px-6 rounded-xl font-semibold hover:bg-accent-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="cta btn-base mt-1 w-full disabled:cursor-not-allowed"
           >
             {isLoading ? (
               <>
-                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span
+                  className="h-[18px] w-[18px] animate-spin rounded-full border-2 border-white border-t-transparent"
+                  aria-hidden
+                />
                 {t.auth.creatingAccount}
               </>
             ) : (
-              <>
-                {t.auth.registerButton}
-                <ArrowRight className="w-5 h-5 rtl:-scale-x-100" />
-              </>
+              t.auth.registerButton
             )}
           </button>
         </form>
-      </>
+      </section>
 
-      {/* Footer Links */}
-      <div className="px-6 py-4 bg-neutral-50 border-t border-neutral-200 text-center">
-        <p className="text-sm text-neutral-500">
-          {t.auth.alreadyRegistered}{" "}
-          <Link
-            href="/login"
-            className="text-accent-600 hover:text-accent-700 font-medium"
-          >
-            {t.auth.loginButton}
-          </Link>
-        </p>
-      </div>
+      {/* --- Lien de bas de page --------------------------------------- */}
+      <p className="text-center text-[14px] text-ink-500">
+        {t.auth.alreadyRegistered}{" "}
+        <Link
+          href="/login"
+          className="font-bold text-blue-700 underline-offset-4 transition-colors hover:underline"
+        >
+          {t.auth.loginButton}
+        </Link>
+      </p>
     </div>
   );
 }

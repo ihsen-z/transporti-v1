@@ -2,11 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { User, Truck, ArrowRight, Sparkles } from "lucide-react";
-import { AuthLogo } from "@/components/brand/TransportiLogo";
+import { User, Truck, Check } from "lucide-react";
 import { useAuth, getDefaultRedirect } from "@/contexts/AuthContext";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { AuthCard, AuthError, AuthHeading } from "@/components/auth/AuthScreen";
+
+/* -------------------------------------------------------------------------- */
+/*  Choix du rôle — FAMILLE IMMERSIVE (onboarding)                            */
+/*  Cartes de choix en verre : sélectionnée = fond plus opaque + bord blanc    */
+/*  franc, à l'image de l'état focus des champs verre.                        */
+/* -------------------------------------------------------------------------- */
 
 type SelectableRole = "CLIENT" | "TRANSPORTER";
 
@@ -60,139 +66,103 @@ export default function SelectRolePage() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-brand-600 to-brand-900 px-6 py-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <AuthLogo />
-        </div>
-        <div className="flex items-center justify-center gap-2 mb-2">
-          <Sparkles className="w-5 h-5 text-accent-300" />
-          <h1 className="text-2xl font-bold text-white">
-            {t.auth.selectRoleTitle}
-          </h1>
-          <Sparkles className="w-5 h-5 text-accent-300" />
-        </div>
-        <p className="text-blue-200 text-sm">{t.auth.selectRoleSubtitle}</p>
-      </div>
+    <div className="flex flex-col gap-6">
+      <AuthHeading
+        title={t.auth.selectRoleTitle}
+        subtitle={t.auth.selectRoleSubtitle}
+      />
 
-      <div className="px-6 pt-6 pb-4 space-y-5">
-        {/* Welcome message */}
-        <div className="text-center">
-          <p className="text-sm text-neutral-600">
-            {t.auth.welcomeUser.replace(
-              "{name}",
-              user.first_name || user.name || "",
-            )}
-          </p>
-        </div>
+      <AuthCard>
+        {/* Accueil nominatif */}
+        <p className="text-[14.5px] leading-[1.5] text-on-blue-200">
+          {t.auth.welcomeUser.replace(
+            "{name}",
+            user.first_name || user.name || "",
+          )}
+        </p>
 
-        {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 text-sm text-red-700">
-            {error}
-          </div>
-        )}
+        {error && <AuthError message={error} />}
 
-        {/* Role Selection Cards */}
-        <div className="space-y-3">
-          <p className="text-sm font-medium text-neutral-700">{t.auth.iAmA}</p>
-          <div className="grid grid-cols-1 gap-3">
-            {roleOptions.map(({ value, icon: Icon, descriptionKey }) => (
+        {/* --- Cartes de rôle ---------------------------------------- */}
+        <div className="flex flex-col gap-3">
+          <p className="label-on-blue">{t.auth.iAmA}</p>
+
+          {roleOptions.map(({ value, icon: Icon, descriptionKey }) => {
+            const isSelected = selectedRole === value;
+            return (
               <button
                 key={value}
                 type="button"
                 onClick={() => setSelectedRole(value)}
                 disabled={isLoading}
-                className={`
-                  flex items-start gap-4 p-4 rounded-xl border-2 transition-all text-start
+                aria-pressed={isSelected}
+                className={`flex items-start gap-3.5 rounded-field p-4 text-start
+                  transition-all duration-120 ease-out
+                  disabled:cursor-not-allowed disabled:opacity-50
                   ${
-                    selectedRole === value
-                      ? "border-accent-500 bg-accent-50 shadow-sm"
-                      : "border-neutral-200 hover:border-neutral-300 bg-white"
-                  }
-                  disabled:opacity-50 disabled:cursor-not-allowed
-                `}
+                    isSelected
+                      ? "border-[1.5px] border-white/[0.55] bg-white/[0.22]"
+                      : "border border-white/[0.24] bg-white/[0.10] hover:bg-white/[0.16]"
+                  }`}
               >
-                <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
-                    selectedRole === value ? "bg-accent-100" : "bg-neutral-100"
+                <span
+                  className={`grid h-11 w-11 flex-shrink-0 place-items-center rounded-chip border ${
+                    isSelected
+                      ? "border-white/40 bg-white/25"
+                      : "border-white/25 bg-white/[0.14]"
                   }`}
                 >
-                  <Icon
-                    className={`w-6 h-6 ${
-                      selectedRole === value
-                        ? "text-accent-600"
-                        : "text-neutral-400"
-                    }`}
-                  />
-                </div>
-                <div>
-                  <span
-                    className={`text-base font-semibold block ${
-                      selectedRole === value
-                        ? "text-accent-700"
-                        : "text-neutral-700"
-                    }`}
-                  >
+                  <Icon className="h-5 w-5 text-white" strokeWidth={2} />
+                </span>
+
+                <span className="flex min-w-0 flex-col gap-0.5">
+                  <span className="text-[15.5px] font-bold text-white">
                     {(t.auth.roles as Record<string, string>)[
                       value.toLowerCase()
                     ] || value}
                   </span>
-                  <span className="text-sm text-neutral-500 mt-0.5 block">
+                  <span className="text-[13px] leading-[1.5] text-on-blue-300">
                     {descriptionKey === "clientDescription"
                       ? t.auth.clientDescription
                       : t.auth.transporterDescription}
                   </span>
-                </div>
-                {selectedRole === value && (
-                  <div className="ms-auto flex-shrink-0 mt-1">
-                    <div className="w-5 h-5 rounded-full bg-accent-500 flex items-center justify-center">
-                      <svg
-                        className="w-3 h-3 text-white"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                        strokeWidth={3}
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M5 13l4 4L19 7"
-                        />
-                      </svg>
-                    </div>
-                  </div>
+                </span>
+
+                {/* Coche verte : le vert porte la valeur, ici le choix retenu */}
+                {isSelected && (
+                  <span className="ms-auto mt-0.5 grid h-5 w-5 flex-shrink-0 place-items-center rounded-full bg-green-500">
+                    <Check className="h-3 w-3 text-white" strokeWidth={3} />
+                  </span>
                 )}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        {/* Confirm Button */}
+        {/* --- CTA UNIQUE de l'écran -------------------------------- */}
         <button
           type="button"
           onClick={handleConfirmRole}
           disabled={isLoading}
-          className="w-full flex items-center justify-center gap-2 bg-accent-500 text-white py-3 px-6 rounded-xl font-semibold hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className="cta btn-base w-full disabled:cursor-not-allowed"
         >
           {isLoading ? (
             <>
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+              <span
+                className="h-[18px] w-[18px] animate-spin rounded-full border-2 border-white border-t-transparent"
+                aria-hidden
+              />
               {t.auth.settingRole}
             </>
           ) : (
-            <>
-              {t.auth.confirmRole}
-              <ArrowRight className="w-5 h-5 rtl:-scale-x-100" />
-            </>
+            t.auth.confirmRole
           )}
         </button>
 
-        {/* Info note */}
-        <p className="text-xs text-neutral-400 text-center">
+        <p className="text-center text-[12.5px] leading-[1.5] text-on-blue-300">
           {t.auth.roleChangeNote}
         </p>
-      </div>
+      </AuthCard>
     </div>
   );
 }

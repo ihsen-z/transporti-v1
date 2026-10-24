@@ -22,8 +22,8 @@ export default function StatCard({
   color = "primary",
 }: StatCardProps) {
   const colorClasses = {
-    primary: "bg-brand-600/5 text-brand-600",
-    accent: "bg-accent-50 text-accent-700",
+    primary: "bg-blue-50 text-blue-700",
+    accent: "bg-green-50 text-green-700",
     cta: "bg-cta-50 text-cta-700",
     neutral: "bg-neutral-100 text-neutral-700",
   };
@@ -41,7 +41,7 @@ export default function StatCard({
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-surface rounded-card shadow-card p-6 hover:shadow-md transition-shadow">
       <div className="flex items-start justify-between mb-4">
         <div
           className={`w-12 h-12 rounded-lg flex items-center justify-center ${colorClasses[color]}`}
@@ -59,7 +59,9 @@ export default function StatCard({
       </div>
       <div>
         <p className="text-sm text-neutral-600 mb-1">{title}</p>
-        <p className="text-3xl font-bold text-neutral-900">{value}</p>
+        <p className="text-[28px] font-extrabold tracking-title text-ink-900">
+          {value}
+        </p>
         {subtitle && (
           <p className="text-sm text-neutral-500 mt-1">{subtitle}</p>
         )}

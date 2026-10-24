@@ -1,17 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
-import {
-  ArrowLeft,
-  Lock,
-  Loader2,
-  CheckCircle,
-  AlertTriangle,
-} from "lucide-react";
-import { AuthLogo } from "@/components/brand/TransportiLogo";
+import { ArrowLeft, Loader2, Check, AlertTriangle } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import {
+  AuthCard,
+  AuthError,
+  AuthHeading,
+  AuthLabel,
+  PasswordStrength,
+} from "@/components/auth/AuthScreen";
+
+/* -------------------------------------------------------------------------- */
+/*  Nouveau mot de passe — FAMILLE IMMERSIVE                                  */
+/*  Porte la jauge de force de la charte : 4 segments de 3px + appréciation.   */
+/* -------------------------------------------------------------------------- */
+
+/** Score de 0 à 4 — purement indicatif, l'exigence serveur reste 8 caractères. */
+function scorePassword(value: string): number {
+  if (!value) return 0;
+  let score = 0;
+  if (value.length >= 8) score++;
+  if (value.length >= 12) score++;
+  if (/[A-Z]/.test(value) && /[a-z]/.test(value)) score++;
+  if (/\d/.test(value) && /[^\w\s]/.test(value)) score++;
+  return Math.min(score, 4);
+}
 
 export default function ResetPasswordPage() {
   const { t } = useAppI18n();
@@ -28,6 +44,15 @@ export default function ResetPasswordPage() {
   const isValid = uid && token;
   const passwordsMatch = newPassword === confirmPassword;
   const passwordLongEnough = newPassword.length >= 8;
+
+  const strength = scorePassword(newPassword);
+  const strengthLabel = [
+    "",
+    t.resetPassword.strengthWeak,
+    t.resetPassword.strengthFair,
+    t.resetPassword.strengthGood,
+    t.resetPassword.strengthStrong,
+  ][strength];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -52,150 +77,159 @@ export default function ResetPasswordPage() {
     }
   };
 
+  /* --- Lien invalide ou expiré ------------------------------------- */
   if (!isValid) {
     return (
-      <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-        <div className="bg-gradient-to-r from-brand-600 to-brand-900 px-6 py-8 text-center">
-          <AuthLogo />
-          <h1 className="text-2xl font-bold text-white mt-3">
-            {t.resetPassword.invalidTitle}
-          </h1>
-        </div>
-        <div className="px-6 py-8 text-center space-y-4">
-          <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto">
-            <AlertTriangle className="w-8 h-8 text-red-500" />
-          </div>
-          <p className="text-neutral-600">{t.resetPassword.invalidDesc}</p>
+      <div className="flex flex-col gap-6">
+        <AuthHeading title={t.resetPassword.invalidTitle} />
+
+        <AuthCard className="items-center text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-error-500/25 ring-1 ring-inset ring-error-300/40">
+            <AlertTriangle className="h-8 w-8 text-white" strokeWidth={2} />
+          </span>
+
+          <p className="text-[14.5px] leading-[1.55] text-on-blue-300">
+            {t.resetPassword.invalidDesc}
+          </p>
+
           <Link
             href="/forgot-password"
-            className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-medium transition-colors"
+            className="inline-flex items-center gap-2 text-[14px] font-bold text-white underline-offset-4 transition-opacity hover:opacity-80 hover:underline"
           >
-            <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
+            <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" />
             {t.resetPassword.requestNewLink}
           </Link>
-        </div>
+        </AuthCard>
       </div>
     );
   }
 
+  /* --- Succès ------------------------------------------------------ */
+  if (success) {
+    return (
+      <div className="flex flex-col gap-6">
+        <AuthHeading title={t.resetPassword.title} />
+
+        <AuthCard className="items-center text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-green-500/25 ring-1 ring-inset ring-green-300/40">
+            <Check className="h-8 w-8 text-green-300" strokeWidth={2.5} />
+          </span>
+
+          <h2 className="text-[19px] font-extrabold tracking-heading text-white">
+            {t.resetPassword.successTitle}
+          </h2>
+
+          <p className="text-[14.5px] leading-[1.55] text-on-blue-300">
+            {t.resetPassword.successDesc}
+          </p>
+
+          {/* CTA UNIQUE de l'écran */}
+          <Link href="/login" className="cta btn-base mt-1 w-full">
+            {t.auth.loginButton}
+          </Link>
+        </AuthCard>
+      </div>
+    );
+  }
+
+  /* --- Formulaire -------------------------------------------------- */
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-      <div className="bg-gradient-to-r from-brand-600 to-brand-900 px-6 py-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <AuthLogo />
-        </div>
-        <h1 className="text-2xl font-bold text-white mb-2">
-          {t.resetPassword.title}
-        </h1>
-        <p className="text-blue-200 text-sm">{t.resetPassword.subtitle}</p>
-      </div>
+    <div className="flex flex-col gap-6">
+      <AuthHeading
+        title={t.resetPassword.title}
+        subtitle={t.resetPassword.subtitle}
+      />
 
-      <div className="px-6 py-8">
-        {success ? (
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-accent-50 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-8 h-8 text-accent-600" />
-            </div>
-            <h2 className="text-lg font-semibold text-neutral-900">
-              {t.resetPassword.successTitle}
-            </h2>
-            <p className="text-sm text-neutral-500">
-              {t.resetPassword.successDesc}
-            </p>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all mt-2"
-            >
-              {t.auth.loginButton}
-            </Link>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm">
-                {error}
-              </div>
+      <AuthCard>
+        <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+          {error && <AuthError message={error} />}
+
+          {/* --- Nouveau mot de passe -------------------------------- */}
+          <div className="flex flex-col gap-[7px]">
+            <AuthLabel htmlFor="new-password">
+              {t.resetPassword.newPasswordLabel}
+            </AuthLabel>
+            <input
+              id="new-password"
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              placeholder={t.resetPassword.newPasswordPlaceholder}
+              className="glass-field"
+              autoComplete="new-password"
+              minLength={8}
+              required
+            />
+            {newPassword && (
+              <PasswordStrength score={strength} label={strengthLabel} />
             )}
+          </div>
 
-            <div>
-              <label
-                htmlFor="new-password"
-                className="block text-sm font-medium text-neutral-700 mb-1"
+          {/* --- Confirmation ---------------------------------------- */}
+          <div className="flex flex-col gap-[7px]">
+            <AuthLabel htmlFor="confirm-password">
+              {t.auth.passwordConfirmLabel}
+            </AuthLabel>
+            <input
+              id="confirm-password"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              placeholder={t.resetPassword.confirmPasswordPlaceholder}
+              aria-invalid={
+                confirmPassword && !passwordsMatch ? true : undefined
+              }
+              aria-describedby={
+                confirmPassword && !passwordsMatch
+                  ? "confirm-password-error"
+                  : undefined
+              }
+              className={`glass-field ${
+                confirmPassword && !passwordsMatch
+                  ? "border-error-300 bg-error-500/20"
+                  : ""
+              }`}
+              autoComplete="new-password"
+              required
+            />
+            {confirmPassword && !passwordsMatch && (
+              <p
+                id="confirm-password-error"
+                role="alert"
+                className="text-[12.5px] font-medium text-error-200"
               >
-                {t.resetPassword.newPasswordLabel}
-              </label>
-              <div className="relative">
-                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                <input
-                  id="new-password"
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                  placeholder={t.resetPassword.newPasswordPlaceholder}
-                  className="w-full ps-11 pe-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
-                  minLength={8}
-                  required
-                />
-              </div>
-            </div>
+                {t.resetPassword.passwordsMismatch}
+              </p>
+            )}
+          </div>
 
-            <div>
-              <label
-                htmlFor="confirm-password"
-                className="block text-sm font-medium text-neutral-700 mb-1"
-              >
-                {t.auth.passwordConfirmLabel}
-              </label>
-              <div className="relative">
-                <Lock className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
-                <input
-                  id="confirm-password"
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  placeholder={t.resetPassword.confirmPasswordPlaceholder}
-                  className={`w-full ps-11 pe-4 py-3 border rounded-xl focus:ring-2 focus:ring-accent-500 transition-colors ${
-                    confirmPassword && !passwordsMatch
-                      ? "border-red-300 focus:border-red-500"
-                      : "border-neutral-300 focus:border-accent-500"
-                  }`}
-                  required
-                />
-              </div>
-              {confirmPassword && !passwordsMatch && (
-                <p className="text-red-500 text-xs mt-1">
-                  {t.resetPassword.passwordsMismatch}
-                </p>
-              )}
-            </div>
+          {/* --- CTA UNIQUE de l'écran ------------------------------- */}
+          <button
+            type="submit"
+            disabled={isSubmitting || !passwordsMatch || !passwordLongEnough}
+            className="cta btn-base mt-1 w-full disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <Loader2 className="h-[18px] w-[18px] animate-spin" />
+                {t.resetPassword.resetting}
+              </>
+            ) : (
+              t.resetPassword.resetButton
+            )}
+          </button>
+        </form>
+      </AuthCard>
 
-            <button
-              type="submit"
-              disabled={isSubmitting || !passwordsMatch || !passwordLongEnough}
-              className="w-full flex items-center justify-center gap-2 bg-accent-500 text-white py-3 px-6 rounded-xl font-semibold hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  {t.resetPassword.resetting}
-                </>
-              ) : (
-                t.resetPassword.resetButton
-              )}
-            </button>
-
-            <div className="text-center pt-2">
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
-              >
-                <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
-                {t.resetPassword.backToLogin}
-              </Link>
-            </div>
-          </form>
-        )}
-      </div>
+      <p className="text-center">
+        <Link
+          href="/login"
+          className="inline-flex items-center gap-1.5 text-[14px] text-on-blue-300 transition-colors hover:text-white"
+        >
+          <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" />
+          {t.resetPassword.backToLogin}
+        </Link>
+      </p>
     </div>
   );
 }

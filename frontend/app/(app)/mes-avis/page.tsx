@@ -58,12 +58,11 @@ export default function MesAvisPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
       <header>
-        <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-          {t.myReviews.title}
-        </h1>
-        <p className="text-neutral-600">{t.myReviews.subtitle}</p>
+        <p className="text-[14.5px] leading-[1.55] text-ink-500">
+          {t.myReviews.subtitle}
+        </p>
       </header>
 
       {/* T5.3 — les cinq composantes, y compris les deux qui mesurent l'usage
@@ -73,9 +72,9 @@ export default function MesAvisPage() {
       {score && (
         <section
           data-testid="reputation"
-          className="bg-white rounded-xl border border-neutral-200 p-5"
+          className="bg-surface rounded-card shadow-card p-5"
         >
-          <h2 className="text-lg font-semibold text-neutral-900 mb-1 flex items-center gap-2">
+          <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-1 flex items-center gap-2">
             <ShieldCheck
               className="w-5 h-5 text-brand-600"
               aria-hidden="true"
@@ -87,17 +86,17 @@ export default function MesAvisPage() {
           <p className="text-sm text-neutral-500">{t.reputation.scoreLabel}</p>
           <p
             data-testid="reputation-score"
-            className="text-3xl font-bold text-neutral-900 tabular-nums mb-4"
+            className="text-[28px] font-extrabold tracking-title text-ink-900 tabular-nums mb-4"
           >
             {interpolate(t.reputation.outOf, { score: score.trust_score })}
           </p>
 
-          <ul className="space-y-3">
+          <ul className="flex flex-col gap-3">
             {score.components.map((composante) => (
               <li
                 key={composante.key}
                 data-testid={`reputation-${composante.key}`}
-                className="space-y-1"
+                className="flex flex-col gap-1"
               >
                 <div className="flex items-center justify-between gap-3 text-sm">
                   <span className="text-neutral-700">
@@ -149,12 +148,12 @@ export default function MesAvisPage() {
             {interpolate(t.myReviews.count, { count: avis.length })}
           </p>
 
-          <ul data-testid="mes-avis-liste" className="space-y-3">
+          <ul data-testid="mes-avis-liste" className="flex flex-col gap-3">
             {avis.map((a) => (
               <li
                 key={a.id}
                 data-testid="mes-avis-ligne"
-                className="bg-white rounded-xl border border-neutral-200 p-4"
+                className="bg-surface rounded-card shadow-card p-4"
               >
                 {a.is_revealed ? (
                   <>
@@ -177,7 +176,7 @@ export default function MesAvisPage() {
                             key={cran}
                             className={`w-4 h-4 ${
                               cran <= (a.rating ?? 0)
-                                ? "text-amber-500 fill-amber-500"
+                                ? "text-warning-500 fill-amber-500"
                                 : "text-neutral-300"
                             }`}
                             aria-hidden="true"

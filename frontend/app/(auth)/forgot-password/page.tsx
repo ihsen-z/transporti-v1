@@ -2,9 +2,15 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, Mail, Loader2, CheckCircle } from "lucide-react";
-import { AuthLogo } from "@/components/brand/TransportiLogo";
+import { ArrowLeft, Loader2, Check } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { AuthCard, AuthHeading, AuthLabel } from "@/components/auth/AuthScreen";
+
+/* -------------------------------------------------------------------------- */
+/*  Mot de passe oublié — FAMILLE IMMERSIVE                                   */
+/*  État envoyé : pastille verre + coche verte (le vert porte la valeur), pas */
+/*  de CTA orange — l'écran n'attend plus d'action principale.                */
+/* -------------------------------------------------------------------------- */
 
 export default function ForgotPasswordPage() {
   const { t } = useAppI18n();
@@ -30,94 +36,87 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl border border-neutral-200 overflow-hidden">
-      {/* Header */}
-      <div className="bg-gradient-to-r from-brand-600 to-brand-900 px-6 py-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <AuthLogo />
-        </div>
-        <h1 className="text-2xl font-bold text-white mb-2">
-          {t.forgotPassword.title}
-        </h1>
-        <p className="text-blue-200 text-sm">{t.forgotPassword.subtitle}</p>
-      </div>
+    <div className="flex flex-col gap-6">
+      <AuthHeading
+        title={t.forgotPassword.title}
+        subtitle={t.forgotPassword.subtitle}
+      />
 
-      <div className="px-6 py-8">
-        {submitted ? (
-          <div className="text-center space-y-4">
-            <div className="w-16 h-16 bg-accent-50 rounded-full flex items-center justify-center mx-auto">
-              <CheckCircle className="w-8 h-8 text-accent-600" />
-            </div>
-            <h2 className="text-lg font-semibold text-neutral-900">
-              {t.forgotPassword.emailSentTitle}
-            </h2>
-            <p className="text-sm text-neutral-500 max-w-sm mx-auto">
-              {t.forgotPassword.emailSentBefore}{" "}
-              <strong className="text-neutral-700">{email}</strong>
-              {t.forgotPassword.emailSentAfter}
-            </p>
-            <p className="text-xs text-neutral-400">
-              {t.forgotPassword.checkSpam}
-            </p>
-            <Link
-              href="/login"
-              className="inline-flex items-center gap-2 text-sm text-brand-600 hover:text-brand-700 font-medium mt-4 transition-colors"
-            >
-              <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
-              {t.forgotPassword.backToLogin}
-            </Link>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div>
-              <label
-                htmlFor="reset-email"
-                className="block text-sm font-medium text-neutral-700 mb-1"
-              >
-                {t.auth.emailLabel}
-              </label>
-              <div className="relative">
-                <Mail className="absolute start-3 top-1/2 -translate-y-1/2 w-5 h-5 text-neutral-400" />
+      {submitted ? (
+        <AuthCard className="items-center text-center">
+          <span className="grid h-16 w-16 place-items-center rounded-full bg-green-500/25 ring-1 ring-inset ring-green-300/40">
+            <Check className="h-8 w-8 text-green-300" strokeWidth={2.5} />
+          </span>
+
+          <h2 className="text-[19px] font-extrabold tracking-heading text-white">
+            {t.forgotPassword.emailSentTitle}
+          </h2>
+
+          <p className="max-w-sm text-[14.5px] leading-[1.55] text-on-blue-300">
+            {t.forgotPassword.emailSentBefore}{" "}
+            <strong className="font-bold text-white">{email}</strong>
+            {t.forgotPassword.emailSentAfter}
+          </p>
+
+          <p className="info-banner info-banner--on-blue w-full text-start">
+            {t.forgotPassword.checkSpam}
+          </p>
+
+          <Link
+            href="/login"
+            className="inline-flex items-center gap-2 text-[14px] font-bold text-white underline-offset-4 transition-opacity hover:opacity-80 hover:underline"
+          >
+            <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" />
+            {t.forgotPassword.backToLogin}
+          </Link>
+        </AuthCard>
+      ) : (
+        <>
+          <AuthCard>
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+              <div className="flex flex-col gap-[7px]">
+                <AuthLabel htmlFor="reset-email">{t.auth.emailLabel}</AuthLabel>
                 <input
                   id="reset-email"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder={t.auth.emailPlaceholder}
-                  className="w-full ps-11 pe-4 py-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-accent-500 transition-colors"
+                  className="glass-field"
                   autoComplete="email"
                   required
                 />
               </div>
-            </div>
 
-            <button
-              type="submit"
-              disabled={isSubmitting || !email}
-              className="w-full flex items-center justify-center gap-2 bg-accent-500 text-white py-3 px-6 rounded-xl font-semibold hover:bg-accent-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  {t.forgotPassword.sending}
-                </>
-              ) : (
-                t.forgotPassword.sendLink
-              )}
-            </button>
-
-            <div className="text-center pt-2">
-              <Link
-                href="/login"
-                className="inline-flex items-center gap-1 text-sm text-neutral-500 hover:text-neutral-700 transition-colors"
+              {/* CTA UNIQUE de l'écran */}
+              <button
+                type="submit"
+                disabled={isSubmitting || !email}
+                className="cta btn-base mt-1 w-full disabled:cursor-not-allowed"
               >
-                <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" />
-                {t.forgotPassword.backToLogin}
-              </Link>
-            </div>
-          </form>
-        )}
-      </div>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-[18px] w-[18px] animate-spin" />
+                    {t.forgotPassword.sending}
+                  </>
+                ) : (
+                  t.forgotPassword.sendLink
+                )}
+              </button>
+            </form>
+          </AuthCard>
+
+          <p className="text-center">
+            <Link
+              href="/login"
+              className="inline-flex items-center gap-1.5 text-[14px] text-on-blue-300 transition-colors hover:text-white"
+            >
+              <ArrowLeft className="h-4 w-4 rtl:-scale-x-100" />
+              {t.forgotPassword.backToLogin}
+            </Link>
+          </p>
+        </>
+      )}
     </div>
   );
 }

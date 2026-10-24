@@ -50,11 +50,11 @@ export default function NotificationDropdown({
       <div className="fixed inset-0 z-modal-backdrop" onClick={onClose} />
 
       {/* Dropdown */}
-      <div className="absolute end-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-white rounded-xl shadow-2xl border border-neutral-200 z-modal overflow-hidden">
+      <div className="absolute end-0 top-full mt-2 w-96 max-w-[calc(100vw-2rem)] bg-surface rounded-tile shadow-2xl border border-neutral-200 z-modal overflow-hidden">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-neutral-200 bg-neutral-50">
           <div>
-            <h3 className="text-lg font-bold text-neutral-900">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
               Notifications
             </h3>
             {unreadCount > 0 && (
@@ -91,7 +91,7 @@ export default function NotificationDropdown({
               <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mb-4">
                 <BellIcon className="w-8 h-8 text-neutral-400" />
               </div>
-              <h4 className="text-lg font-semibold text-neutral-900 mb-2">
+              <h4 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-2">
                 Aucune notification
               </h4>
               <p className="text-sm text-neutral-600 max-w-xs">
@@ -100,7 +100,7 @@ export default function NotificationDropdown({
               </p>
             </div>
           ) : (
-            <ul className="divide-y divide-neutral-100">
+            <ul className="divide-y divide-line">
               {notifications.map((notification) => {
                 const Icon = categoryIcons[notification.category];
                 const colorClasses = getCategoryColor(notification.category);

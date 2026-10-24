@@ -26,10 +26,6 @@ export default function AdressesPage() {
         {t.common.back}
       </Link>
 
-      <h1 className="text-2xl font-bold text-neutral-900 mb-2">
-        {t.addressBook.title}
-      </h1>
-
       <AddressBookManager />
     </div>
   );

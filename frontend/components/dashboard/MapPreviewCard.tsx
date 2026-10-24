@@ -21,10 +21,10 @@ interface MapPreviewCardProps {
 export default function MapPreviewCard({ job }: MapPreviewCardProps) {
   if (!job) {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+      <div className="bg-surface rounded-card shadow-card overflow-hidden">
         <div className="p-4 border-b border-neutral-200">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-neutral-900">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
               Transport actif
             </h3>
             <Map className="w-5 h-5 text-brand-600" />
@@ -44,10 +44,10 @@ export default function MapPreviewCard({ job }: MapPreviewCardProps) {
   const deliveryCoords = getCoordinates(deliveryName);
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-200 overflow-hidden">
+    <div className="bg-surface rounded-card shadow-card overflow-hidden">
       <div className="p-4 border-b border-neutral-200">
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-neutral-900">
+          <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
             Transport actif
           </h3>
           <Map className="w-5 h-5 text-brand-600" />
@@ -60,7 +60,14 @@ export default function MapPreviewCard({ job }: MapPreviewCardProps) {
         pickup={{ name: pickupName, coordinates: pickupCoords }}
         delivery={{ name: deliveryName, coordinates: deliveryCoords }}
         route={[pickupCoords, deliveryCoords]}
-        status={job.status as "PENDING" | "ACCEPTED" | "IN_PROGRESS" | "COMPLETED" | "CANCELLED"}
+        status={
+          job.status as
+            | "PENDING"
+            | "ACCEPTED"
+            | "IN_PROGRESS"
+            | "COMPLETED"
+            | "CANCELLED"
+        }
         height="256px"
       />
     </div>

@@ -8,8 +8,7 @@ import {
   RoleBadge,
   TrustBadge,
 } from "@/components/admin/StatusBadge";
-import { useAdminUsers } from "@/hooks/useAdminData";
-import { formatDate, formatTimeAgoShort, formatCurrency } from "@/lib/format";
+import { formatDate, formatCurrency } from "@/lib/format";
 import { type AdminUser } from "@/lib/services/types";
 import {
   suspendUser,
@@ -29,7 +28,6 @@ import {
   Download,
   Eye,
   Briefcase,
-  MessageSquare,
   Star,
   Pencil,
   Loader2,
@@ -78,8 +76,8 @@ function ActionModal({
       title: "Suspendre l'utilisateur",
       description: `Êtes-vous sûr de vouloir suspendre le compte de ${user.name} (${user.email}) ? L'utilisateur ne pourra plus se connecter.`,
       confirmLabel: "Suspendre",
-      confirmClass: "bg-red-600 hover:bg-red-700 text-white",
-      icon: <Ban className="w-6 h-6 text-red-500" />,
+      confirmClass: "bg-error-600 hover:bg-red-700 text-white",
+      icon: <Ban className="w-6 h-6 text-error-500" />,
       showReason: true,
     },
     activate: {
@@ -95,7 +93,7 @@ function ActionModal({
       description: `Générer un nouveau mot de passe temporaire pour ${user.name} (${user.email}) ? L'ancien mot de passe sera invalidé.`,
       confirmLabel: "Réinitialiser",
       confirmClass: "bg-amber-600 hover:bg-amber-700 text-white",
-      icon: <KeyRound className="w-6 h-6 text-amber-500" />,
+      icon: <KeyRound className="w-6 h-6 text-warning-500" />,
       showReason: false,
     },
   };
@@ -103,11 +101,11 @@ function ActionModal({
   const c = config[action];
 
   return (
-    <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-neutral-200 dark:border-neutral-700">
+    <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+      <div className="bg-surface dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-neutral-200 dark:border-neutral-700">
         {/* Header */}
         <div className="flex items-center gap-3 p-6 border-b border-neutral-200 dark:border-neutral-700">
-          <div className="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-xl">
+          <div className="p-2 bg-app dark:bg-neutral-800 rounded-chip">
             {c.icon}
           </div>
           <div className="flex-1">
@@ -124,7 +122,7 @@ function ActionModal({
         </div>
 
         {/* Body */}
-        <div className="p-6 space-y-4">
+        <div className="p-6 flex flex-col gap-4">
           <p className="text-sm text-neutral-600 dark:text-neutral-300 leading-relaxed">
             {c.description}
           </p>
@@ -146,11 +144,11 @@ function ActionModal({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-neutral-100 dark:border-neutral-700 bg-neutral-50 dark:bg-[#0f172a]">
+        <div className="flex items-center justify-end gap-3 p-6 border-t border-line dark:border-neutral-700 bg-neutral-50 dark:bg-[#0f172a]">
           <button
             onClick={onClose}
             disabled={loading}
-            className="px-4 py-2.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 bg-white dark:bg-[#1e293b] border border-neutral-300 dark:border-neutral-600 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+            className="px-4 py-2.5 text-sm font-medium text-neutral-600 dark:text-neutral-300 bg-surface dark:bg-[#1e293b] border border-neutral-300 dark:border-neutral-600 rounded-xl hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
           >
             Annuler
           </button>
@@ -190,7 +188,7 @@ function ResultBanner({
   const [copied, setCopied] = useState(false);
 
   return (
-    <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3">
+    <div className="bg-green-50 rounded-tile p-4 flex items-start gap-3">
       <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
       <div className="flex-1">
         <p className="text-sm font-medium text-green-800">{message}</p>
@@ -288,10 +286,10 @@ function UserDetailDrawer({
         onClick={onClose}
       />
       {/* Drawer */}
-      <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-white dark:bg-[#1e293b] z-50 shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
+      <div className="fixed right-0 top-0 h-full w-full max-w-lg bg-surface dark:bg-[#1e293b] z-50 shadow-2xl overflow-y-auto animate-in slide-in-from-right duration-200">
         {/* Header */}
-        <div className="sticky top-0 bg-white dark:bg-[#1e293b] border-b border-neutral-100 dark:border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
-          <h2 className="text-lg font-bold text-neutral-900 dark:text-white flex items-center gap-2">
+        <div className="sticky top-0 bg-surface dark:bg-[#1e293b] border-b border-line dark:border-neutral-700 px-6 py-4 flex items-center justify-between z-10">
+          <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white flex items-center gap-2">
             <Eye className="w-5 h-5 text-brand-600" />
             Profil Utilisateur
           </h2>
@@ -332,14 +330,14 @@ function UserDetailDrawer({
         )}
 
         {!loading && detail && (
-          <div className="p-6 space-y-6">
+          <div className="p-6 flex flex-col gap-6">
             {/* Profile Header */}
             <div className="flex items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 text-xl font-bold">
                 {(detail.name?.[0] || detail.email[0]).toUpperCase()}
               </div>
               <div>
-                <h3 className="text-xl font-bold text-neutral-900 dark:text-white">
+                <h3 className="text-[19px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                   {detail.name}
                 </h3>
                 <p className="text-sm text-neutral-500">{detail.email}</p>
@@ -348,7 +346,7 @@ function UserDetailDrawer({
                     className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                       detail.role === "CLIENT"
                         ? "bg-blue-50 text-blue-700"
-                        : "bg-purple-50 text-purple-700"
+                        : "bg-blue-50 text-blue-700"
                     }`}
                   >
                     {detail.role === "CLIENT" ? "Client" : "Transporteur"}
@@ -357,7 +355,7 @@ function UserDetailDrawer({
                     className={`px-2 py-0.5 rounded-full text-xs font-medium ${
                       detail.isActive
                         ? "bg-green-50 text-green-700"
-                        : "bg-red-50 text-red-700"
+                        : "bg-error-50 text-error-700"
                     }`}
                   >
                     {detail.isActive ? "Actif" : "Suspendu"}
@@ -368,10 +366,10 @@ function UserDetailDrawer({
 
             {/* Edit Form */}
             {isEditing && (
-              <div className="bg-brand-50 dark:bg-brand-900/20 rounded-xl border border-brand-200 dark:border-brand-800 p-4 space-y-3">
+              <div className="bg-brand-50 dark:bg-brand-900/20 rounded-xl border border-brand-200 dark:border-brand-800 p-4 flex flex-col gap-3">
                 <h4 className="text-sm font-bold text-brand-800 dark:text-brand-300 flex items-center gap-2">
                   <Pencil className="w-3.5 h-3.5" />
-                  Modifier l'utilisateur
+                  Modifier l&apos;utilisateur
                 </h4>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -430,7 +428,7 @@ function UserDetailDrawer({
                   </select>
                 </div>
                 {editError && (
-                  <p className="text-xs text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg p-2">
+                  <p className="text-xs text-error-600 dark:text-error-400 bg-error-50 dark:bg-red-900/20 rounded-lg p-2">
                     {editError}
                   </p>
                 )}
@@ -535,7 +533,7 @@ function UserDetailDrawer({
               {detail.jobs.length === 0 ? (
                 <p className="text-sm text-neutral-400 italic">Aucun job</p>
               ) : (
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2">
                   {detail.jobs.slice(0, 10).map((job) => (
                     <div
                       key={job.id}
@@ -567,11 +565,11 @@ function UserDetailDrawer({
               {detail.disputes.length === 0 ? (
                 <p className="text-sm text-neutral-400 italic">Aucun litige</p>
               ) : (
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2">
                   {detail.disputes.map((d) => (
                     <div
                       key={d.id}
-                      className="flex items-center justify-between bg-amber-50 rounded-lg px-3 py-2"
+                      className="flex items-center justify-between bg-warning-50 rounded-lg px-3 py-2"
                     >
                       <div>
                         <p className="text-sm font-medium text-neutral-800">
@@ -581,7 +579,7 @@ function UserDetailDrawer({
                           {formatDate(d.createdAt)}
                         </p>
                       </div>
-                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-200 text-amber-800">
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-200 text-warning-800">
                         {d.status}
                       </span>
                     </div>
@@ -599,7 +597,7 @@ function UserDetailDrawer({
               {detail.reviews.length === 0 ? (
                 <p className="text-sm text-neutral-400 italic">Aucun avis</p>
               ) : (
-                <div className="space-y-2">
+                <div className="flex flex-col gap-2">
                   {detail.reviews.map((r) => (
                     <div
                       key={r.id}
@@ -611,7 +609,7 @@ function UserDetailDrawer({
                             key={s}
                             className={`w-3.5 h-3.5 ${
                               s <= r.rating
-                                ? "text-amber-400 fill-amber-400"
+                                ? "text-warning-400 fill-warning-400"
                                 : "text-neutral-300"
                             }`}
                           />
@@ -914,13 +912,15 @@ export default function AdminUsersPage() {
       header: t.users.jobsCol,
       render: (user: AdminUser) => (
         <div className="text-sm">
-          <span className="font-semibold text-neutral-700">
-            {user.jobsCompleted}
+          <span className="whitespace-nowrap">
+            <span className="font-semibold text-neutral-700">
+              {user.jobsCompleted}
+            </span>
+            <span className="text-neutral-400"> {t.users.ended}</span>
           </span>
-          <span className="text-neutral-400"> {t.users.ended}</span>
           {user.jobsActive > 0 && (
-            <span className="text-brand-600 ms-2">
-              ({user.jobsActive} actifs)
+            <span className="text-brand-600 ms-2 whitespace-nowrap">
+              ({user.jobsActive} {t.users.activeJobs})
             </span>
           )}
         </div>
@@ -931,10 +931,12 @@ export default function AdminUsersPage() {
       header: t.users.finances,
       render: (user: AdminUser) => (
         <span className="text-sm font-medium text-neutral-700">
-          {user.role === "CLIENT"
-            ? formatCurrency(user.totalSpent || 0)
-            : formatCurrency(user.totalEarned || 0)}
-          <span className="text-xs text-neutral-400 ms-1">
+          <span className="whitespace-nowrap">
+            {user.role === "CLIENT"
+              ? formatCurrency(user.totalSpent || 0)
+              : formatCurrency(user.totalEarned || 0)}
+          </span>
+          <span className="text-xs text-neutral-400 ms-1 whitespace-nowrap">
             {user.role === "CLIENT" ? t.users.spent : t.users.earned}
           </span>
         </span>
@@ -972,7 +974,7 @@ export default function AdminUsersPage() {
                 e.stopPropagation();
                 openAction("suspend", user);
               }}
-              className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-2 text-error-500 hover:bg-error-50 rounded-lg transition-colors"
               title="Suspendre"
             >
               <Ban className="w-4 h-4" />
@@ -983,7 +985,7 @@ export default function AdminUsersPage() {
               e.stopPropagation();
               openAction("resetPassword", user);
             }}
-            className="p-2 text-amber-500 hover:bg-amber-50 rounded-lg transition-colors"
+            className="p-2 text-warning-500 hover:bg-warning-50 rounded-lg transition-colors"
             title="Réinitialiser le mot de passe"
           >
             <KeyRound className="w-4 h-4" />
@@ -1007,11 +1009,11 @@ export default function AdminUsersPage() {
       : 0;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
             {t.users.title}
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">
@@ -1053,7 +1055,7 @@ export default function AdminUsersPage() {
                 console.error(err);
               }
             }}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
+            className="flex items-center gap-2 px-4 py-2 bg-surface dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm font-medium text-neutral-600 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-700 transition-colors"
           >
             <Download className="w-4 h-4" />
             {t.users.exportCsv}
@@ -1083,21 +1085,21 @@ export default function AdminUsersPage() {
         />
       )}
       {errorBanner && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 flex items-center gap-3">
-          <ShieldAlert className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <p className="text-sm text-red-700 flex-1">{errorBanner}</p>
+        <div className="bg-error-50 border border-error-200 rounded-xl p-4 flex items-center gap-3">
+          <ShieldAlert className="w-5 h-5 text-error-500 flex-shrink-0" />
+          <p className="text-sm text-error-700 flex-1">{errorBanner}</p>
           <button
             onClick={() => setErrorBanner(null)}
-            className="p-1 hover:bg-red-100 rounded"
+            className="p-1 hover:bg-error-100 rounded"
           >
-            <X className="w-4 h-4 text-red-400" />
+            <X className="w-4 h-4 text-error-400" />
           </button>
         </div>
       )}
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+        <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
           <p className="text-neutral-500 dark:text-neutral-400">
             {t.users.loading}
@@ -1107,7 +1109,7 @@ export default function AdminUsersPage() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+        <div className="bg-error-50 border border-error-200 rounded-xl p-4 text-error-700 text-sm">
           ⚠️ Erreur de chargement: {error?.message}
         </div>
       )}
@@ -1133,7 +1135,7 @@ export default function AdminUsersPage() {
                       ${
                         isActive
                           ? "bg-brand-600 text-white shadow-sm"
-                          : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
+                          : "bg-surface dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
                       }
                     `}
                   >
@@ -1156,7 +1158,7 @@ export default function AdminUsersPage() {
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={t.users.searchPlaceholder}
-                className="w-full ps-10 pe-4 py-2.5 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
+                className="w-full ps-10 pe-4 py-2.5 bg-surface dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-xl text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:ring-2 focus:ring-brand-500 focus:border-brand-500 transition-colors"
               />
               {searchQuery && (
                 <button
@@ -1170,7 +1172,7 @@ export default function AdminUsersPage() {
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
                 <span className="text-neutral-500 dark:text-neutral-400">
@@ -1192,7 +1194,7 @@ export default function AdminUsersPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   {t.users.suspended}:
                 </span>
-                <span className="ms-2 font-semibold text-red-600">
+                <span className="ms-2 font-semibold text-error-600">
                   {suspendedUsers}
                 </span>
               </div>
@@ -1220,7 +1222,7 @@ export default function AdminUsersPage() {
 
           {/* U5: Bulk Action Bar */}
           {selectedIds.size > 0 && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-5 py-3 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-2xl">
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-3 px-5 py-3 bg-surface dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-700 rounded-2xl shadow-2xl">
               <span className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                 {selectedIds.size} sélectionné{selectedIds.size > 1 ? "s" : ""}
               </span>
@@ -1228,7 +1230,7 @@ export default function AdminUsersPage() {
               <button
                 onClick={() => handleBulkAction("suspend")}
                 disabled={bulkLoading}
-                className="flex items-center gap-1.5 px-3 py-1.5 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded-lg text-sm font-medium hover:bg-red-100 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50"
+                className="flex items-center gap-1.5 px-3 py-1.5 bg-error-50 dark:bg-red-900/20 text-error-700 dark:text-error-400 rounded-lg text-sm font-medium hover:bg-error-100 dark:hover:bg-red-900/40 transition-colors disabled:opacity-50"
               >
                 {bulkLoading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

@@ -12,24 +12,26 @@ import { formatTND } from "@/lib/format";
 import {
   Truck,
   Package,
-  Clock,
-  DollarSign,
   PlusCircle,
   Search,
   Star,
   ShieldCheck,
   TrendingUp,
   ArrowRight,
-  CheckCircle2,
   AlertCircle,
   BarChart3,
-  Loader2,
   RotateCcw,
   HelpCircle,
 } from "lucide-react";
 import { DashboardSkeleton } from "@/components/ui/Skeleton";
 import OnboardingWizard from "@/components/onboarding/OnboardingWizard";
 import ReturnsHubSection from "@/components/dashboard/ReturnsHubSection";
+import {
+  BandHeroCard,
+  HeroFigure,
+  StatTile,
+  StatTileGrid,
+} from "@/components/dashboard/BandHeroCard";
 import { RETURN_TRIPS_FIRST } from "@/lib/flags";
 import { urlJob } from "@/lib/routes/jobs";
 
@@ -78,43 +80,6 @@ interface RecentJob {
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Stat Card Component                                                       */
-/* -------------------------------------------------------------------------- */
-
-function StatCard({
-  icon: Icon,
-  label,
-  value,
-  accent,
-  sub,
-}: {
-  icon: React.ElementType;
-  label: string;
-  value: string | number;
-  accent: string;
-  sub?: string;
-}) {
-  return (
-    <div className="bg-white rounded-2xl border border-neutral-100 p-6 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
-      <div className="flex items-start justify-between mb-4">
-        <div
-          className={`w-12 h-12 rounded-xl flex items-center justify-center ${accent}`}
-        >
-          <Icon className="w-6 h-6" />
-        </div>
-        {sub && (
-          <span className="text-xs font-medium text-neutral-500 bg-neutral-50 px-2 py-1 rounded-full">
-            {sub}
-          </span>
-        )}
-      </div>
-      <p className="text-3xl font-bold text-neutral-900">{value}</p>
-      <p className="text-sm text-neutral-500 mt-1">{label}</p>
-    </div>
-  );
-}
-
-/* -------------------------------------------------------------------------- */
 /*  CLIENT Dashboard                                                          */
 /* -------------------------------------------------------------------------- */
 
@@ -122,10 +87,12 @@ function ClientDashboard({
   stats,
   recentJobs,
   dateLocale,
+  salutation,
 }: {
   stats: ClientStats;
   recentJobs: RecentJob[];
   dateLocale: string;
+  salutation: string;
 }) {
   const { t } = useAppI18n();
   return (
@@ -133,83 +100,68 @@ function ClientDashboard({
       {/* Onboarding Wizard — shown only on first visits */}
       <OnboardingWizard />
 
-      {/* CTA Hero */}
-      <div className="bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="absolute bottom-0 left-0 w-32 h-32 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
-        <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-2">
+      {/* Carte verre chevauchant le bandeau : promesse + indicateurs.
+          L'action est BLEUE, pas orange : sur les écrans qui portent la nav
+          basse, le seul orange autorisé est son bouton flottant (charte §1). */}
+      <BandHeroCard>
+        <div className="flex flex-col gap-2">
+          <p className="text-[13px] font-semibold text-on-blue-300">
+            {salutation}
+          </p>
+          <h2 className="text-[21px] font-extrabold leading-[1.25] tracking-heading text-white">
             {RETURN_TRIPS_FIRST
               ? t.dashboard.clientCTAFirst
               : t.dashboard.clientCTA}
           </h2>
-          <p className="text-blue-200 mb-6 max-w-lg">
+          <p className="max-w-lg text-[14.5px] leading-[1.5] text-on-blue-300">
             {RETURN_TRIPS_FIRST
               ? t.dashboard.clientCTAFirstDesc
               : t.dashboard.clientCTADesc}
           </p>
-          {RETURN_TRIPS_FIRST ? (
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/recherche"
-                className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
-              >
-                <Search className="w-5 h-5" />
-                {t.dashboard.findTripCTA}
-              </Link>
-              <Link
-                href="/demandes/nouvelle"
-                className="inline-flex items-center gap-2 border-2 border-white/30 text-white px-6 py-3 rounded-xl font-semibold hover:bg-white/10 transition-all"
-              >
-                <PlusCircle className="w-5 h-5" />
-                {t.dashboard.publishAd}
-              </Link>
-            </div>
-          ) : (
+        </div>
+
+        <StatTileGrid>
+          <StatTile label={t.dashboard.activeAds} value={stats.active_jobs} />
+          <StatTile
+            label={t.dashboard.offersReceived}
+            value={stats.total_offers_received}
+          />
+          <StatTile
+            label={t.dashboard.completedMissions}
+            value={stats.completed_jobs}
+          />
+          <StatTile
+            label={t.dashboard.pendingOffersLabel}
+            value={stats.pending_offers}
+          />
+        </StatTileGrid>
+
+        {RETURN_TRIPS_FIRST ? (
+          <div className="flex flex-col gap-3 sm:flex-row">
+            <Link href="/recherche" className="btn-base btn-secondary flex-1">
+              <Search className="h-[18px] w-[18px]" strokeWidth={2.2} />
+              {t.dashboard.findTripCTA}
+            </Link>
             <Link
               href="/demandes/nouvelle"
-              className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
+              className="btn-base btn-ghost-on-blue flex-1"
             >
-              <PlusCircle className="w-5 h-5" />
+              <PlusCircle className="h-[18px] w-[18px]" strokeWidth={2.2} />
               {t.dashboard.publishAd}
             </Link>
-          )}
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          icon={Truck}
-          label={t.dashboard.activeAds}
-          value={stats.active_jobs}
-          accent="bg-brand-600/10 text-brand-600"
-        />
-        <StatCard
-          icon={Package}
-          label={t.dashboard.offersReceived}
-          value={stats.total_offers_received}
-          accent="bg-purple-50 text-purple-600"
-          sub={t.dashboard.total}
-        />
-        <StatCard
-          icon={CheckCircle2}
-          label={t.dashboard.completedMissions}
-          value={stats.completed_jobs}
-          accent="bg-accent-50 text-accent-600"
-        />
-        <StatCard
-          icon={Clock}
-          label={t.dashboard.pendingOffersLabel}
-          value={stats.pending_offers}
-          accent="bg-amber-50 text-amber-600"
-        />
-      </div>
+          </div>
+        ) : (
+          <Link href="/demandes/nouvelle" className="btn-base btn-secondary">
+            <PlusCircle className="h-[18px] w-[18px]" strokeWidth={2.2} />
+            {t.dashboard.publishAd}
+          </Link>
+        )}
+      </BandHeroCard>
 
       {/* Recent Jobs */}
-      <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-neutral-900">
+      <div className="bg-surface rounded-card shadow-card overflow-hidden">
+        <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+          <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
             {t.dashboard.recentAds}
           </h3>
           <Link
@@ -220,7 +172,7 @@ function ClientDashboard({
             <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
           </Link>
         </div>
-        <div className="divide-y divide-neutral-50">
+        <div className="divide-y divide-line">
           {recentJobs.length === 0 ? (
             <div className="px-6 py-8 text-center text-neutral-400 text-sm">
               {t.dashboard.noAdsYet}{" "}
@@ -240,7 +192,7 @@ function ClientDashboard({
               >
                 <div className="flex items-center gap-4 min-w-0">
                   <div
-                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === "TRANSPORT" ? "bg-brand-600/5 text-brand-600" : "bg-purple-50 text-purple-600"}`}
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === "TRANSPORT" ? "bg-blue-50 text-blue-700" : "bg-blue-50 text-blue-700"}`}
                   >
                     {job.job_type === "TRANSPORT" ? (
                       <Truck className="w-5 h-5" />
@@ -280,16 +232,94 @@ function TransporterDashboard({
   stats,
   recentJobs,
   dateLocale,
+  salutation,
 }: {
   stats: TransporterStats;
   recentJobs: RecentJob[];
   dateLocale: string;
+  salutation: string;
 }) {
   const { t } = useAppI18n();
   return (
     <>
       {/* Onboarding Wizard — shown only on first visits */}
       <OnboardingWizard />
+
+      {/* Verification Banner */}
+      {stats.verification_status !== "VERIFIED" && (
+        <div className="flex items-start gap-3 rounded-tile bg-warning-50 p-4 sm:p-5">
+          <AlertCircle
+            className="mt-0.5 h-5 w-5 flex-shrink-0 text-warning-600"
+            strokeWidth={2}
+          />
+          <div className="flex flex-col gap-1">
+            <h3 className="text-[15px] font-bold text-warning-800">
+              {t.dashboard.verificationRequired}
+            </h3>
+            <p className="text-[13px] leading-[1.5] text-warning-700">
+              {t.dashboard.verificationRequiredDesc}
+            </p>
+            <Link
+              href="/documents"
+              className="mt-1 inline-flex items-center gap-1 text-[13px] font-bold text-warning-800 underline-offset-4 hover:underline"
+            >
+              {t.dashboard.completeVerification}{" "}
+              <ArrowRight className="h-4 w-4 rtl:-scale-x-100" />
+            </Link>
+          </div>
+        </div>
+      )}
+
+      {/* Carte verre chevauchant le bandeau : gains en chiffre héro, puis les
+          quatre indicateurs du transporteur. Le remplissage porte une jauge —
+          verte quand elle est bonne, orange quand elle est à améliorer. */}
+      <BandHeroCard>
+        <p className="text-[13px] font-semibold text-on-blue-300">
+          {salutation}
+        </p>
+
+        <HeroFigure
+          label={t.dashboard.totalEarnings}
+          value={formatTND(stats.total_earnings)}
+        />
+
+        <StatTileGrid>
+          <StatTile
+            label={t.dashboard.availableMissions}
+            value={stats.available_missions}
+          />
+          <StatTile
+            label={t.dashboard.activeOffersLabel}
+            value={stats.active_offers}
+          />
+          <StatTile
+            label={t.dashboard.completedMissionsLabel}
+            value={stats.completed_jobs}
+          />
+          <StatTile
+            label={t.dashboard.completionRateLabel}
+            value={
+              stats.completion_rate != null ? `${stats.completion_rate}%` : "—"
+            }
+            gauge={stats.completion_rate ?? 0}
+            tone={(stats.completion_rate ?? 0) >= 80 ? "good" : "warn"}
+          />
+        </StatTileGrid>
+
+        <div className="flex flex-col gap-3 sm:flex-row">
+          <Link href="/demandes" className="btn-base btn-secondary flex-1">
+            <Search className="h-[18px] w-[18px]" strokeWidth={2.2} />
+            {t.dashboard.browseMissions}
+          </Link>
+          <Link
+            href="/retours/nouveau"
+            className="btn-base btn-ghost-on-blue flex-1"
+          >
+            <RotateCcw className="h-[18px] w-[18px]" strokeWidth={2.2} />
+            {t.dashboard.proposeReturnTrip}
+          </Link>
+        </div>
+      </BandHeroCard>
 
       {/* T1.1 — le hub passe de « mes missions » à « mes retours ». Placé
           au-dessus des indicateurs de missions : le pivot fait du retour la
@@ -302,103 +332,21 @@ function TransporterDashboard({
         tauxRemplissage={stats.fill_rate}
       />
 
-      {/* Verification Banner */}
-      {stats.verification_status !== "VERIFIED" && (
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 mb-8 flex items-start gap-4">
-          <AlertCircle className="w-6 h-6 text-amber-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 className="font-semibold text-amber-800">
-              {t.dashboard.verificationRequired}
-            </h3>
-            <p className="text-sm text-amber-700 mt-1">
-              {t.dashboard.verificationRequiredDesc}
-            </p>
-            <Link
-              href="/documents"
-              className="inline-flex items-center gap-1 text-sm font-semibold text-amber-800 mt-3 hover:text-amber-900"
-            >
-              {t.dashboard.completeVerification}{" "}
-              <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
-            </Link>
-          </div>
-        </div>
-      )}
-
-      {/* Find Missions CTA */}
-      <div className="bg-gradient-to-br from-brand-600 via-brand-800 to-brand-900 rounded-2xl p-8 text-white mb-8 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="relative z-10">
-          <h2 className="text-2xl font-bold mb-2">
-            {t.dashboard.findMissionsTitle}
-          </h2>
-          <p className="text-blue-200 mb-6 max-w-lg">
-            {stats.available_missions} {t.dashboard.missionsInZone}
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/demandes"
-              className="inline-flex items-center gap-2 bg-accent-500 text-white px-6 py-3 rounded-xl font-semibold hover:bg-accent-600 transition-all hover:scale-105 shadow-lg shadow-brand-900/20"
-            >
-              <Search className="w-5 h-5" />
-              {t.dashboard.browseMissions}
-            </Link>
-            <Link
-              href="/retours/nouveau"
-              className="inline-flex items-center gap-2 text-white px-6 py-3 rounded-xl font-semibold transition-all hover:scale-105 shadow-lg"
-              style={{
-                background: "linear-gradient(135deg, #8B5CF6, #7C3AED)",
-              }}
-            >
-              <RotateCcw className="w-5 h-5" />
-              {t.dashboard.proposeReturnTrip}
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <StatCard
-          icon={Search}
-          label={t.dashboard.availableMissions}
-          value={stats.available_missions}
-          accent="bg-brand-600/10 text-brand-600"
-        />
-        <StatCard
-          icon={Package}
-          label={t.dashboard.activeOffersLabel}
-          value={stats.active_offers}
-          accent="bg-purple-50 text-purple-600"
-        />
-        <StatCard
-          icon={CheckCircle2}
-          label={t.dashboard.completedMissionsLabel}
-          value={stats.completed_jobs}
-          accent="bg-accent-50 text-accent-600"
-        />
-        <StatCard
-          icon={DollarSign}
-          label={t.dashboard.totalEarnings}
-          value={`${formatTND(stats.total_earnings)}`}
-          accent="bg-amber-50 text-amber-600"
-        />
-      </div>
-
       {/* Performance + Recent Missions */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Performance Card */}
-        <div className="bg-white rounded-2xl border border-neutral-100 p-6">
-          <h3 className="text-lg font-semibold text-neutral-900 mb-6">
+        <div className="bg-surface rounded-card shadow-card p-6">
+          <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-6">
             {t.dashboard.performance}
           </h3>
-          <div className="space-y-6">
+          <div className="flex flex-col gap-6">
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
-                  <Star className="w-4 h-4 text-amber-500" />{" "}
+                  <Star className="w-4 h-4 text-warning-500" />{" "}
                   {t.dashboard.avgRating}
                 </div>
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {stats.average_rating != null
                     ? `${stats.average_rating}/5`
                     : "—"}
@@ -406,7 +354,7 @@ function TransporterDashboard({
               </div>
               <div className="w-full bg-neutral-100 rounded-full h-2">
                 <div
-                  className="bg-amber-500 h-2 rounded-full transition-all"
+                  className="bg-warning-500 h-2 rounded-full transition-all"
                   style={{
                     width: `${((stats.average_rating ?? 0) / 5) * 100}%`,
                   }}
@@ -416,10 +364,10 @@ function TransporterDashboard({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
-                  <TrendingUp className="w-4 h-4 text-emerald-500" />{" "}
+                  <TrendingUp className="w-4 h-4 text-green-500" />{" "}
                   {t.dashboard.completionRateLabel}
                 </div>
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {stats.completion_rate != null
                     ? `${stats.completion_rate}%`
                     : "—"}
@@ -436,16 +384,16 @@ function TransporterDashboard({
             <div>
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2 text-sm text-neutral-600">
-                  <RotateCcw className="w-4 h-4 text-purple-500" />{" "}
+                  <RotateCcw className="w-4 h-4 text-blue-600" />{" "}
                   {t.dashboard.fillRateLabel}
                 </div>
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {stats.fill_rate != null ? `${stats.fill_rate}%` : "—"}
                 </span>
               </div>
               <div className="w-full bg-neutral-100 rounded-full h-2">
                 <div
-                  className="bg-purple-500 h-2 rounded-full transition-all"
+                  className="bg-blue-600 h-2 rounded-full transition-all"
                   style={{ width: `${stats.fill_rate ?? 0}%` }}
                 />
               </div>
@@ -460,7 +408,7 @@ function TransporterDashboard({
                 })}
               </p>
             </div>
-            <div className="flex items-center justify-between pt-2 border-t border-neutral-100">
+            <div className="flex items-center justify-between pt-2 border-t border-line">
               <div className="flex items-center gap-2 text-sm text-neutral-600">
                 <ShieldCheck className="w-4 h-4 text-brand-600" />{" "}
                 {t.dashboard.verificationStatus}
@@ -468,8 +416,8 @@ function TransporterDashboard({
               <span
                 className={`text-xs font-semibold px-2.5 py-1 rounded-full ${
                   stats.verification_status === "VERIFIED"
-                    ? "bg-accent-50 text-accent-700"
-                    : "bg-amber-50 text-amber-700"
+                    ? "bg-green-50 text-green-700"
+                    : "bg-warning-50 text-warning-700"
                 }`}
               >
                 {stats.verification_status === "VERIFIED"
@@ -481,9 +429,9 @@ function TransporterDashboard({
         </div>
 
         {/* Recent Missions */}
-        <div className="lg:col-span-2 bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-neutral-900">
+        <div className="lg:col-span-2 bg-surface rounded-card shadow-card overflow-hidden">
+          <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
               {t.dashboard.recentMissions}
             </h3>
             <Link
@@ -494,7 +442,7 @@ function TransporterDashboard({
               <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
             </Link>
           </div>
-          <div className="divide-y divide-neutral-50">
+          <div className="divide-y divide-line">
             {recentJobs.length === 0 ? (
               <div className="px-6 py-8 text-center text-neutral-400 text-sm">
                 {t.dashboard.noRecentMissions}{" "}
@@ -511,7 +459,7 @@ function TransporterDashboard({
                 >
                   <div className="flex items-center gap-4 min-w-0">
                     <div
-                      className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === "TRANSPORT" ? "bg-brand-600/5 text-brand-600" : "bg-purple-50 text-purple-600"}`}
+                      className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${job.job_type === "TRANSPORT" ? "bg-blue-50 text-blue-700" : "bg-blue-50 text-blue-700"}`}
                     >
                       {job.job_type === "TRANSPORT" ? (
                         <Truck className="w-5 h-5" />
@@ -613,36 +561,27 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="p-6 lg:p-8 max-w-7xl mx-auto">
+      <div className="mx-auto max-w-7xl px-5 pb-10 pt-6 sm:px-6 lg:px-8">
         <DashboardSkeleton />
       </div>
     );
   }
 
-  return (
-    <div className="p-6 lg:p-8 max-w-7xl mx-auto">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-neutral-900">
-          {t.dashboard.hello}{" "}
-          {user?.first_name ||
-            user?.name?.split(" ")[0] ||
-            t.dashboard.defaultUser}{" "}
-          👋
-        </h1>
-        <p className="text-neutral-500 mt-1">
-          {isClient
-            ? t.dashboard.clientSubtitle
-            : t.dashboard.transporterSubtitle}
-        </p>
-      </div>
+  // Salutation nominative, portée par la carte verre du bandeau : le titre
+  // d'écran est déjà rendu par l'en-tête, on ne le double pas.
+  const prenom =
+    user?.first_name || user?.name?.split(" ")[0] || t.dashboard.defaultUser;
+  const salutation = `${t.dashboard.hello} ${prenom} 👋`;
 
+  return (
+    <div className="stack-app mx-auto max-w-7xl px-5 pb-10 pt-12 sm:px-6 lg:px-8">
       {/* Role-specific content */}
       {isClient && (
         <ClientDashboard
           stats={clientStats}
           recentJobs={recentJobs}
           dateLocale={dateLocale}
+          salutation={salutation}
         />
       )}
       {isTransporter && (
@@ -650,14 +589,15 @@ export default function DashboardPage() {
           stats={transporterStats}
           recentJobs={recentJobs}
           dateLocale={dateLocale}
+          salutation={salutation}
         />
       )}
 
       {/* Fallback */}
       {!isClient && !isTransporter && (
-        <div className="bg-white rounded-2xl border border-neutral-100 p-12 text-center">
+        <div className="bg-surface rounded-card shadow-card p-12 text-center">
           <BarChart3 className="w-12 h-12 text-neutral-300 mx-auto mb-4" />
-          <h2 className="text-lg font-semibold text-neutral-900">
+          <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
             {t.dashboard.welcomeGeneric}
           </h2>
           <p className="text-neutral-500 mt-1">{t.dashboard.selectRole}</p>

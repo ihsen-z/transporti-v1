@@ -114,7 +114,7 @@ export function OfferList({
         <p className="text-sm text-neutral-500 mt-1">{t.browse.errorDesc}</p>
         <button
           onClick={fetchOffers}
-          className="mt-3 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors"
+          className="mt-3 btn-base min-h-[44px] rounded-cta bg-blue-700 px-4 text-[14.5px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px"
         >
           {t.common.retry}
         </button>
@@ -140,8 +140,8 @@ export function OfferList({
 
   return (
     <>
-      <div className="space-y-4">
-        <h3 className="text-lg font-bold text-neutral-900 mb-2">
+      <div className="flex flex-col gap-4">
+        <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-2">
           {interpolate(
             offers.length > 1
               ? t.offersComponents.offersReceivedPlural
@@ -166,7 +166,7 @@ export function OfferList({
           onClick={() => setShowPaymentModal(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 relative animate-fade-in-up"
+            className="bg-surface rounded-card shadow-2xl max-w-md w-full p-6 relative animate-fade-in-up"
             onClick={(e) => e.stopPropagation()}
           >
             <button
@@ -176,7 +176,7 @@ export function OfferList({
               <X className="w-5 h-5" />
             </button>
 
-            <h3 className="text-xl font-bold text-neutral-900 mb-2">
+            <h3 className="text-[19px] font-extrabold tracking-heading text-ink-900 mb-2">
               {t.offersComponents.choosePayment}
             </h3>
             <p className="text-sm text-neutral-500 mb-6">
@@ -186,7 +186,7 @@ export function OfferList({
               </span>
             </p>
 
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               {/* Digital Payment Option */}
               <button
                 onClick={() => confirmAccept("DIGITAL")}
@@ -239,7 +239,7 @@ export function OfferList({
                     {t.offersComponents.paymentCODDesc}
                   </p>
                   {!codEligible && (
-                    <div className="flex items-center gap-1 text-xs text-red-500 mt-1">
+                    <div className="flex items-center gap-1 text-xs text-error-500 mt-1">
                       <AlertCircle className="w-3 h-3" />
                       <span>
                         {interpolate(t.offersComponents.codMax, {

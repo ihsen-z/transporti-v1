@@ -64,7 +64,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
           type="button"
           onClick={() => onChange(star)}
           className={`focus:outline-none transition-colors ${
-            star <= value ? "text-amber-400" : "text-neutral-300"
+            star <= value ? "text-warning-400" : "text-neutral-300"
           }`}
         >
           <Star
@@ -77,12 +77,12 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
 
   return (
     <div className="bg-white p-6 rounded-xl border shadow-sm">
-      <h3 className="text-lg font-bold text-neutral-900 mb-4">
+      <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4">
         Laisser un avis
       </h3>
 
       {/* P1-07: Double-aveugle confidentiality banner */}
-      <div className="mb-5 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-start gap-2.5">
+      <div className="mb-5 p-3 bg-blue-50 rounded-tile flex items-start gap-2.5">
         <ShieldCheck className="w-4 h-4 text-blue-600 mt-0.5 flex-shrink-0" />
         <p className="text-xs text-blue-700 leading-relaxed">
           <span className="font-semibold">Avis confidentiels</span> — Votre avis
@@ -91,15 +91,13 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Note globale
-          </label>
+          <label className="label mb-[7px]">Note globale</label>
           <StarRating value={rating} onChange={setRating} />
         </div>
 
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <p className="text-sm font-medium text-neutral-700">
             Détails (Optionnel)
           </p>
@@ -133,13 +131,11 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
-            Commentaire
-          </label>
+          <label className="label mb-[7px]">Commentaire</label>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            className="w-full p-3 border rounded-xl h-24 focus:ring-2 focus:ring-brand-600 focus:border-brand-600 outline-none"
+            className="w-full p-3 border rounded-xl h-24 focus:ring-2 focus:ring-blue-700 focus:border-brand-600 outline-none"
             placeholder="Partagez votre expérience..."
           />
         </div>
@@ -153,7 +149,7 @@ export function ReviewForm({ jobId, onReviewSubmitted }: ReviewFormProps) {
             "Envoi..."
           ) : (
             <>
-              Envoyer l'avis <Send className="w-4 h-4" />
+              Envoyer l&apos;avis <Send className="w-4 h-4" />
             </>
           )}
         </button>

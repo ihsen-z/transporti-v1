@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Image from "next/image";
 import { Menu, X } from "lucide-react";
 import { HeaderLogo } from "@/components/brand/TransportiLogo";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
@@ -47,7 +46,7 @@ export default function Header() {
   ];
 
   return (
-    <header className="fixed top-0 left-0 right-0 bg-white/95 backdrop-blur-sm shadow-sm z-50">
+    <header className="fixed inset-x-0 top-0 z-50 border-b border-line bg-surface">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
@@ -61,7 +60,7 @@ export default function Header() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="whitespace-nowrap text-neutral-700 hover:text-brand-600 font-medium transition-colors"
+                className="whitespace-nowrap text-[14.5px] font-semibold text-ink-500 transition-colors hover:text-blue-700"
               >
                 {link.label}
               </Link>
@@ -83,19 +82,19 @@ export default function Header() {
             <Link
               href="/devenir-transporteur"
               data-testid="header-devenir-transporteur"
-              className="whitespace-nowrap text-primary-700 hover:text-primary-800 font-medium px-3 py-2 rounded-lg hover:bg-primary-50 transition-colors"
+              className="whitespace-nowrap rounded-chip px-3 py-2 text-[14.5px] font-bold text-blue-700 transition-colors hover:bg-blue-50"
             >
               {h.becomeTransporter}
             </Link>
             <Link
               href="/login"
-              className="whitespace-nowrap text-brand-600 hover:text-brand-700 font-medium px-4 py-2 rounded-lg hover:bg-brand-600/5 transition-colors"
+              className="whitespace-nowrap rounded-chip px-4 py-2 text-[14.5px] font-semibold text-ink-500 transition-colors hover:bg-app hover:text-blue-700"
             >
               {h.login}
             </Link>
             <Link
               href="/register"
-              className="whitespace-nowrap bg-accent-500 hover:bg-accent-600 text-white font-medium px-6 py-2 rounded-lg transition-colors shadow-sm"
+              className="whitespace-nowrap rounded-chip bg-blue-700 px-5 py-2.5 text-[14.5px] font-bold text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px"
             >
               {h.register}
             </Link>
@@ -104,13 +103,13 @@ export default function Header() {
           {/* Hamburger Button (mobile) */}
           <button
             onClick={() => setMobileOpen(!mobileOpen)}
-            className="xl:hidden p-2 rounded-lg text-neutral-700 hover:bg-neutral-100 transition-colors"
+            className="grid h-10 w-10 place-items-center rounded-chip text-ink-500 transition-colors hover:bg-app hover:text-blue-700 xl:hidden"
             aria-label={mobileOpen ? h.closeMenu : h.openMenu}
           >
             {mobileOpen ? (
-              <X className="w-6 h-6" />
+              <X className="h-5 w-5" strokeWidth={2} />
             ) : (
-              <Menu className="w-6 h-6" />
+              <Menu className="h-5 w-5" strokeWidth={2} />
             )}
           </button>
         </div>
@@ -118,14 +117,14 @@ export default function Header() {
 
       {/* Mobile Menu Overlay */}
       {mobileOpen && (
-        <div className="xl:hidden border-t border-neutral-100 bg-white shadow-lg">
-          <nav className="px-4 py-4 space-y-1">
+        <div className="border-t border-line bg-surface shadow-card xl:hidden">
+          <nav className="flex flex-col gap-1 px-4 py-4">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
                 onClick={() => setMobileOpen(false)}
-                className="block px-4 py-3 text-neutral-700 hover:text-brand-600 hover:bg-brand-600/5 rounded-lg font-medium transition-colors"
+                className="block rounded-field px-4 py-3 text-[15px] font-semibold text-ink-700 transition-colors hover:bg-blue-50 hover:text-blue-700"
               >
                 {link.label}
               </Link>
@@ -134,26 +133,26 @@ export default function Header() {
               href="/devenir-transporteur"
               data-testid="header-mobile-devenir-transporteur"
               onClick={() => setMobileOpen(false)}
-              className="block px-4 py-3 text-primary-700 hover:bg-primary-50 rounded-lg font-semibold transition-colors"
+              className="block rounded-field px-4 py-3 text-[15px] font-bold text-blue-700 transition-colors hover:bg-blue-50"
             >
               {h.becomeTransporter}
             </Link>
           </nav>
-          <div className="px-4 pb-4 pt-2 border-t border-neutral-100 space-y-2">
+          <div className="flex flex-col gap-2 border-t border-line px-4 pb-4 pt-3">
             <div className="flex justify-center pb-1">
               <LanguageSwitcher />
             </div>
             <Link
               href="/login"
               onClick={() => setMobileOpen(false)}
-              className="block w-full text-center px-4 py-3 text-brand-600 font-medium rounded-lg border border-brand-600/20 hover:bg-brand-600/5 transition-colors"
+              className="block w-full rounded-cta border border-line-strong bg-surface px-4 py-3.5 text-center text-[15px] font-bold text-ink-900 transition-colors hover:border-blue-700 hover:bg-app"
             >
               {h.login}
             </Link>
             <Link
               href="/register"
               onClick={() => setMobileOpen(false)}
-              className="block w-full text-center px-4 py-3 bg-accent-500 hover:bg-accent-600 text-white font-medium rounded-lg transition-colors"
+              className="block w-full rounded-cta bg-blue-700 px-4 py-3.5 text-center text-[15px] font-bold text-white shadow-blue transition-colors hover:bg-blue-800"
             >
               {h.register}
             </Link>

@@ -34,15 +34,15 @@ export function FaqSection() {
         data-testid="devenir-transporteur-faq"
       >
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-neutral-900 text-center mb-10">
+          <h2 className="text-[28px] font-extrabold tracking-title text-ink-900 text-center mb-10">
             {b.faqTitle}
           </h2>
 
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             {questions.map(({ q, r }) => (
               <details
                 key={q}
-                className="group bg-white rounded-xl border border-neutral-200 p-5"
+                className="group bg-surface rounded-card shadow-card p-5"
               >
                 <summary className="font-semibold text-neutral-900 cursor-pointer list-none flex justify-between items-center gap-4">
                   {q}
@@ -59,14 +59,24 @@ export function FaqSection() {
         </div>
       </section>
 
-      <section className="py-16 bg-primary-800 text-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-3">{b.finalTitle}</h2>
-          <p className="text-primary-100 mb-8">{b.finalDesc}</p>
+      {/* Bande de clôture : fond immersif et halos, comme le héros. Le CTA
+          orange étant déjà posé en haut de page, l'action prend ici l'aplat
+          blanc — la plus forte valeur possible sur bleu sans second orange. */}
+      <section className="immersive relative overflow-hidden py-16">
+        <div className="halo halo--green !top-[-40px]" aria-hidden />
+        <div className="halo halo--orange !top-[150px]" aria-hidden />
+
+        <div className="relative z-[1] mx-auto max-w-3xl px-5 text-center sm:px-6 lg:px-8">
+          <h2 className="mb-4 text-[28px] font-extrabold tracking-title sm:text-[34px]">
+            {b.finalTitle}
+          </h2>
+          <p className="mb-8 text-[16px] leading-[1.55] text-on-blue-300">
+            {b.finalDesc}
+          </p>
           <Link
             href="/register?role=transporter"
             data-testid="devenir-transporteur-cta-final"
-            className="inline-block bg-accent-500 hover:bg-accent-600 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all hover:scale-105 shadow-lg"
+            className="btn-base min-h-[56px] rounded-cta bg-white px-8 text-[16.5px] text-blue-700 shadow-glass transition-colors duration-120 hover:bg-blue-50 active:translate-y-px"
           >
             {b.finalCta}
           </Link>

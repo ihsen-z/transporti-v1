@@ -46,17 +46,37 @@ export function MissionStepper({ status, completedAt }: MissionStepperProps) {
   const activeIndex = getActiveIndex(status);
 
   const STEPS = [
-    { key: "PUBLISHED", label: t.jobsComponents.stepper.published, icon: FileText },
-    { key: "HAS_OFFERS", label: t.jobsComponents.stepper.offersReceived, icon: Inbox },
-    { key: "IN_PROGRESS", label: t.jobsComponents.stepper.assigned, icon: UserCheck },
-    { key: "DELIVERING", label: t.jobsComponents.stepper.inProgress, icon: Truck },
-    { key: "COMPLETED", label: t.jobsComponents.stepper.delivered, icon: PackageCheck },
+    {
+      key: "PUBLISHED",
+      label: t.jobsComponents.stepper.published,
+      icon: FileText,
+    },
+    {
+      key: "HAS_OFFERS",
+      label: t.jobsComponents.stepper.offersReceived,
+      icon: Inbox,
+    },
+    {
+      key: "IN_PROGRESS",
+      label: t.jobsComponents.stepper.assigned,
+      icon: UserCheck,
+    },
+    {
+      key: "DELIVERING",
+      label: t.jobsComponents.stepper.inProgress,
+      icon: Truck,
+    },
+    {
+      key: "COMPLETED",
+      label: t.jobsComponents.stepper.delivered,
+      icon: PackageCheck,
+    },
   ];
 
   if (status === "DRAFT" || status === "CANCELLED") return null;
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 p-4 sm:p-5">
+    <div className="bg-surface rounded-card shadow-card p-4 sm:p-5">
       {/* Desktop: horizontal */}
       <div className="hidden sm:flex items-center justify-between relative">
         {/* Background track */}
@@ -146,7 +166,7 @@ export function MissionStepper({ status, completedAt }: MissionStepperProps) {
                 {step.label}
               </span>
               {isActive && (
-                <span className="ms-auto text-xs bg-brand-600/10 text-brand-600 px-2 py-0.5 rounded-full font-medium">
+                <span className="ms-auto text-xs bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full font-medium">
                   {t.jobsComponents.stepper.inProgressBadge}
                 </span>
               )}

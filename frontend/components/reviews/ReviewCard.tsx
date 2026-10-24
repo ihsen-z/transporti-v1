@@ -61,21 +61,21 @@ export default function ReviewCard({
 
   const pillBg =
     variant === "amber"
-      ? "bg-amber-500/10 text-amber-700"
+      ? "bg-warning-500/10 text-warning-700"
       : "bg-brand-600/5 text-brand-700";
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-100 p-5 shadow-sm hover:shadow-md transition-shadow">
+    <div className="bg-surface rounded-card shadow-card p-5 shadow-sm hover:shadow-md transition-shadow">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
           <div
-            className={`w-10 h-10 rounded-full bg-gradient-to-br ${gradientClass} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}
+            className={`w-10 h-10 rounded-full ${gradientClass} flex items-center justify-center text-white font-bold text-sm flex-shrink-0`}
           >
             {initials}
           </div>
           <div>
-            <p className="text-sm font-semibold text-neutral-900">
+            <p className="text-[14px] font-bold text-ink-900">
               {r.reviewer_name}
             </p>
             <div className="flex items-center gap-0.5 mt-0.5">
@@ -84,7 +84,7 @@ export default function ReviewCard({
                   key={star}
                   className={`w-3.5 h-3.5 ${
                     star <= (r.rating || 0)
-                      ? "text-amber-400 fill-amber-400"
+                      ? "text-warning-400 fill-warning-400"
                       : "text-neutral-200"
                   }`}
                 />
@@ -103,22 +103,21 @@ export default function ReviewCard({
       )}
 
       {/* Aspect pills */}
-      {r.aspects &&
-        Object.entries(r.aspects).some(([, v]) => v && v > 0) && (
-          <div className="flex flex-wrap gap-2">
-            {Object.entries(r.aspects).map(([key, value]) => {
-              if (!value || value === 0) return null;
-              return (
-                <span
-                  key={key}
-                  className={`inline-flex items-center gap-1 px-2.5 py-1 ${pillBg} rounded-lg text-xs font-semibold`}
-                >
-                  {ASPECT_LABELS[key] || key}: {value}/5
-                </span>
-              );
-            })}
-          </div>
-        )}
+      {r.aspects && Object.entries(r.aspects).some(([, v]) => v && v > 0) && (
+        <div className="flex flex-wrap gap-2">
+          {Object.entries(r.aspects).map(([key, value]) => {
+            if (!value || value === 0) return null;
+            return (
+              <span
+                key={key}
+                className={`inline-flex items-center gap-1 px-2.5 py-1 ${pillBg} rounded-lg text-xs font-semibold`}
+              >
+                {ASPECT_LABELS[key] || key}: {value}/5
+              </span>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

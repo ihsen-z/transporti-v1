@@ -27,7 +27,13 @@ import { type AdminPayment } from "@/lib/services/types";
 import { releaseEscrow, refundEscrow } from "@/lib/services/admin";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
-type PaymentStatusFilter = "ALL" | "HELD" | "RELEASED" | "REFUNDED" | "BLOCKED" | "PENDING";
+type PaymentStatusFilter =
+  | "ALL"
+  | "HELD"
+  | "RELEASED"
+  | "REFUNDED"
+  | "BLOCKED"
+  | "PENDING";
 
 export default function AdminPaymentsPage() {
   const {
@@ -80,14 +86,17 @@ export default function AdminPaymentsPage() {
           (p.clientName || "").toLowerCase().includes(q) ||
           (p.transporterName || "").toLowerCase().includes(q) ||
           String(p.id).includes(q) ||
-          String(p.jobId).includes(q)
+          String(p.jobId).includes(q),
       );
     }
     return result;
   }, [payments, statusFilter, searchQuery]);
 
   const totalPages = Math.ceil(filteredPayments.length / pageSize);
-  const paginatedPayments = filteredPayments.slice((page - 1) * pageSize, page * pageSize);
+  const paginatedPayments = filteredPayments.slice(
+    (page - 1) * pageSize,
+    page * pageSize,
+  );
 
   // Reset page when filter changes
   const handleStatusFilter = (f: PaymentStatusFilter) => {
@@ -130,7 +139,10 @@ export default function AdminPaymentsPage() {
       refetchPayments();
       setTimeout(() => closeEscrowModal(), 1800);
     } catch (err: unknown) {
-      setEscrowError((err instanceof Error ? err.message : undefined) || "Une erreur est survenue");
+      setEscrowError(
+        (err instanceof Error ? err.message : undefined) ||
+          "Une erreur est survenue",
+      );
     } finally {
       setEscrowLoading(false);
     }
@@ -182,7 +194,7 @@ export default function AdminPaymentsPage() {
         <span
           className={`px-2 py-1 rounded text-xs font-medium ${
             p.type === "ESCROW"
-              ? "bg-brand-600/5 text-brand-600 dark:bg-brand-400/10 dark:text-brand-400"
+              ? "bg-blue-50 text-blue-700 dark:bg-brand-400/10 dark:text-brand-400"
               : "bg-orange-50 text-orange-700 dark:bg-orange-900/20 dark:text-orange-400"
           }`}
         >
@@ -248,7 +260,7 @@ export default function AdminPaymentsPage() {
                   e.stopPropagation();
                   openEscrowModal("refund", p);
                 }}
-                className="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 transition-colors"
+                className="p-1.5 rounded-lg bg-error-50 text-error-600 hover:bg-error-100 dark:bg-red-900/20 dark:text-error-400 dark:hover:bg-red-900/40 transition-colors"
                 title="Rembourser l'escrow"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -279,8 +291,8 @@ export default function AdminPaymentsPage() {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="flex flex-col items-center gap-3 text-center">
-          <AlertCircle className="w-8 h-8 text-red-500" />
-          <p className="text-sm text-red-600">
+          <AlertCircle className="w-8 h-8 text-error-500" />
+          <p className="text-sm text-error-600">
             Erreur: {errorPayments.message}
           </p>
         </div>
@@ -289,11 +301,11 @@ export default function AdminPaymentsPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
             Paiements
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">
@@ -375,8 +387,8 @@ export default function AdminPaymentsPage() {
       </div>
 
       {/* Escrow Status Summary */}
-      <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 transition-colors duration-300">
-        <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
+      <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 transition-colors duration-300">
+        <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-4">
           Répartition des Escrows
         </h2>
         <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
@@ -384,8 +396,8 @@ export default function AdminPaymentsPage() {
             { status: "PENDING", label: "En attente", color: "bg-orange-500" },
             { status: "HELD", label: "Retenus", color: "bg-brand-600" },
             { status: "RELEASED", label: "Libérés", color: "bg-green-500" },
-            { status: "REFUNDED", label: "Remboursés", color: "bg-purple-500" },
-            { status: "BLOCKED", label: "Bloqués", color: "bg-red-500" },
+            { status: "REFUNDED", label: "Remboursés", color: "bg-blue-600" },
+            { status: "BLOCKED", label: "Bloqués", color: "bg-error-500" },
           ].map((item) => {
             const count = payments.filter(
               (p) => p.status === item.status,
@@ -405,7 +417,7 @@ export default function AdminPaymentsPage() {
                 <p className="text-sm font-medium text-neutral-700 dark:text-neutral-300">
                   {item.label}
                 </p>
-                <p className="text-2xl font-bold text-neutral-900 dark:text-white mt-1">
+                <p className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white mt-1">
                   {count}
                 </p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -419,13 +431,13 @@ export default function AdminPaymentsPage() {
 
       {/* Blocked Escrows Alert */}
       {blockedPayments.length > 0 && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5" />
+        <div className="bg-error-50 dark:bg-red-900/20 border border-error-200 dark:border-red-800 rounded-xl p-4 flex items-start gap-3">
+          <AlertTriangle className="w-5 h-5 text-error-600 dark:text-error-400 mt-0.5" />
           <div>
-            <p className="font-semibold text-red-800 dark:text-red-300">
+            <p className="font-semibold text-error-700 dark:text-red-300">
               {blockedPayments.length} escrow(s) bloqué(s) nécessitant attention
             </p>
-            <p className="text-sm text-red-600 dark:text-red-400 mt-1">
+            <p className="text-sm text-error-600 dark:text-error-400 mt-1">
               Montant total bloqué:{" "}
               {formatCurrency(
                 blockedPayments.reduce((s, p) => s + p.amount, 0),
@@ -437,7 +449,7 @@ export default function AdminPaymentsPage() {
 
       {/* Transactions Table */}
       <div>
-        <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
+        <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-4">
           Toutes les Transactions
         </h2>
 
@@ -450,20 +462,31 @@ export default function AdminPaymentsPage() {
               type="text"
               placeholder={t.payments?.searchPlaceholder || "Rechercher..."}
               value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setPage(1); }}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setPage(1);
+              }}
               className="w-full ps-10 pe-4 py-2 border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:ring-2 focus:ring-brand-500 transition-colors"
             />
           </div>
 
           {/* Status Filter Tabs */}
           <div className="flex flex-wrap gap-2">
-            {([
-              { key: "ALL", label: t.payments?.allStatuses || "Tous" },
-              { key: "HELD", label: t.payments?.heldFilter || "En attente" },
-              { key: "RELEASED", label: t.payments?.releasedFilter || "Libérés" },
-              { key: "REFUNDED", label: t.payments?.refundedFilter || "Remboursés" },
-              { key: "BLOCKED", label: "Bloqués" },
-            ] as { key: PaymentStatusFilter; label: string }[]).map((tab) => (
+            {(
+              [
+                { key: "ALL", label: t.payments?.allStatuses || "Tous" },
+                { key: "HELD", label: t.payments?.heldFilter || "En attente" },
+                {
+                  key: "RELEASED",
+                  label: t.payments?.releasedFilter || "Libérés",
+                },
+                {
+                  key: "REFUNDED",
+                  label: t.payments?.refundedFilter || "Remboursés",
+                },
+                { key: "BLOCKED", label: "Bloqués" },
+              ] as { key: PaymentStatusFilter; label: string }[]
+            ).map((tab) => (
               <button
                 key={tab.key}
                 onClick={() => handleStatusFilter(tab.key)}
@@ -486,8 +509,13 @@ export default function AdminPaymentsPage() {
 
         {/* Summary bar */}
         <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400 mb-3">
-          <span>{t.payments?.displayed || "Affichées"}: {filteredPayments.length}</span>
-          <span>{t.payments?.totalValue || "Valeur totale"}: {formatCurrency(filteredPayments.reduce((s, p) => s + p.amount, 0))}</span>
+          <span>
+            {t.payments?.displayed || "Affichées"}: {filteredPayments.length}
+          </span>
+          <span>
+            {t.payments?.totalValue || "Valeur totale"}:{" "}
+            {formatCurrency(filteredPayments.reduce((s, p) => s + p.amount, 0))}
+          </span>
         </div>
 
         <DataTable
@@ -516,18 +544,18 @@ export default function AdminPaymentsPage() {
           <ShieldCheck className="w-4 h-4 inline me-1" />
           Actions d&apos;escrow disponibles — Utilisez les boutons{" "}
           <Unlock className="w-3.5 h-3.5 inline text-green-600" /> (Libérer) et{" "}
-          <RotateCcw className="w-3.5 h-3.5 inline text-red-600" /> (Rembourser)
-          sur chaque transaction éligible
+          <RotateCcw className="w-3.5 h-3.5 inline text-error-600" />{" "}
+          (Rembourser) sur chaque transaction éligible
         </p>
       </div>
 
       {/* Escrow Action Modal */}
       {escrowModal.open && escrowModal.payment && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-neutral-200 dark:border-neutral-700">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden border border-neutral-200 dark:border-neutral-700">
             {/* Modal Header */}
             <div
-              className={`px-6 py-4 ${escrowModal.type === "release" ? "bg-green-50 dark:bg-green-900/20" : "bg-red-50 dark:bg-red-900/20"}`}
+              className={`px-6 py-4 ${escrowModal.type === "release" ? "bg-green-50 dark:bg-green-900/20" : "bg-error-50 dark:bg-red-900/20"}`}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -536,12 +564,12 @@ export default function AdminPaymentsPage() {
                       <Unlock className="w-5 h-5 text-green-600 dark:text-green-400" />
                     </div>
                   ) : (
-                    <div className="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/40 flex items-center justify-center">
-                      <RotateCcw className="w-5 h-5 text-red-600 dark:text-red-400" />
+                    <div className="w-10 h-10 rounded-full bg-error-100 dark:bg-red-900/40 flex items-center justify-center">
+                      <RotateCcw className="w-5 h-5 text-error-600 dark:text-error-400" />
                     </div>
                   )}
                   <div>
-                    <h3 className="text-lg font-bold text-neutral-900 dark:text-white">
+                    <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                       {escrowModal.type === "release"
                         ? "Libérer l'Escrow"
                         : "Rembourser l'Escrow"}
@@ -562,9 +590,9 @@ export default function AdminPaymentsPage() {
             </div>
 
             {/* Modal Body */}
-            <div className="px-6 py-5 space-y-4">
+            <div className="px-6 py-5 flex flex-col gap-4">
               {/* Transaction summary */}
-              <div className="bg-neutral-50 dark:bg-[#0f172a] rounded-lg p-4 space-y-2">
+              <div className="bg-neutral-50 dark:bg-[#0f172a] rounded-lg p-4 flex flex-col gap-2">
                 <div className="flex justify-between text-sm">
                   <span className="text-neutral-500 dark:text-neutral-400">
                     Client
@@ -594,7 +622,7 @@ export default function AdminPaymentsPage() {
               {/* Reason field */}
               <div>
                 <label className="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5">
-                  Raison <span className="text-red-500">*</span>
+                  Raison <span className="text-error-500">*</span>
                 </label>
                 <textarea
                   value={escrowReason}
@@ -611,9 +639,9 @@ export default function AdminPaymentsPage() {
 
               {/* Error message */}
               {escrowError && (
-                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
-                  <p className="text-sm text-red-700 dark:text-red-300">
+                <div className="bg-error-50 dark:bg-red-900/20 border border-error-200 dark:border-red-800 rounded-lg p-3 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 text-error-500 flex-shrink-0" />
+                  <p className="text-sm text-error-700 dark:text-red-300">
                     {escrowError}
                   </p>
                 </div>
@@ -635,7 +663,7 @@ export default function AdminPaymentsPage() {
                 className={`px-5 py-2 rounded-lg text-sm font-semibold text-white transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed ${
                   escrowModal.type === "release"
                     ? "bg-green-600 hover:bg-green-700 dark:bg-green-600 dark:hover:bg-green-500"
-                    : "bg-red-600 hover:bg-red-700 dark:bg-red-600 dark:hover:bg-red-500"
+                    : "bg-error-600 hover:bg-red-700 dark:bg-error-600 dark:hover:bg-error-500"
                 }`}
               >
                 {escrowLoading && <Loader2 className="w-4 h-4 animate-spin" />}

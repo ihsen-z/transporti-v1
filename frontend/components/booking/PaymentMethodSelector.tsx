@@ -22,14 +22,14 @@ export function PaymentMethodSelector({
   const codBlocked = totalPrice > codThreshold;
 
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden">
-      <div className="px-6 py-4 border-b border-neutral-100 bg-neutral-50">
-        <h3 className="text-lg font-semibold text-neutral-900">
+    <div className="bg-surface rounded-card shadow-card overflow-hidden">
+      <div className="px-6 py-4 border-b border-line bg-neutral-50">
+        <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
           {t.booking.paymentMethodTitle}
         </h3>
       </div>
 
-      <div className="p-6 space-y-4">
+      <div className="p-6 flex flex-col gap-4">
         {/* Digital Payment */}
         <button
           data-testid="reservation-paiement-digital"
@@ -45,7 +45,7 @@ export function PaymentMethodSelector({
             <div
               className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                 selected === "DIGITAL"
-                  ? "bg-brand-600/10 text-brand-600"
+                  ? "bg-blue-50 text-blue-700"
                   : "bg-neutral-100 text-neutral-500"
               }`}
             >
@@ -56,7 +56,7 @@ export function PaymentMethodSelector({
                 <p className="font-semibold text-neutral-900">
                   {t.booking.paymentDigitalShort}
                 </p>
-                <span className="text-xs bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-medium">
+                <span className="text-xs bg-green-50 text-green-700 px-2 py-0.5 rounded-full font-medium">
                   {t.booking.recommended}
                 </span>
               </div>
@@ -64,8 +64,8 @@ export function PaymentMethodSelector({
                 {t.booking.digitalEscrowDesc}
               </p>
               <div className="flex items-center gap-1.5 mt-2">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-500" />
-                <span className="text-xs text-emerald-600 font-medium">
+                <ShieldCheck className="w-3.5 h-3.5 text-green-500" />
+                <span className="text-xs text-green-600 font-medium">
                   {t.booking.buyerProtection}
                 </span>
               </div>
@@ -91,7 +91,7 @@ export function PaymentMethodSelector({
                           codBlocked
                             ? "border-neutral-100 bg-neutral-50 opacity-60 cursor-not-allowed"
                             : selected === "COD"
-                              ? "border-amber-500 bg-amber-50/50 shadow-sm"
+                              ? "border-amber-500 bg-warning-50/50 shadow-sm"
                               : "border-neutral-200 hover:border-neutral-300 bg-white"
                         }`}
         >
@@ -101,7 +101,7 @@ export function PaymentMethodSelector({
                 codBlocked
                   ? "bg-neutral-100 text-neutral-400"
                   : selected === "COD"
-                    ? "bg-amber-100 text-amber-600"
+                    ? "bg-warning-100 text-warning-600"
                     : "bg-neutral-100 text-neutral-500"
               }`}
             >
@@ -116,8 +116,8 @@ export function PaymentMethodSelector({
               </p>
               {codBlocked && (
                 <div className="flex items-center gap-1.5 mt-2">
-                  <AlertTriangle className="w-3.5 h-3.5 text-red-500" />
-                  <span className="text-xs text-red-600 font-medium">
+                  <AlertTriangle className="w-3.5 h-3.5 text-error-500" />
+                  <span className="text-xs text-error-600 font-medium">
                     {interpolate(t.booking.codUnavailable, {
                       threshold: codThreshold,
                     })}
@@ -130,7 +130,7 @@ export function PaymentMethodSelector({
                             ${selected === "COD" && !codBlocked ? "border-amber-500" : "border-neutral-300"}`}
             >
               {selected === "COD" && !codBlocked && (
-                <div className="w-3 h-3 rounded-full bg-amber-500" />
+                <div className="w-3 h-3 rounded-full bg-warning-500" />
               )}
             </div>
           </div>

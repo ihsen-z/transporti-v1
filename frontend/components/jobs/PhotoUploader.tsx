@@ -209,7 +209,7 @@ export function PhotoUploader({
   };
 
   return (
-    <div className="space-y-3">
+    <div className="flex flex-col gap-3">
       <label className="block text-sm font-medium text-neutral-700">
         {interpolate(t.jobsComponents.photos.label, {
           n: photos.length,
@@ -244,7 +244,7 @@ export function PhotoUploader({
           type="button"
           onClick={() => fileInputRef.current?.click()}
           disabled={uploading || remainingSlots <= 0}
-          className="flex items-center gap-2 px-4 py-2.5 bg-brand-600/5 text-brand-600 rounded-lg hover:bg-brand-600/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2.5 bg-blue-50 text-blue-700 rounded-lg hover:bg-brand-600/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
           {uploading ? (
             <Loader2 className="w-4 h-4 animate-spin" />
@@ -259,7 +259,7 @@ export function PhotoUploader({
           type="button"
           onClick={openCamera}
           disabled={uploading || remainingSlots <= 0}
-          className="flex items-center gap-2 px-4 py-2.5 bg-emerald-50 text-emerald-700 rounded-lg hover:bg-emerald-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
+          className="flex items-center gap-2 px-4 py-2.5 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors text-sm font-medium"
         >
           <Camera className="w-4 h-4" />
           {t.jobsComponents.photos.camera}
@@ -287,7 +287,7 @@ export function PhotoUploader({
             <button
               type="button"
               onClick={capturePhoto}
-              className="w-14 h-14 rounded-full bg-white border-4 border-brand-600 shadow-lg hover:scale-105 transition-transform flex items-center justify-center"
+              className="w-14 h-14 rounded-full bg-white border-4 border-brand-600 shadow-lg transition-transform flex items-center justify-center"
               title={t.jobsComponents.photos.takePhoto}
             >
               <Camera className="w-6 h-6 text-brand-600" />
@@ -296,7 +296,7 @@ export function PhotoUploader({
             <button
               type="button"
               onClick={stopCameraStream}
-              className="w-10 h-10 rounded-full bg-red-500 text-white shadow-lg hover:bg-red-600 transition-colors flex items-center justify-center self-center"
+              className="w-10 h-10 rounded-full bg-error-500 text-white shadow-lg hover:bg-error-600 transition-colors flex items-center justify-center self-center"
               title={t.jobsComponents.photos.closeCamera}
             >
               <X className="w-5 h-5" />
@@ -307,7 +307,7 @@ export function PhotoUploader({
 
       {/* Error message */}
       {error && (
-        <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg">
+        <p className="text-sm text-error-600 bg-error-50 px-3 py-2 rounded-lg">
           {error}
         </p>
       )}
@@ -330,7 +330,7 @@ export function PhotoUploader({
               <button
                 type="button"
                 onClick={() => removePhoto(index)}
-                className="absolute top-1 end-1 p-2 bg-red-500 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity shadow-md"
+                className="absolute top-1 end-1 p-2 bg-error-500 text-white rounded-full opacity-100 md:opacity-0 md:group-hover:opacity-100 md:focus-visible:opacity-100 transition-opacity shadow-md"
                 title={t.jobsComponents.photos.remove}
                 aria-label={interpolate(t.jobsComponents.photos.removePhoto, {
                   n: index + 1,

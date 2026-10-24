@@ -103,10 +103,10 @@ export function JobDetailDialogs({
         onConfirm={onMarquerLivre}
         onCancel={() => onFermer()}
         detail={
-          <div className="space-y-3 text-start">
+          <div className="flex flex-col gap-3 text-start">
             {job?.booking_payment_method && (
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="label mb-[7px]">
                   {t.jobDetail.podPinInputLabel}
                 </label>
                 <input
@@ -122,7 +122,7 @@ export function JobDetailDialogs({
               </div>
             )}
             <div>
-              <label className="block text-sm font-medium text-neutral-700 mb-1">
+              <label className="label mb-[7px]">
                 {t.jobDetail.podPhotoLabel}
               </label>
               <input

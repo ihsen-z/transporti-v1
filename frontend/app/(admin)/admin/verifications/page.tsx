@@ -21,7 +21,6 @@ import {
   FileText,
   User,
   FolderOpen,
-  Shield,
   Users,
   ClipboardList,
 } from "lucide-react";
@@ -35,7 +34,7 @@ type VerificationStatus = "PENDING_REVIEW" | "APPROVED" | "REJECTED";
 const statusColors: Record<VerificationStatus, string> = {
   PENDING_REVIEW: "bg-orange-100 text-orange-700",
   APPROVED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
+  REJECTED: "bg-error-100 text-error-700",
 };
 
 const statusLabels: Record<VerificationStatus, string> = {
@@ -52,10 +51,10 @@ const profileStatusLabels: Record<string, { label: string; color: string }> = {
   PENDING: { label: "En attente", color: "bg-orange-100 text-orange-700" },
   PARTIALLY_REVIEWED: {
     label: "Partiellement vérifié",
-    color: "bg-brand-600/10 text-brand-600",
+    color: "bg-blue-50 text-blue-700",
   },
   VERIFIED: { label: "Vérifié", color: "bg-green-100 text-green-700" },
-  REJECTED: { label: "Rejeté", color: "bg-red-100 text-red-700" },
+  REJECTED: { label: "Rejeté", color: "bg-error-100 text-error-700" },
   SUSPENDED: { label: "Suspendu", color: "bg-neutral-200 text-neutral-800" },
 };
 
@@ -200,8 +199,8 @@ export default function AdminVerificationsPage() {
       header: "Transporteur",
       render: (v: BackendVerification) => (
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 bg-purple-100 dark:bg-purple-900/30 rounded-full flex items-center justify-center">
-            <User className="w-4 h-4 text-purple-600" />
+          <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center">
+            <User className="w-4 h-4 text-blue-700" />
           </div>
           <div>
             <p className="font-medium text-neutral-900 dark:text-white">
@@ -246,7 +245,7 @@ export default function AdminVerificationsPage() {
               ? "text-green-600"
               : v.trustScore >= 50
                 ? "text-orange-600"
-                : "text-red-600"
+                : "text-error-600"
           }`}
         >
           {v.trustScore}/100
@@ -276,7 +275,7 @@ export default function AdminVerificationsPage() {
             }
             className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 ${
               v.documentCount > 0
-                ? "bg-purple-100 text-purple-600 hover:bg-purple-200"
+                ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
                 : "bg-neutral-50 text-neutral-400 hover:bg-neutral-100"
             }`}
           >
@@ -290,7 +289,9 @@ export default function AdminVerificationsPage() {
               href={
                 v.documentUrl.startsWith("http")
                   ? v.documentUrl
-                  : (process.env.NODE_ENV === 'production' ? `https://transporti-v1.onrender.com${v.documentUrl}` : `http://localhost:8000${v.documentUrl}`)
+                  : process.env.NODE_ENV === "production"
+                    ? `https://transporti-v1.onrender.com${v.documentUrl}`
+                    : `http://localhost:8000${v.documentUrl}`
               }
               target="_blank"
               rel="noopener noreferrer"
@@ -314,7 +315,7 @@ export default function AdminVerificationsPage() {
                 onClick={() => handleReject(v.id)}
                 disabled={actionLoading}
                 title="Rejeter"
-                className="p-1.5 rounded-lg bg-red-100 text-red-600 hover:bg-red-200 transition-colors disabled:opacity-50"
+                className="p-1.5 rounded-lg bg-error-100 text-error-600 hover:bg-red-200 transition-colors disabled:opacity-50"
               >
                 <XCircle className="w-4 h-4" />
               </button>
@@ -382,7 +383,7 @@ export default function AdminVerificationsPage() {
                   /
                 </span>
                 <span
-                  className={`text-xs font-semibold ${p.rejectedCount > 0 ? "text-red-600" : "text-neutral-400"}`}
+                  className={`text-xs font-semibold ${p.rejectedCount > 0 ? "text-error-600" : "text-neutral-400"}`}
                 >
                   {p.rejectedCount}
                 </span>
@@ -417,7 +418,7 @@ export default function AdminVerificationsPage() {
               ? "text-green-600"
               : p.trustScore >= 50
                 ? "text-orange-600"
-                : "text-red-600"
+                : "text-error-600"
           }`}
         >
           {p.trustScore}/100
@@ -449,7 +450,7 @@ export default function AdminVerificationsPage() {
               p.pendingCount > 0
                 ? "bg-orange-100 text-orange-600 hover:bg-orange-200 ring-1 ring-orange-300"
                 : p.documentCount > 0
-                  ? "bg-purple-100 text-purple-600 hover:bg-purple-200"
+                  ? "bg-blue-100 text-blue-700 hover:bg-blue-200"
                   : "bg-neutral-50 text-neutral-400 hover:bg-neutral-100"
             }`}
           >
@@ -467,11 +468,11 @@ export default function AdminVerificationsPage() {
   const error = mainView === "requests" ? verifError : profileError;
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
             Vérifications
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">
@@ -509,7 +510,7 @@ export default function AdminVerificationsPage() {
           onClick={() => setMainView("profiles")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
             mainView === "profiles"
-              ? "bg-white dark:bg-[#1e293b] text-neutral-900 dark:text-white shadow-sm"
+              ? "bg-surface dark:bg-[#1e293b] text-neutral-900 dark:text-white shadow-sm"
               : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
           }`}
         >
@@ -518,7 +519,7 @@ export default function AdminVerificationsPage() {
           <span
             className={`px-1.5 py-0.5 rounded text-xs ${
               mainView === "profiles"
-                ? "bg-brand-600/10 text-brand-600"
+                ? "bg-blue-50 text-blue-700"
                 : "bg-neutral-200 text-neutral-500"
             }`}
           >
@@ -529,7 +530,7 @@ export default function AdminVerificationsPage() {
           onClick={() => setMainView("requests")}
           className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-lg text-sm font-medium transition-all ${
             mainView === "requests"
-              ? "bg-white dark:bg-[#1e293b] text-neutral-900 dark:text-white shadow-sm"
+              ? "bg-surface dark:bg-[#1e293b] text-neutral-900 dark:text-white shadow-sm"
               : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200"
           }`}
         >
@@ -538,21 +539,21 @@ export default function AdminVerificationsPage() {
           <span
             className={`px-1.5 py-0.5 rounded text-xs ${
               mainView === "requests"
-                ? "bg-brand-600/10 text-brand-600"
+                ? "bg-blue-50 text-blue-700"
                 : "bg-neutral-200 text-neutral-500"
             }`}
           >
             {allVerifications.length}
           </span>
           {pendingCount > 0 && (
-            <span className="w-2 h-2 rounded-full bg-orange-500 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-orange-500" />
           )}
         </button>
       </div>
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+        <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 mx-auto mb-4" />
           <p className="text-neutral-500 dark:text-neutral-400">
             Chargement...
@@ -562,7 +563,7 @@ export default function AdminVerificationsPage() {
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4 text-red-700 dark:text-red-300 text-sm">
+        <div className="bg-error-50 dark:bg-red-900/20 border border-error-200 dark:border-red-800 rounded-xl p-4 text-error-700 dark:text-red-300 text-sm">
           ⚠️ Erreur de chargement: {error?.message}
         </div>
       )}
@@ -587,7 +588,7 @@ export default function AdminVerificationsPage() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
                       ? "bg-brand-600 text-white shadow-sm"
-                      : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700"
+                      : "bg-surface dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700"
                   }`}
                 >
                   {tab.label}
@@ -602,7 +603,7 @@ export default function AdminVerificationsPage() {
           </div>
 
           {/* Profile Stats Bar */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
                 <span className="text-neutral-500 dark:text-neutral-400">
@@ -616,7 +617,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Avec documents:
                 </span>
-                <span className="ms-2 font-semibold text-purple-600">
+                <span className="ms-2 font-semibold text-blue-700">
                   {profilesWithDocs.length}
                 </span>
               </div>
@@ -671,7 +672,7 @@ export default function AdminVerificationsPage() {
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     isActive
                       ? "bg-brand-600 text-white shadow-sm"
-                      : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700"
+                      : "bg-surface dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-700"
                   }`}
                 >
                   {tab.label}
@@ -686,7 +687,7 @@ export default function AdminVerificationsPage() {
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
                 <span className="text-neutral-500 dark:text-neutral-400">
@@ -719,7 +720,7 @@ export default function AdminVerificationsPage() {
                 <span className="text-neutral-500 dark:text-neutral-400">
                   Rejetées:
                 </span>
-                <span className="ms-2 font-semibold text-red-600">
+                <span className="ms-2 font-semibold text-error-600">
                   {
                     allVerifications.filter((v) => v.status === "REJECTED")
                       .length
@@ -741,8 +742,8 @@ export default function AdminVerificationsPage() {
       {/* Reject Modal */}
       {showRejectModal && (
         <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-xl max-w-md w-full p-6 border border-neutral-200 dark:border-neutral-700">
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-white mb-2">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-2xl shadow-xl max-w-md w-full p-6 border border-neutral-200 dark:border-neutral-700">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-2">
               Rejeter la vérification
             </h3>
             <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-4">
@@ -753,7 +754,7 @@ export default function AdminVerificationsPage() {
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Raison du rejet..."
               rows={3}
-              className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
+              className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-3 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white placeholder-neutral-400 dark:placeholder-neutral-500 focus:outline-none focus:ring-2 focus:ring-blue-700 focus:border-transparent resize-none"
             />
             <div className="flex gap-3 mt-4">
               <button
@@ -768,7 +769,7 @@ export default function AdminVerificationsPage() {
               <button
                 onClick={confirmReject}
                 disabled={!rejectReason.trim() || actionLoading}
-                className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-error-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {actionLoading ? "En cours..." : "Confirmer le rejet"}
               </button>

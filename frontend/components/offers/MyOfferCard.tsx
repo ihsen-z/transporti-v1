@@ -34,9 +34,9 @@ interface MyOfferCardProps {
 }
 
 const STATUS_STYLES: Record<string, string> = {
-  PENDING: "bg-amber-100 text-amber-700",
+  PENDING: "bg-warning-100 text-warning-700",
   ACCEPTED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
+  REJECTED: "bg-error-100 text-error-700",
   EXPIRED: "bg-neutral-200 text-neutral-600",
   WITHDRAWN: "bg-neutral-200 text-neutral-600",
 };
@@ -98,7 +98,7 @@ export function MyOfferCard({ offer, onChanged }: MyOfferCardProps) {
       />
 
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-bold text-neutral-900 flex items-center gap-2">
+        <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 flex items-center gap-2">
           <BadgeCheck className="w-5 h-5 text-brand-600" />
           {t.title}
         </h3>
@@ -113,7 +113,7 @@ export function MyOfferCard({ offer, onChanged }: MyOfferCardProps) {
       </div>
 
       {/* Amounts — read from stored values, no client-side formula */}
-      <div className="bg-neutral-50 rounded-lg p-4 space-y-2 text-sm mb-4">
+      <div className="bg-neutral-50 rounded-lg p-4 flex flex-col gap-2 text-sm mb-4">
         <div className="flex justify-between items-center">
           <span className="font-semibold text-neutral-900">{t.yourNet}</span>
           <span className="font-bold text-xl text-brand-600">
@@ -156,7 +156,7 @@ export function MyOfferCard({ offer, onChanged }: MyOfferCardProps) {
           <button
             onClick={() => setConfirmOpen(true)}
             disabled={withdrawing}
-            className="inline-flex items-center gap-2 px-4 py-2 border border-red-200 text-red-600 rounded-lg text-sm font-medium hover:bg-red-50 disabled:opacity-50 transition-colors"
+            className="inline-flex items-center gap-2 px-4 py-2 border border-error-200 text-error-600 rounded-lg text-sm font-medium hover:bg-error-50 disabled:opacity-50 transition-colors"
           >
             <Undo2 className="w-4 h-4" />
             {allT.offers.actionWithdraw}
