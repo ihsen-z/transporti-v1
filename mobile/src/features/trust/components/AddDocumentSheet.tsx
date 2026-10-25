@@ -9,6 +9,7 @@ import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { DOCUMENT_TYPES, isExpiringType, type DocumentType } from '../data/documentTypes';
 import { useUploadDocument } from '../api/useUploadDocument';
 import { Txt } from '@/shared/ui/Txt';
+import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
 
 interface PickedImage {
   uri: string;
@@ -85,10 +86,13 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
     ? upload.error.detail ?? t(`trust.errors.${upload.error.kind === 'network' ? 'network' : 'validation'}`)
     : null;
 
+  // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
+  const sheetPadding = useSheetBottomPadding(spacing.xl);
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
-        <Pressable style={styles.sheet} onPress={() => undefined}>
+        <Pressable style={[styles.sheet, { paddingBottom: sheetPadding }]} onPress={() => undefined}>
           {upload.isSuccess ? (
             <View style={styles.successBox}>
               <Txt style={styles.successText}>{t('trust.uploaded')}</Txt>

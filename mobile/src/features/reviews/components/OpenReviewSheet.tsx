@@ -6,6 +6,7 @@ import { StarRating } from '@/shared/ui/StarRating';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { useCreateReview } from '../api/useCreateReview';
 import { Txt } from '@/shared/ui/Txt';
+import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
 
 interface Props {
   jobId: number | null;
@@ -46,10 +47,13 @@ export function OpenReviewSheet({ jobId, onClose }: Props) {
         : t(`reviews.errors.${create.error.kind}`))
     : null;
 
+  // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
+  const sheetPadding = useSheetBottomPadding(spacing.xl);
+
   return (
     <Modal visible={jobId !== null} transparent animationType="slide" onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
-        <Pressable style={styles.sheet} onPress={() => undefined}>
+        <Pressable style={[styles.sheet, { paddingBottom: sheetPadding }]} onPress={() => undefined}>
           {create.isSuccess ? (
             <View style={styles.successBox}>
               <Txt style={styles.successText}>{t('reviews.success')}</Txt>
