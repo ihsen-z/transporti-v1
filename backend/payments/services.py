@@ -15,6 +15,7 @@ from django.db import transaction
 from django.conf import settings
 from django.utils import timezone
 from decimal import Decimal, ROUND_HALF_UP
+from typing import Optional
 from datetime import timedelta
 
 from .models import EscrowTransaction, CommissionLedger, RefundRequest
@@ -635,83 +636,58 @@ def release_escrow_on_completion(
 
 
 @transaction.atomic
-def create_commission_debt_on_cod(job: TransportJob, offer: Offer) -> CommissionLedger:
+def _cod_trust_anomaly(job: TransportJob, transporter) -> Optional[str]:
     """
-    Creates commission debt entry when COD job is completed.
-    Transporter owes platform the commission amount.
-    
-    TRUST GUARD: Transporter must meet minimum trust score for COD.
-    
-    Args:
-        job: The completed COD job
-        offer: The accepted offer
-    
-    Returns:
-        CommissionLedger entry (unsettled)
-    
-    Raises:
-        ValueError: If ledger entry already exists or trust check fails
+    Raison pour laquelle ce transporteur n'aurait PAS dû encaisser en espèces,
+    ou None s'il en avait le droit (vérifié, score suffisant, ou dérogation).
+
+    Cette vérification servait autrefois à REFUSER la dette : la course était
+    livrée, l'argent encaissé, et aucune commission n'était inscrite (l'erreur
+    était avalée dans JobCompleteView). Elle ne sert plus qu'à signaler.
     """
     from trust.models import TrustProfile, VerificationStatus
     from trust.services_admin import has_active_override
     from django.conf import settings
-    
-    # === TRUST GUARD: COD requires minimum trust score (override supported) ===
+
+    if has_active_override(transporter, 'COD'):
+        return None
+
     COD_MIN_TRUST_SCORE = getattr(settings, 'COD_MIN_TRUST_SCORE', 50)
-    transporter = offer.transporter
-    
     try:
         trust_profile = TrustProfile.objects.get(user=transporter)
-        
-        # Must be verified (or have override)
-        if trust_profile.verification_status != VerificationStatus.VERIFIED:
-            if has_active_override(transporter, 'COD'):
-                logger.info(
-                    f"TRUST_COD_OVERRIDE: job_id={job.id}, transporter_id={transporter.id}, "
-                    f"reason=not_verified, status={trust_profile.verification_status}"
-                )
-            else:
-                logger.error(
-                    f"TRUST_COD_BLOCKED: job_id={job.id}, transporter_id={transporter.id}, "
-                    f"reason=not_verified, status={trust_profile.verification_status}"
-                )
-                raise ValueError(
-                    f"COD blocked: Transporter not verified"
-                )
-        
-        # Must meet minimum score (or have override)
-        elif trust_profile.trust_score < COD_MIN_TRUST_SCORE:
-            if has_active_override(transporter, 'COD'):
-                logger.info(
-                    f"TRUST_COD_OVERRIDE: job_id={job.id}, transporter_id={transporter.id}, "
-                    f"reason=low_score, score={trust_profile.trust_score}, required={COD_MIN_TRUST_SCORE}"
-                )
-            else:
-                logger.error(
-                    f"TRUST_COD_BLOCKED: job_id={job.id}, transporter_id={transporter.id}, "
-                    f"reason=low_score, score={trust_profile.trust_score}, required={COD_MIN_TRUST_SCORE}"
-                )
-                raise ValueError(
-                    f"COD blocked: Trust score {trust_profile.trust_score} below required {COD_MIN_TRUST_SCORE}"
-                )
-        else:
-            logger.info(
-                f"TRUST_PAYMENT_ALLOWED: type=cod, job_id={job.id}, "
-                f"transporter_id={transporter.id}, trust_score={trust_profile.trust_score}"
-            )
     except TrustProfile.DoesNotExist:
-        if has_active_override(transporter, 'COD'):
-            logger.info(
-                f"TRUST_COD_OVERRIDE: job_id={job.id}, transporter_id={transporter.id}, "
-                f"reason=no_profile_but_override"
-            )
-        else:
-            logger.error(
-                f"TRUST_COD_BLOCKED: job_id={job.id}, transporter_id={transporter.id}, "
-                f"reason=no_trust_profile"
-            )
-            raise ValueError("COD blocked: Transporter has no trust profile")
-    
+        return 'no_trust_profile'
+
+    if trust_profile.verification_status != VerificationStatus.VERIFIED:
+        return f'not_verified (status={trust_profile.verification_status})'
+    if trust_profile.trust_score < COD_MIN_TRUST_SCORE:
+        return f'low_score (score={trust_profile.trust_score}, required={COD_MIN_TRUST_SCORE})'
+    return None
+
+
+def create_commission_debt_on_cod(job: TransportJob, offer: Offer) -> CommissionLedger:
+    """
+    Creates commission debt entry when COD job is completed.
+    Transporter owes platform the commission amount.
+
+    La dette est TOUJOURS inscrite : à la livraison, l'argent est déjà dans la
+    poche du transporteur. Un transporteur qui n'aurait pas dû encaisser en
+    espèces (non vérifié, score insuffisant) est signalé par un AuditLog
+    COD_DEBT_TRUST_ANOMALY, pour suivi par le back-office.
+
+    Args:
+        job: The completed COD job
+        offer: The accepted offer
+
+    Returns:
+        CommissionLedger entry (unsettled)
+
+    Raises:
+        ValueError: If a ledger entry already exists for this job
+    """
+    transporter = offer.transporter
+    anomalie = _cod_trust_anomaly(job, transporter)
+
     # Validation
     if CommissionLedger.objects.filter(job_reference=job).exists():
         logger.warning(f"Commission debt creation rejected: duplicate for job {job.id}")
@@ -721,9 +697,6 @@ def create_commission_debt_on_cod(job: TransportJob, offer: Offer) -> Commission
     expected_commission, _ = calculate_commission(job.job_type, offer.total_price)
     if offer.commission_amount != expected_commission:
         logger.error(f"Commission mismatch detected: job={job.id}, expected={expected_commission}, actual={offer.commission_amount}")
-    
-    # Get transporter from offer
-    transporter = offer.transporter
     
     # Create debt entry
     ledger = CommissionLedger.objects.create(
@@ -743,6 +716,20 @@ def create_commission_debt_on_cod(job: TransportJob, offer: Offer) -> Commission
     )
     
     logger.info(f"COMMISSION_DEBT_CREATED: ledger_id={ledger.id}, job_id={job.id}, transporter_id={transporter.id}, amount={offer.commission_amount}")
+
+    if anomalie:
+        # La dette est inscrite quand même ; l'anomalie part au back-office.
+        AuditLog.objects.create(
+            actor=None,
+            action='COD_DEBT_TRUST_ANOMALY',
+            target_entity=f'CommissionLedger:{ledger.id}',
+            changes={'transporter': transporter.id, 'job': job.id},
+            reason=f'Course payée en espèces par un transporteur non éligible : {anomalie}',
+        )
+        logger.error(
+            'COD_DEBT_TRUST_ANOMALY: ledger_id=%s job_id=%s transporter_id=%s reason=%s',
+            ledger.id, job.id, transporter.id, anomalie,
+        )
     
     return ledger
 

@@ -457,8 +457,15 @@ KONNECT_API_URL = os.environ.get(
     'https://api.preprod.konnect.network/api/v2'
 )
 
-# COD threshold — above this amount, digital payment is mandatory
+# COD threshold — above this amount, digital payment is mandatory.
+# Seule source du plafond : les vues le lisent via payments.debt.cod_max_amount()
+# (il était auparavant écrit en dur, 300, à sept endroits).
 COD_MAX_AMOUNT = Decimal(os.environ.get('COD_MAX_AMOUNT', '300'))
+
+# Plafond de dette de commission (courses payées en espèces). Au-delà, le
+# transporteur ne peut plus engager de nouvelle course jusqu'au règlement
+# (payments/debt.py). Décision du fondateur du 25/10/2026 : 60 TND par défaut.
+COMMISSION_DEBT_LIMIT = Decimal(os.environ.get('COMMISSION_DEBT_LIMIT', '60'))
 
 # Webhook signature validation (Sprint 2 R4)
 # MUST be set in production to prevent forged webhook calls

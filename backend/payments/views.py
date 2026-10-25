@@ -521,6 +521,7 @@ class TransporterWalletView(APIView):
 
     def get(self, request):
         from .services import get_wallet_summary
+        from .debt import commission_debt_limit
         from .models import WithdrawalRequest
 
         summary = get_wallet_summary(request.user)
@@ -595,6 +596,10 @@ class TransporterWalletView(APIView):
             # `available`, which only covers what the platform owes.
             'cod_collected_net': float(summary['cod_collected_net']),
             'cod_debt': float(summary['cod_debt']),
+            # Plafond de dette (payments/debt.py) : l'app peut prévenir le
+            # transporteur AVANT qu'un refus de publication ne le surprenne.
+            'commission_debt_limit': float(commission_debt_limit()),
+            'blocked_for_debt': summary['cod_debt'] > commission_debt_limit(),
             'withdrawals_total': float(summary['withdrawals_total']),
             'cod_debts': [
                 {

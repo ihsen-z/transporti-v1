@@ -151,8 +151,14 @@ class OfferAcceptView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # COD threshold guard: max 300 TND for cash on delivery
-        COD_MAX_TND = 300
+        # Transporteur au-delà du plafond de dette : réponse neutre au client.
+        from payments.debt import is_blocked_for_debt, transporter_unavailable_response
+        if is_blocked_for_debt(offer.transporter):
+            return transporter_unavailable_response()
+
+        # COD threshold guard — réglage central (settings.COD_MAX_AMOUNT).
+        from payments.debt import cod_max_amount
+        COD_MAX_TND = cod_max_amount()
         if payment_method == 'COD' and offer.total_price > COD_MAX_TND:
             return Response(
                 {'error': f'Montant trop élevé pour le paiement à la livraison. Maximum: {COD_MAX_TND} TND.'},
@@ -189,7 +195,7 @@ class OfferAcceptView(generics.GenericAPIView):
         # 4. Create the Booking contract (freezes price, rate and payment method)
         from payments.models import Booking
         from payments.services import get_commission_rate
-        COD_MAX = 300
+        COD_MAX = COD_MAX_TND
         Booking.objects.get_or_create(
             job=job,
             defaults={
@@ -387,6 +393,10 @@ class CounterOfferRespondView(APIView):
                 {'error': 'Action invalide. Utilisez "accept" ou "reject".'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        if action == 'accept':
+            from payments.debt import ensure_transporter_can_engage
+            ensure_transporter_can_engage(request.user)
 
         if action == 'reject':
             counter.status = CounterOffer.Status.REJECTED

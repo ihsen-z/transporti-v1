@@ -23,6 +23,10 @@ class ReturnTripCreateView(generics.CreateAPIView):
     serializer_class = ReturnTripCreateSerializer
 
     def create(self, request, *args, **kwargs):
+        # Plafond de dette de commission : pas de nouveau trajet au-delà.
+        from payments.debt import ensure_transporter_can_engage
+        ensure_transporter_can_engage(request.user)
+
         serializer = self.get_serializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             job = serializer.save()
@@ -94,6 +98,11 @@ class BookReturnTripView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
+        # Transporteur au-delà du plafond de dette : réponse neutre au client.
+        from payments.debt import is_blocked_for_debt, transporter_unavailable_response
+        if is_blocked_for_debt(job.owner):
+            return transporter_unavailable_response()
+
         # Parse request body
         proposed_price = request.data.get('proposed_price')
         payment_method = request.data.get('payment_method', 'DIGITAL')
@@ -121,8 +130,9 @@ class BookReturnTripView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # COD threshold guard (same as OfferAcceptView)
-        COD_MAX_TND = 300
+        # COD threshold guard (same as OfferAcceptView) — réglage central.
+        from payments.debt import cod_max_amount
+        COD_MAX_TND = cod_max_amount()
         if payment_method == 'COD' and proposed_price > COD_MAX_TND:
             return Response(
                 {'error': f'Montant trop élevé pour le paiement à la livraison. Maximum : {COD_MAX_TND} TND.'},

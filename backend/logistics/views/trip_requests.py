@@ -187,7 +187,8 @@ def _accept_request(request_obj, client_total):
         valid_until=timezone.now() + timezone.timedelta(days=7),
     )
 
-    COD_MAX = 300
+    from payments.debt import cod_max_amount
+    COD_MAX = cod_max_amount()
     Booking.objects.get_or_create(
         job=job,
         defaults={
@@ -272,6 +273,11 @@ class TripRequestRespondView(APIView):
         action = str(request.data.get('action', '')).lower()
         message = str(request.data.get('message', '')).strip()[:500]
 
+        # Au-delà du plafond de dette, refuser reste possible ; s'engager non.
+        if action in ('accept', 'counter'):
+            from payments.debt import ensure_transporter_can_engage
+            ensure_transporter_can_engage(request.user)
+
         if action == 'reject':
             trip_request.status = ReturnTripRequest.Status.REJECTED
             trip_request.response_message = message
@@ -292,7 +298,8 @@ class TripRequestRespondView(APIView):
                 return Response({'counter_price': ['Montant invalide.']}, status=status.HTTP_400_BAD_REQUEST)
             if counter <= 0:
                 return Response({'counter_price': ['Le montant doit être supérieur à 0.']}, status=status.HTTP_400_BAD_REQUEST)
-            COD_MAX = 300
+            from payments.debt import cod_max_amount
+            COD_MAX = cod_max_amount()
             if trip_request.payment_method == 'COD' and counter > COD_MAX:
                 return Response(
                     {'counter_price': [f'Paiement à la livraison limité à {COD_MAX} TND.']},
@@ -357,6 +364,10 @@ class TripRequestAcceptCounterView(APIView):
                 {'error': 'Aucune contre-proposition à accepter sur cette demande.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
+
+        from payments.debt import is_blocked_for_debt, transporter_unavailable_response
+        if is_blocked_for_debt(trip_request.job.owner):
+            return transporter_unavailable_response()
 
         offer, error = _accept_request(trip_request, trip_request.counter_price)
         if error:
