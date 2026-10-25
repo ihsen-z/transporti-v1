@@ -12,10 +12,10 @@ aucune pièce n'était jamais supprimée, pas même à la fermeture du compte, e
 la politique de confidentialité ne pouvait pas être publiée (défaut M-03 de
 l'audit du 06/09).
 
-Ce que ce module ne traite PAS encore : les pièces sans date de validité (CIN
-et selfie, qui n'ont pas de champ `expires_at`). La règle « 5 ans après la fin
-de validité » ne leur donne pas de point de départ ; elles restent conservées
-en attendant une décision.
+Les pièces sans date de validité (CIN et selfie, `expires_at` vide) ont leur
+propre point de départ, décidé le même jour : elles sont conservées CINQ ANS
+APRÈS LA FERMETURE DU COMPTE (`User.closed_at`). Tant que le compte est
+ouvert, elles restent.
 """
 import logging
 from datetime import date
@@ -24,6 +24,7 @@ from typing import Optional
 
 from django.conf import settings
 from django.db import transaction
+from django.db.models import Q
 from django.utils import timezone
 
 from .models import VerificationDocument
@@ -78,16 +79,25 @@ def _fichier_de(document: VerificationDocument) -> Optional[Path]:
 
 
 def documents_a_purger(today: Optional[date] = None):
-    """Pièces datées dont la conservation est terminée."""
-    return VerificationDocument.objects.filter(
-        expires_at__isnull=False,
-        expires_at__lt=purge_cutoff(today),
+    """
+    Pièces dont la conservation est terminée :
+    - pièce datée : expirée depuis plus de 5 ans, compte ouvert ou non ;
+    - pièce sans date (CIN, selfie) : compte fermé depuis plus de 5 ans.
+    """
+    coupure = purge_cutoff(today)
+    datee_echue = Q(expires_at__isnull=False, expires_at__lt=coupure)
+    sans_date_compte_ferme = Q(
+        expires_at__isnull=True,
+        profile__user__closed_at__isnull=False,
+        profile__user__closed_at__date__lt=coupure,
     )
+    return VerificationDocument.objects.filter(datee_echue | sans_date_compte_ferme)
 
 
 def purge_expired_kyc_documents(today: Optional[date] = None, dry_run: bool = False) -> int:
     """
-    Supprime les pièces dont les 5 ans de conservation sont écoulés.
+    Supprime les pièces dont les 5 ans de conservation sont écoulés (après la
+    fin de validité, ou après la fermeture du compte pour une pièce sans date).
 
     Retourne le nombre de pièces supprimées (ou qui le seraient, en `dry_run`).
     Le fichier est effacé avant la ligne : si l'effacement échoue, la ligne

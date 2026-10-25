@@ -104,10 +104,12 @@ def cloturer_compte(user) -> None:
     user.last_name = 'supprimé'
     user.is_phone_verified = False
     user.is_active = False
+    # Point de départ de la conservation des pièces sans date (trust/retention.py).
+    user.closed_at = timezone.now()
     user.set_unusable_password()
     user.save(update_fields=[
         'email', 'username', 'phone', 'first_name', 'last_name',
-        'is_phone_verified', 'is_active', 'password', 'updated_at',
+        'is_phone_verified', 'is_active', 'password', 'updated_at', 'closed_at',
     ])
 
     _effacer_donnees_liees(user)

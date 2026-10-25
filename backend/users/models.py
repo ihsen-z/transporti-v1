@@ -23,6 +23,10 @@ class User(AbstractUser):
     # Audit fields
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    # Date de fermeture du compte (services_account_closure). Elle fixe le
+    # point de départ de la conservation des pièces sans date de validité
+    # (CIN, selfie) : 5 ans après la fermeture, voir trust/retention.py.
+    closed_at = models.DateTimeField(null=True, blank=True)
 
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['username', 'phone']

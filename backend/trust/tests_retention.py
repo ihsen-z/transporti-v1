@@ -8,7 +8,7 @@ doivent partir ensemble, et seulement passé le délai.
 """
 import shutil
 import tempfile
-from datetime import date
+from datetime import date, datetime, timezone as dt_timezone
 from io import StringIO
 from pathlib import Path
 
@@ -80,15 +80,45 @@ class PurgeDesPiecesTests(TestCase):
         self.assertTrue(VerificationDocument.objects.filter(id=document.id).exists())
         self.assertTrue(chemin.exists())
 
-    def test_garde_les_pieces_sans_date(self):
-        # CIN et selfie n'ont pas de date de validité : la règle ne leur
-        # donne pas de point de départ, elles ne sont pas touchées.
+    def _fermer_le(self, jour):
+        user = self.profil.user
+        user.closed_at = datetime(jour.year, jour.month, jour.day, 12, tzinfo=dt_timezone.utc)
+        user.save(update_fields=['closed_at'])
+
+    def test_garde_une_piece_sans_date_tant_que_le_compte_est_ouvert(self):
+        # CIN et selfie n'ont pas de date de validité : leur délai court
+        # depuis la fermeture du compte, et ce compte est ouvert.
         document, chemin = self._piece('CIN_FRONT', None, 'cin.png')
 
         self.assertEqual(purge_expired_kyc_documents(today=AUJOURDHUI), 0)
 
         self.assertTrue(VerificationDocument.objects.filter(id=document.id).exists())
         self.assertTrue(chemin.exists())
+
+    def test_garde_une_piece_sans_date_moins_de_cinq_ans_apres_la_fermeture(self):
+        document, chemin = self._piece('SELFIE', None, 'selfie.png')
+        self._fermer_le(date(2026, 6, 15))  # le jour même de la coupure
+
+        self.assertEqual(purge_expired_kyc_documents(today=AUJOURDHUI), 0)
+        self.assertTrue(chemin.exists())
+
+    def test_supprime_une_piece_sans_date_cinq_ans_apres_la_fermeture(self):
+        document, chemin = self._piece('CIN_BACK', None, 'cin-verso.png')
+        self._fermer_le(date(2026, 6, 14))
+
+        self.assertEqual(purge_expired_kyc_documents(today=AUJOURDHUI), 1)
+
+        self.assertFalse(VerificationDocument.objects.filter(id=document.id).exists())
+        self.assertFalse(chemin.exists())
+
+    def test_une_piece_datee_suit_sa_validite_meme_compte_ferme(self):
+        # Compte fermé hier, mais permis expiré il y a plus de 5 ans : c'est
+        # la date de validité qui compte pour une pièce datée.
+        document, _ = self._piece('LICENSE_FRONT', date(2020, 1, 1), 'permis-vieux.png')
+        self._fermer_le(date(2031, 6, 14))
+
+        self.assertEqual(purge_expired_kyc_documents(today=AUJOURDHUI), 1)
+        self.assertFalse(VerificationDocument.objects.filter(id=document.id).exists())
 
     def test_le_mode_essai_ne_supprime_rien(self):
         document, chemin = self._piece('CARTE_GRISE_FRONT', date(2020, 1, 1), 'cg.png')

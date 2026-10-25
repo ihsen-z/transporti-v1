@@ -73,7 +73,8 @@ export default function ConfidentialitePage() {
             conduire, carte grise, attestation d&apos;assurance, et un selfie
             tenant votre pièce. Ces documents servent exclusivement à vérifier
             que vous êtes bien qui vous dites être et que votre véhicule est en
-            règle.
+            règle. Une pièce doit être en cours de validité au moment de
+            l&apos;envoi&nbsp;: un document périmé est refusé.
           </li>
           <li>
             <strong>Informations sur le véhicule</strong> : type,
@@ -225,11 +226,12 @@ export default function ConfidentialitePage() {
             obligations comptables et fiscales.
           </li>
           <li>
-            <strong>Documents de vérification</strong> —{" "}
-            <ARemplir>
-              durée de conservation à arrêter, puis suppression effective
-            </ARemplir>
-            .
+            <strong>Documents de vérification</strong> — conservés cinq ans
+            après la fin de leur validité (permis de conduire, carte grise,
+            attestation d&apos;assurance). La carte d&apos;identité et le
+            selfie, qui ne portent pas de date de validité, sont conservés cinq
+            ans après la fermeture de votre compte. Passé ce délai, le fichier
+            est supprimé définitivement.
           </li>
           <li>
             <strong>Journaux techniques</strong> —{" "}
@@ -272,6 +274,14 @@ export default function ConfidentialitePage() {
             de conserver l&apos;historique de sa propre activité, et nous avons
             des obligations comptables et fiscales sur les sommes qui ont
             transité.
+          </p>
+          <p>
+            Si vous êtes transporteur, vos documents de vérification ne sont pas
+            effacés à la clôture&nbsp;: ils restent nécessaires en cas de litige
+            ou de contrôle portant sur une mission passée. Ils sont supprimés à
+            l&apos;échéance indiquée plus haut&nbsp;: cinq ans après la fin de
+            leur validité, ou cinq ans après la fermeture du compte pour la
+            carte d&apos;identité et le selfie.
           </p>
         </Encadre>
       </Section>
