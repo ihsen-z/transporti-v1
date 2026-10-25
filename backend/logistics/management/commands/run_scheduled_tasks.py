@@ -20,6 +20,7 @@ SCHEDULED_TASKS = [
     ('expire_stale_offers', 30 * 60, 'Expire stale PENDING offers'),          # Every 30 min
     ('auto_release_escrow', 4 * 60 * 60, 'Auto-release escrow after 48h'),    # Every 4 hours
     ('reveal_stale_reviews', 24 * 60 * 60, 'Auto-reveal reviews after 7 days'), # Once daily
+    ('purge_kyc_documents', 24 * 60 * 60, 'Purge KYC documents 5 years past expiry'),  # Once daily
 ]
 
 
