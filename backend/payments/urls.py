@@ -1,4 +1,5 @@
 from django.urls import path
+from .views_admin_debts import AdminDebtListView, AdminDebtSettleView
 from .views import (
     InitiatePaymentView, PaymentWebhookView, PaymentStatusView,
     VerifyPaymentView, ConfirmCompletionView,
@@ -27,5 +28,8 @@ urlpatterns = [
     path('admin/escrow/', AdminEscrowListView.as_view(), name='admin_escrow_list'),
     path('admin/escrow/<int:escrow_id>/release/', AdminEscrowReleaseView.as_view(), name='admin_escrow_release'),
     path('admin/commission/', AdminCommissionListView.as_view(), name='admin_commission_list'),
+    # Écran « Commissions » de l'admin : dette par transporteur et règlement groupé.
+    path('admin/commission/debts/', AdminDebtListView.as_view(), name='admin_commission_debts'),
+    path('admin/commission/transporters/<int:transporter_id>/settle/', AdminDebtSettleView.as_view(), name='admin_commission_transporter_settle'),
     path('admin/commission/<int:ledger_id>/settle/', AdminCommissionSettleView.as_view(), name='admin_commission_settle'),
 ]

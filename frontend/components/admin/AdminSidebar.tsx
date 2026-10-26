@@ -9,6 +9,7 @@ import {
   Truck,
   Users,
   CreditCard,
+  Coins,
   ChevronLeft,
   ChevronRight,
   ShieldCheck,
@@ -40,6 +41,8 @@ export default function AdminSidebar() {
     { href: "/admin/jobs", label: t.sidebar.transports, icon: Truck },
     { href: "/admin/users", label: t.sidebar.users, icon: Users },
     { href: "/admin/payments", label: t.sidebar.payments, icon: CreditCard },
+    // Pilote : règlement manuel des commissions dues sur les courses en espèces.
+    { href: "/admin/commissions", label: t.sidebar.commissions, icon: Coins },
     {
       href: "/admin/verifications",
       label: t.sidebar.verifications,
