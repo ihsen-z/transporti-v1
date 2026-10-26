@@ -1,0 +1,24 @@
+# Site web Next.js sur Netlify (offre gratuite, usage commercial autorisé).
+# Décision du 26/10/2026 : le site quitte Render pour laisser au serveur
+# Django les 750 heures gratuites mensuelles de Render.
+#
+# Netlify détecte Next.js et applique lui-même son adaptateur OpenNext
+# (Next.js 13.5 et plus) : rien d'autre à configurer ici.
+# NEXT_PUBLIC_API_URL se règle dans l'interface Netlify (voir
+# docs/GUIDE_MISE_EN_PRODUCTION_RENDER.md).
+
+[build]
+  # Le site vit dans frontend/ ; le reste du dépôt (backend, mobile) n'y entre pas.
+  base = "frontend"
+  command = "npm run build"
+  publish = ".next"
+  # Pas de reconstruction quand seul le backend ou le mobile change : le
+  # chemin est relatif au dossier de base (frontend/).
+  ignore = "git diff --quiet $CACHED_COMMIT_REF $COMMIT_REF -- ."
+
+[build.environment]
+  # Même version que la CI (.github/workflows/frontend-ci.yml).
+  NODE_VERSION = "20"
+  # Le script « prepare » installe les hooks Git (husky) : inutile et
+  # source d'erreur sur la machine de build.
+  HUSKY = "0"

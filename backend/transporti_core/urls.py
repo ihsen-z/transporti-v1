@@ -21,6 +21,7 @@ from .views_admin_users import (
 )
 from admin_audit.views import AdminAuditLogView
 from .views_admin_export import AdminExportUsersCSV, AdminExportJobsCSV
+from .cron import ping, taches_planifiees
 
 
 def health_check(request):
@@ -87,6 +88,9 @@ v1_api_patterns = [
 urlpatterns = [
     # Health Check (unauthenticated)
     path('health/', health_check, name='health_check'),
+    # Hébergement gratuit : réponse sans base, et tâches lancées par un cron externe.
+    path('ping/', ping, name='ping'),
+    path('api/v1/taches-planifiees/', taches_planifiees, name='taches_planifiees'),
     
     path('admin/', admin.site.urls),
     
