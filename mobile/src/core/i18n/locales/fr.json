@@ -32,7 +32,9 @@
     "close": "Fermer",
     "saved": "Modifications enregistrées",
     "back": "Retour",
-    "offline": "Hors ligne — les données affichées peuvent être périmées"
+    "offline": "Hors ligne — les données affichées peuvent être périmées",
+    "search_in_list": "Rechercher…",
+    "no_match": "Aucun résultat"
   },
   "auth": {
     "login": {
@@ -434,7 +436,7 @@
       "price_ph": "0",
       "method": "Paiement",
       "method_digital": "Digital",
-      "method_cod": "À la livraison (≤ 300 TND)",
+      "method_cod": "À la livraison (≤ {{max}} TND)",
       "description": "Ce que vous expédiez",
       "description_ph": "Ex. deux palettes de carrelage, 800 kg",
       "submit": "Envoyer",
@@ -752,6 +754,10 @@
     "cod_collected": "Encaissé en espèces",
     "cod_debt": "Commission due",
     "cod_hint": "Cet argent est déjà entre vos mains : il n'est pas retirable. La commission due est déduite de votre solde disponible.",
+    "debt_warning_title": "Commission à régler : {{debt}} / {{limit}} TND",
+    "debt_warning_body": "Au-delà de {{limit}} TND, vous ne pourrez plus publier ni accepter de nouvelles courses jusqu'au règlement.",
+    "debt_blocked_title": "Nouvelles courses suspendues",
+    "debt_blocked_body": "Votre commission à régler atteint {{debt}} TND, au-delà du plafond de {{limit}} TND. Réglez-la auprès de Transporti pour publier et accepter de nouveau des courses. Vos courses en cours continuent.",
     "kind": {
       "ESCROW": "Paiement sécurisé",
       "WITHDRAWAL": "Retrait",
@@ -932,7 +938,7 @@
         },
         "pay": {
           "title": "Choisissez comment payer",
-          "body": "Paiement en ligne : la somme est retenue et ne part au transporteur qu'après votre confirmation. Ou paiement en espèces à la livraison, plafonné à 300 TND."
+          "body": "Paiement en ligne : la somme est retenue et ne part au transporteur qu'après votre confirmation. Ou paiement en espèces à la livraison, plafonné à {{max}} TND."
         },
         "track": {
           "title": "Suivez la mission",

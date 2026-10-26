@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import {
+  FlatList,
+  Pressable,
+  StyleSheet,
+  View,
+  type LayoutChangeEvent,
+} from 'react-native';
 import { useLocalSearchParams } from 'expo-router';
 import { useTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
@@ -79,6 +85,35 @@ export default function SearchScreen() {
   // « Voir plus » ajoute une page a la liste au lieu de la remplacer (6.4).
   const [items, setItems] = useState<TripResultDto[]>([]);
 
+  // Après une recherche, la réponse tombait SOUS le formulaire, hors de
+  // l'écran : rien ne bougeait, et la cliente croyait que rien ne s'était
+  // passé (audit du 10/09, revu en recette Android 16 le 25/10). À chaque
+  // NOUVELLE recherche, la liste défile jusqu'au bloc de résultats, ou
+  // jusqu'à l'état vide et ses issues. « Voir plus » ne fait pas défiler :
+  // la cliente est déjà en bas de la liste.
+  const listRef = useRef<FlatList<TripResultDto>>(null);
+  const aReveler = useRef(false);
+  const hautDuFormulaire = useRef(0);
+  // Change à chaque recherche : remonte le bloc de résultats, donc relance
+  // son onLayout même quand la réponse ne change pas sa hauteur.
+  const [rechercheNo, setRechercheNo] = useState(0);
+
+  const revelerResultats = (e: LayoutChangeEvent) => {
+    if (!aReveler.current) return;
+    aReveler.current = false;
+    // Le bloc est dans l'en-tête de la liste : sa position est relative au
+    // conteneur du formulaire, dont on ajoute le décalage.
+    const offset = hautDuFormulaire.current + e.nativeEvent.layout.y - spacing.sm;
+    listRef.current?.scrollToOffset({ offset: Math.max(0, offset), animated: true });
+  };
+
+  const revelerEtatVide = () => {
+    if (!aReveler.current) return;
+    aReveler.current = false;
+    // L'état vide est le dernier élément de la liste.
+    listRef.current?.scrollToEnd({ animated: true });
+  };
+
   useEffect(() => {
     if (amorceJouee.current) return;
     if (!amorce.pickup || !amorce.dropoff) return;
@@ -98,7 +133,13 @@ export default function SearchScreen() {
   const onSearch = (params: MatchParams) => {
     setLastParams(params);
     createAlert.reset();
-    match.mutate(params, { onSuccess: (data) => setItems(data.results) });
+    match.mutate(params, {
+      onSuccess: (data) => {
+        setItems(data.results);
+        aReveler.current = true;
+        setRechercheNo((n) => n + 1);
+      },
+    });
   };
 
   const onVoirPlus = () => {
@@ -178,12 +219,18 @@ export default function SearchScreen() {
       }
     >
       <FlatList
+        ref={listRef}
         data={items}
         keyExtractor={(item) => String(item.id)}
         contentContainerStyle={[styles.content, { paddingBottom: margeBasse }]}
         keyboardShouldPersistTaps="handled"
         ListHeaderComponent={
-          <View style={styles.formWrap}>
+          <View
+            style={styles.formWrap}
+            onLayout={(e) => {
+              hautDuFormulaire.current = e.nativeEvent.layout.y;
+            }}
+          >
             <Card>
               <SearchForm
                 onSearch={onSearch}
@@ -199,32 +246,38 @@ export default function SearchScreen() {
               />
             </Card>
             {match.isSuccess && total > 0 ? (
-              <>
+              <View
+                key={rechercheNo}
+                style={styles.resultats}
+                onLayout={revelerResultats}
+              >
                 <ResultsMap trips={items} />
                 <Txt style={styles.count}>
                   {t('search.results_count', { count: total })}
                 </Txt>
-              </>
+              </View>
             ) : null}
           </View>
         }
         ListEmptyComponent={
           showEmpty && lastParams ? (
-            <SearchEmptyState
-              params={lastParams}
-              onVoirCorridor={onVoirCorridor}
-              onRetirerFiltres={onRetirerFiltres}
-              onElargirVoisins={onElargirVoisins}
-              voisins={voisins.map((v) => (isAr ? v.nameAr : v.nameFr))}
-              onCreerAlerte={() =>
-                createAlert.mutate({
-                  pickup_governorate: lastParams.pickup_governorate,
-                  dropoff_governorate: lastParams.dropoff_governorate,
-                })
-              }
-              alerteCreee={createAlert.isSuccess}
-              alertePending={createAlert.isPending}
-            />
+            <View key={rechercheNo} onLayout={revelerEtatVide}>
+              <SearchEmptyState
+                params={lastParams}
+                onVoirCorridor={onVoirCorridor}
+                onRetirerFiltres={onRetirerFiltres}
+                onElargirVoisins={onElargirVoisins}
+                voisins={voisins.map((v) => (isAr ? v.nameAr : v.nameFr))}
+                onCreerAlerte={() =>
+                  createAlert.mutate({
+                    pickup_governorate: lastParams.pickup_governorate,
+                    dropoff_governorate: lastParams.dropoff_governorate,
+                  })
+                }
+                alerteCreee={createAlert.isSuccess}
+                alertePending={createAlert.isPending}
+              />
+            </View>
           ) : null
         }
         renderItem={({ item }) => (
@@ -276,6 +329,7 @@ const styles = StyleSheet.create({
   },
   content: { paddingHorizontal: SCREEN_PADDING, paddingTop: spacing.lg, gap: spacing.md },
   formWrap: { gap: spacing.md, marginBottom: spacing.xs },
+  resultats: { gap: spacing.md },
   count: { fontSize: fontSize.sm, fontWeight: '700', color: colors.brand[600] },
   footer: { gap: spacing.sm, marginTop: spacing.sm },
   footerHint: { fontSize: fontSize.sm, color: colors.neutral[500], textAlign: 'center' },

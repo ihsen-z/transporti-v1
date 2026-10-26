@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { lirePaymentConfigServeur } from "@/lib/services/paymentConfigServeur";
 import {
   LegalPage,
   Section,
@@ -26,7 +27,11 @@ function QR({ q, children }: { q: string; children: React.ReactNode }) {
   );
 }
 
-export default function AidePage() {
+export default async function AidePage() {
+  // Le plafond espèces vient du serveur : relever COD_MAX_AMOUNT ne doit pas
+  // laisser l'aide annoncer l'ancienne valeur.
+  const { cod_max_amount } = await lirePaymentConfigServeur();
+
   return (
     <LegalPage
       titre="Aide"
@@ -128,7 +133,8 @@ export default function AidePage() {
             <p>
               <strong>En espèces à la livraison</strong>&nbsp;: vous réglez
               directement le transporteur. Ce mode est limité à{" "}
-              <strong>300&nbsp;TND</strong> par mission.
+              <strong>{cod_max_amount.toLocaleString("fr-FR")}&nbsp;TND</strong>{" "}
+              par mission.
             </p>
           </QR>
 

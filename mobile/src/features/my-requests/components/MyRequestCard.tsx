@@ -11,6 +11,7 @@ import type { MyRequestDto } from '../api/dto';
 import { useAcceptCounter } from '../api/useAcceptCounter';
 import { useCancelRequest } from '../api/useCancelRequest';
 import { Txt } from '@/shared/ui/Txt';
+import { formatApiAmount } from '@/shared/format/money';
 
 function formatWhen(iso: string): string {
   const d = new Date(iso);
@@ -69,12 +70,12 @@ export function MyRequestCard({ request }: { request: MyRequestDto }) {
       <View style={styles.route}>
         <RouteRow from={request.job_pickup} to={request.job_dropoff} />
       </View>
-      <Txt style={styles.price}>{t('my_requests.proposed', { price: request.proposed_price })}</Txt>
+      <Txt style={styles.price}>{t('my_requests.proposed', { price: formatApiAmount(request.proposed_price) })}</Txt>
 
       {isCountered && request.counter_price ? (
         <View style={styles.block}>
           <Txt style={styles.counter}>
-            {t('my_requests.countered', { price: request.counter_price })}
+            {t('my_requests.countered', { price: formatApiAmount(request.counter_price) })}
           </Txt>
           <Button
             testID={`my-request-${request.id}-accept-counter`}

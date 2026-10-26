@@ -1,4 +1,3 @@
-
 import { Controller, type Control, type FieldErrors } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
@@ -71,6 +70,7 @@ export function RouteSection({
         render={({ field: { value, onChange } }) => (
           <Select
             testID="publish-pickupGov"
+            searchable
             label={t('trips.governorate')}
             placeholder={t('trips.governorate_ph')}
             value={value || null}
@@ -91,7 +91,9 @@ export function RouteSection({
             value={value}
             onChangeText={onChange}
             onBlur={onBlur}
-            error={errors.pickupAddress ? t(errors.pickupAddress.message ?? '') : undefined}
+            error={
+              errors.pickupAddress ? t(errors.pickupAddress.message ?? '') : undefined
+            }
             autoCapitalize="sentences"
           />
         )}
@@ -114,6 +116,7 @@ export function RouteSection({
         render={({ field: { value, onChange } }) => (
           <Select
             testID="publish-dropoffGov"
+            searchable
             label={t('trips.governorate')}
             placeholder={t('trips.governorate_ph')}
             value={value || null}
@@ -134,7 +137,9 @@ export function RouteSection({
             value={value}
             onChangeText={onChange}
             onBlur={onBlur}
-            error={errors.dropoffAddress ? t(errors.dropoffAddress.message ?? '') : undefined}
+            error={
+              errors.dropoffAddress ? t(errors.dropoffAddress.message ?? '') : undefined
+            }
             autoCapitalize="sentences"
           />
         )}

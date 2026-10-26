@@ -13,6 +13,7 @@ import { TransporterOnboardingGuide } from '@/features/onboarding/components/Tra
 import { ClientHomeSearch } from '@/features/search/components/ClientHomeSearch';
 import { ClientRequestsSummary } from '@/features/my-requests/components/ClientRequestsSummary';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
+import { DebtBanner } from '@/features/wallet/components/DebtBanner';
 
 // Onglet Accueil, rôle-aware. Pour le transporteur c'est le tableau de bord :
 // en-tête sur le bandeau bleu, hero chiffré en verre dedans, puis ses sections
@@ -81,6 +82,9 @@ export default function HomeScreen() {
           de navigation, ne servait pas le principe de suivi du BO. */}
       {/* T4.4 — l'amorce de retour a vide, en premiere position : a cet
           instant, c'est l'action la plus rentable de l'ecran. */}
+      {/* Dette de commission : prévenir AVANT le blocage, puis l'expliquer.
+          En tête, car un transporteur bloqué ne peut rien faire d'autre ici. */}
+      {isTransporter ? <DebtBanner /> : null}
       {isTransporter ? <ReturnPromptBanner /> : null}
       {/* T0.4 — le guide de demarrage, APRES l'amorce de retour et non avant.
           L'amorce ne parait qu'apres une livraison et vise l'instant precis

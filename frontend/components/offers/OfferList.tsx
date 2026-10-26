@@ -17,14 +17,13 @@ import {
   ShieldCheck,
   AlertCircle,
 } from "lucide-react";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
 
 interface OfferListProps {
   jobId: number;
   isJobOwner: boolean;
   onOfferAccepted?: () => void;
 }
-
-const COD_MAX_TND = 300;
 
 export function OfferList({
   jobId,
@@ -33,6 +32,8 @@ export function OfferList({
 }: OfferListProps) {
   const router = useRouter();
   const [offers, setOffers] = useState<JobOffer[]>([]);
+  // Plafond espèces lu sur le serveur (il était écrit 300 en dur ici).
+  const { cod_max_amount: COD_MAX_TND } = usePaymentConfig();
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<JobOffer | null>(null);
@@ -236,7 +237,9 @@ export function OfferList({
                     {t.offersComponents.paymentCOD}
                   </p>
                   <p className="text-sm text-neutral-500 mt-0.5">
-                    {t.offersComponents.paymentCODDesc}
+                    {interpolate(t.offersComponents.paymentCODDesc, {
+                      cap: COD_MAX_TND,
+                    })}
                   </p>
                   {!codEligible && (
                     <div className="flex items-center gap-1 text-xs text-error-500 mt-1">

@@ -35,6 +35,10 @@ export interface WalletDto {
   released_net: number;
   cod_collected_net: number;
   cod_debt: number;
+  // Plafond de dette (payments/debt.py) : au-delà, le transporteur ne peut
+  // plus publier ni accepter de nouvelle course jusqu'au règlement.
+  commission_debt_limit: number;
+  blocked_for_debt: boolean;
   withdrawals_total: number;
   cod_debts: CodDebtEntry[];
   history: WalletHistoryEntry[];

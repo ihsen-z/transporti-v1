@@ -255,3 +255,28 @@ class DetteJamaisPerdueTests(APITestCase):
 
         self.assertTrue(CommissionLedger.objects.filter(job_reference=job).exists())
         self.assertFalse(AuditLog.objects.filter(action='COD_DEBT_TRUST_ANOMALY').exists())
+
+
+@override_settings(REST_FRAMEWORK=SANS_LIMITEUR)
+class ConfigurationServieAuxEcransTests(APITestCase):
+    """Les écrans lisent les plafonds ici au lieu de les écrire en dur."""
+
+    def setUp(self):
+        self.client.force_authenticate(un_transporteur('config'))
+
+    def test_renvoie_les_deux_plafonds(self):
+        reponse = self.client.get(f'{V1}/payments/config/')
+
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(reponse.data, {'cod_max_amount': 300.0, 'commission_debt_limit': 60.0})
+
+    @override_settings(COD_MAX_AMOUNT=Decimal('450'))
+    def test_suit_le_reglage_du_serveur(self):
+        self.assertEqual(self.client.get(f'{V1}/payments/config/').data['cod_max_amount'], 450.0)
+
+    def test_lisible_sans_connexion(self):
+        # La page publique /aide annonce le plafond espèces avant toute connexion.
+        self.client.force_authenticate(None)
+        reponse = self.client.get(f'{V1}/payments/config/')
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(reponse.data['cod_max_amount'], 300.0)

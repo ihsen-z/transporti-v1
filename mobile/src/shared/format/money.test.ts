@@ -1,4 +1,4 @@
-import { formatAmount } from './money';
+import { formatAmount, formatApiAmount } from './money';
 
 // Espace fine insécable utilisée comme séparateur de milliers.
 const NBSP = ' ';
@@ -33,5 +33,22 @@ describe('formatAmount', () => {
   it('rend « — » pour une valeur non finie plutôt que « NaN »', () => {
     expect(formatAmount(Number.NaN)).toBe('—');
     expect(formatAmount(Number.POSITIVE_INFINITY)).toBe('—');
+  });
+});
+
+describe('formatApiAmount', () => {
+  it("retire les décimales nulles des montants renvoyés par l'API", () => {
+    expect(formatApiAmount('90.00')).toBe('90');
+    expect(formatApiAmount('120.50')).toBe('120,5');
+  });
+
+  it('groupe les milliers comme formatAmount', () => {
+    expect(formatApiAmount('1240.00')).toBe(`1${NBSP}240`);
+  });
+
+  it('rend un tiret pour une valeur absente ou illisible', () => {
+    expect(formatApiAmount(null)).toBe('—');
+    expect(formatApiAmount('')).toBe('—');
+    expect(formatApiAmount('abc')).toBe('—');
   });
 });

@@ -176,7 +176,7 @@ export const fr = {
       "La commission est de 12% pour le transport et 15% pour le déménagement. Aucun frais caché — le transporteur voit le montant net avant de soumettre son offre.",
     faq4Q: "Puis-je payer en espèces ?",
     faq4A:
-      "Oui ! Le paiement à la livraison (COD) est disponible pour les montants jusqu'à 300 TND. Au-delà, le paiement digital sécurisé est recommandé.",
+      "Oui ! Le paiement à la livraison (COD) est disponible pour les montants jusqu'à {cap} TND. Au-delà, le paiement digital sécurisé est recommandé.",
     faq5Q: "Comment contester une livraison ?",
     faq5A:
       "Vous pouvez ouvrir un litige directement depuis la page de votre transport. Notre équipe examine chaque cas et vous répond sous 24 heures ouvrées.",
@@ -570,7 +570,7 @@ export const fr = {
     from: "à partir de",
     upTo: "jusqu'à",
     codNote:
-      "Au-delà de 300 TND, seul le paiement digital sera proposé au client.",
+      "Au-delà de {cap} TND, seul le paiement digital sera proposé au client.",
     platformCommission: "+ Commission plateforme",
     totalPrice: "Prix total (payé par le client)",
     messageLabel: "Message pour le client (Optionnel)",
@@ -691,7 +691,7 @@ export const fr = {
     paymentDigital: "Paiement Digital (Escrow)",
     paymentDigitalDesc: "Montant séquestré jusqu'à livraison confirmée",
     paymentCOD: "Paiement à la livraison",
-    paymentCODDesc: "Cash on delivery (≤ 300 TND)",
+    paymentCODDesc: "Cash on delivery (≤ {cap} TND)",
     payNow: "Payer maintenant",
     paying: "Paiement en cours...",
     paymentSuccess: "Paiement effectué avec succès !",
@@ -1493,7 +1493,7 @@ export const fr = {
     paymentMethod: "Mode de paiement",
     securePayment: "Paiement sécurisé",
     onDelivery: "À la livraison",
-    codMax: "Maximum 300 TND pour le paiement à la livraison",
+    codMax: "Maximum {n} TND pour le paiement à la livraison",
     booking: "Réservation...",
     confirm: "Confirmer",
     trustTitle: "Confiance & Sécurité",

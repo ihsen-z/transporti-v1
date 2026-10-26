@@ -21,6 +21,7 @@ import { EmptyState } from '@/shared/ui/EmptyState';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { colors, spacing, fontSize, tracking } from '@/shared/theme';
+import { DebtBanner } from '@/features/wallet/components/DebtBanner';
 
 // 5ᵉ onglet transporteur : le PORTEFEUILLE, pas un tableau de KPI.
 //
@@ -63,6 +64,7 @@ export default function GainsScreen() {
         <SkeletonList />
       ) : (
         <>
+          <DebtBanner />
           {/* Solde retirable : la seule somme que la plateforme doit. */}
           <Card style={styles.hero}>
             <Txt style={styles.heroLabel}>{t('gains.available')}</Txt>

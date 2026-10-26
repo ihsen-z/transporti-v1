@@ -31,3 +31,14 @@ export function formatAmount(value: number): string {
   const frac = String(millimes).padStart(3, '0').replace(/0+$/, '');
   return `${sign}${grouped},${frac}`;
 }
+
+/**
+ * Formate un montant tel que l'API le renvoie : les champs décimaux de Django
+ * arrivent en chaîne (« 90.00 »). Affichée telle quelle, cette chaîne donnait
+ * « 90.00 – 120.00 TND » sur la ligne la plus regardée de la carte de
+ * résultat (défaut m-05 de l'audit du 06/09). Une valeur illisible rend « — ».
+ */
+export function formatApiAmount(raw: string | number | null | undefined): string {
+  if (raw === null || raw === undefined || raw === '') return '—';
+  return formatAmount(typeof raw === 'number' ? raw : Number(raw));
+}

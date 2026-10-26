@@ -14,6 +14,7 @@ import type { RespondAction, TripRequestDto } from '../api/dto';
 import { useRespondRequest } from '../api/useRespondRequest';
 import { RequestGoodsSummary } from './RequestGoodsSummary';
 import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
+import { formatApiAmount } from '@/shared/format/money';
 
 interface Props {
   request: TripRequestDto;
@@ -94,12 +95,12 @@ export function RequestCard({ request, jobId, montrerCorridor = false }: Props) 
       ) : null}
 
       {/* VERT = valeur : le prix proposé par le client. */}
-      <Txt style={styles.price}>{t('requests.proposed', { price: request.proposed_price })}</Txt>
+      <Txt style={styles.price}>{t('requests.proposed', { price: formatApiAmount(request.proposed_price) })}</Txt>
       <View style={styles.meta}>
         <Badge label={t(`requests.payment.${request.payment_method}`)} variant="cod" />
       </View>
       {request.counter_price ? (
-        <Txt style={styles.counter}>{t('requests.countered', { price: request.counter_price })}</Txt>
+        <Txt style={styles.counter}>{t('requests.countered', { price: formatApiAmount(request.counter_price) })}</Txt>
       ) : null}
       {request.description ? <Txt style={styles.desc}>{request.description}</Txt> : null}
       {/* Lot 6.1 — poids, volume, photos, adresse et créneau : de quoi trancher
