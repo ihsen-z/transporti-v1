@@ -13,7 +13,10 @@ import { useRegisterDevice } from '@/features/notifications/api/useRegisterDevic
 // Effet de module (comme `core/i18n/index.ts`) : une seule fois, avant tout montage.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
+    // `shouldShowAlert` est déprécié depuis expo-notifications 0.31 (SDK 53) :
+    // la bannière et la liste du centre de notifications se règlent à part.
+    shouldShowBanner: true,
+    shouldShowList: true,
     shouldPlaySound: true,
     shouldSetBadge: false,
   }),

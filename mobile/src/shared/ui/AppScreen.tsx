@@ -6,6 +6,7 @@ import {
   StyleSheet,
   View,
   type LayoutChangeEvent,
+  type RefreshControlProps,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
@@ -57,7 +58,7 @@ interface Props {
    */
   scroll?: boolean;
   /** Passé au ScrollView interne (`scroll` seulement). */
-  refreshControl?: ReactElement;
+  refreshControl?: ReactElement<RefreshControlProps>;
   /**
    * Marge basse réservée sous le contenu. Les écrans à onglets y passent
    * `useTabBarClearance()` : sans elle, leur dernier élément reste sous la

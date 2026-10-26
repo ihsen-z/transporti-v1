@@ -10,6 +10,8 @@ import { AddressSection } from './request/AddressSection';
 import { ScheduleSection } from './request/ScheduleSection';
 import { PriceSection } from './request/PriceSection';
 import { requestStyles as s } from './request/requestStyles';
+import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
+import { spacing } from '@/shared/theme';
 
 interface Props {
   trip: TripResultDto | null;
@@ -26,6 +28,9 @@ export function SendRequestSheet({ trip, onClose }: Props) {
   const { t } = useTranslation();
   const f = useSendRequestForm(trip, onClose);
 
+  // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
+  const sheetPadding = useSheetBottomPadding(spacing.xl);
+
   return (
     <Modal
       visible={trip !== null}
@@ -41,7 +46,7 @@ export function SendRequestSheet({ trip, onClose }: Props) {
             l'arbre d'accessibilité, donc la demande était impossible à
             envoyer. `onStartShouldSetResponder` suffit à empêcher le tap de
             remonter au fond, sans confisquer le glissement. */}
-        <View style={s.sheet} onStartShouldSetResponder={() => true}>
+        <View style={[s.sheet, { paddingBottom: sheetPadding }]} onStartShouldSetResponder={() => true}>
           {f.isSuccess ? (
             <View style={s.successBox}>
               <Txt style={s.successText}>{t('search.request.success')}</Txt>

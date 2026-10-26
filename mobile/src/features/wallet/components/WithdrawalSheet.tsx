@@ -8,6 +8,7 @@ import { formatAmount } from '@/shared/format/money';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { MIN_WITHDRAWAL_TND } from '../api/dto';
 import { useCreateWithdrawal } from '../api/useCreateWithdrawal';
+import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
 
 interface Props {
   visible: boolean;
@@ -56,10 +57,13 @@ export function WithdrawalSheet({ visible, available, onClose }: Props) {
     ? (create.error.serverMessage ?? t(`wallet.errors.${create.error.kind}`))
     : null;
 
+  // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
+  const sheetPadding = useSheetBottomPadding(spacing.xl);
+
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
-        <Pressable style={styles.sheet} onPress={() => undefined}>
+        <Pressable style={[styles.sheet, { paddingBottom: sheetPadding }]} onPress={() => undefined}>
           {create.isSuccess ? (
             <View style={styles.successBox}>
               <Txt style={styles.successText}>{t('wallet.withdrawal_success')}</Txt>

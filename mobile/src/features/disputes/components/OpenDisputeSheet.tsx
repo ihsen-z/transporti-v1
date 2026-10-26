@@ -7,6 +7,7 @@ import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { DisputeReason } from '../api/dto';
 import { useCreateDispute } from '../api/useCreateDispute';
 import { Txt } from '@/shared/ui/Txt';
+import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
 
 const REASONS: readonly DisputeReason[] = [
   'DAMAGED_ITEMS',
@@ -64,10 +65,13 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
        t(`disputes.errors.${create.error.kind === 'forbidden' ? 'forbidden' : create.error.kind === 'network' ? 'network' : 'validation'}`))
     : null;
 
+  // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
+  const sheetPadding = useSheetBottomPadding(spacing.xl);
+
   return (
     <Modal visible={jobId !== null} transparent animationType="slide" onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
-        <Pressable style={styles.sheet} onPress={() => undefined}>
+        <Pressable style={[styles.sheet, { paddingBottom: sheetPadding }]} onPress={() => undefined}>
           {create.isSuccess ? (
             <View style={styles.successBox}>
               <Txt style={styles.successText}>{t('disputes.success')}</Txt>

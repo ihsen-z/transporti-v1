@@ -19,7 +19,8 @@ import type { UserRole } from '@/core/auth/authStore';
 export function clientDoitPayer(
   role: UserRole | undefined,
   status: string | undefined,
-  paymentMethod: string | undefined,
+  // `null` : le serveur n'a pas encore de réservation pour cette mission.
+  paymentMethod: string | null | undefined,
 ): boolean {
   // `MATCHED` = demande acceptée, mission pas encore démarrée.
   // Le paiement séquestré n'existe que sur le chemin digital : une mission en

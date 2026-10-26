@@ -5,6 +5,7 @@ import { Button } from '@/shared/ui/Button';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { useClientCancel } from '../api/useClientCancel';
+import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
 
 interface Props {
   jobId: number | null;
@@ -48,10 +49,13 @@ export function CancelMissionSheet({ jobId, onClose, onCancelled }: Props) {
 
   const serverError = cancel.error ? t(`tracking.errors.${cancel.error.kind}`) : null;
 
+  // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
+  const sheetPadding = useSheetBottomPadding(spacing.xl);
+
   return (
     <Modal visible={jobId !== null} transparent animationType="slide" onRequestClose={close}>
       <Pressable style={styles.backdrop} onPress={close}>
-        <Pressable style={styles.sheet} onPress={() => undefined}>
+        <Pressable style={[styles.sheet, { paddingBottom: sheetPadding }]} onPress={() => undefined}>
           <Txt style={styles.title}>{t('tracking.cancel_title')}</Txt>
           <Txt style={styles.warning}>{t('tracking.cancel_warning')}</Txt>
 

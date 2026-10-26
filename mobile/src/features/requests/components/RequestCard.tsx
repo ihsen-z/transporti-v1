@@ -13,6 +13,7 @@ import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
 import type { RespondAction, TripRequestDto } from '../api/dto';
 import { useRespondRequest } from '../api/useRespondRequest';
 import { RequestGoodsSummary } from './RequestGoodsSummary';
+import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
 
 interface Props {
   request: TripRequestDto;
@@ -55,6 +56,9 @@ export function RequestCard({ request, jobId, montrerCorridor = false }: Props) 
     ? (respond.error.serverMessage ??
        t(`requests.errors.${respond.error.kind === 'forbidden' ? 'forbidden' : respond.error.kind === 'network' ? 'network' : 'validation'}`))
     : null;
+
+  // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
+  const sheetPadding = useSheetBottomPadding(spacing.xl);
 
   return (
     <Card>
@@ -150,7 +154,7 @@ export function RequestCard({ request, jobId, montrerCorridor = false }: Props) 
       >
         <Pressable style={styles.backdrop} onPress={() => setCounterOpen(false)}>
           {/* Pressable interne : absorbe le tap pour ne pas fermer la feuille. */}
-          <Pressable style={styles.sheet} onPress={() => undefined}>
+          <Pressable style={[styles.sheet, { paddingBottom: sheetPadding }]} onPress={() => undefined}>
             <Txt style={styles.sheetTitle}>{t('requests.counter.title')}</Txt>
             <TextField
               testID={`request-${request.id}-counter-price`}

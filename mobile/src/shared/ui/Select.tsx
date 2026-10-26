@@ -3,6 +3,7 @@ import { FlatList, I18nManager, Modal, Pressable, StyleSheet, View } from 'react
 import { Icon } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, radii, spacing, fontSize, FIELD_HEIGHT } from '@/shared/theme';
+import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
 
 export interface SelectOption<T> {
   value: T;
@@ -34,6 +35,9 @@ export function Select<T extends string | number>({
   const textAlign = I18nManager.isRTL ? 'right' : 'left';
   const selected = options.find((o) => o.value === value);
 
+  // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
+  const sheetPadding = useSheetBottomPadding(spacing.lg);
+
   return (
     <View style={styles.wrap}>
       <Txt style={[styles.label, { textAlign }]}>{label}</Txt>
@@ -60,7 +64,7 @@ export function Select<T extends string | number>({
         onRequestClose={() => setOpen(false)}
       >
         <Pressable style={styles.backdrop} onPress={() => setOpen(false)}>
-          <View style={styles.sheet}>
+          <View style={[styles.sheet, { paddingBottom: sheetPadding }]}>
             <Txt style={styles.sheetTitle}>{label}</Txt>
             <FlatList
               data={options}
