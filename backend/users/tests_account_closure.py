@@ -68,6 +68,15 @@ class ClotureCompteServiceTests(TestCase):
         # La ligne existe toujours : c'est ce qui protege les faits comptables.
         self.assertTrue(User.objects.filter(id=ancien_id).exists())
 
+    def test_date_la_fermeture(self):
+        # Point de depart de la conservation des pieces sans date (CIN,
+        # selfie) : 5 ans apres cette date, trust/retention.py les supprime.
+        self.assertIsNone(self.client_user.closed_at)
+        cloturer_compte(self.client_user)
+
+        self.client_user.refresh_from_db()
+        self.assertIsNotNone(self.client_user.closed_at)
+
     def test_libere_le_numero_de_telephone(self):
         # `phone` est `unique=True` : sans mise a NULL, personne ne pourrait
         # se reinscrire avec ce numero.
