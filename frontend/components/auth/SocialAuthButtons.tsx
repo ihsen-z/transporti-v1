@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { FOURNISSEURS_SOCIAUX } from "@/lib/socialProviders";
 
 /* -------------------------------------------------------------------------- */
 /*  Boutons sociaux — grille 2 colonnes, gap 12px, hauteur 56px, rayon 16px   */
@@ -88,36 +89,47 @@ export default function SocialAuthButtons({
 }: SocialAuthButtonsProps) {
   const googleSurface =
     surface === "on-light" ? "border-[#E4E9F2]" : "border-transparent";
+  const { google, facebook } = FOURNISSEURS_SOCIAUX;
+
+  // Aucun fournisseur configuré : rien à proposer.
+  if (!google && !facebook) return null;
+
+  // Deux colonnes seulement si les deux boutons sont là.
+  const colonnes = google && facebook ? "grid-cols-2" : "grid-cols-1";
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      <button
-        type="button"
-        onClick={onGoogle}
-        disabled={disabled}
-        className={`btn-social btn-social--google ${googleSurface} border transition-colors duration-120 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2`}
-      >
-        {loadingProvider === "google" ? (
-          <Spinner className="border-ink-300" />
-        ) : (
-          <GoogleMark />
-        )}
-        Google
-      </button>
+    <div className={`grid ${colonnes} gap-3`}>
+      {google ? (
+        <button
+          type="button"
+          onClick={onGoogle}
+          disabled={disabled}
+          className={`btn-social btn-social--google ${googleSurface} border transition-colors duration-120 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2`}
+        >
+          {loadingProvider === "google" ? (
+            <Spinner className="border-ink-300" />
+          ) : (
+            <GoogleMark />
+          )}
+          Google
+        </button>
+      ) : null}
 
-      <button
-        type="button"
-        onClick={onFacebook}
-        disabled={disabled}
-        className="btn-social btn-social--facebook transition-colors duration-120 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
-      >
-        {loadingProvider === "facebook" ? (
-          <Spinner className="border-white" />
-        ) : (
-          <FacebookMark />
-        )}
-        Facebook
-      </button>
+      {facebook ? (
+        <button
+          type="button"
+          onClick={onFacebook}
+          disabled={disabled}
+          className="btn-social btn-social--facebook transition-colors duration-120 active:translate-y-px disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70"
+        >
+          {loadingProvider === "facebook" ? (
+            <Spinner className="border-white" />
+          ) : (
+            <FacebookMark />
+          )}
+          Facebook
+        </button>
+      ) : null}
     </div>
   );
 }
