@@ -1386,7 +1386,7 @@ export const ar = {
     paymentMethod: "طريقة الخلاص",
     securePayment: "خلاص آمن",
     onDelivery: "عند التوصيل",
-    codMax: "أقصى 300 دينار للخلاص عند التوصيل",
+    codMax: "أقصى {n} دينار للخلاص عند التوصيل",
     booking: "قاعد يحجز...",
     confirm: "أكّد",
     trustTitle: "الثقة والأمان",

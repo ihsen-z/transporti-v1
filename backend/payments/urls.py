@@ -6,9 +6,11 @@ from .views import (
     AdminEscrowReleaseView, AdminCommissionSettleView,
     AdminEscrowListView, AdminCommissionListView
 )
+from .views_config import PaymentConfigView
 
 urlpatterns = [
     # Payment gateway endpoints
+    path('payments/config/', PaymentConfigView.as_view(), name='payment_config'),
     path('payments/initiate/', InitiatePaymentView.as_view(), name='payment_initiate'),
     path('payments/webhook/', PaymentWebhookView.as_view(), name='payment_webhook'),
     path('payments/verify/', VerifyPaymentView.as_view(), name='payment_verify'),

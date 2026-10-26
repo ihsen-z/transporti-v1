@@ -4,6 +4,8 @@ import { Card } from '@/shared/ui/Card';
 import { Icon, type IconName } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { colors, spacing, fontSize, radii, TOUCH_TARGET } from '@/shared/theme';
+import { usePaymentConfig } from '@/features/payments/api/usePaymentConfig';
+import { formatAmount } from '@/shared/format/money';
 
 /**
  * Le parcours d'un rôle, raconté étape par étape, puis ce qui le sécurise.
@@ -55,7 +57,11 @@ interface Props {
 
 export function TrustExplainer({ parcours }: Props) {
   const { t } = useTranslation();
-  const prefixe = parcours === 'CLIENT' ? 'how_it_works.client' : 'how_it_works.transporter';
+  const prefixe =
+    parcours === 'CLIENT' ? 'how_it_works.client' : 'how_it_works.transporter';
+  // Le plafond espèces vient du serveur (l'étape « payer » le cite).
+  const { cod_max_amount } = usePaymentConfig();
+  const plafond = { max: formatAmount(cod_max_amount) };
 
   return (
     <View style={s.bloc}>
@@ -75,7 +81,9 @@ export function TrustExplainer({ parcours }: Props) {
                 <Icon name={etape.icone} size={18} color={colors.brand[600]} />
                 <Txt style={s.etapeTitre}>{t(`${prefixe}.steps.${etape.cle}.title`)}</Txt>
               </View>
-              <Txt style={s.etapeTexte}>{t(`${prefixe}.steps.${etape.cle}.body`)}</Txt>
+              <Txt style={s.etapeTexte}>
+                {t(`${prefixe}.steps.${etape.cle}.body`, plafond)}
+              </Txt>
             </View>
           </View>
         ))}
@@ -86,9 +94,13 @@ export function TrustExplainer({ parcours }: Props) {
         <Card key={garantie.cle} style={s.garantie}>
           <View style={s.garantieTitreLigne}>
             <Icon name={garantie.icone} size={20} color={colors.green[700]} />
-            <Txt style={s.garantieTitre}>{t(`how_it_works.trust.${garantie.cle}.title`)}</Txt>
+            <Txt style={s.garantieTitre}>
+              {t(`how_it_works.trust.${garantie.cle}.title`)}
+            </Txt>
           </View>
-          <Txt style={s.garantieTexte}>{t(`how_it_works.trust.${garantie.cle}.body`)}</Txt>
+          <Txt style={s.garantieTexte}>
+            {t(`how_it_works.trust.${garantie.cle}.body`)}
+          </Txt>
         </Card>
       ))}
     </View>

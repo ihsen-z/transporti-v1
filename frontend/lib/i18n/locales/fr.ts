@@ -1493,7 +1493,7 @@ export const fr = {
     paymentMethod: "Mode de paiement",
     securePayment: "Paiement sécurisé",
     onDelivery: "À la livraison",
-    codMax: "Maximum 300 TND pour le paiement à la livraison",
+    codMax: "Maximum {n} TND pour le paiement à la livraison",
     booking: "Réservation...",
     confirm: "Confirmer",
     trustTitle: "Confiance & Sécurité",

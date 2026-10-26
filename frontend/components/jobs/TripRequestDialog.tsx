@@ -11,6 +11,7 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import type { JobDetail } from "@/lib/types/jobs";
 import type { MoyenDePaiement } from "@/lib/services/jobDetail";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
 
 interface Props {
   ouvert: boolean;
@@ -51,6 +52,8 @@ export function TripRequestDialog({
   onValider,
 }: Props) {
   const { t } = useAppI18n();
+  // Plafond espèces lu sur le serveur (il était écrit 300 en dur ici).
+  const { cod_max_amount: codMax } = usePaymentConfig();
 
   if (!ouvert) return null;
 
@@ -174,10 +177,10 @@ export function TripRequestDialog({
                 {t.jobDetail.onDelivery}
               </button>
             </div>
-            {paiement === "COD" && parseFloat(prix) > 300 && (
+            {paiement === "COD" && parseFloat(prix) > codMax && (
               <p className="text-xs text-error-500 mt-1 flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                {t.jobDetail.codMax}
+                {interpolate(t.jobDetail.codMax, { n: codMax })}
               </p>
             )}
           </div>
@@ -200,7 +203,7 @@ export function TripRequestDialog({
               !prix ||
               parseFloat(prix) <= 0 ||
               (!job.instant_booking && !description.trim()) ||
-              (paiement === "COD" && parseFloat(prix) > 300)
+              (paiement === "COD" && parseFloat(prix) > codMax)
             }
             className="flex-1 py-3 bg-blue-700 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
           >

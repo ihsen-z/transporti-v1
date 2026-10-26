@@ -105,6 +105,7 @@ export function SearchForm({
     <View style={styles.form}>
       <Select
         testID="search-from"
+        searchable
         label={t('search.from')}
         placeholder={t('trips.governorate_ph')}
         value={pickup}
@@ -113,6 +114,7 @@ export function SearchForm({
       />
       <Select
         testID="search-to"
+        searchable
         label={t('search.to')}
         placeholder={t('trips.governorate_ph')}
         value={dropoff}

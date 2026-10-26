@@ -1,4 +1,9 @@
-import { Controller, type Control, type FieldErrors, type UseFormSetValue } from 'react-hook-form';
+import {
+  Controller,
+  type Control,
+  type FieldErrors,
+  type UseFormSetValue,
+} from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
 import { TextField } from '@/shared/ui/TextField';
@@ -46,6 +51,7 @@ export function AddressSection({ control, errors, govOptions, setValue }: Props)
         render={({ field: { value, onChange } }) => (
           <Select
             testID="send-request-pickup-gov"
+            searchable
             label={t('search.request.governorate')}
             placeholder={t('search.request.governorate_ph')}
             value={value || null}
@@ -68,7 +74,9 @@ export function AddressSection({ control, errors, govOptions, setValue }: Props)
             onChangeText={onChange}
             onBlur={onBlur}
             autoCapitalize="sentences"
-            error={errors.pickupAddress ? t(errors.pickupAddress.message ?? '') : undefined}
+            error={
+              errors.pickupAddress ? t(errors.pickupAddress.message ?? '') : undefined
+            }
           />
         )}
       />
