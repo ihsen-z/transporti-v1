@@ -10,8 +10,11 @@ from .views import (
     AdminDocumentReviewView,
     AdminTrustProfileListView,
 )
+from .views_fichiers import FichierKycView
 
 urlpatterns = [
+    # Lecture d'une pièce KYC par lien signé (trust/fichiers.py)
+    path('fichiers/<str:jeton>/<str:nom>', FichierKycView.as_view(), name='trust-fichier-kyc'),
     # Transporter endpoints
     path('documents/', VerificationDocumentListCreateView.as_view(), name='trust-documents'),
     path('status/', TrustProfileSubmissionView.as_view(), name='trust-status'),

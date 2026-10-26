@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from django.utils import timezone
-from django.conf import settings
 from .models import TrustProfile, VerificationDocument, TrustVerificationRequest, DocumentType
+from .fichiers import enregistrer_piece, lien_signe
 import hashlib
 import os
 import secrets
@@ -104,24 +104,9 @@ class VerificationDocumentUploadSerializer(serializers.Serializer):
         # 2. Generate encryption IV placeholder (for future AES encryption)
         encryption_iv = secrets.token_hex(16)  # 32-char hex string
 
-        # 3. Save file to local storage (MEDIA_ROOT/verification_docs/)
-        user_id = trust_profile.user_id
-        ext = os.path.splitext(uploaded_file.name)[1].lower()
-        filename = f"{user_id}_{document_type}_{secrets.token_hex(8)}{ext}"
-        relative_path = os.path.join('verification_docs', str(user_id), filename)
-
-        # Ensure directory exists
-        full_dir = os.path.join(settings.MEDIA_ROOT, 'verification_docs', str(user_id))
-        os.makedirs(full_dir, exist_ok=True)
-
-        # Write file
-        full_path = os.path.join(settings.MEDIA_ROOT, relative_path)
-        with open(full_path, 'wb+') as dest:
-            for chunk in uploaded_file.chunks():
-                dest.write(chunk)
-
-        # 4. s3_key = local relative path (ready for S3 migration)
-        s3_key = relative_path.replace('\\', '/')
+        # 3. Écriture par le stockage configuré (bucket privé R2 en production,
+        #    disque local en développement) : voir trust/fichiers.py.
+        s3_key = enregistrer_piece(trust_profile.user_id, document_type, uploaded_file)
 
         # 5. Create VerificationDocument record
         doc = VerificationDocument.objects.create(
@@ -158,10 +143,8 @@ class VerificationDocumentReadSerializer(serializers.ModelSerializer):
         read_only_fields = fields
 
     def get_file_url(self, obj) -> str:
-        """Generate the media URL from s3_key."""
-        if obj.s3_key:
-            return f"{settings.MEDIA_URL}{obj.s3_key}"
-        return ''
+        """Lien de lecture signé, valable 15 min (jamais d'URL publique)."""
+        return lien_signe(obj.s3_key)
 
 
 
@@ -260,8 +243,10 @@ class AdminVerificationRequestSerializer(serializers.ModelSerializer):
         return mapping.get(obj.status, obj.status)
 
     def get_documentUrl(self, obj) -> str:
+        # Ancien circuit (demande de vérification) : même dossier privé, même
+        # lien signé.
         if obj.document_file:
-            return f"{settings.MEDIA_URL}{obj.document_file.name}"
+            return lien_signe(obj.document_file.name)
         return ''
 
     def get_trustScore(self, obj) -> int:
@@ -298,9 +283,8 @@ class AdminVerificationDocumentSerializer(serializers.ModelSerializer):
         return DOCUMENT_TYPE_LABELS.get(obj.document_type, obj.document_type)
 
     def get_fileUrl(self, obj) -> str:
-        if obj.s3_key:
-            return f"{settings.MEDIA_URL}{obj.s3_key}"
-        return ''
+        """Lien de lecture signé, valable 15 min (jamais d'URL publique)."""
+        return lien_signe(obj.s3_key)
 
     def get_reviewedBy(self, obj) -> str:
         if obj.reviewed_by:

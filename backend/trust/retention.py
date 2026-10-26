@@ -19,14 +19,13 @@ ouvert, elles restent.
 """
 import logging
 from datetime import date
-from pathlib import Path
 from typing import Optional
 
-from django.conf import settings
 from django.db import transaction
 from django.db.models import Q
 from django.utils import timezone
 
+from .fichiers import cle_valide, effacer_piece
 from .models import VerificationDocument
 
 logger = logging.getLogger('transporti')
@@ -34,10 +33,9 @@ logger = logging.getLogger('transporti')
 # Années de conservation après la fin de validité d'une pièce.
 KYC_RETENTION_YEARS = 5
 
-# Les pièces sont écrites sous MEDIA_ROOT/verification_docs/ (voir
-# VerificationDocumentUploadSerializer.create). La purge refuse de toucher à
-# un fichier hors de ce dossier, même si `s3_key` venait à être corrompu.
-KYC_SUBDIRECTORY = 'verification_docs'
+# Les pièces vivent dans le stockage configuré, sous le dossier KYC (voir
+# trust/fichiers.py). effacer_piece refuse toute clé hors de ce dossier, même
+# si `s3_key` venait à être corrompu.
 
 
 def retention_ends_on(expires_at: date) -> date:
@@ -61,21 +59,6 @@ def purge_cutoff(today: Optional[date] = None) -> date:
         return today.replace(year=today.year - KYC_RETENTION_YEARS)
     except ValueError:
         return today.replace(year=today.year - KYC_RETENTION_YEARS, day=28)
-
-
-def _fichier_de(document: VerificationDocument) -> Optional[Path]:
-    """Chemin du fichier d'une pièce, ou None s'il sortirait du dossier KYC."""
-    if not document.s3_key:
-        return None
-    racine = (Path(settings.MEDIA_ROOT) / KYC_SUBDIRECTORY).resolve()
-    chemin = (Path(settings.MEDIA_ROOT) / document.s3_key).resolve()
-    if racine not in chemin.parents:
-        logger.error(
-            'KYC_PURGE_PATH_REFUSED: document_id=%s s3_key=%r hors de %s',
-            document.id, document.s3_key, racine,
-        )
-        return None
-    return chemin
 
 
 def documents_a_purger(today: Optional[date] = None):
@@ -110,13 +93,19 @@ def purge_expired_kyc_documents(today: Optional[date] = None, dry_run: bool = Fa
             supprimees += 1
             continue
 
-        chemin = _fichier_de(document)
-        try:
-            if chemin is not None and chemin.exists():
-                chemin.unlink()
-        except OSError as exc:
-            logger.error('KYC_PURGE_FILE_FAILED: document_id=%s (%s)', document.id, exc)
-            continue
+        if document.s3_key and not cle_valide(document.s3_key):
+            # Clé corrompue : aucun fichier n'est touché (elle pourrait désigner
+            # n'importe quoi), mais la ligne part, sa conservation étant finie.
+            logger.error(
+                'KYC_PURGE_PATH_REFUSED: document_id=%s s3_key=%r hors du dossier KYC',
+                document.id, document.s3_key,
+            )
+        elif document.s3_key:
+            try:
+                effacer_piece(document.s3_key)
+            except Exception as exc:  # disque local (OSError) ou bucket (erreur botocore)
+                logger.error('KYC_PURGE_FILE_FAILED: document_id=%s (%s)', document.id, exc)
+                continue
 
         # `delete()` remet la clé primaire à None : on la garde avant.
         document_id = document.id
