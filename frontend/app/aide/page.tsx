@@ -30,7 +30,10 @@ function QR({ q, children }: { q: string; children: React.ReactNode }) {
 export default async function AidePage() {
   // Le plafond espèces vient du serveur : relever COD_MAX_AMOUNT ne doit pas
   // laisser l'aide annoncer l'ancienne valeur.
-  const { cod_max_amount } = await lirePaymentConfigServeur();
+  // En mode « espèces seules », les réponses qui parlent du paiement en
+  // ligne changent : il n'existe pas encore.
+  const { cod_max_amount, commission_debt_limit, online_payment_enabled } =
+    await lirePaymentConfigServeur();
 
   return (
     <LegalPage
@@ -124,18 +127,24 @@ export default async function AidePage() {
           </QR>
 
           <QR q="Comment je paie ?">
-            <p>
-              <strong>En ligne</strong>&nbsp;: vous réglez à l&apos;acceptation,
-              et la somme est <strong>retenue par Transporti</strong>. Le
-              transporteur n&apos;est payé qu&apos;après que vous ayez confirmé
-              la livraison. C&apos;est le mode le plus sûr.
-            </p>
+            {online_payment_enabled ? (
+              <p>
+                <strong>En ligne</strong>&nbsp;: vous réglez à
+                l&apos;acceptation, et la somme est{" "}
+                <strong>retenue par Transporti</strong>. Le transporteur
+                n&apos;est payé qu&apos;après que vous ayez confirmé la
+                livraison. C&apos;est le mode le plus sûr.
+              </p>
+            ) : null}
             <p>
               <strong>En espèces à la livraison</strong>&nbsp;: vous réglez
               directement le transporteur. Ce mode est limité à{" "}
               <strong>{cod_max_amount.toLocaleString("fr-FR")}&nbsp;TND</strong>{" "}
               par mission.
             </p>
+            {online_payment_enabled ? null : (
+              <p>Le paiement en ligne n&apos;est pas encore disponible.</p>
+            )}
           </QR>
 
           <QR q="C'est quoi le code de livraison ?">
@@ -155,13 +164,26 @@ export default async function AidePage() {
           </QR>
 
           <QR q="Comment je récupère mon argent si ça se passe mal ?">
-            <p>
-              Tant que vous n&apos;avez pas confirmé la réception, la somme
-              reste chez Transporti. Ouvrez un litige depuis la mission&nbsp;:
-              cela <strong>gèle le versement</strong>. Nos équipes examinent les
-              éléments des deux parties — messages, photos, jalons — et décident
-              de la répartition.
-            </p>
+            {online_payment_enabled ? (
+              <p>
+                Tant que vous n&apos;avez pas confirmé la réception, la somme
+                reste chez Transporti. Ouvrez un litige depuis la mission&nbsp;:
+                cela <strong>gèle le versement</strong>. Nos équipes examinent
+                les éléments des deux parties — messages, photos, jalons — et
+                décident de la répartition.
+              </p>
+            ) : (
+              <p>
+                Vous ne payez le transporteur qu&apos;à la livraison&nbsp;:{" "}
+                <strong>
+                  ne remettez l&apos;argent qu&apos;une fois la marchandise
+                  reçue
+                </strong>
+                . En cas de problème, ouvrez un litige depuis la mission&nbsp;:
+                nos équipes examinent les éléments des deux parties — messages,
+                photos, jalons.
+              </p>
+            )}
           </QR>
         </div>
       </Section>
@@ -247,17 +269,33 @@ export default async function AidePage() {
           </QR>
 
           <QR q="Quand suis-je payé ?">
-            <p>
-              Pour une mission réglée en ligne, dès que le client confirme la
-              réception — la somme rejoint alors votre solde disponible, et vous
-              pouvez demander un retrait depuis «&nbsp;Gains&nbsp;».
-            </p>
-            <p>
-              Pour une mission réglée en espèces, vous encaissez directement, et
-              la commission devient une dette réglée sur vos gains suivants.
-              Elle est affichée séparément de votre solde, pour que vous ne
-              confondiez pas les deux.
-            </p>
+            {online_payment_enabled ? (
+              <>
+                <p>
+                  Pour une mission réglée en ligne, dès que le client confirme
+                  la réception — la somme rejoint alors votre solde disponible,
+                  et vous pouvez demander un retrait depuis «&nbsp;Gains&nbsp;».
+                </p>
+                <p>
+                  Pour une mission réglée en espèces, vous encaissez
+                  directement, et la commission devient une dette réglée sur vos
+                  gains suivants. Elle est affichée séparément de votre solde,
+                  pour que vous ne confondiez pas les deux.
+                </p>
+              </>
+            ) : (
+              <p>
+                Le client vous paie en espèces à la livraison&nbsp;: vous
+                encaissez directement. La commission de Transporti devient une
+                dette, affichée dans «&nbsp;Gains&nbsp;», à régler auprès de
+                Transporti. Au-delà de{" "}
+                <strong>
+                  {commission_debt_limit.toLocaleString("fr-FR")}&nbsp;TND
+                </strong>{" "}
+                de dette, vous ne pouvez plus accepter de mission jusqu&apos;au
+                règlement.
+              </p>
+            )}
           </QR>
         </div>
       </Section>

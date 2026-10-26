@@ -15,6 +15,8 @@ import { BookingSummary } from "@/components/booking/BookingSummary";
 import { PaymentMethodSelector } from "@/components/booking/PaymentMethodSelector";
 import { PaymentGateway } from "@/components/booking/PaymentGateway";
 import { EscrowBadge } from "@/components/booking/EscrowBadge";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { moyenDePaiementParDefaut } from "@/lib/services/paymentConfig";
 import LoadingState from "@/components/ui/LoadingState";
 import {
   ArrowLeft,
@@ -69,9 +71,15 @@ export default function BookingPage() {
     : undefined;
 
   const [step, setStep] = useState<BookingStep>("review");
+  const paymentConfig = usePaymentConfig();
   const [paymentMethod, setPaymentMethod] = useState<"DIGITAL" | "COD">(
-    "DIGITAL",
+    moyenDePaiementParDefaut(paymentConfig),
   );
+  // La configuration arrive après le premier rendu : on se cale sur elle
+  // (mode « espèces seules » → COD, l'option en ligne n'existe pas).
+  useEffect(() => {
+    setPaymentMethod(moyenDePaiementParDefaut(paymentConfig));
+  }, [paymentConfig]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showGateway, setShowGateway] = useState(false);
   const [job, setJob] = useState<JobData | null>(null);
@@ -340,7 +348,13 @@ export default function BookingPage() {
                         setStep("confirm");
                       }
                     }}
-                    className="flex-[2] bg-brand-600 text-white py-3.5 rounded-xl font-semibold hover:bg-brand-700 transition-colors shadow-lg shadow-primary-600/20"
+                    // Espèces seules et montant au-delà du plafond : aucun
+                    // moyen de paiement possible, on ne laisse pas continuer.
+                    disabled={
+                      paymentMethod === "COD" &&
+                      offer.total_price > paymentConfig.cod_max_amount
+                    }
+                    className="flex-[2] bg-brand-600 text-white py-3.5 rounded-xl font-semibold hover:bg-brand-700 transition-colors shadow-lg shadow-primary-600/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {paymentMethod === "DIGITAL"
                       ? t.bookingPage.proceedToPayment

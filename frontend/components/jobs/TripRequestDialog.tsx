@@ -53,7 +53,7 @@ export function TripRequestDialog({
 }: Props) {
   const { t } = useAppI18n();
   // Plafond espèces lu sur le serveur (il était écrit 300 en dur ici).
-  const { cod_max_amount: codMax } = usePaymentConfig();
+  const { cod_max_amount: codMax, online_payment_enabled } = usePaymentConfig();
 
   if (!ouvert) return null;
 
@@ -151,19 +151,25 @@ export function TripRequestDialog({
             <label className="block text-[14px] font-bold text-ink-700 mb-1.5">
               {t.jobDetail.paymentMethod}
             </label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => onPaiementChange("DIGITAL")}
-                className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-all ${
-                  paiement === "DIGITAL"
-                    ? "border-blue-600 bg-blue-50 text-blue-700"
-                    : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
-                }`}
-              >
-                <CreditCard className="w-4 h-4" />
-                {t.jobDetail.securePayment}
-              </button>
+            {/* Une colonne en mode « espèces seules » : l'option en ligne
+                n'est pas rendue. */}
+            <div
+              className={`grid gap-2 ${online_payment_enabled ? "grid-cols-2" : "grid-cols-1"}`}
+            >
+              {online_payment_enabled ? (
+                <button
+                  type="button"
+                  onClick={() => onPaiementChange("DIGITAL")}
+                  className={`flex items-center justify-center gap-2 py-3 px-3 rounded-xl border-2 text-sm font-medium transition-all ${
+                    paiement === "DIGITAL"
+                      ? "border-blue-600 bg-blue-50 text-blue-700"
+                      : "border-neutral-200 text-neutral-600 hover:border-neutral-300"
+                  }`}
+                >
+                  <CreditCard className="w-4 h-4" />
+                  {t.jobDetail.securePayment}
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => onPaiementChange("COD")}
@@ -180,7 +186,11 @@ export function TripRequestDialog({
             {paiement === "COD" && parseFloat(prix) > codMax && (
               <p className="text-xs text-error-500 mt-1 flex items-center gap-1">
                 <AlertCircle className="w-3 h-3" />
-                {interpolate(t.jobDetail.codMax, { n: codMax })}
+                {online_payment_enabled
+                  ? interpolate(t.jobDetail.codMax, { n: codMax })
+                  : interpolate(t.booking.codUnavailableCashOnly, {
+                      threshold: codMax,
+                    })}
               </p>
             )}
           </div>

@@ -4,6 +4,12 @@ from rest_framework import serializers
 from django.utils import timezone
 from .models import TransportJob, Offer
 from .participants import get_paying_client
+from payments.online import (
+    PAIEMENT_EN_LIGNE_INDISPONIBLE,
+    default_payment_method,
+    message_plafond_especes,
+    online_payment_enabled,
+)
 
 
 class TransportJobCreateSerializer(serializers.ModelSerializer):
@@ -649,9 +655,15 @@ class OfferAcceptSerializer(serializers.Serializer):
     """
     payment_method = serializers.ChoiceField(
         choices=['DIGITAL', 'COD'],
-        default='DIGITAL',
+        # Appelé à chaque requête : COD en mode « espèces seules ».
+        default=default_payment_method,
         help_text="DIGITAL = escrow payment, COD = cash on delivery"
     )
+
+    def validate_payment_method(self, value):
+        if value == 'DIGITAL' and not online_payment_enabled():
+            raise serializers.ValidationError(PAIEMENT_EN_LIGNE_INDISPONIBLE)
+        return value
 
 
 class TransportJobUpdateSerializer(serializers.ModelSerializer):
@@ -1153,9 +1165,15 @@ class ReturnTripRequestCreateSerializer(serializers.ModelSerializer):
     def validate(self, attrs):
         from payments.debt import cod_max_amount
         COD_MAX = cod_max_amount()
-        if attrs.get('payment_method') == 'COD' and attrs['proposed_price'] > COD_MAX:
+        # Champ omis : le défaut du modèle (DIGITAL) ne vaut pas en mode
+        # « espèces seules ».
+        if 'payment_method' not in attrs:
+            attrs['payment_method'] = default_payment_method()
+        if attrs['payment_method'] == 'DIGITAL' and not online_payment_enabled():
+            raise serializers.ValidationError({'payment_method': PAIEMENT_EN_LIGNE_INDISPONIBLE})
+        if attrs['payment_method'] == 'COD' and attrs['proposed_price'] > COD_MAX:
             raise serializers.ValidationError(
-                {'payment_method': f'Paiement à la livraison limité à {COD_MAX} TND. Choisissez le paiement digital.'}
+                {'payment_method': message_plafond_especes(COD_MAX)}
             )
 
         debut, fin = attrs.get('pickup_from'), attrs.get('pickup_until')

@@ -446,7 +446,8 @@ ESCROW_AUTO_RELEASE_HOURS = int(os.environ.get('ESCROW_AUTO_RELEASE_HOURS', '48'
 # PAYMENT GATEWAY CONFIGURATION
 # =============================================================================
 
-# Gateway mode: 'SANDBOX' (development) or 'KONNECT' (production)
+# Gateway mode: 'SANDBOX' (development), 'KONNECT' (production) or
+# 'DISABLED' (« espèces seules » : paiement en ligne coupé, payments/online.py).
 PAYMENT_GATEWAY = os.environ.get('PAYMENT_GATEWAY', 'SANDBOX')
 
 # Konnect.tn settings (Tunisia's main payment gateway)
@@ -495,7 +496,9 @@ if IS_PRODUCTION:
             "encaisser. Definir PAYMENT_GATEWAY (ex. 'KONNECT') avant de "
             "deployer."
         )
-    if not PAYMENT_WEBHOOK_SECRET:
+    # En mode « espèces seules », le webhook refuse tout de lui-même
+    # (PaymentWebhookView) : le secret n'est exigé que si l'argent circule.
+    if not PAYMENT_WEBHOOK_SECRET and PAYMENT_GATEWAY != 'DISABLED':
         raise RuntimeError(
             "CRITICAL: PAYMENT_WEBHOOK_SECRET est vide en production. "
             "La validation de signature est alors ignoree sur un endpoint "

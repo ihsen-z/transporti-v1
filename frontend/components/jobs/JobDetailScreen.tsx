@@ -45,6 +45,8 @@ import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { moyenDePaiementParDefaut } from "@/lib/services/paymentConfig";
 import {
   BadgeCheck,
   ShieldAlert,
@@ -96,8 +98,11 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
   // Return trip booking state
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingPrice, setBookingPrice] = useState("");
+  // Moyen proposé à l'ouverture de la demande : espèces en mode « espèces
+  // seules » (lib/services/paymentConfig.ts).
+  const paymentConfig = usePaymentConfig();
   const [bookingPayment, setBookingPayment] = useState<"DIGITAL" | "COD">(
-    "DIGITAL",
+    moyenDePaiementParDefaut(paymentConfig),
   );
   const [bookingLoading, setBookingLoading] = useState(false);
   // D5 — structured request (default path when instant_booking is off)
@@ -721,7 +726,7 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
                 actionEnCours={counterActionLoading}
                 onOuvrirLaDemande={() => {
                   setBookingPrice(String(job.price_tnd_min || ""));
-                  setBookingPayment("DIGITAL");
+                  setBookingPayment(moyenDePaiementParDefaut(paymentConfig));
                   setShowBookingModal(true);
                 }}
                 onAccepterContreProposition={handleAcceptCounter}

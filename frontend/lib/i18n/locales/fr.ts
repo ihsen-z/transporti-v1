@@ -782,6 +782,10 @@ export const fr = {
     codDesc: "Payez en espèces directement au transporteur après la livraison.",
     codUnavailable:
       "Indisponible au-delà de {threshold} TND (paiement digital obligatoire)",
+    codUnavailableCashOnly:
+      "Ce montant dépasse le plafond espèces ({threshold} TND), et le paiement en ligne n'est pas encore disponible.",
+    cashOnlyNote:
+      "Pour l'instant, Transporti fonctionne en espèces : vous payez le transporteur à la livraison.",
     secure100: "Paiement 100% sécurisé",
     secure100Desc:
       "Vos informations de paiement sont protégées par un cryptage de bout en bout. En cas de litige, notre équipe est disponible 24/7.",
