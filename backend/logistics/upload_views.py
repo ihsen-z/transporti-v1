@@ -8,7 +8,7 @@ import logging
 from PIL import Image, ExifTags
 from io import BytesIO
 
-from django.conf import settings
+from django.urls import reverse
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 
@@ -155,8 +155,12 @@ class PhotoUploadView(APIView):
             # Save using Django's default storage
             saved_path = default_storage.save(upload_path, ContentFile(compressed_content))
 
-            # Build the public URL
-            photo_url = request.build_absolute_uri(f'{settings.MEDIA_URL}{saved_path}')
+            # URL stable servie par /media/, qui lit le stockage configuré
+            # (disque ou R2). Elle est enregistrée en base (TransportJob.photos) :
+            # une URL signée du bucket expirerait au bout d'une heure.
+            photo_url = request.build_absolute_uri(
+                reverse('media-public', kwargs={'chemin': saved_path})
+            )
 
         except Exception as e:
             logger.error(f"Photo upload: storage error for user {request.user.id}: {e}", exc_info=True)
