@@ -408,6 +408,10 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         job = attrs['job']
 
+        # Plafond de dette de commission (403, pas une erreur de champ).
+        from payments.debt import ensure_transporter_can_engage
+        ensure_transporter_can_engage(user)
+
         # Check existing offer from this transporter
         if Offer.objects.filter(job=job, transporter=user).exists():
             raise serializers.ValidationError({"job": "Vous avez déjà soumis une offre pour cette mission."})
@@ -1147,7 +1151,8 @@ class ReturnTripRequestCreateSerializer(serializers.ModelSerializer):
         return value
 
     def validate(self, attrs):
-        COD_MAX = 300
+        from payments.debt import cod_max_amount
+        COD_MAX = cod_max_amount()
         if attrs.get('payment_method') == 'COD' and attrs['proposed_price'] > COD_MAX:
             raise serializers.ValidationError(
                 {'payment_method': f'Paiement à la livraison limité à {COD_MAX} TND. Choisissez le paiement digital.'}

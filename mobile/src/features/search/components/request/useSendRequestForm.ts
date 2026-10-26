@@ -33,7 +33,11 @@ const VALEURS_INITIALES: RequestFormValues = {
   fromTime: '',
   untilTime: '',
   price: '',
-  method: 'DIGITAL',
+  // Espèces par défaut : c'est le mode de paiement du lancement (indispensable
+  // sur le marché tunisien), et le paiement en ligne n'est pas encore ouvert.
+  // Avec « Digital » par défaut, vu en recette le 25/10, une cliente qui ne
+  // touchait à rien envoyait une demande qu'elle ne pourrait pas payer.
+  method: 'COD',
 };
 
 // Champs dont l'erreur s'affiche SOUS le champ, là où se trouve la correction.
@@ -90,8 +94,8 @@ export function useSendRequestForm(trip: TripResultDto | null, onClose: () => vo
   );
   const methodOptions = useMemo<RequestOption[]>(
     () => [
-      { value: 'DIGITAL', label: t('search.request.method_digital') },
       { value: 'COD', label: t('search.request.method_cod') },
+      { value: 'DIGITAL', label: t('search.request.method_digital') },
     ],
     [t],
   );

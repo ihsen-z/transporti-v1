@@ -736,11 +736,11 @@ class JobCompleteView(APIView):
                 from payments.services import create_commission_debt_on_cod
                 create_commission_debt_on_cod(job, booking.accepted_offer)
             except ValueError as exc:
-                # Trust guard refusal or an entry that already exists. The
-                # delivery has happened, so completion is never blocked — but
-                # this needs back-office follow-up, hence the ERROR level.
-                logger.error(
-                    'COD_COMMISSION_DEBT_FAILED: job_id=%s reason=%s', job.id, exc
+                # Seul cas restant : une dette déjà inscrite pour ce job (rejeu).
+                # Le refus de confiance, lui, ne fait plus perdre la dette :
+                # create_commission_debt_on_cod l'inscrit et signale l'anomalie.
+                logger.warning(
+                    'COD_COMMISSION_DEBT_DUPLICATE: job_id=%s reason=%s', job.id, exc
                 )
 
         # Timeline: DELIVERED event carries the proof
