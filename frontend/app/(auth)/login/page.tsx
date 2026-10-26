@@ -16,6 +16,7 @@ import {
   AuthLabel,
 } from "@/components/auth/AuthScreen";
 import SocialAuthButtons from "@/components/auth/SocialAuthButtons";
+import { CONNEXION_SOCIALE_ACTIVE } from "@/lib/socialProviders";
 import type { UserRole } from "@/lib/auth";
 
 /* -------------------------------------------------------------------------- */
@@ -204,14 +205,20 @@ export default function LoginPage() {
         </form>
       </AuthCard>
 
-      <AuthDivider label={t.auth.orContinueWith} />
+      {/* Le séparateur « ou continuer avec » n'a de sens que s'il y a un
+          bouton social derrière (voir lib/socialProviders.ts). */}
+      {CONNEXION_SOCIALE_ACTIVE ? (
+        <>
+          <AuthDivider label={t.auth.orContinueWith} />
 
-      <SocialAuthButtons
-        onGoogle={handleGoogleLogin}
-        onFacebook={handleFacebookLogin}
-        loadingProvider={isSocialLoading}
-        disabled={isAnyLoading}
-      />
+          <SocialAuthButtons
+            onGoogle={handleGoogleLogin}
+            onFacebook={handleFacebookLogin}
+            loadingProvider={isSocialLoading}
+            disabled={isAnyLoading}
+          />
+        </>
+      ) : null}
 
       <AuthFooterLink
         question={t.auth.noAccount}
