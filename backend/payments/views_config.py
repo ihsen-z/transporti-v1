@@ -6,8 +6,11 @@ l'application mobile (libellé « À la livraison (≤ 300 TND) ») et dans troi
 composants du site web. Le serveur, lui, lit settings.COD_MAX_AMOUNT : relever
 le réglage aurait laissé les écrans annoncer 300 et refuser d'avance des
 montants que le serveur acceptait. Les écrans lisent désormais ces valeurs ici.
+
+Lisible sans connexion : la page publique /aide annonce le plafond espèces, et
+ces deux règles n'ont rien de confidentiel (elles sont dans les CGU).
 """
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -16,7 +19,7 @@ from .debt import cod_max_amount, commission_debt_limit
 
 class PaymentConfigView(APIView):
     """GET /api/v1/payments/config/ — plafond espèces et plafond de dette."""
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
 
     def get(self, request):
         return Response({

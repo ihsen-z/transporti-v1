@@ -274,6 +274,9 @@ class ConfigurationServieAuxEcransTests(APITestCase):
     def test_suit_le_reglage_du_serveur(self):
         self.assertEqual(self.client.get(f'{V1}/payments/config/').data['cod_max_amount'], 450.0)
 
-    def test_exige_une_connexion(self):
+    def test_lisible_sans_connexion(self):
+        # La page publique /aide annonce le plafond espèces avant toute connexion.
         self.client.force_authenticate(None)
-        self.assertEqual(self.client.get(f'{V1}/payments/config/').status_code, 401)
+        reponse = self.client.get(f'{V1}/payments/config/')
+        self.assertEqual(reponse.status_code, 200)
+        self.assertEqual(reponse.data['cod_max_amount'], 300.0)

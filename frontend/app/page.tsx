@@ -6,6 +6,8 @@ import Link from "next/link";
 import { Check, Lock } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
 import { RETURN_TRIPS_FIRST } from "@/lib/flags";
 
 /* ============================================================================
@@ -38,6 +40,8 @@ function AnimatedSection({
 export default function Home() {
   const { t } = useAppI18n();
   const l = t.landing;
+  // La FAQ cite le plafond espèces du serveur (route publique).
+  const { cod_max_amount } = usePaymentConfig();
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -481,7 +485,10 @@ export default function Home() {
                 { q: l.faq1Q, a: l.faq1A },
                 { q: l.faq2Q, a: l.faq2A },
                 { q: l.faq3Q, a: l.faq3A },
-                { q: l.faq4Q, a: l.faq4A },
+                {
+                  q: l.faq4Q,
+                  a: interpolate(l.faq4A, { cap: cod_max_amount }),
+                },
                 { q: l.faq5Q, a: l.faq5A },
               ].map((faq, i) => (
                 <AnimatedSection key={i} delay={i * 0.08}>

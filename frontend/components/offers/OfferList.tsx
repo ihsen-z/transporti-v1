@@ -237,7 +237,9 @@ export function OfferList({
                     {t.offersComponents.paymentCOD}
                   </p>
                   <p className="text-sm text-neutral-500 mt-0.5">
-                    {t.offersComponents.paymentCODDesc}
+                    {interpolate(t.offersComponents.paymentCODDesc, {
+                      cap: COD_MAX_TND,
+                    })}
                   </p>
                   {!codEligible && (
                     <div className="flex items-center gap-1 text-xs text-error-500 mt-1">

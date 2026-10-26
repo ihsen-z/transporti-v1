@@ -10,6 +10,8 @@ import {
 import { ApiError } from "@/lib/api/client";
 import { countActiveOffers, submitOffer } from "@/lib/services/offers";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
 import { formatTND } from "@/lib/format";
 
 interface OfferFormProps {
@@ -34,6 +36,8 @@ export function OfferForm({
   onOfferSubmitted,
 }: OfferFormProps) {
   const { t: allT } = useAppI18n();
+  // Plafond espèces du serveur, cité dans la note sous le prix.
+  const { cod_max_amount } = usePaymentConfig();
   const t = allT.offerForm;
 
   const [priceNet, setPriceNet] = useState("");
@@ -321,7 +325,7 @@ export function OfferForm({
               className="mt-px h-3.5 w-3.5 flex-shrink-0"
               strokeWidth={2}
             />
-            {t.codNote}
+            {interpolate(t.codNote, { cap: cod_max_amount })}
           </p>
         </div>
 
