@@ -20,7 +20,7 @@ function SkeletonPulse({ className }: { className?: string }) {
 
 function SkeletonRow() {
   return (
-    <div className="flex items-center gap-4 p-4 border-b border-neutral-100">
+    <div className="flex items-center gap-4 p-4 border-b border-line">
       <SkeletonPulse className="h-4 w-16" />
       <SkeletonPulse className="h-4 w-32" />
       <SkeletonPulse className="h-4 w-24" />
@@ -32,7 +32,7 @@ function SkeletonRow() {
 
 function SkeletonCard() {
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 p-6 space-y-3">
+    <div className="bg-surface rounded-card shadow-card p-6 flex flex-col gap-3">
       <SkeletonPulse className="h-4 w-24" />
       <SkeletonPulse className="h-8 w-20" />
       <SkeletonPulse className="h-3 w-32" />
@@ -56,8 +56,8 @@ export default function LoadingState({
 
   if (variant === "page") {
     return (
-      <div className="space-y-6">
-        <div className="space-y-2">
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
           <SkeletonPulse className="h-7 w-48" />
           <SkeletonPulse className="h-4 w-64" />
         </div>
@@ -66,7 +66,7 @@ export default function LoadingState({
             <SkeletonCard key={i} />
           ))}
         </div>
-        <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+        <div className="bg-surface rounded-card shadow-card overflow-hidden">
           {Array.from({ length: count }).map((_, i) => (
             <SkeletonRow key={i} />
           ))}
@@ -77,7 +77,7 @@ export default function LoadingState({
 
   // Default: table
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 overflow-hidden">
+    <div className="bg-surface rounded-card shadow-card overflow-hidden">
       {Array.from({ length: count }).map((_, i) => (
         <SkeletonRow key={i} />
       ))}

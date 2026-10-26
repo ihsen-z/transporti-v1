@@ -1,7 +1,7 @@
 "use client";
 
-import React, { useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import React from "react";
+import { useRouter } from "next/navigation";
 import { ArrowLeft, Languages } from "lucide-react";
 import { TransporterProfileCard } from "@/components/profile/TransporterProfileCard";
 import { TrustBadges } from "@/components/profile/TrustBadges";
@@ -101,7 +101,7 @@ export default function TransporterProfilePage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 flex flex-col gap-6">
           <TransporterProfileCard
             firstName={profile.first_name}
             lastName={profile.last_name}
@@ -127,7 +127,7 @@ export default function TransporterProfilePage() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           <StatsGrid
             completionRate={profile.completion_rate}
             totalJobsCompleted={profile.total_jobs_completed}

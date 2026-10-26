@@ -12,7 +12,6 @@ import {
   PlusCircle,
   Search,
   ShieldCheck,
-  MessageSquare,
   Star,
   ChevronRight,
   X,
@@ -51,21 +50,21 @@ const CLIENT_STEPS: OnboardingStep[] = [
     icon: PlusCircle,
     cle: "publish",
     href: "/demandes/nouvelle",
-    color: "from-brand-600 to-brand-800",
+    color: "bg-blue-700",
   },
   {
     id: "browse",
     icon: Search,
     cle: "browse",
     href: "/jobs",
-    color: "from-purple-600 to-purple-800",
+    color: "bg-blue-700",
   },
   {
     id: "profile",
     icon: Star,
     cle: "profile",
     href: "/compte",
-    color: "from-accent-600 to-accent-800",
+    color: "bg-green-500",
   },
 ];
 
@@ -75,14 +74,14 @@ const TRANSPORTER_STEPS: OnboardingStep[] = [
     icon: ShieldCheck,
     cle: "verify",
     href: "/documents",
-    color: "from-brand-600 to-brand-800",
+    color: "bg-blue-700",
   },
   {
     id: "browse_jobs",
     icon: Truck,
     cle: "jobs",
     href: "/jobs",
-    color: "from-purple-600 to-purple-800",
+    color: "bg-blue-700",
   },
   {
     id: "zones",
@@ -95,7 +94,7 @@ const TRANSPORTER_STEPS: OnboardingStep[] = [
     // Destination calculee au rendu : les zones s'editent sur le profil du
     // transporteur, dont l'URL porte son identifiant.
     href: "",
-    color: "from-accent-600 to-accent-800",
+    color: "bg-green-500",
   },
 ];
 
@@ -202,24 +201,25 @@ export default function OnboardingWizard() {
   return (
     <div
       data-testid="guide-demarrage"
-      className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm mb-8 animate-fade-in"
+      className="card card--flush animate-fade-in overflow-hidden"
     >
-      {/* Header */}
-      <div className="bg-gradient-to-r from-brand-600 via-brand-700 to-brand-900 px-6 py-5 flex items-center justify-between relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
-        <div className="flex items-center gap-3 text-white relative z-10">
-          <div className="w-10 h-10 bg-white/15 rounded-xl flex items-center justify-center">
-            <Sparkles className="w-5 h-5" />
-          </div>
-          <div>
-            <h2 className="text-lg font-bold">
+      {/* En-tête — carte BLANCHE : l'écran ne porte qu'un seul bandeau bleu,
+          celui du haut. Un second bandeau ici se lirait comme un doublon.
+          La pastille bleue suffit à rattacher le bloc à la marque. */}
+      <div className="flex items-start justify-between gap-3 border-b border-line px-5 py-5 sm:px-6">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-chip bg-blue-50 text-blue-700">
+            <Sparkles className="h-5 w-5" strokeWidth={2} />
+          </span>
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <h2 className="text-[17px] font-extrabold leading-[1.25] tracking-heading text-ink-900">
               {user.first_name
                 ? interpolate(t.onboarding.welcomeNamed, {
                     prenom: user.first_name,
                   })
                 : t.onboarding.welcome}
             </h2>
-            <p className="text-white/70 text-xs">
+            <p className="text-[13px] text-ink-500">
               {isTransporter
                 ? t.onboarding.subtitleTransporter
                 : t.onboarding.subtitleClient}
@@ -228,57 +228,58 @@ export default function OnboardingWizard() {
         </div>
         <button
           onClick={handleDismiss}
-          className="text-white/50 hover:text-white transition-colors p-1.5 hover:bg-white/10 rounded-lg relative z-10"
+          className="grid h-9 w-9 flex-shrink-0 place-items-center rounded-chip text-ink-300 transition-colors hover:bg-app hover:text-ink-500"
           title={t.onboarding.dismiss}
         >
-          <X className="w-5 h-5" />
+          <X className="h-4 w-4" strokeWidth={2} />
         </button>
       </div>
 
       {/* Step Progress */}
-      <div className="flex gap-1 px-6 pt-4">
+      <div className="stepper-track px-5 pt-5 sm:px-6">
         {steps.map((s, i) => (
           <button
             key={s.id}
             onClick={() => goToStep(i)}
-            className={`flex-1 h-1.5 rounded-full transition-all ${
+            aria-current={i === currentStep ? "step" : undefined}
+            className={`stepper-seg transition-colors duration-120 ${
               i === currentStep
-                ? "bg-brand-600"
+                ? "stepper-seg--current"
                 : i < currentStep
-                  ? "bg-brand-200"
-                  : "bg-neutral-200"
+                  ? "stepper-seg--done"
+                  : ""
             }`}
           />
         ))}
       </div>
 
       {/* Step Content */}
-      <div className="p-6">
+      <div className="p-5 sm:p-6">
         <div className="flex items-start gap-4">
           <div
-            className={`w-12 h-12 rounded-xl bg-gradient-to-br ${step.color} flex items-center justify-center flex-shrink-0 shadow-lg`}
+            className={`grid h-12 w-12 flex-shrink-0 place-items-center rounded-tile ${step.color}`}
           >
             <StepIcon className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2 mb-1">
-              <span className="text-xs font-medium text-neutral-400 uppercase tracking-wider">
+              <span className="text-[11.5px] font-semibold uppercase tracking-[0.06em] text-ink-300 tabular">
                 {interpolate(t.onboarding.stepCounter, {
                   courante: currentStep + 1,
                   total: steps.length,
                 })}
               </span>
             </div>
-            <h3 className="text-lg font-bold text-neutral-900 mb-1">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-1">
               {titreEtape}
             </h3>
-            <p className="text-sm text-neutral-500 mb-4 leading-relaxed">
+            <p className="mb-4 text-[14.5px] leading-[1.55] text-ink-500">
               {descriptionEtape}
             </p>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
               <Link
                 href={destination}
-                className="inline-flex items-center gap-2 bg-brand-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-brand-700 transition-all hover:scale-[1.02] shadow-sm"
+                className="btn-base min-h-[44px] rounded-cta bg-blue-700 px-4 text-[14.5px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px"
               >
                 {ctaEtape}
                 <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
@@ -286,7 +287,7 @@ export default function OnboardingWizard() {
               {currentStep < steps.length - 1 && (
                 <button
                   onClick={() => goToStep(currentStep + 1)}
-                  className="text-sm text-neutral-500 hover:text-brand-600 font-medium flex items-center gap-1"
+                  className="flex items-center gap-1 text-[13px] font-semibold text-ink-500 transition-colors hover:text-blue-700"
                 >
                   {t.onboarding.skip}
                   <ChevronRight className="w-4 h-4 rtl:-scale-x-100" />
@@ -295,7 +296,7 @@ export default function OnboardingWizard() {
               {currentStep === steps.length - 1 && (
                 <button
                   onClick={handleDismiss}
-                  className="text-sm text-neutral-500 hover:text-accent-600 font-medium flex items-center gap-1"
+                  className="flex items-center gap-1 text-[13px] font-semibold text-ink-500 transition-colors hover:text-green-600"
                 >
                   <CheckCircle2 className="w-4 h-4" />
                   {t.onboarding.understood}

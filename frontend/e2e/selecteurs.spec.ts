@@ -331,12 +331,23 @@ test.describe("En-tete public — tenue a toutes les largeurs", () => {
         return {
           debordement: interieur.scrollWidth > interieur.clientWidth,
           // Un libelle qui se coupe double sa hauteur. Les liens de navigation
-          // n'ont aucun rembourrage vertical : 24 px = une ligne.
-          hauteursLiens: Array.from(
+          // n'ont aucun rembourrage vertical : leur hauteur divisee par leur
+          // interligne donne leur nombre de lignes. Une hauteur figee (24 px)
+          // cassait des que la charte changeait la taille du texte, sans
+          // qu'aucun libelle ne se coupe.
+          lignesLiens: Array.from(
             new Set(
               elements
                 .filter((e) => e.tagName === "A" && e.closest("nav") !== null)
-                .map((e) => Math.round(e.getBoundingClientRect().height)),
+                .map((e) => {
+                  const style = getComputedStyle(e);
+                  const interligne =
+                    parseFloat(style.lineHeight) ||
+                    parseFloat(style.fontSize) * 1.2;
+                  return Math.round(
+                    e.getBoundingClientRect().height / interligne,
+                  );
+                }),
             ),
           ),
           nombreVisible: elements.length,
@@ -347,9 +358,9 @@ test.describe("En-tete public — tenue a toutes les largeurs", () => {
         false,
       );
       expect(
-        mesure.hauteursLiens,
+        mesure.lignesLiens,
         "un libelle de navigation se coupe sur deux lignes",
-      ).toEqual([24]);
+      ).toEqual([1]);
       // Logo + 3 liens + langue + transporteur + 2 boutons de compte.
       expect(mesure.nombreVisible).toBe(8);
     });

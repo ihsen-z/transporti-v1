@@ -20,9 +20,9 @@ export default function AppError({
   return (
     <div className="min-h-[60vh] flex items-center justify-center px-4">
       <div className="max-w-md w-full text-center">
-        <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 bg-error-50 rounded-full flex items-center justify-center mx-auto mb-6">
           <svg
-            className="w-8 h-8 text-red-600"
+            className="w-8 h-8 text-error-600"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -35,12 +35,10 @@ export default function AppError({
             />
           </svg>
         </div>
-        <h2 className="text-xl font-bold text-neutral-900 mb-2">
+        <h2 className="text-[19px] font-extrabold tracking-heading text-ink-900 mb-2">
           {t.errors.pageError}
         </h2>
-        <p className="text-neutral-600 mb-6">
-          {t.errors.pageErrorDesc}
-        </p>
+        <p className="text-neutral-600 mb-6">{t.errors.pageErrorDesc}</p>
         <div className="flex gap-3 justify-center">
           <button
             onClick={reset}

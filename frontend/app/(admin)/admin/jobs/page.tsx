@@ -148,7 +148,8 @@ export default function AdminJobsPage() {
 
   /* ---- Sorted jobs (client-side sort on server-filtered page) ---- */
   const filteredJobs = useMemo(() => {
-    let jobs = [...allJobs];
+    // La copie n est jamais reaffectee : elle est triee en place.
+    const jobs = [...allJobs];
 
     // Client-side sort only (filtering is server-side now)
     jobs.sort((a, b) => {
@@ -365,7 +366,7 @@ export default function AdminJobsPage() {
             <button
               onClick={(e) => openCancelModal(job, e)}
               title="Annuler ce job"
-              className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              className="p-1.5 text-error-400 hover:text-error-600 hover:bg-error-50 rounded-lg transition-colors"
             >
               <Ban className="w-4 h-4" />
             </button>
@@ -374,7 +375,7 @@ export default function AdminJobsPage() {
           <button
             onClick={(e) => openForceModal(job, e)}
             title="Changer le statut"
-            className="p-1.5 text-amber-400 hover:text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
+            className="p-1.5 text-warning-400 hover:text-warning-600 hover:bg-warning-50 rounded-lg transition-colors"
           >
             <RefreshCw className="w-4 h-4" />
           </button>
@@ -392,14 +393,14 @@ export default function AdminJobsPage() {
   ];
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Feedback Toast */}
       {feedback && (
         <div
           className={`fixed top-6 end-6 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-all animate-in slide-in-from-right ${
             feedback.type === "success"
               ? "bg-green-50 text-green-700 border border-green-200"
-              : "bg-red-50 text-red-700 border border-red-200"
+              : "bg-error-50 text-error-700 border border-error-200"
           }`}
         >
           {feedback.message}
@@ -408,7 +409,7 @@ export default function AdminJobsPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
             {t.jobs.title}
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">
@@ -455,7 +456,7 @@ export default function AdminJobsPage() {
 
       {/* Loading State */}
       {loading && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+        <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto mb-4" />
           <p className="text-neutral-500 dark:text-neutral-400">
             {t.jobs.loading}
@@ -465,7 +466,7 @@ export default function AdminJobsPage() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+        <div className="bg-error-50 border border-error-200 rounded-xl p-4 text-error-700 text-sm">
           ⚠️ Erreur de chargement: {error?.message}
         </div>
       )}
@@ -492,7 +493,7 @@ export default function AdminJobsPage() {
                       ${
                         isActive
                           ? "bg-brand-600 text-white shadow-sm"
-                          : "bg-white dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
+                          : "bg-surface dark:bg-[#1e293b] text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700 border border-neutral-200 dark:border-neutral-600"
                       }
                     `}
                   >
@@ -515,13 +516,13 @@ export default function AdminJobsPage() {
                 value={searchQuery}
                 onChange={(e) => handleSearchChange(e.target.value)}
                 placeholder={t.jobs.searchPlaceholder}
-                className="ps-9 pe-4 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 w-full sm:w-80"
+                className="ps-9 pe-4 py-2 bg-surface dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-600 rounded-lg text-sm text-neutral-900 dark:text-neutral-200 placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-brand-500 w-full sm:w-80"
               />
             </div>
           </div>
 
           {/* Stats Bar */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
             <div className="flex flex-wrap gap-6 text-sm">
               <div>
                 <span className="text-neutral-500 dark:text-neutral-400">
@@ -577,11 +578,11 @@ export default function AdminJobsPage() {
       {/* ---------- Cancel Modal ---------- */}
       {showCancelModal && targetJob && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-line">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center">
-                  <Ban className="w-5 h-5 text-red-600" />
+                <div className="w-10 h-10 rounded-full bg-error-100 flex items-center justify-center">
+                  <Ban className="w-5 h-5 text-error-600" />
                 </div>
                 <div>
                   <h3 className="font-bold text-neutral-900 dark:text-white">
@@ -600,13 +601,13 @@ export default function AdminJobsPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-start gap-2">
-                <AlertTriangle className="w-4 h-4 text-red-500 mt-0.5 flex-shrink-0" />
-                <p className="text-sm text-red-700">{t.jobs.cancelWarning}</p>
+            <div className="p-6 flex flex-col gap-4">
+              <div className="bg-error-50 border border-error-200 rounded-xl p-3 flex items-start gap-2">
+                <AlertTriangle className="w-4 h-4 text-error-500 mt-0.5 flex-shrink-0" />
+                <p className="text-sm text-error-700">{t.jobs.cancelWarning}</p>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="label mb-[7px]">
                   {t.jobs.cancelReason} *
                 </label>
                 <textarea
@@ -618,7 +619,7 @@ export default function AdminJobsPage() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-100 dark:border-neutral-700 bg-neutral-50 dark:bg-[#0f172a]">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-line dark:border-neutral-700 bg-neutral-50 dark:bg-[#0f172a]">
               <button
                 onClick={() => setShowCancelModal(false)}
                 className="px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"
@@ -628,7 +629,7 @@ export default function AdminJobsPage() {
               <button
                 onClick={confirmCancel}
                 disabled={!actionReason.trim() || actionLoading}
-                className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
+                className="flex items-center gap-2 px-4 py-2 bg-error-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50"
               >
                 {actionLoading && <Loader2 className="w-4 h-4 animate-spin" />}
                 {t.jobs.confirmCancel}
@@ -641,11 +642,11 @@ export default function AdminJobsPage() {
       {/* ---------- Force Status Modal ---------- */}
       {showForceModal && targetJob && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-100">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-2xl shadow-2xl w-full max-w-md mx-4 overflow-hidden">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-line">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-100 flex items-center justify-center">
-                  <RefreshCw className="w-5 h-5 text-amber-600" />
+                <div className="w-10 h-10 rounded-full bg-warning-100 flex items-center justify-center">
+                  <RefreshCw className="w-5 h-5 text-warning-600" />
                 </div>
                 <div>
                   <h3 className="font-bold text-neutral-900 dark:text-white">
@@ -664,11 +665,9 @@ export default function AdminJobsPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
-            <div className="p-6 space-y-4">
+            <div className="p-6 flex flex-col gap-4">
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
-                  {t.jobs.newStatus} *
-                </label>
+                <label className="label mb-[7px]">{t.jobs.newStatus} *</label>
                 <select
                   value={newStatus}
                   onChange={(e) => setNewStatus(e.target.value)}
@@ -685,7 +684,7 @@ export default function AdminJobsPage() {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-neutral-700 mb-1">
+                <label className="label mb-[7px]">
                   {t.jobs.justification} *
                 </label>
                 <textarea
@@ -697,7 +696,7 @@ export default function AdminJobsPage() {
                 />
               </div>
             </div>
-            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-neutral-100 dark:border-neutral-700 bg-neutral-50 dark:bg-[#0f172a]">
+            <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-line dark:border-neutral-700 bg-neutral-50 dark:bg-[#0f172a]">
               <button
                 onClick={() => setShowForceModal(false)}
                 className="px-4 py-2 text-sm font-medium text-neutral-600 hover:bg-neutral-100 rounded-lg transition-colors"

@@ -24,10 +24,8 @@ export default function AdminHeader({
 
   return (
     <header
-      className={`fixed top-0 h-16 bg-white dark:bg-[#1e293b] border-b border-neutral-200 dark:border-neutral-700 z-30 transition-colors duration-300 ${
-        isRTL
-          ? "lg:me-64 left-0 right-0 lg:right-64"
-          : "lg:ms-64 left-0 right-0 lg:left-64"
+      className={`fixed top-0 h-16 border-b border-line bg-surface transition-colors duration-300 z-30 dark:border-neutral-700 dark:bg-[#1e293b] ${
+        isRTL ? "inset-x-0 lg:right-64" : "inset-x-0 lg:left-64"
       }`}
     >
       <div className="h-full px-6 flex items-center justify-between">
@@ -36,7 +34,7 @@ export default function AdminHeader({
           <h1 className="text-xl font-bold text-neutral-800 dark:text-neutral-100">
             {title}
           </h1>
-          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-accent-50 dark:bg-accent-900/30 text-accent-700 dark:text-accent-400 rounded-full text-sm">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-sm">
             <Activity className="w-4 h-4" />
             <span className="font-medium">{t.header.systemOk}</span>
           </div>
@@ -45,7 +43,7 @@ export default function AdminHeader({
         {/* Right - Actions */}
         <div className="flex items-center gap-3">
           {/* Search (placeholder) */}
-          <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg text-neutral-500 dark:text-neutral-400">
+          <div className="hidden md:flex items-center gap-2 px-4 py-2 bg-app dark:bg-neutral-800 rounded-chip text-neutral-500 dark:text-neutral-400">
             <Search className="w-4 h-4" />
             <span className="text-sm">{t.header.search}</span>
           </div>
@@ -53,7 +51,7 @@ export default function AdminHeader({
           {/* Language Toggle */}
           <button
             onClick={toggleLocale}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95
+            className="flex items-center gap-1.5 px-3 py-2 rounded-lg transition-colors duration-120 active:translate-y-px
               bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300
               hover:bg-neutral-200 dark:hover:bg-neutral-700 text-sm font-medium"
             title={`Basculer vers: ${t.langLabel}`}
@@ -67,8 +65,8 @@ export default function AdminHeader({
           {/* Dark Mode Toggle */}
           <button
             onClick={toggleTheme}
-            className="p-2 rounded-lg transition-all duration-300 hover:scale-105 active:scale-95
-              bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-amber-400
+            className="p-2 rounded-lg transition-colors duration-120 active:translate-y-px
+              bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-warning-400
               hover:bg-neutral-200 dark:hover:bg-neutral-700"
             title={isDark ? "Mode clair" : "Mode sombre"}
           >
@@ -82,7 +80,7 @@ export default function AdminHeader({
           {/* Notifications */}
           <button className="relative p-2 text-neutral-600 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors">
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1 end-1 w-2 h-2 bg-red-500 rounded-full"></span>
+            <span className="absolute top-1 end-1 w-2 h-2 bg-error-500 rounded-full"></span>
           </button>
 
           {/* Admin Badge */}

@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import Svg, { Path } from 'react-native-svg';
 import { Txt } from '@/shared/ui/Txt';
+import { useOnBlue } from '@/shared/ui/SurfaceTone';
 import { colors } from '@/shared/theme';
 
 // Logo officiel : barre/triangle bleu + flèche verte (design-system).
@@ -15,6 +16,9 @@ interface Props {
 }
 
 export function Logo({ size = 32, wordmark = false }: Props) {
+  // Le mot-symbole est de l'encre sur fond clair et du blanc sur le bleu : la
+  // marque du logo, elle, ne change jamais — c'est elle qui est reconnue.
+  const onBlue = useOnBlue();
   const mark = (
     <Svg width={size} height={size} viewBox="0 0 512 512">
       <Path d="M108 120 L310 120 L280 210 L78 210 Z" fill={BLUE} />
@@ -30,7 +34,16 @@ export function Logo({ size = 32, wordmark = false }: Props) {
   return (
     <View style={styles.row}>
       {mark}
-      <Txt style={[styles.word, { fontSize: size * 0.62, marginLeft: -size * 0.06 }]}>
+      <Txt
+        style={[
+          styles.word,
+          {
+            fontSize: size * 0.62,
+            marginLeft: -size * 0.06,
+            color: onBlue ? colors.onBlue[100] : colors.neutral[900],
+          },
+        ]}
+      >
         ransporti
       </Txt>
     </View>
@@ -39,5 +52,5 @@ export function Logo({ size = 32, wordmark = false }: Props) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', alignItems: 'center' },
-  word: { fontWeight: '800', color: colors.neutral[900], letterSpacing: -0.5 },
+  word: { fontWeight: '800', letterSpacing: -0.5 },
 });

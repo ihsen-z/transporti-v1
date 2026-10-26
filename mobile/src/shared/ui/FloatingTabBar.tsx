@@ -1,10 +1,11 @@
-import { Pressable, StyleSheet, View } from 'react-native';
+import { useRef } from 'react';
+import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Icon, type IconName } from '@/shared/ui/icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import type { BottomTabBarProps } from '@react-navigation/bottom-tabs';
-import { colors, spacing, radii, shadows, fontSize, TOUCH_TARGET } from '@/shared/theme';
-import { Txt } from '@/shared/ui/Txt';
+import { colors, spacing, radii, shadows } from '@/shared/theme';
+import { FloatingTabItem } from '@/shared/ui/FloatingTabItem';
 import { useConversations } from '@/features/messaging/api/useConversations';
 import type { ConversationListDto } from '@/features/messaging/api/dto';
 import { useUnreadCount } from '@/features/notifications/api/useUnreadCount';
@@ -67,7 +68,40 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
   // liste. Elle dit « quelque chose t'attend, et voici ou aller ».
   const unreadNotifications = useUnreadCount();
 
-  const currentName = state.routes[state.index]?.name;
+  // Le bouton flottant s'enfonce à l'appui. C'est l'action primaire du rôle :
+  // elle doit répondre au doigt, pas seulement changer d'écran.
+  const echelleFab = useRef(new Animated.Value(1)).current;
+  const presserFab = (vers: number) =>
+    Animated.spring(echelleFab, {
+      toValue: vers,
+      useNativeDriver: true,
+      friction: 8,
+      tension: 220,
+    }).start();
+
+  const routeCourante = state.routes[state.index];
+  const currentName = routeCourante?.name;
+
+  // La barre ne se dessine QUE sur une section — pas sur un écran de détail.
+  //
+  // Les écrans de détail vivent dans le même navigateur à onglets (`href: null`
+  // les retire de la barre mais pas du navigateur), et la barre continuait donc
+  // de se dessiner par-dessus. Deux conséquences : le dernier élément de leurs
+  // listes restait sous la pilule, et depuis que le détail de mission porte sa
+  // barre d'action fixe, c'est le bouton de PAIEMENT qui passait dessous.
+  //
+  // La charte tranche : un écran de détail a une barre d'action, pas la
+  // navigation basse. Deux cas à couvrir — une route de premier niveau hors
+  // onglets (mission/[id], transporteur/[id], mes-retours, comment-ca-marche,
+  // et le profil quand le transporteur l'atteint par son avatar), et une pile
+  // imbriquée dépliée au-delà de sa racine (messages/[jobId] est bien DANS
+  // l'onglet Messages, mais c'est un fil de conversation, pas la boîte).
+  const pileImbriquee = routeCourante?.state;
+  const surUnDetailImbrique =
+    typeof pileImbriquee?.index === 'number' && pileImbriquee.index > 0;
+  const surUneSection =
+    currentName !== undefined &&
+    (nav.tabs.includes(currentName) || currentName === nav.fab);
 
   const go = (name: string) => {
     const route = state.routes.find((r) => r.name === name);
@@ -96,9 +130,10 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
     if (!descriptor) return null;
     const { options } = descriptor;
     const isFocused = currentName === name;
-    // `neutral[400]` donnait 2,54:1 sur le blanc de la barre : très en dessous
-    // du seuil AA de 4,5:1, et sur un libellé de 10 px. `neutral[500]` monte à
-    // 4,83:1 sans changer la hiérarchie — l'onglet actif reste le seul en bleu.
+    // La charte donne #9AA3B2 à l'onglet inactif : c'est `neutral[400]`, mesuré
+    // à 2,54:1 sur le blanc de la barre — très en dessous du seuil AA, et sur
+    // un libellé de 11 px. `neutral[500]` monte à 4,83:1 sans changer la
+    // hiérarchie : l'onglet actif reste le seul en bleu.
     const color = isFocused ? colors.brand[600] : colors.neutral[500];
     const badge =
       name === 'messages'
@@ -107,37 +142,19 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
           ? (unreadNotifications.data ?? 0)
           : 0;
     return (
-      <Pressable
+      <FloatingTabItem
         key={name}
         testID={`tab-${name}`}
-        style={styles.tab}
+        // 20 px : taille d'icône d'onglet de la charte (.tab .ic). L'icône est
+        // fournie par le layout, qui décide de sa graisse selon `focused`.
+        icon={options.tabBarIcon?.({ focused: isFocused, color, size: 20 })}
+        label={options.title}
+        focused={isFocused}
+        color={color}
+        badge={badge}
+        badgeAnnonce={badge > 0 ? t('a11y.unread', { count: badge }) : undefined}
         onPress={() => go(name)}
-        accessibilityRole="button"
-        accessibilityState={{ selected: isFocused }}
-        accessibilityLabel={options.title}
-        // Le compteur est une VALEUR de l'onglet : annonce « Messages, 3 non
-        // lus » plutot que deux elements dont l'un ne dit qu'un nombre.
-        accessibilityValue={badge > 0 ? { text: t('a11y.unread', { count: badge }) } : undefined}
-      >
-        <View>
-          {/* 20 px : taille d'icône d'onglet de la charte (.tab .ic). */}
-          {options.tabBarIcon?.({ focused: isFocused, color, size: 20 })}
-          {badge > 0 ? (
-            <View testID={`tab-${name}-badge`} style={styles.badge}>
-              {/* Au-dela de 1,3, le chiffre depasse la pastille sans rien
-                  apporter : deux caracteres restent lisibles a cette echelle. */}
-              <Txt style={styles.badgeText} maxFontSizeMultiplier={1.3}>
-                {badge > 9 ? '9+' : badge}
-              </Txt>
-            </View>
-          ) : null}
-        </View>
-        {/* Libellé 10 px sous l'icône : exigé par la charte, il lève
-            l'ambiguïté d'une barre qui n'affichait que des pictogrammes. */}
-        <Txt numberOfLines={1} style={[styles.tabLabel, { color }]}>
-          {options.title}
-        </Txt>
-      </Pressable>
+      />
     );
   };
 
@@ -146,46 +163,62 @@ export function FloatingTabBar({ state, descriptors, navigation, role }: Props) 
   const left = nav.tabs.slice(0, mid);
   const right = nav.tabs.slice(mid);
 
+  // Décidé APRÈS les hooks : un `return` anticipé au-dessus les rendrait
+  // conditionnels, ce que React interdit.
+  if (!surUneSection || surUnDetailImbrique) return null;
+
   return (
-    <View style={[styles.wrap, { paddingBottom: insets.bottom || spacing.md }]}>
-      <View style={styles.bar}>
+    <View style={[styles.bar, { paddingBottom: insets.bottom }]}>
+      <View style={styles.rangee}>
         <View style={styles.group}>{left.map(renderTab)}</View>
-        <Pressable
-          testID={`tab-${nav.fab}`}
-          style={styles.fab}
-          onPress={() => go(nav.fab)}
-          accessibilityRole="button"
-          accessibilityLabel={descriptors[state.routes.find((r) => r.name === nav.fab)?.key ?? '']?.options.title}
-        >
-          <Icon name={nav.fabIcon} size={24} color={colors.neutral[0]} strokeWidth={2.5} />
-        </Pressable>
+        <Animated.View style={{ transform: [{ scale: echelleFab }] }}>
+          <Pressable
+            testID={`tab-${nav.fab}`}
+            style={styles.fab}
+            onPress={() => go(nav.fab)}
+            onPressIn={() => presserFab(0.92)}
+            onPressOut={() => presserFab(1)}
+            accessibilityRole="button"
+            accessibilityLabel={
+              descriptors[state.routes.find((r) => r.name === nav.fab)?.key ?? '']
+                ?.options.title
+            }
+          >
+            <Icon name={nav.fabIcon} size={26} color={colors.neutral[0]} weight="bold" />
+          </Pressable>
+        </Animated.View>
         <View style={styles.group}>{right.map(renderTab)}</View>
       </View>
     </View>
   );
 }
 
-// La barre doit loger une icône de 20 + un libellé de 10 sans tasser : 66 px.
-const BAR_HEIGHT = 66;
-// Charte : 48×48, rayon 16 — un carré arrondi, pas un cercle.
-const FAB = 48;
+// Barre de navigation ANCRÉE, bord à bord, telle que la maquette la dessine
+// (écran 2c) : 86 de haut, blanc à 94 %, liseré haut --border, cinq
+// emplacements dont le centre vide, et le bouton flottant qui la chevauche de 6.
+//
+// Elle était une pilule flottante. C'était une lecture de la charte, pas la
+// charte : le document décrit une barre ancrée, et la maquette la confirme. La
+// pilule avait en plus un coût caché — ses marges latérales et son ombre
+// obligeaient chaque écran à réserver une marge basse calculée, d'où les deux
+// fonctions de garde ci-dessous et les défauts de recette qui les ont fait
+// naître. Une barre ancrée n'a qu'une hauteur, et l'inset système sous elle.
+const BAR_HEIGHT = 86;
+// Maquette : 58×58, rayon 19, `top: -6` — un carré arrondi, pas un cercle.
+const FAB = 58;
 const styles = StyleSheet.create({
-  wrap: {
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.sm,
-    backgroundColor: 'transparent',
-  },
-  // Charte (.tabbar) : rayon 20, bordure 1 px #e5e7eb, padding 10/8.
   bar: {
+    // Charte : rgba(255,255,255,0.94) — la barre laisse deviner ce qui passe
+    // dessous au défilement, sans le montrer.
+    backgroundColor: 'rgba(255,255,255,0.94)',
+    borderTopWidth: 1,
+    borderTopColor: colors.neutral[200],
+  },
+  rangee: {
     flexDirection: 'row',
     alignItems: 'center',
     height: BAR_HEIGHT,
-    backgroundColor: colors.neutral[0],
-    borderRadius: radii.tabbar,
-    borderWidth: 1,
-    borderColor: colors.neutral[300],
-    paddingHorizontal: spacing.sm,
-    ...shadows.card,
+    paddingHorizontal: spacing.md,
   },
   group: {
     flex: 1,
@@ -193,38 +226,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
   },
-  tab: {
-    minWidth: TOUCH_TARGET,
-    minHeight: TOUCH_TARGET,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 3,
-  },
-  // .tab font-size:10px — l'onglet actif prend la couleur de marque via `color`.
-  tabLabel: { fontSize: fontSize.xs, fontWeight: '600' },
-  // Pastille non-lus, ancrée en haut-droite de l'icône.
-  badge: {
-    position: 'absolute',
-    top: -6,
-    right: -12,
-    // `height` FIXE ecrasait la pastille des que l'utilisateur grossissait la
-    // police : mesuree en recette a 30x12 dp a 150 % et 36x12 a 200 %, le
-    // « 9+ » y devenait illisible. Or c'est le seul signal qui dit qu'une
-    // decision attend — le pilier d'IA-4 — et il se degradait precisement chez
-    // ceux qui ont grossi la police.
-    minWidth: 18,
-    minHeight: 18,
-    borderRadius: 9,
-    backgroundColor: colors.cta[500],
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderWidth: 1.5,
-    borderColor: colors.neutral[0],
-  },
-  badgeText: { color: colors.neutral[0], fontSize: fontSize.sm - 2, fontWeight: '800' },
-  // FAB orange (CTA unique) surélevé au centre. Carré arrondi de rayon 16 :
+  // FAB orange (CTA unique) surélevé au centre. Carré arrondi de rayon 19 :
   // c'est ce qui le distingue d'un bouton flottant générique.
   fab: {
     width: FAB,
@@ -234,54 +236,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     marginHorizontal: spacing.sm,
-    // -14 faisait dépasser le FAB de 5 dp au-dessus de la barre : (66−48)/2−14
-    // = −5. Android rogne alors la partie qui sort, ET la zone tactile avec —
-    // d'où les 43 dp mesurés en recette sur l'action primaire de chaque rôle.
-    // `minHeight` n'y pouvait rien : `height: 48` le neutralise, le défaut
-    // n'était pas dans la mise en page mais dans le débordement.
+    // La maquette demande `top: -6`. Marge disponible dans une barre de 86
+    // pour un bouton de 58 : (86 − 58)/2 = 14. Les 6 tiennent largement.
     //
-    // -9 est le décalage maximal qui garde le FAB entièrement dans la barre.
-    // Le relief reste lisible, et les 48 dp deviennent tous cliquables.
-    transform: [{ translateY: -9 }],
+    // Ce calcul n'est pas décoratif : un bouton qui dépasse de sa barre se fait
+    // rogner par Android, ET sa zone tactile avec — c'est ainsi que l'action
+    // primaire de chaque rôle s'était retrouvée à 43 dp en recette.
+    transform: [{ translateY: -6 }],
     ...shadows.fab,
   },
 });
 
 /**
- * Hauteur totale occupee par la barre flottante, insets compris.
+ * Marge basse à réserver sous le contenu d'un écran à onglets, pour que son
+ * DERNIER élément reste entièrement atteignable.
  *
- * `useBottomTabBarHeight` de react-navigation mesure la barre rendue et
- * sous-estime celle-ci : son enveloppe porte ses propres paddings et le FAB
- * deborde. Un ecran a liste defilante qui s'y fiait laissait encore son
- * dernier element rogne (mesure : 53 dp manquants sur l'inventaire des
- * retours, recette du 03/09).
+ * La barre est ancrée : sa hauteur est fixe et l'inset système passe dessous.
+ * Il n'y a donc plus rien à deviner — c'était l'inverse avec la pilule
+ * flottante, dont les marges, l'ombre et le débordement du bouton central
+ * obligeaient à couvrir un écart mesuré mais inexpliqué (17 dp manquants sur
+ * l'inventaire des retours, recette du 03/09).
  *
- * Cette fonction est la SOURCE UNIQUE : la barre et les écrans lisent les
- * mêmes constantes, donc ils ne peuvent plus diverger après un changement de
- * gabarit.
+ * `spacing.lg` en plus de la hauteur : un dernier élément qui affleure la
+ * barre se lit comme collé dessous.
  */
-export function useFloatingTabBarHeight(): number {
+export function useTabBarClearance(): number {
   const insets = useSafeAreaInsets();
-  return spacing.sm + BAR_HEIGHT + (insets.bottom || spacing.md);
-}
-
-/**
- * Marge basse à réserver sous une liste défilante pour que son DERNIER élément
- * reste entièrement atteignable.
- *
- * C'est cette valeur, et non `useFloatingTabBarHeight`, que doivent utiliser
- * les écrans : la hauteur seule ne suffit pas.
- *
- * Mesuré sur Pixel 7 API 35 le 03/09 : avec la hauteur théorique (98 dp) plus
- * un intervalle de 24 dp, la dernière action de l'inventaire des retours
- * restait rognée d'environ 17 dp au défilement maximal — « Dépublier »
- * n'affichait que 11 dp de haut sur 44. L'origine de l'écart n'est pas
- * établie (ombre portée de la barre, arrondi de l'inset système, hauteur de
- * fenêtre de défilement) : on le COUVRE au lieu de le deviner, et on le dit.
- *
- * Vérifié à cette valeur : la dernière ligne mesure ses 230 dp et son action
- * destructive ses 44 dp.
- */
-export function useFloatingTabBarClearance(): number {
-  return useFloatingTabBarHeight() + spacing['2xl'] + spacing.lg;
+  return BAR_HEIGHT + insets.bottom + spacing.lg;
 }

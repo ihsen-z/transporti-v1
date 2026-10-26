@@ -39,7 +39,7 @@ export function ReviewDisplay({ review }: ReviewDisplayProps) {
           key={star}
           className={`${size === "sm" ? "w-4 h-4" : "w-3 h-3"} ${
             star <= rating
-              ? "text-amber-400 fill-amber-400"
+              ? "text-warning-400 fill-warning-400"
               : "text-neutral-200"
           }`}
         />
@@ -60,15 +60,15 @@ export function ReviewDisplay({ review }: ReviewDisplayProps) {
   })();
 
   return (
-    <div className="bg-white rounded-xl border border-neutral-200 p-5">
+    <div className="bg-surface rounded-card shadow-card p-5">
       {/* Header */}
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-500 to-primary-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
+          <div className="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
             {r.reviewer_name[0]}
           </div>
           <div>
-            <p className="text-sm font-semibold text-neutral-900">
+            <p className="text-[14px] font-bold text-ink-900">
               {r.reviewer_name}
             </p>
             <p className="text-xs text-neutral-400">
@@ -114,7 +114,7 @@ export function ReviewDisplay({ review }: ReviewDisplayProps) {
         <div
           className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium ${
             r.would_recommend
-              ? "bg-emerald-50 text-emerald-700"
+              ? "bg-green-50 text-green-700"
               : "bg-neutral-100 text-neutral-500"
           }`}
         >

@@ -2,19 +2,15 @@
 
 import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
-import Link from "next/link";
 import {
   ArrowLeft,
   Package,
   User,
   Truck,
-  CreditCard,
   MessageSquare,
   AlertTriangle,
   MapPin,
   Calendar,
-  Clock,
-  ExternalLink,
   Loader2,
 } from "lucide-react";
 import {
@@ -91,7 +87,7 @@ interface JobDetail {
 const offerStatusColors: Record<string, string> = {
   PENDING: "bg-orange-100 text-orange-700",
   ACCEPTED: "bg-green-100 text-green-700",
-  REJECTED: "bg-red-100 text-red-700",
+  REJECTED: "bg-error-100 text-error-700",
   EXPIRED: "bg-neutral-100 text-neutral-600",
   WITHDRAWN: "bg-neutral-100 text-neutral-600",
 };
@@ -153,16 +149,16 @@ export default function AdminJobDetailPage() {
 
   if (error || !job) {
     return (
-      <div className="space-y-4">
+      <div className="flex flex-col gap-4">
         <button
           onClick={() => router.back()}
           className="flex items-center gap-2 text-neutral-600 dark:text-neutral-400 hover:text-brand-600 transition-colors"
         >
           <ArrowLeft className="w-4 h-4 rtl:-scale-x-100" /> Retour
         </button>
-        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6 text-center">
-          <AlertTriangle className="w-8 h-8 text-red-500 mx-auto mb-3" />
-          <p className="text-red-700 dark:text-red-300">
+        <div className="bg-error-50 dark:bg-red-900/20 border border-error-200 dark:border-red-800 rounded-xl p-6 text-center">
+          <AlertTriangle className="w-8 h-8 text-error-500 mx-auto mb-3" />
+          <p className="text-error-700 dark:text-red-300">
             {error || "Job introuvable"}
           </p>
         </div>
@@ -171,7 +167,7 @@ export default function AdminJobDetailPage() {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl">
+    <div className="flex flex-col gap-6 max-w-5xl">
       {/* Back + Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
@@ -183,7 +179,7 @@ export default function AdminJobDetailPage() {
           </button>
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+              <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                 {job.title || `Job #${job.id}`}
               </h1>
               <JobStatusBadge status={job.status} />
@@ -198,10 +194,10 @@ export default function AdminJobDetailPage() {
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left: Main info */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Route + Transport */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-4 flex items-center gap-2">
               <MapPin className="w-5 h-5 text-brand-600" />
               Itinéraire
             </h2>
@@ -229,7 +225,7 @@ export default function AdminJobDetailPage() {
                 </p>
               </div>
             </div>
-            <div className="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-700">
+            <div className="mt-4 pt-4 border-t border-line dark:border-neutral-700">
               <div className="flex items-center gap-6 text-sm">
                 <div className="flex items-center gap-2">
                   <Package className="w-4 h-4 text-neutral-400" />
@@ -248,8 +244,8 @@ export default function AdminJobDetailPage() {
           </div>
 
           {/* Offers */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
-            <h2 className="text-lg font-semibold text-neutral-900 dark:text-white mb-4 flex items-center gap-2">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+            <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-4 flex items-center gap-2">
               <Truck className="w-5 h-5 text-brand-600" />
               Offres ({job.offers?.length || 0})
             </h2>
@@ -259,7 +255,7 @@ export default function AdminJobDetailPage() {
                 Aucune offre reçue
               </p>
             ) : (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {job.offers.map((offer) => (
                   <div
                     key={offer.id}
@@ -319,16 +315,16 @@ export default function AdminJobDetailPage() {
 
           {/* Disputes */}
           {job.disputes && job.disputes.length > 0 && (
-            <div className="bg-white rounded-xl border border-red-200 p-6">
-              <h2 className="text-lg font-semibold text-red-700 mb-4 flex items-center gap-2">
+            <div className="bg-surface rounded-tile border border-error-200 p-6">
+              <h2 className="text-lg font-semibold text-error-700 mb-4 flex items-center gap-2">
                 <AlertTriangle className="w-5 h-5" />
                 Litiges ({job.disputes.length})
               </h2>
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {job.disputes.map((dispute) => (
                   <div
                     key={dispute.id}
-                    className="rounded-lg border border-red-100 bg-red-50/50 p-4"
+                    className="rounded-lg border border-red-100 bg-error-50/50 p-4"
                   >
                     <div className="flex items-center justify-between">
                       <div>
@@ -357,9 +353,9 @@ export default function AdminJobDetailPage() {
         </div>
 
         {/* Right: Sidebar */}
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {/* Client card */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Client
             </h3>
@@ -379,7 +375,7 @@ export default function AdminJobDetailPage() {
           </div>
 
           {/* Transporter card */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Transporteur
             </h3>
@@ -403,11 +399,11 @@ export default function AdminJobDetailPage() {
           </div>
 
           {/* Payment/Escrow card */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Paiement
             </h3>
-            <div className="space-y-3">
+            <div className="flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <span className="text-neutral-600 text-sm">Montant</span>
                 <span className="font-bold text-neutral-900 dark:text-white text-lg">
@@ -439,12 +435,12 @@ export default function AdminJobDetailPage() {
           </div>
 
           {/* Conversation card */}
-          <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
+          <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6">
             <h3 className="text-sm font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider mb-3">
               Conversation
             </h3>
             {job.conversation ? (
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2">
                 <div className="flex items-center justify-between">
                   <span className="text-neutral-600 text-sm flex items-center gap-1.5">
                     <MessageSquare className="w-4 h-4" /> Messages
@@ -461,7 +457,7 @@ export default function AdminJobDetailPage() {
                     }
                     colorClass={
                       job.conversation.isLocked
-                        ? "bg-red-100 text-red-700"
+                        ? "bg-error-100 text-error-700"
                         : "bg-green-100 text-green-700"
                     }
                   />

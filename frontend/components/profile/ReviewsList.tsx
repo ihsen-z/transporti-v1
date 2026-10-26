@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { Star, User, Quote } from "lucide-react";
+import { Star, Quote } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 interface Review {
@@ -24,7 +24,7 @@ function StarRating({ rating }: { rating: number }) {
       {[1, 2, 3, 4, 5].map((v) => (
         <Star
           key={v}
-          className={`w-3.5 h-3.5 ${v <= rating ? "text-amber-400 fill-amber-400" : "text-neutral-200"}`}
+          className={`w-3.5 h-3.5 ${v <= rating ? "text-warning-400 fill-warning-400" : "text-neutral-200"}`}
         />
       ))}
     </div>
@@ -44,19 +44,19 @@ export function ReviewsList({ reviews, totalCount }: Props) {
   const dateLocale = locale === "ar" ? "ar-TN" : "fr-TN";
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-neutral-100 shadow-sm">
+    <div className="rounded-2xl overflow-hidden border border-line shadow-sm">
       {/* Header — deep navy */}
-      <div className="px-6 py-4 bg-gradient-to-r from-brand-900 to-brand-600 flex items-center justify-between">
+      <div className="px-6 py-4 bg-band flex items-center justify-between">
         <h3 className="text-base font-bold text-white tracking-wide">
           {t.profile.reviewsTitle}
         </h3>
-        <span className="text-xs font-semibold text-accent-400 bg-white/10 backdrop-blur-sm px-3 py-1 rounded-full">
+        <span className="text-xs font-semibold text-accent-400 bg-white/10 px-3 py-1 rounded-full">
           {totalCount} {t.profile.reviews}
         </span>
       </div>
 
       {reviews.length > 0 ? (
-        <div className="bg-white divide-y divide-neutral-100">
+        <div className="bg-white divide-y divide-line">
           {reviews.map((review, i) => (
             <div
               key={review.id}
@@ -65,7 +65,7 @@ export function ReviewsList({ reviews, totalCount }: Props) {
             >
               <div className="flex items-start gap-3">
                 {/* Avatar */}
-                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-brand-900 to-brand-600 flex items-center justify-center flex-shrink-0">
+                <div className="w-10 h-10 rounded-full bg-band flex items-center justify-center flex-shrink-0">
                   <span className="text-xs font-bold text-white">
                     {review.reviewer_name
                       .split(" ")
@@ -76,15 +76,18 @@ export function ReviewsList({ reviews, totalCount }: Props) {
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center justify-between mb-1.5">
-                    <p className="text-sm font-semibold text-neutral-900">
+                    <p className="text-[14px] font-bold text-ink-900">
                       {review.reviewer_name}
                     </p>
                     <p className="text-xs text-neutral-400 font-medium">
-                      {new Date(review.created_at).toLocaleDateString(dateLocale, {
-                        day: "numeric",
-                        month: "short",
-                        year: "numeric",
-                      })}
+                      {new Date(review.created_at).toLocaleDateString(
+                        dateLocale,
+                        {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        },
+                      )}
                     </p>
                   </div>
                   <StarRating rating={review.rating} />
@@ -99,7 +102,7 @@ export function ReviewsList({ reviews, totalCount }: Props) {
                       {Object.entries(review.aspects).map(([key, val]) => (
                         <span
                           key={key}
-                          className="text-xs bg-accent-50 text-accent-700 px-2.5 py-1 rounded-full font-medium border border-accent-200/50"
+                          className="text-xs bg-green-50 text-green-700 px-2.5 py-1 rounded-full font-medium border border-accent-200/50"
                         >
                           {ASPECT_LABELS[key] || key}: {val}/5
                         </span>

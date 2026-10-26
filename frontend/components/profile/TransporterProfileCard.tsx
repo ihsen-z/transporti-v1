@@ -2,14 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import {
-  User,
-  ShieldCheck,
-  Star,
-  MapPin,
-  Calendar,
-  BadgeCheck,
-} from "lucide-react";
+import { Star, MapPin, Calendar, BadgeCheck } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { getMediaUrl } from "@/lib/imageUtils";
 
@@ -42,7 +35,7 @@ export function TransporterProfileCard({
   return (
     <div className="rounded-2xl overflow-hidden border border-white/10 shadow-xl">
       {/* Hero Banner — deep navy gradient matching brand charter */}
-      <div className="h-36 bg-gradient-to-br from-brand-900 via-brand-600 to-brand-800 relative">
+      <div className="h-36 bg-band relative">
         {/* Subtle dot pattern overlay */}
         <div
           className="absolute inset-0"
@@ -52,11 +45,11 @@ export function TransporterProfileCard({
         />
         {/* Decorative gradient orbs */}
         <div className="absolute bottom-0 right-12 w-40 h-40 bg-accent-500/15 rounded-full blur-3xl" />
-        <div className="absolute top-0 left-20 w-32 h-32 bg-cyan-400/10 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-20 w-32 h-32 bg-blue-500/10 rounded-full blur-3xl" />
 
         {/* Verified badge overlay */}
         {isVerified && (
-          <div className="absolute top-4 end-4 flex items-center gap-1.5 bg-accent-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg shadow-accent-500/25">
+          <div className="absolute top-4 end-4 flex items-center gap-1.5 bg-accent-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg shadow-accent-500/25">
             <BadgeCheck className="w-3.5 h-3.5" />
             {t.profile.verified}
           </div>
@@ -67,7 +60,7 @@ export function TransporterProfileCard({
       <div className="bg-white px-6 pb-6 -mt-14 relative">
         <div className="flex items-end gap-4 mb-5">
           {/* Avatar */}
-          <div className="w-24 h-24 rounded-2xl bg-white border-4 border-white shadow-xl flex items-center justify-center overflow-hidden ring-2 ring-accent-200/50">
+          <div className="grid h-24 w-24 place-items-center overflow-hidden rounded-card border-4 border-white bg-surface shadow-card">
             {avatarUrl ? (
               <Image
                 src={getMediaUrl(avatarUrl)}
@@ -77,7 +70,7 @@ export function TransporterProfileCard({
                 className="w-full h-full object-cover"
               />
             ) : (
-              <div className="w-full h-full bg-gradient-to-br from-brand-900 to-brand-600 flex items-center justify-center">
+              <div className="w-full h-full bg-band flex items-center justify-center">
                 <span className="text-2xl font-bold text-white">
                   {firstName.charAt(0)}
                   {lastName.charAt(0)}
@@ -87,13 +80,13 @@ export function TransporterProfileCard({
           </div>
           <div className="pb-1">
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-neutral-900">
+              <h1 className="text-[19px] font-extrabold tracking-heading text-ink-900">
                 {firstName} {lastName}
               </h1>
             </div>
             <div className="flex items-center gap-3 mt-1.5">
               <div className="flex items-center gap-1">
-                <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                <Star className="w-4 h-4 text-warning-400 fill-warning-400" />
                 <span className="text-sm font-bold text-neutral-900">
                   {rating.toFixed(1)}
                 </span>
@@ -136,10 +129,13 @@ export function TransporterProfileCard({
           <div className="flex items-center gap-1.5">
             <Calendar className="w-4 h-4 text-neutral-400" />
             {t.profile.memberSince}{" "}
-            {new Date(joinedAt).toLocaleDateString(locale === 'ar' ? 'ar-TN' : 'fr-TN', {
-              month: "long",
-              year: "numeric",
-            })}
+            {new Date(joinedAt).toLocaleDateString(
+              locale === "ar" ? "ar-TN" : "fr-TN",
+              {
+                month: "long",
+                year: "numeric",
+              },
+            )}
           </div>
           {serviceAreas.length > 0 && (
             <div className="flex items-center gap-1.5">
@@ -158,7 +154,7 @@ export function TransporterProfileCard({
             {specializations.map((spec) => (
               <span
                 key={spec}
-                className="text-xs bg-accent-50 text-accent-700 px-3 py-1.5 rounded-full font-semibold border border-accent-200/60"
+                className="text-xs bg-green-50 text-green-700 px-3 py-1.5 rounded-full font-semibold border border-accent-200/60"
               >
                 {spec}
               </span>

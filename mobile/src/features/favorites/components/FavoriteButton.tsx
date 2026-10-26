@@ -58,7 +58,7 @@ export function FavoriteButton({ transporterId, testID }: Props) {
         name="heart"
         size={22}
         color={estFavori ? colors.error : colors.neutral[400]}
-        strokeWidth={estFavori ? 2.5 : 2}
+        filled={estFavori}
       />
     </Pressable>
   );

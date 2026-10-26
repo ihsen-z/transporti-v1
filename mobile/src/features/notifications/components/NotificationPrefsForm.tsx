@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
-import { ActivityIndicator, StyleSheet, Switch, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, Switch, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { showToast } from '@/shared/ui/toastStore';
 import { useNotificationPrefs, useUpdateNotificationPrefs } from '../api/useNotificationPrefs';
 import type { NotificationPrefKey, NotificationPrefsDto } from '../api/prefsDto';
+import { Txt } from '@/shared/ui/Txt';
 
 // Regroupement pour l'affichage : canaux d'abord, puis catégories d'alertes.
 const CHANNELS: NotificationPrefKey[] = ['email_enabled', 'push_enabled', 'sms_enabled'];
@@ -56,7 +57,7 @@ export function NotificationPrefsForm({ onDone }: Props) {
 
   const renderRow = (key: NotificationPrefKey) => (
     <View key={key} style={styles.row}>
-      <Text style={styles.rowLabel}>{t(`notif_prefs.${key}`)}</Text>
+      <Txt style={styles.rowLabel}>{t(`notif_prefs.${key}`)}</Txt>
       <Switch
         value={local[key]}
         onValueChange={toggle(key)}
@@ -67,13 +68,13 @@ export function NotificationPrefsForm({ onDone }: Props) {
 
   return (
     <View style={styles.form}>
-      <Text style={styles.section}>{t('notif_prefs.channels')}</Text>
+      <Txt style={styles.section}>{t('notif_prefs.channels')}</Txt>
       {CHANNELS.map(renderRow)}
 
-      <Text style={styles.section}>{t('notif_prefs.categories')}</Text>
+      <Txt style={styles.section}>{t('notif_prefs.categories')}</Txt>
       {CATEGORIES.map(renderRow)}
 
-      {serverError ? <Text style={styles.serverError}>{serverError}</Text> : null}
+      {serverError ? <Txt style={styles.serverError}>{serverError}</Txt> : null}
 
       <Button
         testID="notification-prefs-submit"

@@ -136,7 +136,7 @@ export function AddressBookManager() {
           <p className="text-sm text-neutral-500 mt-1">{a.emptyHint}</p>
         </div>
       ) : (
-        <ul className="space-y-2">
+        <ul className="flex flex-col gap-2">
           {adresses.map((adresse) => (
             <li
               key={adresse.id}
@@ -173,7 +173,7 @@ export function AddressBookManager() {
                 data-testid={`carnet-supprimer-${adresse.id}`}
                 onClick={() => void retirer(adresse)}
                 aria-label={a.remove}
-                className="p-2 text-neutral-400 hover:text-red-600"
+                className="p-2 text-neutral-400 hover:text-error-600"
               >
                 <Trash2 className="w-4 h-4" />
               </button>
@@ -185,7 +185,7 @@ export function AddressBookManager() {
       {/* Le plafond est ANNONCE avant d'etre atteint, et non decouvert par un
           refus au moment d'enregistrer. */}
       {plein ? (
-        <p data-testid="carnet-plein" className="mt-4 text-sm text-amber-700">
+        <p data-testid="carnet-plein" className="mt-4 text-sm text-warning-700">
           {interpolate(a.limitReached, { max: MAXIMUM })}
         </p>
       ) : brouillon === null ? (
@@ -201,7 +201,7 @@ export function AddressBookManager() {
       ) : null}
 
       {brouillon !== null && (
-        <div className="mt-4 rounded-xl border border-neutral-200 p-4 space-y-3">
+        <div className="mt-4 rounded-xl border border-neutral-200 p-4 flex flex-col gap-3">
           <div>
             <label className="block text-sm text-neutral-600 mb-1">
               {a.labelField}
@@ -254,7 +254,7 @@ export function AddressBookManager() {
           {erreurEcriture && (
             <p
               data-testid="carnet-erreur-ecriture"
-              className="text-sm text-red-600"
+              className="text-sm text-error-600"
             >
               {erreurEcriture}
             </p>

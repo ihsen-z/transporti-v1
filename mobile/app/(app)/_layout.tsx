@@ -19,7 +19,10 @@ function tabIcon(name: IconName) {
     color: string;
     size: number;
     focused: boolean;
-  }) => <Icon name={name} color={color} size={size} strokeWidth={focused ? 2.5 : 2} />;
+    // Charte, §Navigation basse : « onglet actif = icône PLEINE ; inactif =
+  // icône contour ». Le duotone au repos, le remplissage à l'état actif — la
+  // différence se lit d'un coup d'œil, sans compter sur la seule couleur.
+}) => <Icon name={name} color={color} size={size} filled={focused} />;
   TabIcon.displayName = `TabIcon(${name})`;
   return TabIcon;
 }

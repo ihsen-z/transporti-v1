@@ -323,28 +323,28 @@ export default function ReturnTripPage() {
       >
         <div className="text-center max-w-md animate-fade-in">
           <div className="relative mx-auto w-20 h-20 mb-6">
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-200 to-purple-100 rounded-full animate-ping opacity-20" />
-            <div className="relative w-20 h-20 bg-gradient-to-br from-purple-500 to-purple-700 rounded-full flex items-center justify-center shadow-lg shadow-purple-200">
+            <div className="absolute inset-0 bg-blue-100 rounded-full animate-ping opacity-20" />
+            <div className="relative w-20 h-20 bg-blue-700 rounded-full flex items-center justify-center shadow-lg shadow-blue-200">
               <CheckCircle className="w-10 h-10 text-white" />
             </div>
           </div>
-          <h2 className="text-2xl font-bold text-neutral-900 mb-2">
+          <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900 mb-2">
             {t.successTitle}
           </h2>
           <p className="text-neutral-500 mb-6">{t.successDesc}</p>
 
           {/* Sprint 5 — reverse matching: monetize the trip right away */}
           {matchingRequests.length > 0 && (
-            <div className="mb-6 text-start bg-purple-50 border border-purple-200 rounded-2xl p-4">
-              <p className="text-sm font-bold text-purple-800 mb-3">
+            <div className="mb-6 text-start bg-blue-50 rounded-tile p-4">
+              <p className="text-sm font-bold text-blue-800 mb-3">
                 🎯 {matchingCount} {t.reverseMatchTitle}
               </p>
-              <ul className="space-y-2">
+              <ul className="flex flex-col gap-2">
                 {matchingRequests.map((r) => (
                   <li key={r.id}>
                     <Link
                       href={urlJob(r.id, false)}
-                      className="block bg-white rounded-xl p-3 border border-purple-100 hover:border-purple-300 transition-colors"
+                      className="block bg-surface rounded-tile p-3 border border-blue-100 hover:border-blue-300 transition-colors"
                     >
                       <p className="text-sm font-medium text-neutral-900 truncate">
                         {r.pickup_address} → {r.dropoff_address}
@@ -358,16 +358,14 @@ export default function ReturnTripPage() {
                   </li>
                 ))}
               </ul>
-              <p className="text-xs text-purple-600 mt-2">
-                {t.reverseMatchHint}
-              </p>
+              <p className="text-xs text-blue-700 mt-2">{t.reverseMatchHint}</p>
             </div>
           )}
 
           <div className="flex gap-3 justify-center">
             <Link
               href="/jobs"
-              className="px-5 py-2.5 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-all"
+              className="px-5 py-2.5 bg-blue-700 text-white rounded-xl font-semibold hover:bg-blue-700 transition-all"
             >
               {t.viewMissions}
             </Link>
@@ -393,22 +391,22 @@ export default function ReturnTripPage() {
 
       {/* Header — distinct purple identity */}
       <div className="mb-8">
-        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-sm font-semibold mb-4">
+        <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-blue-100 text-blue-700 rounded-full text-sm font-semibold mb-4">
           <RotateCcw className="w-4 h-4" />
           {t.badgeReturn}
         </div>
-        <h1 className="text-2xl font-bold text-neutral-900 tracking-tight mb-1">
+        <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900 tracking-tight mb-1">
           {t.pageTitle}
-        </h1>
+        </h2>
         <p className="text-neutral-500 text-sm">{t.pageSubtitle}</p>
       </div>
 
       {/* Info banner */}
-      <div className="bg-gradient-to-r from-purple-50 to-fuchsia-50 border border-purple-200 rounded-2xl p-4 mb-8 flex gap-3">
-        <Info className="w-5 h-5 text-purple-500 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-purple-700">
+      <div className="bg-blue-50 rounded-tile p-4 mb-8 flex gap-3">
+        <Info className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
+        <div className="text-sm text-blue-700">
           <p className="font-medium mb-1">{t.howItWorksTitle}</p>
-          <ol className="space-y-0.5 text-purple-600 list-decimal list-inside">
+          <ol className="flex flex-col gap-0.5 text-blue-700 list-decimal list-inside">
             <li>{t.howItWorks1}</li>
             <li>{t.howItWorks2}</li>
             <li>{t.howItWorks3}</li>
@@ -417,7 +415,7 @@ export default function ReturnTripPage() {
       </div>
 
       {/* ============ FORM CARD ============ */}
-      <div className="bg-white rounded-2xl border border-neutral-100 shadow-sm overflow-hidden">
+      <div className="bg-surface rounded-card shadow-card shadow-sm overflow-hidden">
         {/* T1.2 — le véhicule vient du profil et n'est pas ressaisi. Présenté
             comme un fait acquis, pas comme un champ à remplir. */}
         {vehicule.disponible && (
@@ -434,9 +432,9 @@ export default function ReturnTripPage() {
         )}
 
         {/* ---------- Section 1: Itinéraire ---------- */}
-        <div className="p-6 border-b border-neutral-100">
-          <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-purple-500" />
+        <div className="p-6 border-b border-line">
+          <h3 className="text-[14px] font-bold text-ink-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-blue-600" />
             {t.sectionRoute}
           </h3>
 
@@ -450,7 +448,7 @@ export default function ReturnTripPage() {
                 data-testid="retours-nouveau-depart"
                 value={form.pickup_governorate}
                 onChange={(e) => update("pickup_governorate", e.target.value)}
-                className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm font-medium bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all appearance-none cursor-pointer"
+                className="field focus:ring-2 focus:ring-blue-600/20 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
               >
                 <option value="">{t.chooseGov}</option>
                 {GOVERNORATES.map((g) => (
@@ -467,8 +465,8 @@ export default function ReturnTripPage() {
 
             {/* Arrow */}
             <div className="pt-5 flex-shrink-0">
-              <div className="w-9 h-9 rounded-full bg-purple-100 flex items-center justify-center">
-                <ArrowRight className="w-4 h-4 text-purple-600 rtl:-scale-x-100" />
+              <div className="w-9 h-9 rounded-full bg-blue-100 flex items-center justify-center">
+                <ArrowRight className="w-4 h-4 text-blue-700 rtl:-scale-x-100" />
               </div>
             </div>
 
@@ -481,7 +479,7 @@ export default function ReturnTripPage() {
                 data-testid="retours-nouveau-arrivee"
                 value={form.dropoff_governorate}
                 onChange={(e) => update("dropoff_governorate", e.target.value)}
-                className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm font-medium bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all appearance-none cursor-pointer"
+                className="field focus:ring-2 focus:ring-blue-600/20 focus:border-blue-500 outline-none transition-all appearance-none cursor-pointer"
               >
                 <option value="">{t.chooseGov}</option>
                 {GOVERNORATES.map((g) => (
@@ -501,7 +499,7 @@ export default function ReturnTripPage() {
           {form.pickup_governorate &&
             form.dropoff_governorate &&
             form.pickup_governorate === form.dropoff_governorate && (
-              <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
+              <p className="text-xs text-error-500 mt-2 flex items-center gap-1">
                 <Info className="w-3 h-3" /> {t.sameGovError}
               </p>
             )}
@@ -513,22 +511,22 @@ export default function ReturnTripPage() {
               value={form.pickup_address}
               onChange={(e) => update("pickup_address", e.target.value)}
               placeholder={t.pickupAddr}
-              className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
+              className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600/20 focus:border-blue-500 outline-none"
             />
             <input
               type="text"
               value={form.dropoff_address}
               onChange={(e) => update("dropoff_address", e.target.value)}
               placeholder={t.dropoffAddr}
-              className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
+              className="px-3 py-2 border border-neutral-200 rounded-lg text-sm focus:ring-2 focus:ring-blue-600/20 focus:border-blue-500 outline-none"
             />
           </div>
         </div>
 
         {/* ---------- Section 2: Date ---------- */}
-        <div className="p-6 border-b border-neutral-100">
-          <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Calendar className="w-4 h-4 text-purple-500" />
+        <div className="p-6 border-b border-line">
+          <h3 className="text-[14px] font-bold text-ink-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-blue-600" />
             {t.sectionWhen}
           </h3>
           {/* T1.2 — saisie 3 : choix tactile plutôt que calendrier. Un
@@ -547,7 +545,7 @@ export default function ReturnTripPage() {
                 onClick={() =>
                   update("scheduled_time", dateDepartRapide(choix.jours))
                 }
-                className="flex-1 px-3 py-2.5 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-700 hover:border-purple-400 hover:bg-purple-50 focus:ring-2 focus:ring-purple-500/20 outline-none transition-all"
+                className="flex-1 px-3 py-2.5 rounded-xl border border-neutral-200 text-sm font-medium text-neutral-700 hover:border-blue-500 hover:bg-blue-50 focus:ring-2 focus:ring-blue-600/20 outline-none transition-all"
               >
                 {choix.label}
               </button>
@@ -559,15 +557,15 @@ export default function ReturnTripPage() {
             value={form.scheduled_time}
             min={minDate}
             onChange={(e) => update("scheduled_time", e.target.value)}
-            className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none transition-all"
+            className="field focus:ring-2 focus:ring-blue-600/20 focus:border-blue-500 outline-none transition-all"
           />
           <p className="text-xs text-neutral-400 mt-1.5">{t.whenHint}</p>
         </div>
 
         {/* ---------- Section 3: Véhicule ---------- */}
-        <div className="p-6 border-b border-neutral-100">
-          <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Truck className="w-4 h-4 text-purple-500" />
+        <div className="p-6 border-b border-line">
+          <h3 className="text-[14px] font-bold text-ink-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Truck className="w-4 h-4 text-blue-600" />
             {t.sectionVehicle}
           </h3>
 
@@ -579,12 +577,12 @@ export default function ReturnTripPage() {
                 onClick={() => update("vehicle_type", vt.value)}
                 className={`text-start px-3.5 py-3 rounded-xl border-2 transition-all duration-200 ${
                   form.vehicle_type === vt.value
-                    ? "border-purple-500 bg-purple-50 shadow-sm shadow-purple-100"
+                    ? "border-blue-600 bg-blue-50 shadow-sm shadow-blue-100"
                     : "border-neutral-100 hover:border-neutral-200 hover:bg-neutral-50"
                 }`}
               >
                 <div
-                  className={`text-sm font-semibold ${form.vehicle_type === vt.value ? "text-purple-700" : "text-neutral-700"}`}
+                  className={`text-sm font-semibold ${form.vehicle_type === vt.value ? "text-blue-700" : "text-neutral-700"}`}
                 >
                   {vt.label}
                 </div>
@@ -597,9 +595,9 @@ export default function ReturnTripPage() {
         </div>
 
         {/* ---------- Section 4: Capacité & Prix ---------- */}
-        <div className="p-6 border-b border-neutral-100">
-          <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Package className="w-4 h-4 text-purple-500" />
+        <div className="p-6 border-b border-line">
+          <h3 className="text-[14px] font-bold text-ink-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Package className="w-4 h-4 text-blue-600" />
             {t.sectionCapacity}
           </h3>
 
@@ -643,10 +641,10 @@ export default function ReturnTripPage() {
                           morceaux.join(" · ") || choix.label,
                         );
                       }}
-                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all focus:ring-2 focus:ring-purple-500/20 outline-none ${
+                      className={`flex-1 px-3 py-2.5 rounded-xl border text-sm font-medium transition-all focus:ring-2 focus:ring-blue-600/20 outline-none ${
                         partCapacite === choix.cle
-                          ? "border-purple-400 bg-purple-50 text-purple-700"
-                          : "border-neutral-200 text-neutral-700 hover:border-purple-400 hover:bg-purple-50"
+                          ? "border-blue-500 bg-blue-50 text-blue-700"
+                          : "border-neutral-200 text-neutral-700 hover:border-blue-500 hover:bg-blue-50"
                       }`}
                     >
                       {choix.label}
@@ -665,7 +663,7 @@ export default function ReturnTripPage() {
                   update("available_capacity", e.target.value);
                 }}
                 placeholder={t.capacityPlaceholder}
-                className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
+                className="field focus:ring-2 focus:ring-blue-600/20 focus:border-blue-500 outline-none"
               />
             </div>
             <div>
@@ -678,13 +676,13 @@ export default function ReturnTripPage() {
                 value={form.price_tnd_min}
                 onChange={(e) => update("price_tnd_min", e.target.value)}
                 placeholder={t.pricePlaceholder}
-                className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none"
+                className="field focus:ring-2 focus:ring-blue-600/20 focus:border-blue-500 outline-none"
               />
             </div>
           </div>
 
           {/* D11 — instant booking opt-in */}
-          <label className="mt-4 flex items-start gap-3 p-3 bg-amber-50 border border-amber-200 rounded-xl cursor-pointer">
+          <label className="mt-4 flex items-start gap-3 p-3 bg-warning-50 rounded-tile cursor-pointer">
             <input
               type="checkbox"
               checked={instantBooking}
@@ -704,8 +702,8 @@ export default function ReturnTripPage() {
 
         {/* ---------- Section 5: Note (optional) ---------- */}
         <div className="p-6">
-          <h3 className="text-sm font-semibold text-neutral-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-            <Info className="w-4 h-4 text-purple-500" />
+          <h3 className="text-[14px] font-bold text-ink-700 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Info className="w-4 h-4 text-blue-600" />
             {t.sectionNote}
           </h3>
           <textarea
@@ -713,7 +711,7 @@ export default function ReturnTripPage() {
             onChange={(e) => update("description", e.target.value)}
             rows={2}
             placeholder={t.notePlaceholder}
-            className="w-full px-3.5 py-3 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-purple-500/20 focus:border-purple-400 outline-none resize-none"
+            className="field focus:ring-2 focus:ring-blue-600/20 focus:border-blue-500 outline-none resize-none"
           />
         </div>
       </div>
@@ -731,7 +729,7 @@ export default function ReturnTripPage() {
           data-testid="retours-nouveau-submit"
           onClick={handleSubmit}
           disabled={!canSubmit || submitting}
-          className="relative inline-flex items-center gap-2 px-8 py-3.5 bg-gradient-to-r from-purple-600 to-purple-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-purple-200 hover:shadow-lg hover:shadow-purple-300 hover:-translate-y-0.5 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
+          className="relative inline-flex items-center gap-2 px-8 py-3.5 bg-blue-700 text-white rounded-xl font-semibold text-sm shadow-md shadow-blue-200 hover:shadow-lg hover:shadow-blue-300 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0"
         >
           {submitting ? (
             <>

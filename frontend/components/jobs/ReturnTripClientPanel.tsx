@@ -48,25 +48,25 @@ export function ReturnTripClientPanel({
   const { t } = useAppI18n();
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 border border-purple-200 rounded-xl p-5 animate-fade-in-up">
+    <div className="bg-blue-50 rounded-tile p-5 animate-fade-in-up">
       <div className="flex items-center gap-2 mb-3">
-        <div className="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center">
+        <div className="w-10 h-10 rounded-lg bg-blue-700 flex items-center justify-center">
           <RotateCcw className="w-5 h-5 text-white" />
         </div>
         <div>
-          <h3 className="font-bold text-purple-900">
+          <h3 className="font-bold text-blue-900">
             {t.jobDetail.returnAvailable}
           </h3>
-          <p className="text-xs text-purple-600">
+          <p className="text-xs text-blue-700">
             {t.jobDetail.returnReducedRate}
           </p>
         </div>
       </div>
 
       {/* Transporter Info */}
-      <div className="bg-white rounded-lg p-3 mb-3 border border-purple-100">
+      <div className="bg-surface rounded-chip p-3 mb-3 border border-blue-100">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-purple-600/10 flex items-center justify-center text-purple-600 font-bold text-sm">
+          <div className="w-10 h-10 rounded-full bg-blue-700/10 flex items-center justify-center text-blue-700 font-bold text-sm">
             {(job.owner?.name || job.owner?.first_name || "T")[0]}
           </div>
           <div>
@@ -84,7 +84,7 @@ export function ReturnTripClientPanel({
 
       {/* Capacity Info */}
       {job.available_capacity && (
-        <div className="flex items-center gap-2 text-sm text-purple-700 mb-3">
+        <div className="flex items-center gap-2 text-sm text-blue-700 mb-3">
           <Package className="w-4 h-4" />
           <span>
             {interpolate(t.jobDetail.capacity, {
@@ -96,11 +96,11 @@ export function ReturnTripClientPanel({
 
       {/* Price */}
       {(job.price_tnd_min || job.price_tnd_max) && (
-        <div className="text-center bg-white rounded-lg py-2 px-3 mb-3 border border-purple-100">
+        <div className="text-center bg-surface rounded-chip py-2 px-3 mb-3 border border-blue-100">
           <p className="text-xs text-neutral-500">
             {t.jobDetail.indicativePrice}
           </p>
-          <p className="text-xl font-bold text-purple-700">
+          <p className="text-xl font-bold text-blue-700">
             {job.price_tnd_min && job.price_tnd_max
               ? `${formatTND(Number(job.price_tnd_min) || 0)} — ${formatTND(Number(job.price_tnd_max) || 0)}`
               : job.price_tnd_min
@@ -116,9 +116,9 @@ export function ReturnTripClientPanel({
       job.my_trip_request.status !== "REJECTED" ? (
         <div
           data-testid="demande-confirmation"
-          className="bg-white rounded-xl p-4 mb-2 border border-purple-200"
+          className="bg-surface rounded-tile p-4 mb-2 border border-blue-200"
         >
-          <p className="text-sm font-semibold text-neutral-900 mb-1">
+          <p className="text-[14px] font-bold text-ink-900 mb-1">
             {t.jobDetail.myRequestTitle}
           </p>
           <p className="text-sm text-neutral-600">
@@ -131,8 +131,8 @@ export function ReturnTripClientPanel({
           </p>
           {job.my_trip_request.status === "COUNTERED" &&
             job.my_trip_request.counter_price != null && (
-              <div className="mt-3 p-3 bg-purple-50 rounded-lg">
-                <p className="text-sm text-purple-800 mb-2">
+              <div className="mt-3 p-3 bg-blue-50 rounded-lg">
+                <p className="text-sm text-blue-800 mb-2">
                   {interpolate(t.jobDetail.counterProposal, {
                     price: formatTND(job.my_trip_request.counter_price),
                   })}
@@ -147,7 +147,7 @@ export function ReturnTripClientPanel({
                     data-testid="contre-offre-accepter"
                     onClick={onAccepterContreProposition}
                     disabled={actionEnCours}
-                    className="flex-1 py-2 bg-purple-600 text-white rounded-lg text-sm font-semibold hover:bg-purple-700 disabled:opacity-50"
+                    className="flex-1 py-2 bg-blue-700 text-white rounded-lg text-sm font-semibold hover:bg-blue-700 disabled:opacity-50"
                   >
                     {t.jobDetail.acceptCounter}
                   </button>
@@ -166,7 +166,7 @@ export function ReturnTripClientPanel({
             <button
               onClick={onRetirerLaDemande}
               disabled={actionEnCours}
-              className="mt-2 text-xs text-neutral-500 hover:text-red-500 underline"
+              className="mt-2 text-xs text-neutral-500 hover:text-error-500 underline"
             >
               {t.jobDetail.cancelMyRequest}
             </button>
@@ -177,7 +177,7 @@ export function ReturnTripClientPanel({
         <button
           data-testid="trajet-envoyer-demande"
           onClick={onOuvrirLaDemande}
-          className="w-full flex items-center justify-center gap-2 py-3 bg-purple-600 text-white rounded-xl font-semibold hover:bg-purple-700 transition-colors shadow-lg shadow-purple-600/20 mb-2"
+          className="w-full flex items-center justify-center gap-2 py-3 bg-blue-700 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-700/20 mb-2"
         >
           <Truck className="w-5 h-5" />
           {job.instant_booking
@@ -189,14 +189,14 @@ export function ReturnTripClientPanel({
       {/* Secondary CTA — Contacter */}
       <Link
         href={`/messages?contact=${job.owner?.id}&subject=Trajet retour #${job.id}`}
-        className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-purple-300 text-purple-700 rounded-xl font-medium hover:bg-purple-50 transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-blue-300 text-blue-700 rounded-xl font-medium hover:bg-blue-50 transition-colors"
       >
         <MessageSquare className="w-4 h-4" />
         {t.jobDetail.contactTransporter}
       </Link>
       <p
         data-testid="demande-reassurance-paiement"
-        className="text-xs text-purple-500 text-center mt-2 flex items-center justify-center gap-1"
+        className="text-xs text-blue-600 text-center mt-2 flex items-center justify-center gap-1"
       >
         <ShieldCheck className="w-3 h-3" />
         {t.jobDetail.securePaymentEscrow}

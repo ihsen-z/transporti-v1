@@ -11,20 +11,20 @@ import {
 import { useToast } from "@/components/ui/Toast";
 import { VerificationUpload } from "@/components/trust/VerificationUpload";
 import {
-  ShieldCheck,
   AlertTriangle,
-  Clock,
-  FileText,
   CheckCircle,
-  XCircle,
-  RefreshCw,
+  Clock,
   Eye,
+  FileText,
+  Lightbulb,
+  RefreshCw,
   ShieldAlert,
+  ShieldCheck,
+  XCircle,
 } from "lucide-react";
 import { getMediaUrl } from "@/lib/imageUtils";
 import { formatDate as formatDateI18n } from "@/lib/format";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
-import { interpolate } from "@/lib/i18n/interpolate";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -88,7 +88,7 @@ export default function VerificationPage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className=" flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-brand-600 mx-auto mb-3" />
           <p className="text-neutral-500">{t.common.loading}</p>
@@ -101,47 +101,49 @@ export default function VerificationPage() {
     switch (status) {
       case "VERIFIED":
         return {
-          icon: <ShieldCheck className="w-10 h-10 text-accent-600" />,
+          icon: (
+            <ShieldCheck className="h-8 w-8 text-green-600" strokeWidth={2} />
+          ),
           title: t.verify.verified,
           desc: t.verify.verifiedDescPage,
-          bgClass:
-            "bg-gradient-to-r from-accent-50 to-accent-100/50 border-accent-300",
-          textClass: "text-accent-800",
+          bgClass: "bg-green-50",
+          textClass: "text-green-800",
         };
       case "PENDING":
         return {
-          icon: <Clock className="w-10 h-10 text-brand-600" />,
+          icon: <Clock className="h-8 w-8 text-blue-700" strokeWidth={2} />,
           title: t.verify.pending,
           desc: t.verify.pendingDescPage,
-          bgClass:
-            "bg-gradient-to-r from-brand-600/5 to-brand-600/10 border-brand-600/20",
-          textClass: "text-brand-600",
+          bgClass: "bg-blue-50",
+          textClass: "text-blue-700",
         };
       case "PARTIALLY_REVIEWED":
         return {
-          icon: <ShieldAlert className="w-10 h-10 text-amber-600" />,
+          icon: (
+            <ShieldAlert className="h-8 w-8 text-warning-600" strokeWidth={2} />
+          ),
           title: t.verify.partialTitle,
           desc: t.verify.partialDesc,
-          bgClass:
-            "bg-gradient-to-r from-amber-50 to-orange-50 border-amber-200",
-          textClass: "text-amber-800",
+          bgClass: "bg-warning-50",
+          textClass: "text-warning-800",
         };
       case "REJECTED":
         return {
-          icon: <AlertTriangle className="w-10 h-10 text-red-600" />,
+          icon: (
+            <AlertTriangle className="h-8 w-8 text-error-600" strokeWidth={2} />
+          ),
           title: t.verify.rejected,
           desc: t.verify.rejectedDescPage,
-          bgClass: "bg-gradient-to-r from-red-50 to-rose-50 border-red-200",
-          textClass: "text-red-800",
+          bgClass: "bg-error-50",
+          textClass: "text-error-700",
         };
       default:
         return {
-          icon: <FileText className="w-10 h-10 text-brand-600" />,
+          icon: <FileText className="h-8 w-8 text-blue-700" strokeWidth={2} />,
           title: t.verify.requiredTitle,
           desc: t.verify.requiredDesc,
-          bgClass:
-            "bg-gradient-to-r from-neutral-50 to-neutral-100 border-neutral-200",
-          textClass: "text-neutral-800",
+          bgClass: "bg-surface shadow-card",
+          textClass: "text-ink-900",
         };
     }
   };
@@ -180,26 +182,30 @@ export default function VerificationPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-2xl mx-auto space-y-6">
+    <div className="px-5 pb-10 pt-6 sm:px-6 lg:px-8">
+      <div className="max-w-2xl mx-auto flex flex-col gap-6">
         {/* ── Status Header ── */}
         <div
-          className={`p-6 rounded-2xl border-2 flex items-start gap-4 ${statusInfo.bgClass}`}
+          className={`flex items-start gap-4 rounded-card p-5 sm:p-6 ${statusInfo.bgClass}`}
         >
-          <div className="flex-shrink-0 mt-0.5">{statusInfo.icon}</div>
-          <div className={statusInfo.textClass}>
-            <h1 className="text-xl font-bold">{statusInfo.title}</h1>
-            <p className="mt-1 text-sm opacity-90">{statusInfo.desc}</p>
+          <div className="mt-0.5 flex-shrink-0">{statusInfo.icon}</div>
+          <div className={`flex flex-col gap-1 ${statusInfo.textClass}`}>
+            <h2 className="text-[19px] font-extrabold tracking-heading">
+              {statusInfo.title}
+            </h2>
+            <p className="text-[14px] leading-[1.55] opacity-90">
+              {statusInfo.desc}
+            </p>
           </div>
         </div>
 
         {/* ── Document Status Section ── */}
         {showDocumentStatus && (
-          <div className="bg-white rounded-2xl shadow-sm border border-neutral-200 overflow-hidden">
+          <div className="bg-surface rounded-card shadow-card overflow-hidden">
             {/* Progress Header */}
-            <div className="p-5 border-b border-neutral-100">
+            <div className="p-5 border-b border-line">
               <div className="flex items-center justify-between mb-3">
-                <h2 className="text-lg font-bold text-neutral-900">
+                <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {t.verify.docsStatusTitle}
                 </h2>
                 <button
@@ -207,7 +213,7 @@ export default function VerificationPage() {
                     fetchStatus();
                     fetchDocuments();
                   }}
-                  className="p-1.5 rounded-lg text-neutral-400 hover:text-brand-600 hover:bg-brand-600/5 transition-colors"
+                  className="grid h-9 w-9 place-items-center rounded-chip text-ink-300 transition-colors hover:bg-app hover:text-blue-700"
                   title={t.verify.refreshTitle}
                 >
                   <RefreshCw className="w-4 h-4" />
@@ -215,31 +221,29 @@ export default function VerificationPage() {
               </div>
 
               {/* Progress Bar */}
-              <div className="space-y-2">
-                <div className="flex justify-between text-xs text-neutral-500">
+              <div className="flex flex-col gap-2">
+                <div className="flex justify-between text-[11.5px] font-semibold text-ink-500">
                   <span>{t.verify.progressLabel}</span>
-                  <span className="font-semibold text-neutral-700">
+                  <span className="font-bold text-ink-900 tabular">
                     {approvedCount}/{documents.length}{" "}
                     {approvedCount > 1
                       ? t.verify.approvedPlural
                       : t.verify.approved}
                   </span>
                 </div>
-                <div className="h-2.5 bg-neutral-100 rounded-full overflow-hidden">
+                <div className="h-[5px] overflow-hidden rounded-full bg-neutral-100">
                   <div
-                    className="h-full rounded-full animate-progress-fill"
-                    style={{
-                      width: `${progressPct}%`,
-                      background:
-                        progressPct === 100
-                          ? "linear-gradient(90deg, #22c55e, #16a34a)"
-                          : rejectedCount > 0
-                            ? "linear-gradient(90deg, #f59e0b, #d97706)"
-                            : "linear-gradient(90deg, #1E3A8A, #2563B3)",
-                    }}
+                    className={`animate-progress-fill h-full rounded-full ${
+                      progressPct === 100
+                        ? "bg-green-500"
+                        : rejectedCount > 0
+                          ? "bg-orange-500"
+                          : "bg-blue-700"
+                    }`}
+                    style={{ width: `${progressPct}%` }}
                   />
                 </div>
-                <div className="flex gap-4 text-xs">
+                <div className="flex flex-wrap gap-4 text-[11.5px] font-semibold">
                   <span className="flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-green-500" />
                     <span className="text-neutral-500">
@@ -251,7 +255,7 @@ export default function VerificationPage() {
                   </span>
                   {rejectedCount > 0 && (
                     <span className="flex items-center gap-1">
-                      <span className="w-2 h-2 rounded-full bg-red-500" />
+                      <span className="h-2 w-2 rounded-full bg-error-500" />
                       <span className="text-neutral-500">
                         {rejectedCount}{" "}
                         {rejectedCount > 1
@@ -273,7 +277,7 @@ export default function VerificationPage() {
             </div>
 
             {/* Document Cards */}
-            <div className="divide-y divide-neutral-100">
+            <div className="divide-y divide-line">
               {documents.map((doc) => {
                 const docStatus = getDocStatus(doc);
                 const label = docTypeLabel(doc.document_type);
@@ -281,17 +285,17 @@ export default function VerificationPage() {
                 return (
                   <div
                     key={doc.id}
-                    className="p-4 hover:bg-neutral-50/50 transition-colors"
+                    className="p-4 transition-colors hover:bg-app"
                   >
                     <div className="flex items-start gap-3">
                       {/* Status Icon */}
                       <div
-                        className={`flex-shrink-0 mt-0.5 p-1.5 rounded-lg ${
+                        className={`mt-0.5 flex-shrink-0 rounded-chip p-1.5 ${
                           docStatus === "approved"
-                            ? "bg-accent-100 text-accent-600"
+                            ? "bg-green-50 text-green-600"
                             : docStatus === "rejected"
-                              ? "bg-red-100 text-red-600"
-                              : "bg-neutral-100 text-neutral-400"
+                              ? "bg-error-50 text-error-600"
+                              : "bg-neutral-100 text-ink-300"
                         }`}
                       >
                         {docStatus === "approved" && (
@@ -308,7 +312,7 @@ export default function VerificationPage() {
                       {/* Content */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between gap-2">
-                          <h3 className="text-sm font-semibold text-neutral-900">
+                          <h3 className="text-[14px] font-bold text-ink-900">
                             {label}
                           </h3>
                           <span
@@ -316,7 +320,7 @@ export default function VerificationPage() {
                               docStatus === "approved"
                                 ? "bg-accent-100 text-accent-700"
                                 : docStatus === "rejected"
-                                  ? "bg-red-100 text-red-700"
+                                  ? "bg-error-100 text-error-700"
                                   : "bg-neutral-100 text-neutral-500"
                             }`}
                           >
@@ -342,9 +346,9 @@ export default function VerificationPage() {
                           <div
                             className={`mt-1.5 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${
                               doc.is_expired
-                                ? "bg-red-100 text-red-700"
+                                ? "bg-error-100 text-error-700"
                                 : doc.expires_soon
-                                  ? "bg-amber-100 text-amber-700"
+                                  ? "bg-warning-100 text-warning-700"
                                   : "bg-neutral-100 text-neutral-500"
                             }`}
                           >
@@ -363,14 +367,14 @@ export default function VerificationPage() {
 
                         {/* Rejection Reason */}
                         {doc.rejection_reason && (
-                          <div className="mt-2 p-2.5 bg-red-50 border border-red-200 rounded-lg">
+                          <div className="mt-2 p-2.5 bg-error-50 border border-error-200 rounded-lg">
                             <div className="flex items-start gap-2">
-                              <AlertTriangle className="w-3.5 h-3.5 text-red-500 flex-shrink-0 mt-0.5" />
+                              <AlertTriangle className="w-3.5 h-3.5 text-error-500 flex-shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-xs font-medium text-red-800">
+                                <p className="text-xs font-medium text-error-700">
                                   {t.verify.rejectionReason}
                                 </p>
-                                <p className="text-xs text-red-700 mt-0.5">
+                                <p className="text-xs text-error-700 mt-0.5">
                                   {doc.rejection_reason}
                                 </p>
                               </div>
@@ -401,15 +405,19 @@ export default function VerificationPage() {
 
         {/* ── Upload Form (only for UNVERIFIED or REJECTED) ── */}
         {showUploadForm && (
-          <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-200 space-y-6">
-            <h2 className="text-lg font-bold text-neutral-900">
+          <div className="bg-white p-6 rounded-2xl shadow-sm border border-neutral-200 flex flex-col gap-6">
+            <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
               {status === "REJECTED"
                 ? t.verify.resendDocs
                 : t.verify.requiredDocs}
             </h2>
 
             {status === "REJECTED" && (
-              <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg text-sm text-amber-800">
+              <div className="flex items-start gap-2 rounded-tile bg-warning-50 p-3.5 text-[14px] text-warning-800">
+                <Lightbulb
+                  className="mt-0.5 h-4 w-4 flex-shrink-0"
+                  strokeWidth={2}
+                />
                 {t.verify.correctHint}
               </div>
             )}
@@ -442,7 +450,7 @@ export default function VerificationPage() {
               <button
                 onClick={handleSubmitReview}
                 disabled={!hasDocuments}
-                className="w-full py-3.5 bg-gradient-to-r from-accent-500 to-accent-600 text-white rounded-xl font-bold hover:from-accent-600 hover:to-accent-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg hover:shadow-accent-500/25 hover:scale-[1.01]"
+                className="w-full py-3.5 bg-green-500 text-white rounded-xl font-bold hover:bg-green-600 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-lg"
               >
                 {t.verify.submitForReview}
               </button>

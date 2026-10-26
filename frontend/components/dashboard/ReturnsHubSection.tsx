@@ -14,6 +14,8 @@ import {
   getLatestCompletedMission,
   type Mission,
 } from "@/lib/services/missions";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { interpolate } from "@/lib/i18n/interpolate";
 
 /**
  * T1.1 — La section « Mes retours » du tableau de bord transporteur.
@@ -46,6 +48,8 @@ export default function ReturnsHubSection({
   kmValorises,
   tauxRemplissage,
 }: Props) {
+  const { t } = useAppI18n();
+  const h = t.returnsHub;
   const [trajets, setTrajets] = useState<ReturnTrip[] | null>(null);
   const [derniereMission, setDerniereMission] = useState<Mission | null>(null);
 
@@ -78,7 +82,10 @@ export default function ReturnsHubSection({
   );
 
   return (
-    <section aria-labelledby="hub-retours-titre" className="mb-8 space-y-4">
+    <section
+      aria-labelledby="hub-retours-titre"
+      className="mb-8 flex flex-col gap-4"
+    >
       {derniereMission && (
         <ReturnPromptBanner
           missionId={derniereMission.id}
@@ -92,48 +99,57 @@ export default function ReturnsHubSection({
       {kmValorises !== undefined && kmValorises > 0 && (
         <div
           data-testid="hub-km-valorises"
-          className="rounded-xl border border-accent-600/30 bg-accent-50 px-5 py-4 flex flex-wrap items-baseline gap-x-3 gap-y-1"
+          className="flex flex-wrap items-baseline gap-x-3 gap-y-1 rounded-tile bg-green-50 px-5 py-4"
         >
-          <Route className="w-5 h-5 text-accent-700" aria-hidden="true" />
-          <p className="text-accent-700">
-            <span className="text-2xl font-bold tabular-nums">
+          <Route
+            className="h-5 w-5 text-green-600"
+            strokeWidth={2}
+            aria-hidden="true"
+          />
+          <p className="text-green-700">
+            <span className="text-[24px] font-extrabold tracking-heading tabular-nums">
               {Math.round(kmValorises)} km
             </span>{" "}
-            de retour à vide valorisés
+            {h.kmValorises}
           </p>
           {tauxRemplissage != null && (
-            <span className="text-sm text-accent-700/80">
-              · {tauxRemplissage} % de vos retours trouvent un client
+            <span className="text-[13px] font-semibold text-green-700/80">
+              {interpolate(h.tauxRemplissage, { n: tauxRemplissage })}
             </span>
           )}
         </div>
       )}
 
-      <div className="bg-white rounded-2xl border border-neutral-100 p-6">
+      <div className="bg-surface rounded-card shadow-card p-6">
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
           <h2
             id="hub-retours-titre"
-            className="text-lg font-semibold text-neutral-900 flex items-center gap-2"
+            className="text-[17px] font-extrabold tracking-heading text-ink-900 flex items-center gap-2"
           >
-            <RotateCcw className="w-5 h-5 text-brand-600" aria-hidden="true" />
-            Mes retours en ligne
+            <RotateCcw
+              className="h-5 w-5 text-blue-700"
+              strokeWidth={2}
+              aria-hidden="true"
+            />
+            {h.title}
           </h2>
           <Link
             href="/retours/nouveau"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-cta-500 text-white text-sm font-semibold hover:bg-cta-600 focus-visible:ring-2 focus-visible:ring-cta-500/40 outline-none"
+            className="cta btn-base min-h-[48px] px-5 text-[15px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
           >
-            <PlusCircle className="w-4 h-4" aria-hidden="true" />
-            Publier un retour
+            <PlusCircle
+              className="h-4 w-4"
+              strokeWidth={2.2}
+              aria-hidden="true"
+            />
+            {h.publish}
           </Link>
         </div>
 
         {trajets === null && (
-          <div className="space-y-2" aria-busy="true">
+          <div className="flex flex-col gap-2" aria-busy="true">
             {[0, 1].map((i) => (
-              <div
-                key={i}
-                className="h-12 rounded-lg bg-neutral-100 animate-pulse"
-              />
+              <div key={i} className="h-12 rounded-lg skeleton" />
             ))}
           </div>
         )}
@@ -143,25 +159,26 @@ export default function ReturnsHubSection({
         {trajets !== null && enLigne.length === 0 && (
           <p
             data-testid="hub-retours-vide"
-            className="text-sm text-neutral-500"
+            className="text-[14px] leading-[1.55] text-ink-500"
           >
-            Aucun retour en ligne. Publiez le trajet que vous faites déjà : les
-            clients du corridor le verront.
+            {h.empty}
           </p>
         )}
 
         {enLigne.length > 0 && (
-          <ul data-testid="hub-retours-liste" className="space-y-2">
+          <ul data-testid="hub-retours-liste" className="flex flex-col gap-2">
             {enLigne.slice(0, 3).map((trajet) => (
               <li
                 key={trajet.id}
-                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-neutral-100"
+                className="flex flex-wrap items-center justify-between gap-2 px-3 py-2.5 rounded-lg border border-line"
               >
-                <span className="font-semibold text-neutral-900">
+                <span className="flex items-center gap-2 text-[14.5px] font-bold text-ink-900">
+                  <span className="route-dot route-dot--start" aria-hidden />
                   {trajet.pickup_governorate} → {trajet.dropoff_governorate}
+                  <span className="route-dot route-dot--end" aria-hidden />
                 </span>
-                <span className="text-sm text-neutral-500 tabular-nums">
-                  expire dans {daysUntilExpiry(trajet)} j
+                <span className="text-[13px] text-ink-500 tabular-nums">
+                  {interpolate(h.expiresIn, { n: daysUntilExpiry(trajet) })}
                 </span>
               </li>
             ))}
@@ -171,11 +188,12 @@ export default function ReturnsHubSection({
         {enLigne.length > 0 && (
           <Link
             href="/retours"
-            className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 hover:text-brand-700 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none rounded"
+            className="mt-4 inline-flex items-center gap-1.5 rounded-chip text-[13px] font-bold text-blue-700 underline-offset-4 outline-none hover:underline focus-visible:ring-2 focus-visible:ring-blue-700/30"
           >
-            Gérer mes {enLigne.length} retour
-            {enLigne.length > 1 ? "s" : ""}
-            <ArrowRight className="w-3.5 h-3.5" aria-hidden="true" />
+            {enLigne.length > 1
+              ? interpolate(h.manageMany, { n: enLigne.length })
+              : h.manageOne}
+            <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
           </Link>
         )}
       </div>

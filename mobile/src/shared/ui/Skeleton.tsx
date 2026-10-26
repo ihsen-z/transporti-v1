@@ -1,5 +1,10 @@
 import { useEffect, useRef } from 'react';
-import { Animated, type DimensionValue, type StyleProp, type ViewStyle } from 'react-native';
+import {
+  Animated,
+  type DimensionValue,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { colors, radii } from '@/shared/theme';
 
 interface Props {
@@ -10,7 +15,12 @@ interface Props {
 }
 
 // Bloc gris en pulsation (placeholder de chargement).
-export function Skeleton({ width = '100%', height = 16, radius = radii.md, style }: Props) {
+export function Skeleton({
+  width = '100%',
+  height = 16,
+  radius = radii.md,
+  style,
+}: Props) {
   const opacity = useRef(new Animated.Value(0.4)).current;
 
   useEffect(() => {
@@ -27,7 +37,13 @@ export function Skeleton({ width = '100%', height = 16, radius = radii.md, style
   return (
     <Animated.View
       style={[
-        { width, height, borderRadius: radius, backgroundColor: colors.neutral[200], opacity },
+        {
+          width,
+          height,
+          borderRadius: radius,
+          backgroundColor: colors.neutral[200],
+          opacity,
+        },
         style,
       ]}
     />

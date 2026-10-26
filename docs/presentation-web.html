@@ -1,0 +1,1112 @@
+<title>Transporti côté web</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@600;700;800&family=IBM+Plex+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap">
+
+<style>
+  :root {
+    --ground:   #F1F4FA;
+    --surface:  #FFFFFF;
+    --sunk:     #E9EEF8;
+    --ink:      #111827;
+    --muted:    #5C6B85;
+    --faint:    #8A99B5;
+    --rule:     #DCE4F1;
+    --brand:    #1E3A8A;
+    --link:     #2563B3;
+    --action:   #C2410C;
+    --action-bg:#FFF1E6;
+    --value:    #0F7A3D;
+    --value-bg: #E7F6EC;
+    --warn:     #92400E;
+    --warn-bg:  #FEF3C7;
+    --stop:     #9F1239;
+    --stop-bg:  #FFE7EC;
+
+    --display: Archivo, "Helvetica Neue", Arial, sans-serif;
+    --body: Inter, "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:   #0A1630;
+      --surface:  #101F42;
+      --sunk:     #0D1A38;
+      --ink:      #E8EFFC;
+      --muted:    #9FB3D6;
+      --faint:    #6F84AB;
+      --rule:     #22345E;
+      --brand:    #93B4F0;
+      --link:     #8FB6F2;
+      --action:   #FFA76B;
+      --action-bg:#3A2213;
+      --value:    #6FD897;
+      --value-bg: #12321F;
+      --warn:     #F2C879;
+      --warn-bg:  #382A11;
+      --stop:     #FF9DAF;
+      --stop-bg:  #3A1620;
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --ground:   #0A1630;
+    --surface:  #101F42;
+    --sunk:     #0D1A38;
+    --ink:      #E8EFFC;
+    --muted:    #9FB3D6;
+    --faint:    #6F84AB;
+    --rule:     #22345E;
+    --brand:    #93B4F0;
+    --link:     #8FB6F2;
+    --action:   #FFA76B;
+    --action-bg:#3A2213;
+    --value:    #6FD897;
+    --value-bg: #12321F;
+    --warn:     #F2C879;
+    --warn-bg:  #382A11;
+    --stop:     #FF9DAF;
+    --stop-bg:  #3A1620;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--ground);
+    color: var(--ink);
+    font-family: var(--body);
+    font-size: 16px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 0 24px 96px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0 56px;
+  }
+
+  /* ── Bandeau d'ouverture ─────────────────────────────────────────── */
+  .top {
+    grid-column: 1 / -1;
+    padding: 56px 0 40px;
+    border-bottom: 2px solid var(--ink);
+  }
+  .eyebrow {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin: 0 0 18px;
+  }
+  h1 {
+    font-family: var(--display);
+    font-weight: 800;
+    font-size: clamp(38px, 6vw, 62px);
+    line-height: 1.02;
+    letter-spacing: -0.035em;
+    margin: 0 0 18px;
+    text-wrap: balance;
+  }
+  .lede {
+    font-size: 19px;
+    line-height: 1.55;
+    color: var(--muted);
+    max-width: 62ch;
+    margin: 0;
+  }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 28px;
+    margin-top: 30px;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    color: var(--muted);
+  }
+  .facts b { color: var(--ink); font-weight: 600; }
+
+  /* ── Rail de navigation ──────────────────────────────────────────── */
+  nav.rail { display: none; }
+
+  @media (min-width: 1060px) {
+    .page { grid-template-columns: 210px minmax(0, 1fr); }
+    nav.rail {
+      display: block;
+      grid-column: 1;
+      align-self: start;
+      position: sticky;
+      top: 28px;
+      padding-top: 44px;
+      font-size: 13.5px;
+      line-height: 1.45;
+    }
+    nav.rail ol { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 9px; }
+    nav.rail a { color: var(--muted); text-decoration: none; display: flex; gap: 9px; }
+    nav.rail a:hover { color: var(--link); }
+    nav.rail .n { font-family: var(--mono); font-size: 11.5px; color: var(--faint); padding-top: 2px; }
+    main { grid-column: 2; }
+  }
+
+  main { grid-column: 1; min-width: 0; }
+
+  section { padding-top: 52px; scroll-margin-top: 20px; }
+
+  h2 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 27px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 6px;
+    text-wrap: balance;
+  }
+  h2 .num {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--faint);
+    margin-inline-end: 12px;
+    letter-spacing: 0;
+  }
+  .sub {
+    color: var(--muted);
+    margin: 0 0 24px;
+    max-width: 66ch;
+    font-size: 15.5px;
+  }
+
+  h3 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.01em;
+    margin: 30px 0 8px;
+  }
+
+  p { max-width: 68ch; margin: 0 0 14px; }
+  a { color: var(--link); }
+
+  ul.plain { margin: 0 0 16px; padding-inline-start: 20px; max-width: 68ch; }
+  ul.plain li { margin-bottom: 7px; }
+
+  /* ── Chaînes d'états ─────────────────────────────────────────────── */
+  .flow {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 20px 22px;
+    margin: 18px 0 26px;
+  }
+  .flow-title {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 14px;
+  }
+  .chain {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+  }
+  .chain::-webkit-scrollbar { height: 6px; }
+  .chain::-webkit-scrollbar-thumb { background: var(--rule); border-radius: 99px; }
+
+  .st {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    padding: 6px 11px;
+    border-radius: 7px;
+    background: var(--sunk);
+    color: var(--muted);
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .st.go   { background: var(--value-bg);  color: var(--value); }
+  .st.act  { background: var(--action-bg); color: var(--action); }
+  .st.wait { background: var(--warn-bg);   color: var(--warn); }
+  .st.end  { background: var(--stop-bg);   color: var(--stop); }
+  .arrow { color: var(--faint); flex-shrink: 0; font-size: 15px; }
+  .branch {
+    font-family: var(--mono);
+    font-size: 11.5px;
+    color: var(--faint);
+    margin-top: 10px;
+  }
+
+  /* ── Étapes numérotées ───────────────────────────────────────────── */
+  ol.steps { list-style: none; counter-reset: s; margin: 4px 0 8px; padding: 0; }
+  ol.steps > li {
+    counter-increment: s;
+    display: grid;
+    grid-template-columns: 30px 1fr;
+    gap: 0 14px;
+    padding: 13px 0;
+    border-top: 1px solid var(--rule);
+    max-width: 72ch;
+  }
+  ol.steps > li::before {
+    content: counter(s);
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--faint);
+    padding-top: 3px;
+  }
+  ol.steps b { font-weight: 600; }
+  ol.steps .who {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--faint);
+    display: block;
+    margin-bottom: 2px;
+  }
+  ol.steps .where {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--link);
+  }
+
+  /* ── Trois rôles ─────────────────────────────────────────────────── */
+  .roles { display: grid; grid-template-columns: 1fr; gap: 16px; margin: 20px 0 8px; }
+  @media (min-width: 720px) { .roles { grid-template-columns: repeat(3, 1fr); } }
+  .role {
+    background: var(--surface);
+    border: 1px solid var(--rule);
+    border-radius: 14px;
+    padding: 18px 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .role h4 {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 16px;
+    margin: 0;
+    letter-spacing: -0.01em;
+  }
+  .role p { font-size: 14px; color: var(--muted); margin: 0; max-width: none; }
+  .role ul { margin: 0; padding-inline-start: 17px; font-size: 13.5px; color: var(--muted); }
+  .role li { margin-bottom: 4px; }
+
+  /* ── Tableaux ────────────────────────────────────────────────────── */
+  .scroller { overflow-x: auto; margin: 16px 0 8px; }
+  table { border-collapse: collapse; width: 100%; font-size: 14px; min-width: 460px; }
+  th, td {
+    text-align: start;
+    padding: 9px 14px 9px 0;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  th {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--faint);
+    border-bottom-color: var(--ink);
+  }
+  td.route { font-family: var(--mono); font-size: 12.5px; color: var(--link); white-space: nowrap; }
+  td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  td .r { font-family: var(--mono); font-size: 11px; color: var(--faint); }
+
+  .note {
+    border-inline-start: 3px solid var(--brand);
+    padding: 2px 0 2px 16px;
+    margin: 20px 0;
+    color: var(--muted);
+    font-size: 14.5px;
+    max-width: 66ch;
+  }
+  .note b { color: var(--ink); }
+
+  code {
+    font-family: var(--mono);
+    font-size: 0.88em;
+    background: var(--sunk);
+    padding: 1px 5px;
+    border-radius: 5px;
+  }
+
+  footer {
+    grid-column: 1 / -1;
+    margin-top: 64px;
+    padding-top: 22px;
+    border-top: 1px solid var(--rule);
+    font-size: 13.5px;
+    color: var(--faint);
+    max-width: 70ch;
+  }
+
+  a:focus-visible, nav.rail a:focus-visible {
+    outline: 2px solid var(--link);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+</style>
+
+<div class="page">
+
+  <header class="top">
+    <p class="eyebrow">Application web · guide fonctionnel</p>
+    <h1>Transporti côté web</h1>
+    <p class="lede">
+      Une place de marché du <strong>retour à vide</strong>. Un camion qui rentre chez lui
+      sans chargement coûte le même carburant qu'à l'aller ; Transporti met ce trajet en
+      vente et met le client en face. Ce document parcourt chaque écran, chaque parcours
+      complet et chaque règle qui décide de quelque chose.
+    </p>
+    <div class="facts">
+      <span><b>3</b> rôles</span>
+      <span><b>4</b> parcours de bout en bout</span>
+      <span><b>47</b> écrans</span>
+      <span><b>2</b> langues — français, <b>العربية</b> (RTL)</span>
+    </div>
+  </header>
+
+  <nav class="rail" aria-label="Sommaire">
+    <ol>
+      <li><a href="#modele"><span class="n">01</span><span>Le modèle</span></a></li>
+      <li><a href="#roles"><span class="n">02</span><span>Les trois rôles</span></a></li>
+      <li><a href="#entree"><span class="n">03</span><span>Arriver sur la plateforme</span></a></li>
+      <li><a href="#p1"><span class="n">04</span><span>Parcours — l'annonce</span></a></li>
+      <li><a href="#p2"><span class="n">05</span><span>Parcours — le retour à vide</span></a></li>
+      <li><a href="#p3"><span class="n">06</span><span>Parcours — la recherche</span></a></li>
+      <li><a href="#p4"><span class="n">07</span><span>Parcours — la mission</span></a></li>
+      <li><a href="#argent"><span class="n">08</span><span>L'argent</span></a></li>
+      <li><a href="#confiance"><span class="n">09</span><span>La confiance</span></a></li>
+      <li><a href="#litiges"><span class="n">10</span><span>Quand ça se passe mal</span></a></li>
+      <li><a href="#echanges"><span class="n">11</span><span>Messages et alertes</span></a></li>
+      <li><a href="#admin"><span class="n">12</span><span>Administration</span></a></li>
+      <li><a href="#ecrans"><span class="n">13</span><span>Tous les écrans</span></a></li>
+      <li><a href="#cycles"><span class="n">14</span><span>Cycles de vie</span></a></li>
+    </ol>
+  </nav>
+
+  <main>
+
+    <!-- 01 ─────────────────────────────────────────────────────────── -->
+    <section id="modele">
+      <h2><span class="num">01</span>Le modèle</h2>
+      <p class="sub">
+        Transporti n'a pas une place de marché, il en a deux. Elles se ressemblent de
+        loin et ne se comportent pas pareil — c'est la chose à comprendre avant tout
+        le reste.
+      </p>
+
+      <h3>Le client publie, les transporteurs offrent</h3>
+      <p>
+        Une cliente a une marchandise à déplacer. Elle publie une <b>annonce</b> qui décrit
+        ce qu'elle veut transporter, d'où à où, quand. Les transporteurs la voient et lui
+        envoient des <b>offres</b> chiffrées. Elle choisit. C'est le sens classique de la
+        place de marché : la demande parle en premier.
+      </p>
+
+      <h3>Le transporteur publie, les clients demandent</h3>
+      <p>
+        C'est le sens inverse, et c'est le cœur du produit. Un transporteur qui a livré à
+        Sfax et rentre à Tunis publie ce <b>trajet retour</b> avec sa capacité restante.
+        Les clients du corridor le trouvent et lui envoient des <b>demandes</b>. Le camion
+        roulait de toute façon : le prix s'en ressent, et la commission de la plateforme
+        aussi — 8 % au lieu de 12 %.
+      </p>
+
+      <div class="note">
+        <b>Un mot à retenir : le corridor.</b> Ce n'est pas un point A et un point B, c'est
+        l'axe entre deux gouvernorats. Un client qui cherche Tunis → Sfax se voit proposer
+        les départs voisins — Ariana, Ben Arous, Manouba — parce qu'un camion qui passe à
+        vingt kilomètres passe quand même.
+      </div>
+
+      <h3>Trois natures de mission</h3>
+      <div class="scroller">
+        <table>
+          <thead>
+            <tr><th>Nature</th><th>Ce que c'est</th><th>Commission</th></tr>
+          </thead>
+          <tbody>
+            <tr><td><b>Transport</b> <span class="r">TRANSPORT</span></td><td>Marchandise d'un point à un autre</td><td class="num">12 %</td></tr>
+            <tr><td><b>Déménagement</b> <span class="r">MOVING</span></td><td>Volume, manutention, plus de temps</td><td class="num">15 %</td></tr>
+            <tr><td><b>Livraison</b> <span class="r">DELIVERY</span></td><td>Colis, dernier kilomètre</td><td class="num">12 %</td></tr>
+            <tr><td><b>Née d'un retour à vide</b></td><td>Quelle que soit sa nature</td><td class="num"><b>8 %</b></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:14px;color:var(--muted)">
+        Le taux réduit du retour à vide n'est pas une remise commerciale : c'est
+        l'incitation qui fait exister le stock. Sans lui, le transporteur n'a pas de raison
+        de publier un trajet qu'il fait déjà.
+      </p>
+    </section>
+
+    <!-- 02 ─────────────────────────────────────────────────────────── -->
+    <section id="roles">
+      <h2><span class="num">02</span>Les trois rôles</h2>
+      <p class="sub">
+        Le rôle est choisi à l'inscription et décide de tout : le menu, les écrans
+        accessibles, et ce que le serveur accepte. Un client qui ouvrirait une adresse
+        transporteur reçoit un refus, pas un écran vide.
+      </p>
+
+      <div class="roles">
+        <div class="role">
+          <h4>Client</h4>
+          <p>Il a quelque chose à faire transporter.</p>
+          <ul>
+            <li>Publier une annonce</li>
+            <li>Chercher un trajet retour</li>
+            <li>Comparer les offres reçues</li>
+            <li>Payer, suivre, confirmer</li>
+            <li>Carnet d'adresses, favoris</li>
+            <li>Portefeuille : où en est son argent</li>
+          </ul>
+        </div>
+        <div class="role">
+          <h4>Transporteur</h4>
+          <p>Il a un véhicule et des trajets.</p>
+          <ul>
+            <li>Publier ses retours à vide</li>
+            <li>Chercher des missions ouvertes</li>
+            <li>Faire des offres, négocier</li>
+            <li>Faire vérifier ses documents</li>
+            <li>Portefeuille, retraits</li>
+            <li>Performance par corridor</li>
+          </ul>
+        </div>
+        <div class="role">
+          <h4>Administration</h4>
+          <p>Elle arbitre et surveille.</p>
+          <ul>
+            <li>Utilisateurs, suspensions</li>
+            <li>Vérification des documents</li>
+            <li>Escrows et paiements</li>
+            <li>Litiges et leur issue financière</li>
+            <li>Modération des avis</li>
+            <li>Journal d'audit</li>
+          </ul>
+        </div>
+      </div>
+
+      <p style="margin-top:20px">
+        Les <b>avis</b> sont la seule chose entièrement symétrique : le client note le
+        transporteur, le transporteur note le client, et les deux les retrouvent au même
+        endroit — <code>/mes-avis</code>.
+      </p>
+    </section>
+
+    <!-- 03 ─────────────────────────────────────────────────────────── -->
+    <section id="entree">
+      <h2><span class="num">03</span>Arriver sur la plateforme</h2>
+      <p class="sub">
+        Quatre pages publiques se lisent sans compte. Elles ne sont pas décoratives :
+        chacune répond à une objection précise avant l'inscription.
+      </p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Page</th><th>À qui elle parle</th><th>Ce qu'elle répond</th></tr></thead>
+          <tbody>
+            <tr>
+              <td class="route">/</td>
+              <td>Tout le monde</td>
+              <td>« La logistique réinventée » — ce que fait la plateforme, et que les transporteurs sont vérifiés.</td>
+            </tr>
+            <tr>
+              <td class="route">/devenir-transporteur</td>
+              <td>Transporteurs</td>
+              <td>« Vous rentrez à vide. Faites-vous payer le retour. » Le pitch du produit en une phrase.</td>
+            </tr>
+            <tr>
+              <td class="route">/confiance</td>
+              <td>Clients hésitants</td>
+              <td>« Votre argent n'est jamais entre les mains du transporteur. » Le séquestre expliqué.</td>
+            </tr>
+            <tr>
+              <td class="route">/aide</td>
+              <td>Tout le monde</td>
+              <td>Le centre d'aide, questions fréquentes.</td>
+            </tr>
+            <tr>
+              <td class="route">/conditions<br>/confidentialite</td>
+              <td>Tout le monde</td>
+              <td>Conditions générales et politique de confidentialité.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Créer un compte</h3>
+      <ol class="steps">
+        <li><div><span class="who">Visiteur</span><b>S'inscrire</b> — nom, e-mail, téléphone, mot de passe. <span class="where">/register</span></div></li>
+        <li><div><span class="who">Visiteur</span><b>Choisir son rôle</b> — « J'expédie » ou « Je transporte ». Ce choix commande tout ce qui suit. <span class="where">/select-role</span></div></li>
+        <li><div><span class="who">Nouveau membre</span><b>Le guide de démarrage</b> — trois étapes, adaptées au rôle, masquables. Il reste tant qu'il reste une étape.</div></li>
+      </ol>
+      <p style="font-size:14px;color:var(--muted)">
+        Mot de passe oublié : <code>/forgot-password</code> envoie un lien, <code>/reset-password</code>
+        le consomme. La réponse est toujours la même, que l'adresse existe ou non — on ne
+        dit pas à un inconnu qui est inscrit.
+      </p>
+    </section>
+
+    <!-- 04 ─────────────────────────────────────────────────────────── -->
+    <section id="p1">
+      <h2><span class="num">04</span>Parcours — la cliente publie une annonce</h2>
+      <p class="sub">
+        Le sens classique. La cliente décrit son besoin, les transporteurs se
+        positionnent, elle arbitre.
+      </p>
+
+      <ol class="steps">
+        <li><div><span class="who">Cliente</span><b>Publier l'annonce</b> — nature, départ, arrivée, dates, marchandise, poids, volume, photos. Les adresses du carnet sont proposées pour ne pas les ressaisir. <span class="where">/demandes/nouvelle</span></div></li>
+        <li><div><span class="who">Transporteurs</span><b>L'annonce devient visible</b> dans les missions disponibles. <span class="where">/demandes</span></div></li>
+        <li><div><span class="who">Transporteur</span><b>Envoyer une offre</b> — un prix net, un message. Il voit ce qu'il touchera après commission. <span class="where">/demandes/[id]</span></div></li>
+        <li><div><span class="who">Cliente</span><b>Comparer</b> — chaque offre porte le profil du transporteur : note, avis, badge vérifié, véhicule, capacité. <span class="where">/jobs/[id]</span></div></li>
+        <li><div><span class="who">Cliente</span><b>Contre-proposer</b> (facultatif) — elle propose un autre prix avec une justification. Le transporteur accepte, refuse, ou laisse expirer.</div></li>
+        <li><div><span class="who">Cliente</span><b>Accepter une offre</b> — la mission est attribuée, les autres offres tombent. La conversation s'ouvre.</div></li>
+        <li><div><span class="who">Cliente</span><b>Réserver et payer</b> — voir le parcours de l'argent. <span class="where">/jobs/[id]/book</span> · <span class="where">/reservation/[jobId]</span></div></li>
+        <li><div><span class="who">Transporteur</span><b>Démarrer, livrer</b> — la mission passe en cours, puis terminée à la remise du code de livraison.</div></li>
+        <li><div><span class="who">Les deux</span><b>Se noter</b> — après la livraison, chacun note l'autre. <span class="where">/mes-avis</span></div></li>
+      </ol>
+
+      <div class="flow">
+        <div class="flow-title">Cycle de vie de la mission</div>
+        <div class="chain">
+          <span class="st">DRAFT</span><span class="arrow">→</span>
+          <span class="st go">PUBLISHED</span><span class="arrow">→</span>
+          <span class="st act">MATCHED</span><span class="arrow">→</span>
+          <span class="st act">IN_PROGRESS</span><span class="arrow">→</span>
+          <span class="st go">COMPLETED</span>
+        </div>
+        <div class="branch">à tout moment · <span class="st end" style="font-size:11px">CANCELLED</span> &nbsp; <span class="st end" style="font-size:11px">DISPUTED</span></div>
+      </div>
+    </section>
+
+    <!-- 05 ─────────────────────────────────────────────────────────── -->
+    <section id="p2">
+      <h2><span class="num">05</span>Parcours — le transporteur publie son retour à vide</h2>
+      <p class="sub">
+        Le sens du pivot. Le transporteur ne cherche pas du travail : il vend un trajet
+        qu'il fait déjà.
+      </p>
+
+      <ol class="steps">
+        <li><div><span class="who">Transporteur</span><b>Publier le retour</b> — corridor, date, capacité restante en kilos et en m³, fourchette de prix. Son véhicule est déjà connu, il ne le ressaisit pas. <span class="where">/retours/nouveau</span></div></li>
+        <li><div><span class="who">Transporteur</span><b>Gérer son inventaire</b> — chaque retour publié affiche son échéance. Un trajet expiré disparaît de la recherche cliente ; il se prolonge d'une semaine ou se duplique en un geste. <span class="where">/retours</span></div></li>
+        <li><div><span class="who">Cliente</span><b>Trouver le trajet</b> et envoyer une demande chiffrée.</div></li>
+        <li><div><span class="who">Transporteur</span><b>Décider</b> — accepter, refuser, ou contre-proposer un prix. Les demandes sont regroupées par onglet : à décider, en négociation, archivées. <span class="where">/demandes-recues</span></div></li>
+        <li><div><span class="who">Les deux</span><b>La mission existe</b> — à l'acceptation, une mission naît du trajet retour, avec la commission réduite à 8 %.</div></li>
+      </ol>
+
+      <div class="flow">
+        <div class="flow-title">Cycle de vie d'une demande sur un trajet retour</div>
+        <div class="chain">
+          <span class="st wait">PENDING</span><span class="arrow">→</span>
+          <span class="st go">ACCEPTED</span>
+          <span class="arrow" style="margin-inline-start:14px">ou</span>
+          <span class="st act">COUNTERED</span><span class="arrow">→</span>
+          <span class="st go">ACCEPTED</span>
+        </div>
+        <div class="branch">sorties · <span class="st end" style="font-size:11px">REJECTED</span> &nbsp; <span class="st end" style="font-size:11px">CANCELLED</span> &nbsp; <span class="st end" style="font-size:11px">EXPIRED</span></div>
+      </div>
+    </section>
+
+    <!-- 06 ─────────────────────────────────────────────────────────── -->
+    <section id="p3">
+      <h2><span class="num">06</span>Parcours — la cliente cherche un trajet</h2>
+      <p class="sub">
+        L'écran le plus fréquenté du parcours client, et celui qui doit tenir la promesse
+        du prix réduit.
+      </p>
+
+      <ol class="steps">
+        <li><div><span class="who">Cliente</span><b>Chercher</b> — départ, arrivée, jour facultatif, et des filtres marchandise : nature, poids, volume. <span class="where">/recherche</span></div></li>
+        <li><div><span class="who">Cliente</span><b>Lire les résultats</b> — chaque trajet montre le transporteur, sa note, son badge vérifié, l'itinéraire, la distance, et l'économie estimée avec sa base de comparaison. Jamais un montant nu : un chiffre d'économie sans point de repère n'est pas vérifiable.</div></li>
+        <li><div><span class="who">Cliente</span><b>Élargir si c'est vide</b> — deux sorties immédiates : voir tout le corridor sans la contrainte de date, ou étendre aux gouvernorats voisins.</div></li>
+        <li><div><span class="who">Cliente</span><b>Créer une alerte corridor</b> — si le corridor est vide aujourd'hui, elle est prévenue quand il se remplit.</div></li>
+        <li><div><span class="who">Cliente</span><b>Consulter le transporteur</b> avant tout contact : note, avis reçus, vérification, véhicule, taux de complétion, temps de réponse. <span class="where">/transporteur/[id]</span></div></li>
+        <li><div><span class="who">Cliente</span><b>Envoyer sa demande</b> — description, adresses précises, créneau, prix proposé, mode de paiement.</div></li>
+        <li><div><span class="who">Cliente</span><b>Suivre</b> — l'état de chaque demande envoyée, en un seul endroit. <span class="where">/demandes</span></div></li>
+      </ol>
+
+      <div class="note">
+        Un transporteur avec qui ça s'est bien passé se retrouve en un geste :
+        <b>les favoris</b> gardent la liste de ceux avec qui elle a déjà travaillé.
+        <span class="where" style="color:var(--link);font-family:var(--mono);font-size:12px">/favoris</span>
+      </div>
+    </section>
+
+    <!-- 07 ─────────────────────────────────────────────────────────── -->
+    <section id="p4">
+      <h2><span class="num">07</span>Parcours — la mission, du départ à la livraison</h2>
+      <p class="sub">
+        Une fois l'accord conclu, les deux côtés suivent la même chronologie, chacun
+        depuis son écran.
+      </p>
+
+      <ol class="steps">
+        <li><div><span class="who">Cliente</span><b>Payer</b> — le séquestre se constitue, ou le paiement à la livraison est retenu. Tant que ce n'est pas fait, la mission ne démarre pas.</div></li>
+        <li><div><span class="who">Transporteur</span><b>Confirmer le démarrage</b> — la mission passe en cours, l'événement est horodaté.</div></li>
+        <li><div><span class="who">Les deux</span><b>Suivre la chronologie</b> — chaque étape est datée : départ confirmé, en route, livré.</div></li>
+        <li><div><span class="who">Transporteur</span><b>Livrer</b> — il saisit le code de livraison à quatre chiffres que la cliente lui remet, et joint une preuve de livraison.</div></li>
+        <li><div><span class="who">Cliente</span><b>Confirmer la réception</b> — c'est ce geste qui libère l'argent séquestré.</div></li>
+        <li><div><span class="who">Les deux</span><b>Se noter</b> — l'avis est ouvert une fois la mission terminée.</div></li>
+      </ol>
+
+      <div class="note">
+        <b>Le code à quatre chiffres n'est pas un détail.</b> Il est porté par la mission,
+        pas par un message : il survit à un rechargement, à une déconnexion, à un
+        changement d'appareil. C'est la preuve que la marchandise a bien été remise à la
+        bonne personne.
+      </div>
+    </section>
+
+    <!-- 08 ─────────────────────────────────────────────────────────── -->
+    <section id="argent">
+      <h2><span class="num">08</span>L'argent</h2>
+      <p class="sub">
+        Deux chemins, une seule règle : le transporteur n'est payé qu'après une livraison
+        confirmée.
+      </p>
+
+      <h3>Paiement séquestré</h3>
+      <p>
+        La cliente paie à la réservation. La somme est <b>retenue par la plateforme</b>, pas
+        versée au transporteur. Elle est libérée à la confirmation de réception, ou
+        remboursée si la mission n'a pas lieu. C'est le mécanisme que la page
+        <code>/confiance</code> explique aux clients hésitants.
+      </p>
+
+      <div class="flow">
+        <div class="flow-title">Cycle de vie du séquestre</div>
+        <div class="chain">
+          <span class="st">INITIATED</span><span class="arrow">→</span>
+          <span class="st wait">HELD</span><span class="arrow">→</span>
+          <span class="st go">RELEASED</span>
+        </div>
+        <div class="branch">
+          issues alternatives · <span class="st end" style="font-size:11px">REFUNDED</span> vers la cliente &nbsp;
+          <span class="st end" style="font-size:11px">FAILED</span> échec du paiement
+        </div>
+      </div>
+
+      <h3>Paiement à la livraison</h3>
+      <p>
+        La cliente règle en espèces au moment de la remise, <b>dans la limite de 300 TND</b>.
+        L'argent est alors déjà entre les mains du transporteur : ce n'est pas un solde
+        retirable, et la commission de la plateforme devient une <b>dette</b> déduite de ses
+        gains suivants. Son portefeuille l'affiche séparément, précisément pour qu'il ne
+        confonde pas les deux.
+      </p>
+
+      <h3>Le portefeuille du transporteur</h3>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Ligne</th><th>Ce qu'elle dit</th></tr></thead>
+          <tbody>
+            <tr><td><b>Disponible</b></td><td>Ce qu'il peut demander à retirer maintenant.</td></tr>
+            <tr><td><b>En attente</b></td><td>Séquestré sur des missions non encore confirmées.</td></tr>
+            <tr><td><b>Confirmés</b></td><td>Libéré et déjà compté.</td></tr>
+            <tr><td><b>Encaissé en espèces</b></td><td>Déjà dans sa poche — non retirable.</td></tr>
+            <tr><td><b>Commission due</b></td><td>Ce qu'il doit à la plateforme sur ses encaissements en espèces.</td></tr>
+            <tr><td><b>Historique</b></td><td>Chaque mouvement, daté, rattaché à sa mission.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">Cycle de vie d'une demande de retrait</div>
+        <div class="chain">
+          <span class="st wait">REQUESTED</span><span class="arrow">→</span>
+          <span class="st act">PROCESSING</span><span class="arrow">→</span>
+          <span class="st go">PAID</span>
+        </div>
+        <div class="branch">refus possible · <span class="st end" style="font-size:11px">REJECTED</span></div>
+      </div>
+
+      <p style="font-size:14px;color:var(--muted)">
+        La cliente a son propre portefeuille — <code>/portefeuille</code> — qui montre où en
+        est son argent : séquestré, versé au transporteur, remboursé, ou à payer en
+        espèces. Ces montants ne s'additionnent pas : ils décrivent des situations
+        différentes.
+      </p>
+    </section>
+
+    <!-- 09 ─────────────────────────────────────────────────────────── -->
+    <section id="confiance">
+      <h2><span class="num">09</span>La confiance</h2>
+      <p class="sub">
+        Sur une place de marché dont le premier produit est la confiance, elle se
+        construit avec des pièces vérifiées et un historique, pas avec une promesse.
+      </p>
+
+      <h3>Les documents</h3>
+      <p>
+        Le transporteur dépose ses pièces depuis <code>/documents</code>. Chacune est
+        examinée séparément, recto et verso quand c'est nécessaire.
+      </p>
+      <ul class="plain">
+        <li><b>Carte d'identité</b> — recto et verso</li>
+        <li><b>Permis de conduire</b> — recto et verso</li>
+        <li><b>Carte grise</b> — recto et verso</li>
+        <li><b>Attestation d'assurance</b> — recto et verso, avec sa date de validité</li>
+        <li><b>Selfie avec la pièce d'identité</b> — c'est ce qui relie le document à la personne</li>
+      </ul>
+      <p style="font-size:14px;color:var(--muted)">
+        Le permis, l'assurance et la carte grise <b>expirent</b> ; la carte d'identité et le
+        selfie, non. Une pièce périmée fait retomber le profil et se redépose.
+      </p>
+
+      <div class="flow">
+        <div class="flow-title">Cycle de vie de la vérification</div>
+        <div class="chain">
+          <span class="st">UNVERIFIED</span><span class="arrow">→</span>
+          <span class="st wait">PENDING</span><span class="arrow">→</span>
+          <span class="st wait">PARTIALLY_REVIEWED</span><span class="arrow">→</span>
+          <span class="st go">VERIFIED</span>
+        </div>
+        <div class="branch">
+          issues · <span class="st end" style="font-size:11px">REJECTED</span> pièces non conformes &nbsp;
+          <span class="st end" style="font-size:11px">SUSPENDED</span> décision d'administration
+        </div>
+      </div>
+
+      <h3>Le score de confiance</h3>
+      <p>
+        Calculé côté serveur, sur 100, et affiché au transporteur avec son détail — il doit
+        pouvoir savoir ce qui lui manque.
+      </p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Critère</th><th>Points</th></tr></thead>
+          <tbody>
+            <tr><td>Identité vérifiée</td><td class="num">25</td></tr>
+            <tr><td>Missions menées à terme <span class="r">3 par mission</span></td><td class="num">25 max</td></tr>
+            <tr><td>Note moyenne ≥ 4,0</td><td class="num">15</td></tr>
+            <tr><td>Taux de complétion ≥ 90 %</td><td class="num">10</td></tr>
+            <tr><td>Compte de plus de 3 mois</td><td class="num">10</td></tr>
+            <tr><td>Photo du véhicule</td><td class="num">5</td></tr>
+            <tr><td>Assurance en cours de validité</td><td class="num">5</td></tr>
+            <tr><td>Aucun litige actif</td><td class="num">5</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:14px;color:var(--muted)">
+        Les deux derniers critères mesurent l'usage de la plateforme, pas la qualité du
+        service — et c'est dit à l'utilisateur.
+      </p>
+
+      <h3>Les avis</h3>
+      <p>
+        Ils s'ouvrent après une mission terminée, dans les deux sens. Ils alimentent la
+        note publique du profil et pèsent sur le score. L'administration peut en masquer
+        un, sans le supprimer.
+      </p>
+    </section>
+
+    <!-- 10 ─────────────────────────────────────────────────────────── -->
+    <section id="litiges">
+      <h2><span class="num">10</span>Quand ça se passe mal</h2>
+      <p class="sub">
+        Un litige n'est pas un message de plus : c'est une procédure, avec un état, un
+        arbitre, et une conséquence sur l'argent.
+      </p>
+
+      <h3>Ouvrir un litige</h3>
+      <p>
+        Depuis <code>/litiges</code>, l'une ou l'autre partie désigne la mission concernée et
+        le motif : <b>marchandise endommagée</b>, <b>absence au rendez-vous</b>,
+        <b>problème de paiement</b>, <b>retard de livraison</b>, <b>harcèlement</b>,
+        <b>fraude suspectée</b>, ou <b>autre</b>.
+      </p>
+      <p style="font-size:14px;color:var(--muted)">
+        Une seule procédure active par mission. Tant qu'un litige est ouvert ou en
+        investigation, un second ne peut pas être créé sur la même mission.
+      </p>
+
+      <div class="flow">
+        <div class="flow-title">Cycle de vie du litige</div>
+        <div class="chain">
+          <span class="st wait">OPEN</span><span class="arrow">→</span>
+          <span class="st act">INVESTIGATING</span><span class="arrow">→</span>
+          <span class="st go">RESOLVED</span>
+          <span class="arrow" style="margin-inline-start:14px">ou</span>
+          <span class="st end">REJECTED</span>
+        </div>
+        <div class="branch">transitions strictes · un état résolu ou rejeté est terminal</div>
+      </div>
+
+      <h3>L'issue décide de l'argent</h3>
+      <p>
+        C'est le point qui distingue ce litige d'une simple note interne : la décision
+        déclenche le mouvement d'escrow correspondant, dans la même opération.
+      </p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Issue</th><th>Effet sur le séquestre</th></tr></thead>
+          <tbody>
+            <tr><td><b>Notes seules</b> <span class="r">NONE</span></td><td>Aucun mouvement.</td></tr>
+            <tr><td><b>Remboursement client</b> <span class="r">REFUND_CLIENT</span></td><td>La totalité retourne à la cliente.</td></tr>
+            <tr><td><b>Versement transporteur</b> <span class="r">RELEASE_TRANSPORTER</span></td><td>La totalité va au transporteur.</td></tr>
+            <tr><td><b>Partage</b> <span class="r">SPLIT</span></td><td>Une part est remboursée, le reste versé.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 11 ─────────────────────────────────────────────────────────── -->
+    <section id="echanges">
+      <h2><span class="num">11</span>Messages et alertes</h2>
+
+      <h3>La messagerie</h3>
+      <p>
+        Une conversation par mission, ouverte <b>à l'acceptation</b> et pas avant — le fil
+        existe parce qu'un accord existe. Les compteurs de non-lus suivent l'utilisateur
+        partout dans l'application.
+      </p>
+      <p style="font-size:14px;color:var(--muted)">
+        Tant qu'aucun accord n'a eu lieu, la boîte le dit clairement plutôt que d'afficher
+        un vide : « Vos conversations apparaîtront ici une fois qu'un transporteur aura
+        accepté votre demande. »
+      </p>
+
+      <h3>Les notifications</h3>
+      <p>
+        Une boîte unique, filtrable, avec un compteur de non-lues et un « tout marquer
+        comme lu ». Cinq familles :
+      </p>
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Famille</th><th>Ce qu'elle annonce</th></tr></thead>
+          <tbody>
+            <tr><td><b>Missions et offres</b> <span class="r">JOB</span></td><td>Offre reçue, acceptée, refusée ; demande sur un retour.</td></tr>
+            <tr><td><b>Paiements</b> <span class="r">PAYMENT</span></td><td>Séquestre constitué, libéré, remboursé ; retrait traité.</td></tr>
+            <tr><td><b>Vérifications</b> <span class="r">TRUST</span></td><td>Document approuvé, refusé, profil vérifié.</td></tr>
+            <tr><td><b>Litiges</b> <span class="r">DISPUTE</span></td><td>Ouverture, passage en investigation, résolution.</td></tr>
+            <tr><td><b>Avis</b> <span class="r">REVIEW</span></td><td>Un avis a été laissé sur vous.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 12 ─────────────────────────────────────────────────────────── -->
+    <section id="admin">
+      <h2><span class="num">12</span>Administration</h2>
+      <p class="sub">
+        Un espace séparé, réservé aux rôles d'administration. Chaque action sensible y
+        laisse une trace.
+      </p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Écran</th><th>Ce qu'on y fait</th></tr></thead>
+          <tbody>
+            <tr><td class="route">/admin/dashboard</td><td>Vue d'ensemble chiffrée de l'activité.</td></tr>
+            <tr><td class="route">/admin/users</td><td>Consulter un profil, modifier un utilisateur, le suspendre avec un motif.</td></tr>
+            <tr><td class="route">/admin/verifications</td><td>Profils transporteurs et demandes de vérification, document par document : approuvé, rejeté, en attente.</td></tr>
+            <tr><td class="route">/admin/jobs</td><td>Toutes les missions, avec export CSV.</td></tr>
+            <tr><td class="route">/admin/jobs/[id]</td><td>Le détail d'une mission.</td></tr>
+            <tr><td class="route">/admin/payments</td><td>Gestion financière : répartition des séquestres, toutes les transactions, côté client et côté transporteur.</td></tr>
+            <tr><td class="route">/admin/disputes</td><td>Les litiges, leurs compteurs (ouverts, en investigation), la mission et le plaignant.</td></tr>
+            <tr><td class="route">/admin/reviews</td><td>Modération : rendre un avis visible ou le masquer.</td></tr>
+            <tr><td class="route">/admin/audit-log</td><td>Le journal des actions d'administration, avec export CSV.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 13 ─────────────────────────────────────────────────────────── -->
+    <section id="ecrans">
+      <h2><span class="num">13</span>Tous les écrans</h2>
+      <p class="sub">
+        L'inventaire complet, par zone. <b>C</b> client, <b>T</b> transporteur,
+        <b>A</b> administration, <b>·</b> public.
+      </p>
+
+      <div class="scroller">
+        <table>
+          <thead><tr><th>Adresse</th><th>Écran</th><th>Rôle</th></tr></thead>
+          <tbody>
+            <tr><td class="route">/</td><td>Accueil public</td><td class="num">·</td></tr>
+            <tr><td class="route">/devenir-transporteur</td><td>Page d'acquisition transporteur</td><td class="num">·</td></tr>
+            <tr><td class="route">/confiance</td><td>Comment l'argent est protégé</td><td class="num">·</td></tr>
+            <tr><td class="route">/aide</td><td>Centre d'aide public</td><td class="num">·</td></tr>
+            <tr><td class="route">/conditions</td><td>Conditions générales</td><td class="num">·</td></tr>
+            <tr><td class="route">/confidentialite</td><td>Politique de confidentialité</td><td class="num">·</td></tr>
+            <tr><td class="route">/login</td><td>Connexion</td><td class="num">·</td></tr>
+            <tr><td class="route">/register</td><td>Inscription</td><td class="num">·</td></tr>
+            <tr><td class="route">/select-role</td><td>Choix du rôle</td><td class="num">·</td></tr>
+            <tr><td class="route">/forgot-password</td><td>Mot de passe oublié</td><td class="num">·</td></tr>
+            <tr><td class="route">/reset-password</td><td>Nouveau mot de passe</td><td class="num">·</td></tr>
+            <tr><td class="route">/access-denied</td><td>Accès refusé</td><td class="num">·</td></tr>
+
+            <tr><td class="route">/dashboard</td><td>Tableau de bord</td><td class="num">C T</td></tr>
+            <tr><td class="route">/recherche</td><td>Chercher un trajet retour</td><td class="num">C</td></tr>
+            <tr><td class="route">/demandes/nouvelle</td><td>Publier une annonce</td><td class="num">C</td></tr>
+            <tr><td class="route">/demandes</td><td>Missions disponibles / mes demandes</td><td class="num">C T</td></tr>
+            <tr><td class="route">/demandes/[id]</td><td>Détail d'une demande</td><td class="num">C T</td></tr>
+            <tr><td class="route">/jobs</td><td>Mes transports / mes missions</td><td class="num">C T</td></tr>
+            <tr><td class="route">/jobs/[id]</td><td>Détail d'une mission et ses offres</td><td class="num">C T</td></tr>
+            <tr><td class="route">/jobs/[id]/book</td><td>Réserver</td><td class="num">C</td></tr>
+            <tr><td class="route">/reservation/[jobId]</td><td>Paiement et suivi</td><td class="num">C</td></tr>
+            <tr><td class="route">/trajets/[id]</td><td>Détail d'un trajet retour</td><td class="num">C T</td></tr>
+            <tr><td class="route">/transporteur/[id]</td><td>Profil public d'un transporteur</td><td class="num">C</td></tr>
+            <tr><td class="route">/profile/[userId]</td><td>Profil d'un membre</td><td class="num">C T</td></tr>
+            <tr><td class="route">/favoris</td><td>Transporteurs favoris</td><td class="num">C</td></tr>
+
+            <tr><td class="route">/retours/nouveau</td><td>Publier un retour à vide</td><td class="num">T</td></tr>
+            <tr><td class="route">/retours</td><td>Inventaire de mes retours</td><td class="num">T</td></tr>
+            <tr><td class="route">/demandes-recues</td><td>Demandes reçues sur mes retours</td><td class="num">T</td></tr>
+            <tr><td class="route">/mes-offres</td><td>Offres envoyées et leur statut</td><td class="num">T</td></tr>
+            <tr><td class="route">/performance</td><td>Revenus par corridor, demande non servie</td><td class="num">T</td></tr>
+            <tr><td class="route">/documents</td><td>Vérification du profil</td><td class="num">T</td></tr>
+
+            <tr><td class="route">/portefeuille</td><td>Portefeuille et retraits</td><td class="num">C T</td></tr>
+            <tr><td class="route">/messages</td><td>Conversations</td><td class="num">C T</td></tr>
+            <tr><td class="route">/messages/[jobId]</td><td>Fil d'une mission</td><td class="num">C T</td></tr>
+            <tr><td class="route">/notifications</td><td>Boîte de réception</td><td class="num">C T</td></tr>
+            <tr><td class="route">/litiges</td><td>Mes litiges</td><td class="num">C T</td></tr>
+            <tr><td class="route">/mes-avis</td><td>Avis reçus et donnés</td><td class="num">C T</td></tr>
+            <tr><td class="route">/compte</td><td>Paramètres : profil, notifications, sécurité, préférences</td><td class="num">C T</td></tr>
+            <tr><td class="route">/compte/adresses</td><td>Carnet d'adresses</td><td class="num">C T</td></tr>
+            <tr><td class="route">/help</td><td>Centre d'aide connecté</td><td class="num">C T</td></tr>
+
+            <tr><td class="route">/admin/dashboard</td><td>Tableau de bord</td><td class="num">A</td></tr>
+            <tr><td class="route">/admin/users</td><td>Utilisateurs</td><td class="num">A</td></tr>
+            <tr><td class="route">/admin/verifications</td><td>Vérifications</td><td class="num">A</td></tr>
+            <tr><td class="route">/admin/jobs</td><td>Missions</td><td class="num">A</td></tr>
+            <tr><td class="route">/admin/jobs/[id]</td><td>Détail d'une mission</td><td class="num">A</td></tr>
+            <tr><td class="route">/admin/payments</td><td>Paiements et séquestres</td><td class="num">A</td></tr>
+            <tr><td class="route">/admin/disputes</td><td>Litiges</td><td class="num">A</td></tr>
+            <tr><td class="route">/admin/reviews</td><td>Modération des avis</td><td class="num">A</td></tr>
+            <tr><td class="route">/admin/audit-log</td><td>Journal d'audit</td><td class="num">A</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- 14 ─────────────────────────────────────────────────────────── -->
+    <section id="cycles">
+      <h2><span class="num">14</span>Cycles de vie, en un endroit</h2>
+      <p class="sub">
+        Les états que porte la plateforme. Ce sont les mêmes mots dans l'interface, dans
+        les notifications et dans les exports d'administration.
+      </p>
+
+      <div class="flow">
+        <div class="flow-title">Mission</div>
+        <div class="chain">
+          <span class="st">DRAFT</span><span class="arrow">→</span>
+          <span class="st go">PUBLISHED</span><span class="arrow">→</span>
+          <span class="st act">MATCHED</span><span class="arrow">→</span>
+          <span class="st act">IN_PROGRESS</span><span class="arrow">→</span>
+          <span class="st go">COMPLETED</span><span class="arrow">·</span>
+          <span class="st end">CANCELLED</span><span class="arrow">·</span>
+          <span class="st end">DISPUTED</span>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">Offre d'un transporteur sur une annonce</div>
+        <div class="chain">
+          <span class="st wait">PENDING</span><span class="arrow">→</span>
+          <span class="st go">ACCEPTED</span><span class="arrow">·</span>
+          <span class="st end">REJECTED</span><span class="arrow">·</span>
+          <span class="st end">EXPIRED</span><span class="arrow">·</span>
+          <span class="st end">WITHDRAWN</span>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">Demande d'un client sur un trajet retour</div>
+        <div class="chain">
+          <span class="st wait">PENDING</span><span class="arrow">→</span>
+          <span class="st act">COUNTERED</span><span class="arrow">→</span>
+          <span class="st go">ACCEPTED</span><span class="arrow">·</span>
+          <span class="st end">REJECTED</span><span class="arrow">·</span>
+          <span class="st end">CANCELLED</span><span class="arrow">·</span>
+          <span class="st end">EXPIRED</span>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">Séquestre</div>
+        <div class="chain">
+          <span class="st">INITIATED</span><span class="arrow">→</span>
+          <span class="st wait">HELD</span><span class="arrow">→</span>
+          <span class="st go">RELEASED</span><span class="arrow">·</span>
+          <span class="st end">REFUNDED</span><span class="arrow">·</span>
+          <span class="st end">FAILED</span>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">Retrait et versement</div>
+        <div class="chain">
+          <span class="st wait">REQUESTED</span><span class="arrow">→</span>
+          <span class="st act">PROCESSING</span><span class="arrow">→</span>
+          <span class="st go">PAID</span><span class="arrow">·</span>
+          <span class="st end">REJECTED</span>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">Vérification d'un profil</div>
+        <div class="chain">
+          <span class="st">UNVERIFIED</span><span class="arrow">→</span>
+          <span class="st wait">PENDING</span><span class="arrow">→</span>
+          <span class="st wait">PARTIALLY_REVIEWED</span><span class="arrow">→</span>
+          <span class="st go">VERIFIED</span><span class="arrow">·</span>
+          <span class="st end">REJECTED</span><span class="arrow">·</span>
+          <span class="st end">SUSPENDED</span>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">Document déposé</div>
+        <div class="chain">
+          <span class="st wait">PENDING</span><span class="arrow">→</span>
+          <span class="st go">APPROVED</span><span class="arrow">·</span>
+          <span class="st end">REJECTED</span>
+        </div>
+      </div>
+
+      <div class="flow">
+        <div class="flow-title">Litige</div>
+        <div class="chain">
+          <span class="st wait">OPEN</span><span class="arrow">→</span>
+          <span class="st act">INVESTIGATING</span><span class="arrow">→</span>
+          <span class="st go">RESOLVED</span><span class="arrow">·</span>
+          <span class="st end">REJECTED</span>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <footer>
+    Document établi à partir du code de l'application — routes, libellés d'interface,
+    modèles de données et règles métier lus dans le dépôt. Les noms d'états en
+    <span style="font-family:var(--mono);font-size:12px">MAJUSCULES</span> sont ceux que
+    portent réellement l'interface et les exports.
+  </footer>
+
+</div>

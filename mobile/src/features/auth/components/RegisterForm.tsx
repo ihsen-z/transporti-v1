@@ -1,12 +1,15 @@
 import { useMemo } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
-import { colors, radii, spacing, fontSize } from '@/shared/theme';
+import { Txt } from '@/shared/ui/Txt';
+import { FormMessage } from '@/shared/ui/FormMessage';
+import { PasswordStrength } from '@/shared/ui/PasswordStrength';
+import { colors, radii, spacing, fontSize, TOUCH_TARGET } from '@/shared/theme';
 import { useRegister } from '../api/useRegister';
 
 // Messages = clés i18n (traduites au rendu) => schéma statique.
@@ -79,7 +82,7 @@ export function RegisterForm() {
         name="role"
         render={({ field: { value, onChange } }) => (
           <View style={styles.roleBlock}>
-            <Text style={styles.roleLabel}>{t('auth.register.role_label')}</Text>
+            <Txt style={styles.roleLabel}>{t('auth.register.role_label')}</Txt>
             <View style={styles.segment}>
               {ROLES.map((r) => {
                 const active = value === r;
@@ -92,9 +95,9 @@ export function RegisterForm() {
                     accessibilityState={{ selected: active }}
                     style={[styles.segItem, active && styles.segItemActive]}
                   >
-                    <Text style={[styles.segText, active && styles.segTextActive]}>
+                    <Txt style={[styles.segText, active && styles.segTextActive]}>
                       {t(r === 'CLIENT' ? 'auth.register.role_client' : 'auth.register.role_transporter')}
-                    </Text>
+                    </Txt>
                   </Pressable>
                 );
               })}
@@ -180,17 +183,22 @@ export function RegisterForm() {
         control={control}
         name="password"
         render={({ field: { value, onChange, onBlur } }) => (
-          <TextField
-            testID="register-password"
-            label={t('auth.fields.password')}
-            placeholder={t('auth.fields.password_placeholder')}
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            error={err('password')}
-            secureTextEntry
-            autoComplete="new-password"
-          />
+          <View style={styles.field}>
+            <TextField
+              testID="register-password"
+              label={t('auth.fields.password')}
+              placeholder={t('auth.fields.password_placeholder')}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={err('password')}
+              secureTextEntry
+              autoComplete="new-password"
+            />
+            {/* Le minimum de 8 caractères est déjà dans le schéma zod, mais il
+                ne parle qu'APRÈS l'envoi. La jauge le dit pendant la frappe. */}
+            <PasswordStrength value={value} testID="register-password-strength" />
+          </View>
         )}
       />
 
@@ -213,9 +221,7 @@ export function RegisterForm() {
       />
 
       {serverError ? (
-        <Text testID="register-server-error" style={styles.serverError}>
-          {serverError}
-        </Text>
+        <FormMessage testID="register-server-error">{serverError}</FormMessage>
       ) : null}
 
       <Button
@@ -233,26 +239,28 @@ export function RegisterForm() {
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
   roleBlock: { gap: spacing.sm },
-  roleLabel: { fontSize: fontSize.sm, fontWeight: '700', color: colors.neutral[700] },
+  roleLabel: { fontSize: fontSize.label, fontWeight: '600', color: colors.neutral[500] },
   segment: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
+  // Charte (.field) : même gabarit qu'un champ, parce que c'en est un — le
+  // rôle est la première réponse du formulaire, pas un réglage.
   segItem: {
     flex: 1,
-    minHeight: 44,
+    minHeight: TOUCH_TARGET,
     alignItems: 'center',
     justifyContent: 'center',
     borderRadius: radii.input,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
-    backgroundColor: colors.neutral[100],
+    borderColor: colors.neutral[300],
+    backgroundColor: colors.neutral[50],
   },
   segItemActive: { backgroundColor: colors.brand[600], borderColor: colors.brand[600] },
-  segText: { fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[700] },
+  segText: { fontSize: fontSize.md, fontWeight: '700', color: colors.neutral[900] },
   segTextActive: { color: colors.neutral[0] },
   row: { flexDirection: 'row', gap: spacing.md },
   rowItem: { flex: 1 },
-  serverError: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
+  field: { gap: spacing.sm },
   submit: { marginTop: spacing.sm },
 });

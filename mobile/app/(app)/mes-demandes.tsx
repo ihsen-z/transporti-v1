@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
+import { useTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useTranslation } from 'react-i18next';
-import { Txt } from '@/shared/ui/Txt';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
 import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
 import { MyRequestsTabs } from '@/features/my-requests/components/MyRequestsTabs';
 import { useMyRequests } from '@/features/my-requests/api/useMyRequests';
@@ -12,7 +11,6 @@ import {
   type OngletDemande,
 } from '@/features/my-requests/model/onglets';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
-import { colors, spacing, fontSize } from '@/shared/theme';
 
 // Onglet CLIENT dédié au suivi des demandes envoyées. Auparavant une simple
 // section noyée en bas de l'Accueil, sans pull-to-refresh ni existence propre
@@ -22,10 +20,10 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 // une contre-proposition qui attend la décision du client ne doit pas se perdre
 // sous des demandes closes.
 export default function MesDemandesScreen() {
-  // Marge basse reservee sous la liste : sans elle, le dernier element
-  // reste sous la barre flottante et son action devient inatteignable
-  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
-  const margeBasse = useFloatingTabBarClearance();
+  // Marge basse reservee sous le contenu : sans elle, le dernier element reste
+  // sous la barre de navigation et son action devient inatteignable (defaut
+  // mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useTabBarClearance();
   const { t } = useTranslation();
   // Même queryKey que MyRequestsList (React Query dédoublonne) : ce qui donne
   // le pull-to-refresh à l'écran est aussi ce que la liste affiche.
@@ -35,25 +33,14 @@ export default function MesDemandesScreen() {
   const compteurs = compterParOnglet(requests.data ?? []);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: margeBasse }]}
-        refreshControl={queryRefreshControl(requests)}
-      >
-        <Txt style={styles.title}>{t('my_requests.title')}</Txt>
-        <MyRequestsTabs
-          actif={onglet}
-          compteurs={compteurs}
-          onSelect={setOnglet}
-        />
-        <MyRequestsList onglet={onglet} />
-      </ScrollView>
-    </SafeAreaView>
+    <AppScreen
+      testID="mes-demandes-screen"
+      header={<AppHeader title={t('my_requests.title')} />}
+      refreshControl={queryRefreshControl(requests)}
+      contentPaddingBottom={margeBasse}
+    >
+      <MyRequestsTabs actif={onglet} compteurs={compteurs} onSelect={setOnglet} />
+      <MyRequestsList onglet={onglet} />
+    </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
-  content: { padding: spacing.xl, gap: spacing.lg },
-  title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
-});

@@ -6,7 +6,7 @@ import { appStorage } from '@/core/storage/appStorage';
 import { Icon } from '@/shared/ui/icons';
 import type { IconName } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { colors, spacing, fontSize, radii, shadows } from '@/shared/theme';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useTransporterProfile } from '@/features/profiles/api/useTransporterProfile';
 import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
@@ -178,14 +178,15 @@ export function TransporterOnboardingGuide() {
 }
 
 const s = StyleSheet.create({
+  // Carte de la charte : rayon 22, ombre douce, PAS de bordure — c'est
+  // l'ombre seule qui détache la surface du fond.
   carte: {
     backgroundColor: colors.neutral[0],
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    borderColor: colors.neutral[200],
+    borderRadius: radii.card,
     padding: spacing.lg,
     marginBottom: spacing.lg,
     gap: spacing.sm,
+    ...shadows.card,
   },
   entete: {
     flexDirection: 'row',

@@ -1,13 +1,15 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
-import { Link } from 'expo-router';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { FormMessage } from '@/shared/ui/FormMessage';
+import { PasswordStrength } from '@/shared/ui/PasswordStrength';
+import { AuthLink } from './AuthLink';
+import { spacing } from '@/shared/theme';
 import { usePasswordResetConfirm } from '../api/usePasswordResetConfirm';
 
 const schema = z
@@ -64,10 +66,12 @@ export function ResetPasswordForm({ uid, token }: Props) {
   if (confirm.isSuccess) {
     return (
       <View style={styles.form}>
-        <Text style={styles.sent}>{t('auth.reset.success')}</Text>
-        <Link href="/login" style={styles.link}>
-          {t('auth.reset.login_link')}
-        </Link>
+        <FormMessage intent="success" testID="reset-password-success">
+          {t('auth.reset.success')}
+        </FormMessage>
+        <View style={styles.center}>
+          <AuthLink href="/login" label={t('auth.reset.login_link')} />
+        </View>
       </View>
     );
   }
@@ -78,17 +82,24 @@ export function ResetPasswordForm({ uid, token }: Props) {
         control={control}
         name="new_password"
         render={({ field: { value, onChange, onBlur } }) => (
-          <TextField
-            testID="reset-password-new_password"
-            label={t('auth.fields.new_password')}
-            placeholder={t('auth.fields.password_placeholder')}
-            value={value}
-            onChangeText={onChange}
-            onBlur={onBlur}
-            error={err('new_password')}
-            secureTextEntry
-            autoComplete="new-password"
-          />
+          <View style={styles.field}>
+            <TextField
+              testID="reset-password-new_password"
+              label={t('auth.fields.new_password')}
+              placeholder={t('auth.fields.password_placeholder')}
+              value={value}
+              onChangeText={onChange}
+              onBlur={onBlur}
+              error={err('new_password')}
+              secureTextEntry
+              autoComplete="new-password"
+            />
+            {/* Le serveur refuse en dessous de 8 caractères, mais il ne le dit
+                qu'après l'envoi. La jauge le dit pendant la frappe — sur un
+                écran qu'on n'atteint qu'en ayant déjà perdu son mot de passe,
+                un aller-retour de plus se paie cher. */}
+            <PasswordStrength value={value} testID="reset-password-strength" />
+          </View>
         )}
       />
       <Controller
@@ -110,9 +121,7 @@ export function ResetPasswordForm({ uid, token }: Props) {
       />
 
       {serverError ? (
-        <Text testID="reset-password-server-error" style={styles.serverError}>
-          {serverError}
-        </Text>
+        <FormMessage testID="reset-password-server-error">{serverError}</FormMessage>
       ) : null}
 
       <Button
@@ -129,8 +138,7 @@ export function ResetPasswordForm({ uid, token }: Props) {
 
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
-  sent: { fontSize: fontSize.md, color: colors.text.green, fontWeight: '600', lineHeight: 22 },
-  serverError: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
+  field: { gap: spacing.sm },
+  center: { alignItems: 'center' },
   submit: { marginTop: spacing.sm },
-  link: { fontSize: fontSize.md, fontWeight: '700', color: colors.brand[600], textAlign: 'center' },
 });

@@ -6,17 +6,17 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 export default function NotFound() {
   const { t } = useAppI18n();
   return (
-    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-brand-50 flex items-center justify-center px-6">
+    <div className="min-h-screen bg-app flex items-center justify-center px-6">
       <div className="text-center max-w-md">
         {/* Animated 404 Number */}
         <div className="relative mb-8">
-          <h1 className="text-[160px] font-black text-transparent bg-clip-text bg-gradient-to-br from-brand-600 to-brand-900 leading-none select-none">
+          <h1 className="select-none bg-gradient-to-br from-blue-700 to-blue-900 bg-clip-text text-[120px] font-extrabold leading-none tracking-title text-transparent sm:text-[160px]">
             404
           </h1>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-24 h-24 bg-brand-600/5 rounded-full flex items-center justify-center animate-pulse">
+            <div className="grid h-24 w-24 place-items-center rounded-full bg-blue-50">
               <svg
-                className="w-12 h-12 text-brand-600"
+                className="h-11 w-11 text-blue-700"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
@@ -32,10 +32,10 @@ export default function NotFound() {
         </div>
 
         {/* Message */}
-        <h2 className="text-2xl font-bold text-neutral-900 mb-3">
+        <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900 mb-3">
           {t.errors.pageNotFound}
         </h2>
-        <p className="text-neutral-500 mb-8 leading-relaxed">
+        <p className="mb-8 text-[15px] leading-[1.55] text-ink-500">
           {t.errors.pageNotFoundDesc}
         </p>
 
@@ -43,7 +43,7 @@ export default function NotFound() {
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-all hover:shadow-lg hover:shadow-brand-600/20 hover:scale-[1.02]"
+            className="btn-base min-h-[48px] rounded-cta bg-blue-700 px-5 text-[15px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px"
           >
             <svg
               className="w-5 h-5"
@@ -61,14 +61,14 @@ export default function NotFound() {
           </Link>
           <Link
             href="/aide"
-            className="inline-flex items-center justify-center gap-2 px-6 py-3 border border-neutral-300 text-neutral-700 rounded-xl font-semibold hover:bg-neutral-50 transition-colors"
+            className="btn-base min-h-[48px] rounded-cta border border-line-strong bg-surface px-5 text-[15px] text-ink-900 transition-colors duration-120 hover:border-blue-700 hover:bg-app active:translate-y-px"
           >
             {t.errors.helpCenter || "Centre d'aide"}
           </Link>
         </div>
 
         {/* Footer */}
-        <p className="text-xs text-neutral-400 mt-12">
+        <p className="mt-12 text-[12.5px] text-ink-300">
           Transporti — Simple, rapide, fiable.
         </p>
       </div>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, StyleSheet, Text, View } from 'react-native';
+import { Alert, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { FormModalPanel } from '@/shared/ui/FormModalPanel';
 import { TextField } from '@/shared/ui/TextField';
@@ -71,12 +71,12 @@ export function DeleteAccountPanel({ visible, onClose }: Props) {
     );
   };
 
-  const erreur = erreurLocale
-    ?? (supprimer.error
-      ? (supprimer.error.kind === 'network'
-          ? t('profile.delete_account.errors.network')
-          : (supprimer.error.serverMessage
-              ?? t('profile.delete_account.errors.unknown')))
+  const erreur =
+    erreurLocale ??
+    (supprimer.error
+      ? supprimer.error.kind === 'network'
+        ? t('profile.delete_account.errors.network')
+        : (supprimer.error.serverMessage ?? t('profile.delete_account.errors.unknown'))
       : null);
 
   return (
@@ -118,7 +118,7 @@ export function DeleteAccountPanel({ visible, onClose }: Props) {
             variant="danger"
             loading={supprimer.isPending}
           />
-          <Text style={s.reversible}>{t('profile.delete_account.irreversible')}</Text>
+          <Txt style={s.reversible}>{t('profile.delete_account.irreversible')}</Txt>
         </View>
       ) : null}
     </FormModalPanel>

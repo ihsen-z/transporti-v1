@@ -19,7 +19,7 @@ function QR({ q, children }: { q: string; children: React.ReactNode }) {
   return (
     <div className="border-t border-neutral-200 pt-5">
       <h3 className="font-semibold text-neutral-900">{q}</h3>
-      <div className="mt-2 space-y-3 text-neutral-700 leading-relaxed">
+      <div className="mt-2 flex flex-col gap-3 text-neutral-700 leading-relaxed">
         {children}
       </div>
     </div>
@@ -53,7 +53,7 @@ export default function AidePage() {
         numero={2}
         titre="Vous avez quelque chose à expédier"
       >
-        <div className="space-y-5">
+        <div className="flex flex-col gap-5">
           <QR q="Comment trouver un transporteur ?">
             <p>
               Depuis l&apos;accueil, indiquez d&apos;où part votre marchandise
@@ -161,7 +161,7 @@ export default function AidePage() {
       </Section>
 
       <Section id="transporteur" numero={3} titre="Vous transportez">
-        <div className="space-y-5">
+        <div className="flex flex-col gap-5">
           <QR q="Comment publier un retour ?">
             <p>
               Bouton central, «&nbsp;Publier&nbsp;». Indiquez le corridor et la
@@ -257,7 +257,7 @@ export default function AidePage() {
       </Section>
 
       <Section id="compte" numero={4} titre="Votre compte">
-        <div className="space-y-5">
+        <div className="flex flex-col gap-5">
           <QR q="Comment supprimer mon compte ?">
             <p>
               Profil, tout en bas. Vos nom, e-mail, téléphone, photo et carnet

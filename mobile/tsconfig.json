@@ -4,7 +4,22 @@
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      // Types des icônes Phosphor.
+      //
+      // Le code importe les modules COMPILÉS (`lib/commonjs/icons/*`), parce
+      // que le Metro d'Expo SDK 52 ne lit pas encore la carte `exports` du
+      // paquet et ne sait donc pas atteindre ses sources. Mais le paquet ne
+      // livre pas de `.d.ts` par icône à côté de ce JS : TypeScript les
+      // voyait en `any` implicite, ce que `strict` refuse.
+      //
+      // Cette redirection ne concerne QUE la vérification de types : elle
+      // pointe les sources `.tsx` du même paquet, à la même version figée. Les
+      // composants sont générés — le type lu ici et le module exécuté là sont
+      // la même chose, par construction.
+      "phosphor-react-native/lib/commonjs/icons/*": [
+        "./node_modules/phosphor-react-native/src/icons/*"
+      ]
     }
   },
   "include": [

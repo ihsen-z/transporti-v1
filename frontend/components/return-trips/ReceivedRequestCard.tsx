@@ -63,7 +63,7 @@ export default function ReceivedRequestCard({
         </div>
 
         {/* Le chiffre qui décide. */}
-        <p className="text-xl font-bold text-neutral-900 tabular-nums">
+        <p className="text-[19px] font-extrabold tracking-heading text-ink-900 tabular-nums">
           {demande.proposed_price} DT
         </p>
       </div>
@@ -89,13 +89,13 @@ export default function ReceivedRequestCard({
       )}
 
       {!lectureSeule && (
-        <div className="mt-3 pt-3 border-t border-neutral-100 flex flex-wrap gap-2">
+        <div className="mt-3 pt-3 border-t border-line flex flex-wrap gap-2">
           <button
             type="button"
             data-testid="demande-recue-accepter"
             onClick={() => onAccepter(demande)}
             disabled={enCours}
-            className="px-4 py-2 text-sm font-bold rounded-lg bg-cta-500 text-white hover:bg-cta-600 focus-visible:ring-2 focus-visible:ring-cta-500/40 outline-none disabled:opacity-50"
+            className="btn-base min-h-[44px] rounded-cta bg-blue-700 px-4 text-[14.5px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2 disabled:opacity-50"
           >
             Accepter
           </button>
@@ -105,7 +105,7 @@ export default function ReceivedRequestCard({
             data-testid="demande-recue-contre-proposer"
             onClick={() => onContreProposer(demande)}
             disabled={enCours}
-            className="px-4 py-2 text-sm font-medium rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none disabled:opacity-50"
+            className="px-4 py-2 text-sm font-medium rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none disabled:opacity-50"
           >
             Contre-proposer
           </button>

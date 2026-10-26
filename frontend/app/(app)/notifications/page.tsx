@@ -48,11 +48,11 @@ const categoryIcons: Record<string, React.ElementType> = {
 };
 
 const categoryColors: Record<string, string> = {
-  PAYMENT: "text-emerald-600 bg-emerald-50 border-emerald-200",
+  PAYMENT: "text-green-600 bg-green-50 border-green-200",
   TRUST: "text-blue-600 bg-blue-50 border-blue-200",
   JOB: "text-brand-600 bg-brand-50 border-brand-200",
   DISPUTE: "text-orange-600 bg-orange-50 border-orange-200",
-  REVIEW: "text-purple-600 bg-purple-50 border-purple-200",
+  REVIEW: "text-blue-700 bg-blue-50 border-blue-200",
   SYSTEM: "text-neutral-600 bg-neutral-100 border-neutral-200",
 };
 
@@ -175,7 +175,7 @@ const NotificationItem = React.memo(function NotificationItemInner({
 
   return (
     <div
-      className={`bg-white rounded-xl shadow-sm border transition-all hover:shadow-md group ${
+      className={`bg-surface rounded-card shadow-card border transition-all hover:shadow-md group ${
         !notification.is_read
           ? "border-brand-200 bg-brand-50/30 ring-1 ring-brand-100"
           : "border-neutral-200"
@@ -204,7 +204,7 @@ const NotificationItem = React.memo(function NotificationItemInner({
                   {notification.title}
                 </h3>
                 {!notification.is_read && (
-                  <span className="flex-shrink-0 w-2.5 h-2.5 bg-cta-500 rounded-full animate-pulse" />
+                  <span className="flex-shrink-0 w-2.5 h-2.5 bg-cta-500 rounded-full" />
                 )}
               </div>
               <span className="flex-shrink-0 text-xs text-neutral-500 pt-0.5">
@@ -221,7 +221,7 @@ const NotificationItem = React.memo(function NotificationItemInner({
               Object.keys(notification.metadata).length > 0 && (
                 <div className="flex flex-wrap gap-2 mb-3">
                   {notification.metadata.amount && (
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200">
                       {formatTND(Number(notification.metadata.amount))}
                     </span>
                   )}
@@ -238,7 +238,7 @@ const NotificationItem = React.memo(function NotificationItemInner({
                     </Link>
                   )}
                   {notification.metadata.rating && (
-                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-50 text-purple-700 border border-purple-200">
+                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
                       {"⭐".repeat(notification.metadata.rating)}
                     </span>
                   )}
@@ -413,10 +413,9 @@ export default function NotificationsPage() {
       <div className="mb-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-              {t.pageTitle}
-            </h1>
-            <p className="text-neutral-600">{t.pageSubtitle}</p>
+            <p className="text-[14.5px] leading-[1.55] text-ink-500">
+              {t.pageSubtitle}
+            </p>
           </div>
           <button
             onClick={() => fetchNotifications()}
@@ -429,7 +428,7 @@ export default function NotificationsPage() {
       </div>
 
       {/* Controls Bar */}
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-4 mb-6">
+      <div className="bg-surface rounded-card shadow-card p-4 mb-6">
         <div className="flex flex-col gap-4">
           {/* Row 1: Read filter + Search + Mark All */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -506,12 +505,12 @@ export default function NotificationsPage() {
 
       {/* Error State */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 mb-6 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-red-500 flex-shrink-0" />
-          <p className="text-red-700 text-sm">{error}</p>
+        <div className="bg-error-50 border border-error-200 rounded-xl p-4 mb-6 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-error-500 flex-shrink-0" />
+          <p className="text-error-700 text-sm">{error}</p>
           <button
             onClick={() => fetchNotifications()}
-            className="ms-auto text-red-600 hover:text-red-700 text-sm font-medium"
+            className="ms-auto text-error-600 hover:text-error-700 text-sm font-medium"
           >
             {t.retry}
           </button>
@@ -520,7 +519,7 @@ export default function NotificationsPage() {
 
       {/* Loading State */}
       {loading && notifications.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-12">
+        <div className="bg-surface rounded-card shadow-card p-12">
           <div className="flex flex-col items-center justify-center text-center">
             <Loader2 className="w-10 h-10 text-brand-600 animate-spin mb-4" />
             <p className="text-neutral-600">{t.loading}</p>
@@ -530,9 +529,9 @@ export default function NotificationsPage() {
 
       {/* Empty State */}
       {!loading && filteredNotifications.length === 0 && (
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-12">
+        <div className="bg-surface rounded-card shadow-card p-12">
           <div className="flex flex-col items-center justify-center text-center">
-            <div className="w-20 h-20 bg-gradient-to-br from-brand-50 to-brand-100 rounded-2xl flex items-center justify-center mb-4">
+            <div className="w-20 h-20 bg-blue-50 rounded-2xl flex items-center justify-center mb-4">
               <BellIcon className="w-10 h-10 text-brand-400" />
             </div>
             <h3 className="text-xl font-semibold text-neutral-900 mb-2">
@@ -551,7 +550,7 @@ export default function NotificationsPage() {
 
       {/* Notifications List — Grouped by Date (#13) */}
       {!loading && groupedNotifications.length > 0 && (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {groupedNotifications.map((group) => (
             <div key={group.label}>
               {/* Date Separator */}
@@ -563,7 +562,7 @@ export default function NotificationsPage() {
               </div>
 
               {/* Notification Cards */}
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {group.items.map((notification) => (
                   <NotificationItem
                     key={notification.id}

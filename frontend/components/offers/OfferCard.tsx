@@ -4,18 +4,18 @@ import React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import {
-  User,
-  Star,
-  ShieldCheck,
-  CheckCircle,
-  Truck,
-  Clock,
   Award,
-  TrendingUp,
-  MessageCircle,
+  Banknote,
+  CheckCircle,
   ExternalLink,
-  Shield,
   Handshake,
+  MessageCircle,
+  Shield,
+  ShieldCheck,
+  Star,
+  TrendingUp,
+  Truck,
+  User,
 } from "lucide-react";
 import { getMediaUrl } from "@/lib/imageUtils";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
@@ -42,7 +42,7 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
   const pastJobsCount = offer.past_jobs_count ?? 0;
 
   return (
-    <div className="bg-white border border-neutral-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col gap-3 group">
+    <div className="bg-white border border-neutral-200 rounded-xl p-4 shadow-sm hover-lift duration-200 flex flex-col gap-3 group">
       {/* Header: Avatar + Info + Price */}
       <div className="flex justify-between items-start gap-3">
         {/* Left: Avatar & Info */}
@@ -91,8 +91,8 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
 
             {/* Stats Row */}
             <div className="flex items-center gap-1.5 text-xs text-neutral-500 mt-0.5 flex-wrap">
-              <span className="inline-flex items-center gap-0.5 text-amber-600 font-medium">
-                <Star className="w-3 h-3 fill-amber-400 text-amber-400" />
+              <span className="inline-flex items-center gap-0.5 text-warning-600 font-medium">
+                <Star className="w-3 h-3 fill-warning-400 text-warning-400" />
                 {rating > 0 ? rating.toFixed(1) : "—"}
               </span>
               <span className="text-neutral-300">•</span>
@@ -147,13 +147,13 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
           </span>
         )}
         {isMovingSpecialist && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-purple-50 text-purple-700 text-[11px] font-medium rounded-full border border-purple-200 whitespace-nowrap">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-medium rounded-full border border-blue-200 whitespace-nowrap">
             <Award className="w-3 h-3" />
             {t.offersComponents.movingSpecialist}
           </span>
         )}
         {jobsCount >= 20 && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-amber-50 text-amber-700 text-[11px] font-medium rounded-full border border-amber-200 whitespace-nowrap">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-warning-50 text-warning-700 text-[11px] font-medium rounded-full border border-warning-200 whitespace-nowrap">
             <Star className="w-3 h-3" />
             {t.offersComponents.experienced}
           </span>
@@ -162,10 +162,10 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
           <span
             className={`inline-flex items-center gap-1 px-2 py-0.5 text-[11px] font-medium rounded-full border whitespace-nowrap ${
               trustScore >= 80
-                ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                ? "bg-green-50 text-green-700 border-green-200"
                 : trustScore >= 50
-                  ? "bg-amber-50 text-amber-700 border-amber-200"
-                  : "bg-red-50 text-red-700 border-red-200"
+                  ? "bg-warning-50 text-warning-700 border-warning-200"
+                  : "bg-error-50 text-error-700 border-error-200"
             }`}
           >
             <Shield className="w-3 h-3" />
@@ -173,12 +173,13 @@ export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
           </span>
         )}
         {codEligible && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-medium rounded-full border border-blue-200 whitespace-nowrap">
+          <span className="tag tag--blue whitespace-nowrap">
+            <Banknote className="h-3.5 w-3.5" strokeWidth={2.2} />
             {t.offersComponents.codAvailable}
           </span>
         )}
         {hasWorkedTogether && (
-          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-indigo-50 text-indigo-700 text-[11px] font-medium rounded-full border border-indigo-200 whitespace-nowrap">
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-50 text-blue-700 text-[11px] font-medium rounded-full border border-blue-200 whitespace-nowrap">
             <Handshake className="w-3 h-3" />
             {interpolate(
               pastJobsCount > 1

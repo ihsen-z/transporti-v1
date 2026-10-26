@@ -3,127 +3,144 @@
 import React from "react";
 import Link from "next/link";
 import { ShieldCheck, Phone, Mail, Scale, Truck } from "lucide-react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+
+/* -------------------------------------------------------------------------- */
+/*  Pied de confiance — zone connectée                                        */
+/*                                                                            */
+/*  Quatre repères en tuiles teintées : le vert porte la valeur (paiement      */
+/*  protégé), le bleu l'identité (litiges, vérification), l'orange l'ancrage   */
+/*  local. Une seule teinte par tuile, aplat sans filet (charte §3).           */
+/*                                                                            */
+/*  Les libellés viennent du dictionnaire : ils étaient écrits en français     */
+/*  dans ce fichier, donc invisibles au contrôle de parité fr/ar, et un        */
+/*  transporteur arabophone lisait un pied de page français.                   */
+/* -------------------------------------------------------------------------- */
 
 export default function TrustFooter() {
+  const { t } = useAppI18n();
+  const f = t.footer;
+
+  const reperes = [
+    {
+      icone: ShieldCheck,
+      titre: f.trustPaymentTitle,
+      detail: f.trustPaymentDesc,
+      fond: "bg-green-50",
+      encre: "text-green-800",
+      encreDetail: "text-green-700",
+      encreIcone: "text-green-600",
+    },
+    {
+      icone: Scale,
+      titre: f.trustDisputeTitle,
+      detail: f.trustDisputeDesc,
+      fond: "bg-blue-50",
+      encre: "text-blue-800",
+      encreDetail: "text-blue-600",
+      encreIcone: "text-blue-700",
+    },
+    {
+      icone: ShieldCheck,
+      titre: f.trustVerifiedTitle,
+      detail: f.trustVerifiedDesc,
+      fond: "bg-blue-50",
+      encre: "text-blue-800",
+      encreDetail: "text-blue-600",
+      encreIcone: "text-blue-700",
+    },
+    {
+      icone: Truck,
+      titre: f.trustLocalTitle,
+      detail: f.trustLocalDesc,
+      fond: "bg-orange-50",
+      encre: "text-orange-800",
+      encreDetail: "text-orange-700",
+      encreIcone: "text-orange-600",
+    },
+  ];
+
+  const liens = [
+    { href: "/aide", label: f.helpCenter },
+    { href: "/conditions", label: f.terms },
+    { href: "/confidentialite", label: f.privacy },
+    { href: "/litiges", label: f.disputes },
+  ];
+
   return (
-    <footer className="bg-white border-t border-neutral-100 mt-auto">
-      <div className="max-w-7xl mx-auto px-6 py-8">
-        {/* Trust Badges Row */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50">
-            <ShieldCheck className="w-8 h-8 text-emerald-600 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-emerald-900">
-                Paiement Sécurisé
-              </p>
-              <p className="text-xs text-emerald-700">
-                Protection escrow incluse
-              </p>
+    <footer className="mt-auto border-t border-line bg-surface">
+      <div className="mx-auto max-w-7xl px-5 py-8 sm:px-6 lg:px-8">
+        {/* Repères de confiance */}
+        <div className="mb-8 grid grid-cols-2 gap-3 md:grid-cols-4">
+          {reperes.map((r) => (
+            <div
+              key={r.titre}
+              className={`flex items-center gap-3 rounded-tile p-3.5 ${r.fond}`}
+            >
+              <r.icone
+                className={`h-6 w-6 flex-shrink-0 ${r.encreIcone}`}
+                strokeWidth={2}
+              />
+              <div className="min-w-0">
+                <p className={`text-[14px] font-bold ${r.encre}`}>{r.titre}</p>
+                <p className={`text-[11.5px] font-semibold ${r.encreDetail}`}>
+                  {r.detail}
+                </p>
+              </div>
             </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-brand-600/5">
-            <Scale className="w-8 h-8 text-brand-600 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-brand-800">
-                Résolution de litiges
-              </p>
-              <p className="text-xs text-brand-600">Modération sous 24h</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50">
-            <ShieldCheck className="w-8 h-8 text-purple-600 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-purple-900">
-                Transporteurs vérifiés
-              </p>
-              <p className="text-xs text-purple-700">Identité et véhicule</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-50">
-            <Truck className="w-8 h-8 text-amber-600 flex-shrink-0" />
-            <div>
-              <p className="text-sm font-semibold text-amber-900">
-                100% Tunisien
-              </p>
-              <p className="text-xs text-amber-700">
-                Service local de confiance
-              </p>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Links + Contact */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 py-6 border-t border-neutral-100">
+        {/* Marque, liens et contact */}
+        <div className="grid grid-cols-1 gap-6 border-t border-line py-7 md:grid-cols-3">
           <div>
-            <div className="flex items-center gap-2 mb-3">
-              <Truck className="w-5 h-5 text-brand-600" />
-              <span className="font-bold text-neutral-900">Transporti</span>
+            <div className="mb-3 flex items-center gap-2">
+              <Truck className="h-5 w-5 text-blue-700" strokeWidth={2} />
+              <span className="text-[16px] font-extrabold tracking-heading text-ink-900">
+                Transporti
+              </span>
             </div>
-            <p className="text-sm text-neutral-500 leading-relaxed">
-              La plateforme de transport et déménagement en Tunisie.
-              Connectez-vous avec des transporteurs vérifiés.
-            </p>
+            <p className="text-[14px] leading-[1.55] text-ink-500">{f.blurb}</p>
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-neutral-900 mb-3">
-              Liens utiles
+            <h4 className="mb-3 text-[13px] font-bold uppercase tracking-[0.06em] text-ink-900">
+              {f.usefulLinks}
             </h4>
-            <ul className="space-y-2">
-              <li>
-                <Link
-                  href="/aide"
-                  className="text-sm text-neutral-500 hover:text-brand-600 transition-colors"
-                >
-                  Centre d&apos;aide
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/conditions"
-                  className="text-sm text-neutral-500 hover:text-brand-600 transition-colors"
-                >
-                  Conditions générales
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/confidentialite"
-                  className="text-sm text-neutral-500 hover:text-brand-600 transition-colors"
-                >
-                  Politique de confidentialité
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/litiges"
-                  className="text-sm text-neutral-500 hover:text-brand-600 transition-colors"
-                >
-                  Processus de résolution de litiges
-                </Link>
-              </li>
+            <ul className="flex flex-col gap-2.5">
+              {liens.map((lien) => (
+                <li key={lien.href}>
+                  <Link
+                    href={lien.href}
+                    className="text-[14px] text-ink-500 underline-offset-4 transition-colors hover:text-blue-700 hover:underline"
+                  >
+                    {lien.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           <div>
-            <h4 className="text-sm font-semibold text-neutral-900 mb-3">
-              Nous contacter
+            <h4 className="mb-3 text-[13px] font-bold uppercase tracking-[0.06em] text-ink-900">
+              {f.contactUs}
             </h4>
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm text-neutral-500">
-                <Mail className="w-4 h-4" />
+            <div className="flex flex-col gap-2.5">
+              <div className="flex items-center gap-2 text-[14px] text-ink-500">
+                <Mail className="h-4 w-4" strokeWidth={2} />
                 <a
                   href="mailto:support@transporti.tn"
-                  className="hover:text-brand-600 transition-colors"
+                  className="underline-offset-4 transition-colors hover:text-blue-700 hover:underline"
                 >
                   support@transporti.tn
                 </a>
               </div>
-              <div className="flex items-center gap-2 text-sm text-neutral-500">
-                <Phone className="w-4 h-4" />
+              <div className="flex items-center gap-2 text-[14px] text-ink-500">
+                <Phone className="h-4 w-4" strokeWidth={2} />
                 <a
                   href="tel:+21671000000"
-                  className="hover:text-brand-600 transition-colors"
+                  dir="ltr"
+                  className="underline-offset-4 transition-colors hover:text-blue-700 hover:underline"
                 >
                   +216 71 000 000
                 </a>
@@ -132,10 +149,9 @@ export default function TrustFooter() {
           </div>
         </div>
 
-        {/* Copyright */}
-        <div className="pt-4 border-t border-neutral-100 text-center">
-          <p className="text-xs text-neutral-400">
-            © {new Date().getFullYear()} Transporti. Tous droits réservés.
+        <div className="border-t border-line pt-5 text-center">
+          <p className="text-[12.5px] text-ink-300">
+            © {new Date().getFullYear()} Transporti. {f.rights}
           </p>
         </div>
       </div>

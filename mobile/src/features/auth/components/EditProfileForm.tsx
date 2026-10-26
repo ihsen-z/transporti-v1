@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -10,6 +10,7 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 import { showToast } from '@/shared/ui/toastStore';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useUpdateProfile } from '../api/useUpdateProfile';
+import { Txt } from '@/shared/ui/Txt';
 
 // Messages = clés i18n (traduites au rendu).
 const schema = z.object({
@@ -112,9 +113,9 @@ export function EditProfileForm({ onDone }: Props) {
       />
 
       {serverError ? (
-        <Text testID="edit-profile-server-error" style={styles.serverError}>
+        <Txt testID="edit-profile-server-error" style={styles.serverError}>
           {serverError}
-        </Text>
+        </Txt>
       ) : null}
 
       <Button

@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { FormMessage } from '@/shared/ui/FormMessage';
+import { spacing } from '@/shared/theme';
 import { usePasswordReset } from '../api/usePasswordReset';
 
 const schema = z.object({
@@ -43,7 +44,9 @@ export function ForgotPasswordForm() {
   if (reset.isSuccess) {
     return (
       <View style={styles.form}>
-        <Text style={styles.sent}>{t('auth.forgot.sent')}</Text>
+        <FormMessage intent="success" testID="forgot-password-sent">
+          {t('auth.forgot.sent')}
+        </FormMessage>
       </View>
     );
   }
@@ -69,9 +72,7 @@ export function ForgotPasswordForm() {
       />
 
       {serverError ? (
-        <Text testID="forgot-password-server-error" style={styles.serverError}>
-          {serverError}
-        </Text>
+        <FormMessage testID="forgot-password-server-error">{serverError}</FormMessage>
       ) : null}
 
       <Button
@@ -88,7 +89,5 @@ export function ForgotPasswordForm() {
 
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
-  sent: { fontSize: fontSize.md, color: colors.text.green, fontWeight: '600', lineHeight: 22 },
-  serverError: { color: colors.text.error, fontSize: fontSize.sm, fontWeight: '600' },
   submit: { marginTop: spacing.sm },
 });

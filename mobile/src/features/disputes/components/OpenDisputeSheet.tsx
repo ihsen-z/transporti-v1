@@ -1,11 +1,12 @@
 import { useMemo, useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Select } from '@/shared/ui/Select';
 import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { DisputeReason } from '../api/dto';
 import { useCreateDispute } from '../api/useCreateDispute';
+import { Txt } from '@/shared/ui/Txt';
 
 const REASONS: readonly DisputeReason[] = [
   'DAMAGED_ITEMS',
@@ -69,7 +70,7 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
         <Pressable style={styles.sheet} onPress={() => undefined}>
           {create.isSuccess ? (
             <View style={styles.successBox}>
-              <Text style={styles.successText}>{t('disputes.success')}</Text>
+              <Txt style={styles.successText}>{t('disputes.success')}</Txt>
               <Button
                 testID="open-dispute-close"
                 label={t('common.close')}
@@ -79,7 +80,7 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
             </View>
           ) : (
             <>
-              <Text style={styles.title}>{t('disputes.open')}</Text>
+              <Txt style={styles.title}>{t('disputes.open')}</Txt>
               <Select
                 testID="open-dispute-reason"
                 label={t('disputes.reason_label')}
@@ -89,7 +90,7 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
                 onChange={setReason}
               />
               <View>
-                <Text style={styles.label}>{t('disputes.description_label')}</Text>
+                <Txt style={styles.label}>{t('disputes.description_label')}</Txt>
                 <TextInput
                   testID="open-dispute-description"
                   accessibilityLabel={t('disputes.description_label')}
@@ -102,14 +103,14 @@ export function OpenDisputeSheet({ jobId, onClose }: Props) {
                 />
               </View>
               {formError ? (
-                <Text testID="open-dispute-form-error" style={styles.error}>
+                <Txt testID="open-dispute-form-error" style={styles.error}>
                   {formError}
-                </Text>
+                </Txt>
               ) : null}
               {serverError ? (
-                <Text testID="open-dispute-server-error" style={styles.error}>
+                <Txt testID="open-dispute-server-error" style={styles.error}>
                   {serverError}
-                </Text>
+                </Txt>
               ) : null}
               <Button
                 testID="open-dispute-submit"
@@ -137,11 +138,13 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: fontSize.xl, fontWeight: '800', color: colors.neutral[900] },
   label: { fontSize: fontSize.sm, fontWeight: '600', color: colors.neutral[700], marginBottom: spacing.xs },
+  // Champ de la charte (.field) : fond `bg-app`, liseré discret, rayon 14.
   textarea: {
     minHeight: 96,
     borderWidth: 1,
-    borderColor: colors.neutral[200],
-    borderRadius: radii.lg,
+    borderColor: colors.neutral[300],
+    borderRadius: radii.input,
+    backgroundColor: colors.neutral[50],
     padding: spacing.md,
     fontSize: fontSize.md,
     color: colors.neutral[900],

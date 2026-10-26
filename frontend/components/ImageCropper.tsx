@@ -109,15 +109,12 @@ export default function ImageCropper({
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center">
       {/* Backdrop */}
-      <div
-        className="absolute inset-0 bg-black/70 backdrop-blur-sm"
-        onClick={onCancel}
-      />
+      <div className="absolute inset-0 bg-black/70" onClick={onCancel} />
 
       {/* Modal */}
-      <div className="relative z-10 bg-white rounded-2xl shadow-2xl w-[95vw] max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="relative z-10 bg-surface rounded-card shadow-2xl w-[95vw] max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between px-5 py-3 border-b border-neutral-100 bg-neutral-50">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-line bg-neutral-50">
           <h3 className="text-sm font-bold text-neutral-800">{title}</h3>
           <button
             onClick={onCancel}
@@ -145,7 +142,7 @@ export default function ImageCropper({
         </div>
 
         {/* Controls */}
-        <div className="px-5 py-3 border-t border-neutral-100 bg-neutral-50">
+        <div className="px-5 py-3 border-t border-line bg-neutral-50">
           {/* Zoom slider */}
           <div className="flex items-center gap-3 mb-3">
             <ZoomOut className="w-4 h-4 text-neutral-400 flex-shrink-0" />
@@ -186,7 +183,7 @@ export default function ImageCropper({
                 type="button"
                 onClick={handleConfirm}
                 disabled={processing}
-                className="inline-flex items-center gap-2 px-5 py-2 bg-accent-600 text-white rounded-xl text-sm font-semibold hover:bg-accent-700 transition-colors shadow-md disabled:opacity-50"
+                className="inline-flex items-center gap-2 px-5 py-2 bg-blue-700 text-white rounded-xl text-sm font-semibold hover:bg-blue-800 transition-colors shadow-md disabled:opacity-50"
               >
                 <Check className="w-4 h-4" />
                 {processing ? "Traitement..." : "Valider"}

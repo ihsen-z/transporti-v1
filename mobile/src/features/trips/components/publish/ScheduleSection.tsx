@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { Controller, type Control, type FieldErrors } from 'react-hook-form';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
@@ -6,6 +6,7 @@ import { Button } from '@/shared/ui/Button';
 import { Select } from '@/shared/ui/Select';
 import { publishStyles as s } from './publishStyles';
 import type { FormOption, PublishFormValues } from './publishSchema';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   control: Control<PublishFormValues>;
@@ -34,7 +35,7 @@ export function ScheduleSection({
   return (
     <>
       {/* Date */}
-      <Text style={s.section}>{t('trips.day')}</Text>
+      <Txt style={s.section}>{t('trips.day')}</Txt>
       <View style={s.rowGap}>
         <View style={s.flex}>
           <Controller
@@ -81,11 +82,11 @@ export function ScheduleSection({
         loading={estimatePending}
       />
       {estimateResult ? (
-        <Text testID="publish-estimate-result" style={s.estimate}>
+        <Txt testID="publish-estimate-result" style={s.estimate}>
           {estimateResult}
-        </Text>
+        </Txt>
       ) : null}
-      <Text style={s.hint}>{routeHint ?? t('trips.estimate.hint')}</Text>
+      <Txt style={s.hint}>{routeHint ?? t('trips.estimate.hint')}</Txt>
 
       {/* Prix */}
       <View style={s.rowGap}>

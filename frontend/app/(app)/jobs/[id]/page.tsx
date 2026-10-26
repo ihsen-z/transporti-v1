@@ -56,7 +56,7 @@ export default function JobResolverPage() {
         </p>
         <button
           onClick={relire}
-          className="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors"
+          className="mt-4 btn-base min-h-[44px] rounded-cta bg-blue-700 px-4 text-[14.5px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px"
         >
           {t.jobDetail.retry}
         </button>
@@ -65,7 +65,9 @@ export default function JobResolverPage() {
 
   if (erreur === "not_found")
     return (
-      <div className="p-8 text-center text-red-500">{t.jobDetail.notFound}</div>
+      <div className="p-8 text-center text-error-500">
+        {t.jobDetail.notFound}
+      </div>
     );
 
   // Chargement, et le bref instant entre la reponse et la redirection.

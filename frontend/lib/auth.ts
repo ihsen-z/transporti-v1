@@ -16,20 +16,35 @@ export interface AuthUser {
   is_verified?: boolean;
 }
 
-// Role display labels
-export const roleLabels: Record<UserRole, string> = {
-  guest: "Visiteur",
-  client: "Client",
-  transporter: "Transporteur",
-  admin: "Administrateur",
-};
+/**
+ * Les libelles de role NE SONT PLUS ici.
+ *
+ * Une constante de module en francais echappe au controle de parite fr/ar
+ * (lib/i18n/parity.ts ne verifie que le dictionnaire) : le badge de role du
+ * bandeau bleu affichait « Transporteur » a un lecteur arabophone, dans une
+ * mise en page deja passee en RTL. Verifie en recette le 08/09/2026.
+ *
+ * Ils se lisent desormais dans `t.nav` : `client`, `transporter`, `visitor`,
+ * `administrator`. Voir `libelleRole()` dans components/navigation/AppHeader.
+ */
 
 // Role colors for badges
 export const roleColors: Record<UserRole, string> = {
-  guest: "bg-neutral-100 text-neutral-600",
-  client: "bg-blue-100 text-blue-700",
-  transporter: "bg-purple-100 text-purple-700",
-  admin: "bg-slate-800 text-white",
+  guest: "bg-[#EEF2F8] text-ink-500",
+  client: "bg-blue-50 text-blue-600",
+  transporter: "bg-blue-50 text-blue-700",
+  admin: "bg-blue-700 text-white",
+};
+
+/**
+ * Variante des badges de role posee sur le bandeau bleu : la charte y remplace
+ * les aplats clairs par du verre (alpha sur le degrade), sans backdrop-filter.
+ */
+export const roleColorsOnBlue: Record<UserRole, string> = {
+  guest: "bg-white/[0.16] text-white",
+  client: "bg-white/[0.16] text-white",
+  transporter: "bg-white/[0.16] text-white",
+  admin: "bg-white text-blue-700",
 };
 
 // Route access configuration

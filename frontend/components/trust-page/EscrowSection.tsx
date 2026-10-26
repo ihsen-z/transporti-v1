@@ -36,7 +36,7 @@ export function EscrowSection() {
   return (
     <section className="py-16 bg-white" data-testid="confiance-escrow">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-neutral-900 text-center mb-10">
+        <h2 className="text-[28px] font-extrabold tracking-title text-ink-900 text-center mb-10">
           {p.escrowTitle}
         </h2>
 
@@ -62,13 +62,13 @@ export function EscrowSection() {
         </ol>
 
         <div
-          className="mt-8 rounded-2xl border border-amber-200 bg-amber-50 p-6"
+          className="mt-8 rounded-2xl border border-warning-200 bg-warning-50 p-6"
           data-testid="confiance-delai"
         >
           <h3 className="font-bold text-amber-900 mb-2">
             {p.escrowDelayTitle}
           </h3>
-          <p className="text-sm text-amber-800 leading-relaxed mb-2">
+          <p className="text-sm text-warning-800 leading-relaxed mb-2">
             {interpolate(p.escrowDelayDesc, {
               heures: GARANTIES_AFFICHEES.ESCROW_AUTO_RELEASE_HOURS,
             })}

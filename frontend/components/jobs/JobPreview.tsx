@@ -4,7 +4,6 @@ import React from "react";
 import Image from "next/image";
 import {
   MapPin,
-  Calendar,
   Package,
   Truck,
   Home,
@@ -50,8 +49,8 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
   const isTransport = data.job_type === "TRANSPORT";
 
   return (
-    <div className="space-y-6">
-      <div className="bg-gradient-to-r from-brand-600 to-brand-900 text-white p-6 rounded-xl shadow-lg">
+    <div className="flex flex-col gap-6">
+      <div className="bg-band text-white p-6 rounded-xl shadow-lg">
         <div className="flex items-center gap-3 mb-4">
           <div className="p-2 bg-white/20 rounded-lg">
             {isTransport ? (
@@ -72,7 +71,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
           </div>
         </div>
 
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {/* Pickup */}
           <div className="flex items-start gap-3">
             <MapPin className="w-5 h-5 mt-1 text-orange-300" />
@@ -267,7 +266,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
                   alt=""
                   width={64}
                   height={64}
-                  className="w-16 h-16 object-cover rounded-md border"
+                  className="w-16 h-16 object-cover rounded-chip border"
                 />
               ))}
             </div>
@@ -280,7 +279,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
               <span className="text-neutral-600 font-medium">
                 {t.jobsComponents.preview.estimatedBudget}
               </span>
-              <span className="text-xl font-bold text-neutral-900">
+              <span className="text-[19px] font-extrabold tracking-heading text-ink-900">
                 {data.price_tnd_min || "0"} - {data.price_tnd_max || "?"}{" "}
                 {t.jobsComponents.preview.tnd}
               </span>
@@ -290,7 +289,7 @@ export function JobPreview({ data, isOwner = true }: JobPreviewProps) {
       </div>
 
       {isOwner && (
-        <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+        <div className="bg-orange-50 rounded-tile p-4">
           <p className="text-sm text-orange-800">
             <strong>{t.jobsComponents.preview.noteLabel}</strong>{" "}
             {t.jobsComponents.preview.noteText}

@@ -65,7 +65,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
   };
 
   return (
-    <div className="space-y-8">
+    <div className="flex flex-col gap-8">
       {/* ------------------------------------------------------------------ */}
       {/*  Section 1: Logement & Volume                                      */}
       {/* ------------------------------------------------------------------ */}
@@ -78,13 +78,13 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {/* Room count */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
+            <label className="label mb-[7px]">
               {t.jobsComponents.moving.roomCount}
             </label>
             <select
               value={specs.room_count || ""}
               onChange={(e) => update("room_count", e.target.value)}
-              className="w-full p-3 border border-neutral-300 rounded-xl bg-white focus:ring-2 focus:ring-accent-500 focus:border-brand-600 transition-colors"
+              className="field focus:border-brand-600 transition-colors"
             >
               <option value="">{t.jobsComponents.moving.select}</option>
               {ROOM_OPTIONS.map((o) => (
@@ -97,7 +97,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
 
           {/* Estimated volume */}
           <div>
-            <label className="block text-sm font-medium text-neutral-700 mb-1">
+            <label className="label mb-[7px]">
               <Box className="inline w-4 h-4 me-1 text-neutral-500" />
               {t.jobsComponents.moving.volumeLabel}
             </label>
@@ -108,7 +108,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
               value={specs.volume || ""}
               onChange={(e) => update("volume", e.target.value)}
               placeholder={t.jobsComponents.moving.volumePlaceholder}
-              className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 focus:border-brand-600 transition-colors"
+              className="field focus:border-brand-600 transition-colors"
             />
             <p className="text-xs text-neutral-400 mt-1">
               {t.jobsComponents.moving.volumeHint}
@@ -122,14 +122,14 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
       {/* ------------------------------------------------------------------ */}
       <section>
         <h3 className="text-base font-semibold text-neutral-800 flex items-center gap-2 mb-4">
-          <ArrowUpDown className="w-5 h-5 text-purple-600" />
+          <ArrowUpDown className="w-5 h-5 text-blue-700" />
           {t.jobsComponents.moving.accessSection}
         </h3>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
           {/* Departure */}
-          <div className="space-y-3 p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-            <p className="text-sm font-semibold text-neutral-700">
+          <div className="flex flex-col gap-3 p-4 bg-neutral-50 rounded-xl border border-line">
+            <p className="text-[14px] font-bold text-ink-700">
               {t.jobsComponents.moving.departure}
             </p>
             <div>
@@ -145,7 +145,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
                   update("floor_departure", parseInt(e.target.value) || 0)
                 }
                 placeholder={t.jobsComponents.moving.floorPlaceholder}
-                className="w-full p-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-accent-500"
+                className="field"
               />
             </div>
             <div>
@@ -155,7 +155,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
               <select
                 value={specs.elevator_departure || ""}
                 onChange={(e) => update("elevator_departure", e.target.value)}
-                className="w-full p-2.5 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-accent-500"
+                className="field"
               >
                 <option value="">{t.jobsComponents.moving.select}</option>
                 {ELEVATOR_OPTIONS.map((o) => (
@@ -168,8 +168,8 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
           </div>
 
           {/* Arrival */}
-          <div className="space-y-3 p-4 bg-neutral-50 rounded-xl border border-neutral-100">
-            <p className="text-sm font-semibold text-neutral-700">
+          <div className="flex flex-col gap-3 p-4 bg-neutral-50 rounded-xl border border-line">
+            <p className="text-[14px] font-bold text-ink-700">
               {t.jobsComponents.moving.arrival}
             </p>
             <div>
@@ -185,7 +185,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
                   update("floor_arrival", parseInt(e.target.value) || 0)
                 }
                 placeholder={t.jobsComponents.moving.floorPlaceholder}
-                className="w-full p-2.5 border border-neutral-300 rounded-lg text-sm focus:ring-2 focus:ring-accent-500"
+                className="field"
               />
             </div>
             <div>
@@ -195,7 +195,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
               <select
                 value={specs.elevator_arrival || ""}
                 onChange={(e) => update("elevator_arrival", e.target.value)}
-                className="w-full p-2.5 border border-neutral-300 rounded-lg text-sm bg-white focus:ring-2 focus:ring-accent-500"
+                className="field"
               >
                 <option value="">{t.jobsComponents.moving.select}</option>
                 {ELEVATOR_OPTIONS.map((o) => (
@@ -214,7 +214,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
       {/* ------------------------------------------------------------------ */}
       <section>
         <h3 className="text-base font-semibold text-neutral-800 flex items-center gap-2 mb-4">
-          <Wrench className="w-5 h-5 text-emerald-600" />
+          <Wrench className="w-5 h-5 text-green-600" />
           {t.jobsComponents.moving.servicesSection}
         </h3>
 
@@ -266,7 +266,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
                 {label}
               </span>
               <div
-                className={`ms-auto w-5 h-5 rounded-md border-2 flex items-center justify-center transition-colors ${
+                className={`ms-auto w-5 h-5 rounded-chip border-2 flex items-center justify-center transition-colors ${
                   specs[key]
                     ? "bg-brand-600 border-brand-600"
                     : "border-neutral-300"
@@ -294,7 +294,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
 
         {/* Helpers count */}
         <div className="mt-4">
-          <label className="block text-sm font-medium text-neutral-700 mb-2">
+          <label className="label mb-[7px]">
             <Users className="inline w-4 h-4 me-1 text-neutral-500" />
             {t.jobsComponents.moving.helpersLabel}
           </label>
@@ -324,8 +324,8 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
       {/*  Section 4: Articles fragiles                                      */}
       {/* ------------------------------------------------------------------ */}
       {specs.has_fragile && (
-        <section className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-          <h3 className="text-base font-semibold text-amber-800 flex items-center gap-2 mb-3">
+        <section className="bg-warning-50 rounded-tile p-4">
+          <h3 className="text-base font-semibold text-warning-800 flex items-center gap-2 mb-3">
             <ShieldAlert className="w-5 h-5" />
             {t.jobsComponents.moving.fragileSection}
           </h3>
@@ -349,7 +349,7 @@ export function MovingDetailsForm({ data, onChange }: MovingDetailsFormProps) {
           value={data.description || ""}
           onChange={(e) => handleDescriptionChange(e.target.value)}
           placeholder={t.jobsComponents.moving.descriptionPlaceholder}
-          className="w-full p-3 border border-neutral-300 rounded-xl focus:ring-2 focus:ring-accent-500 min-h-[100px]"
+          className="field min-h-[100px]"
         />
       </section>
 

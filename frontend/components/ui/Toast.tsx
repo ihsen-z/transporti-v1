@@ -45,26 +45,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
   const getIcon = (type: ToastType) => {
     switch (type) {
       case "success":
-        return <CheckCircle className="w-5 h-5 text-accent-500" />;
+        return <CheckCircle className="w-5 h-5 text-green-500" />;
       case "error":
-        return <XCircle className="w-5 h-5 text-error" />;
+        return <XCircle className="w-5 h-5 text-error-500" />;
       case "warning":
-        return <AlertCircle className="w-5 h-5 text-cta-500" />;
+        return <AlertCircle className="w-5 h-5 text-orange-500" />;
       case "info":
-        return <AlertCircle className="w-5 h-5 text-brand-600" />;
+        return <AlertCircle className="w-5 h-5 text-blue-600" />;
     }
   };
 
   const getStyles = (type: ToastType) => {
     switch (type) {
       case "success":
-        return "bg-accent-50 border-accent-200 text-accent-800";
+        return "bg-[#ECFDF5] border-green-200 text-[#0F9B6C]";
       case "error":
-        return "bg-error-light border-error text-error-dark";
+        return "bg-error-50 border-error-200 text-error-700";
       case "warning":
-        return "bg-cta-50 border-cta-200 text-cta-800";
+        return "bg-orange-50 border-orange-200 text-orange-700";
       case "info":
-        return "bg-brand-600/5 border-brand-600/20 text-brand-700";
+        return "bg-blue-50 border-blue-200 text-info-ink";
     }
   };
 
@@ -73,7 +73,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       {children}
 
       {/* Toast Container */}
-      <div className="fixed top-20 end-4 z-50 flex flex-col gap-2">
+      <div className="fixed top-20 end-4 z-[1070] flex max-w-[calc(100vw-2rem)] flex-col gap-2">
         {toasts.map((toast) => (
           <div
             key={toast.id}
@@ -82,17 +82,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             // liste de testids specifiques deriverait a chaque nouvelle action.
             data-testid={`toast-${toast.type}`}
             role="status"
-            className={`
-                            flex items-center gap-3 px-4 py-3 rounded-lg border shadow-lg
-                            animate-in slide-in-from-right duration-300
-                            ${getStyles(toast.type)}
-                        `}
+            className={`flex items-center gap-3 rounded-tile border px-4 py-3
+              text-[14px] font-medium shadow-card animate-slide-in-r
+              ${getStyles(toast.type)}`}
           >
             {getIcon(toast.type)}
-            <p className="text-sm font-medium">{toast.message}</p>
+            <p className="text-[14px] font-medium">{toast.message}</p>
             <button
               onClick={() => removeToast(toast.id)}
-              className="p-1 hover:bg-black/5 rounded transition-colors ms-2"
+              className="ms-2 grid h-7 w-7 flex-shrink-0 place-items-center rounded-lg transition-colors hover:bg-black/5"
             >
               <X className="w-4 h-4 opacity-60" />
             </button>

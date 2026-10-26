@@ -1,8 +1,4 @@
-import { useRouter } from 'expo-router';
-import { ScrollView, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFloatingTabBarClearance } from '@/shared/ui/FloatingTabBar';
-import { useTranslation } from 'react-i18next';
+import { useTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useAuthStore } from '@/core/auth/authStore';
 import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
 import { HomeTopBar } from '@/features/dashboard/components/HomeTopBar';
@@ -11,24 +7,28 @@ import { MissionsList } from '@/features/missions/components/MissionsList';
 import { CompletedMissionsList } from '@/features/reviews/components/CompletedMissionsList';
 import { ReturnPromptBanner } from '@/features/trips/components/ReturnPromptBanner';
 import { ReturnsHubSection } from '@/features/trips/components/ReturnsHubSection';
-import { Button } from '@/shared/ui/Button';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
 import { TransporterOnboardingGuide } from '@/features/onboarding/components/TransporterOnboardingGuide';
 import { ClientHomeSearch } from '@/features/search/components/ClientHomeSearch';
 import { ClientRequestsSummary } from '@/features/my-requests/components/ClientRequestsSummary';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
-import { colors, spacing } from '@/shared/theme';
 
-// Onglet Accueil, rôle-aware. Pour le transporteur c'est le tableau de bord de
-// design-system/10-transporteur-dashboard.html : hero chiffré, CTA unique,
-// puis ses sections. Le client garde un hero de marque — les KPI du pivot
-// (remplissage, km transformés) ne veulent rien dire pour lui.
+// Onglet Accueil, rôle-aware. Pour le transporteur c'est le tableau de bord :
+// en-tête sur le bandeau bleu, hero chiffré en verre dedans, puis ses sections
+// — pas de CTA propre, voir plus bas. La cliente garde le même en-tête, mais
+// sa carte de recherche ouvre le contenu : les KPI du pivot (remplissage, km
+// transformés) ne veulent rien dire pour elle.
+//
+// Le hero reste dans l'en-tête et pas dans le contenu, et ce n'est pas
+// cosmétique : le verre ne vit que sur le bleu (charte). Descendu d'un cran,
+// il finirait sur le fond clair en défilant et s'y dissoudrait.
+
 export default function HomeScreen() {
-  // Marge basse reservee sous la liste : sans elle, le dernier element
-  // reste sous la barre flottante et son action devient inatteignable
-  // (defaut mesure sur l'inventaire des retours, recette du 03/09).
-  const margeBasse = useFloatingTabBarClearance();
-  const { t } = useTranslation();
-  const router = useRouter();
+  // Marge basse reservee sous le contenu : sans elle, le dernier element reste
+  // sous la barre de navigation et son action devient inatteignable (defaut
+  // mesure sur l'inventaire des retours, recette du 03/09).
+  const margeBasse = useTabBarClearance();
   const user = useAuthStore((s) => s.user);
   const isTransporter = user?.role === 'TRANSPORTER';
   const isClient = user?.role === 'CLIENT';
@@ -37,70 +37,63 @@ export default function HomeScreen() {
   const stats = useTransporterStats(isTransporter);
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: margeBasse }]}
-        refreshControl={isTransporter ? queryRefreshControl(stats) : undefined}
-      >
-        <HomeTopBar />
+    <AppScreen
+      testID="home-screen"
+      header={
+        <AppHeader>
+          <HomeTopBar />
+          {isTransporter ? (
+            <TransporterHero stats={stats.data} loading={stats.isLoading} />
+          ) : null}
+        </AppHeader>
+      }
+      refreshControl={isTransporter ? queryRefreshControl(stats) : undefined}
+      contentPaddingBottom={margeBasse}
+    >
+      {/* 7.5 — le bandeau de marque cede la place a la recherche elle-meme
+          (E-17). Il occupait le premier tiers d'un ecran vide aux deux
+          autres, et ne disait a la cliente rien qu'elle ne sache deja. La
+          cartographie assume qu'elle n'a pas de tableau de bord et que sa
+          racine est la recherche : autant l'y mettre. */}
+      {isClient ? <ClientHomeSearch /> : null}
 
-        {/* 7.5 — le bandeau de marque cede la place a la recherche elle-meme
-            (E-17). Il occupait le premier tiers d'un ecran vide aux deux
-            autres, et ne disait a la cliente rien qu'elle ne sache deja. La
-            cartographie assume qu'elle n'a pas de tableau de bord et que sa
-            racine est la recherche : autant l'y mettre. */}
-        {isTransporter ? (
-          <TransporterHero stats={stats.data} loading={stats.isLoading} />
-        ) : (
-          <ClientHomeSearch />
-        )}
+      {/* Le bouton orange « Publier un retour » a disparu, et c'est la même
+          raison qui avait déjà retiré « Trouver un retour » côté cliente : la
+          charte n'autorise QU'UN orange par écran, et cet écran en portait
+          trois — le bouton flottant de la barre (qui est déjà `publish` pour
+          le transporteur, même couleur, même destination, toujours visible),
+          ce bouton-ci, et le CTA du bandeau d'amorce.
+          Mesuré à l'écran le 06/09 : trois oranges se disputaient la même
+          action, et l'amorce contextuelle — la seule des trois à savoir QUEL
+          retour publier — était la moins visible. Elle porte désormais seule
+          l'orange de l'écran ; hors amorce, c'est le bouton flottant. */}
+      {isClient ? <ClientRequestsSummary /> : null}
 
-        {/* CTA unique de l'écran — le seul orange autorisé ici. */}
-        {isTransporter ? (
-          <Button
-            testID="home-publish"
-            label={t('trips.publish.title')}
-            onPress={() => router.push('/publish')}
-            variant="cta"
-          />
-        ) : null}
-        {/* Le bouton « Trouver un retour » a disparu : le formulaire porte
-            desormais son propre CTA, et deux oranges sur un ecran violeraient
-            la charte. */}
-        {isClient ? <ClientRequestsSummary /> : null}
+      {/* La maquette place ici « Demandes reçues » avec ses cartes.
+          L'endpoint transverse existe depuis T2.1
+          (GET trip-requests/received/) et l'onglet Demandes porte desormais
+          la liste consolidee. Le dupliquer ici ferait deux sources pour la
+          meme information, donc deux compteurs a tenir d'accord. */}
 
-        {/* La maquette place ici « Demandes reçues » avec ses cartes.
-            L'endpoint transverse existe depuis T2.1
-            (GET trip-requests/received/) et l'onglet Demandes porte desormais
-            la liste consolidee. Le dupliquer ici ferait deux sources pour la
-            meme information, donc deux compteurs a tenir d'accord. */}
-
-        {/* Sections rôle-aware. Le suivi des demandes du client vit désormais
-            dans son propre onglet (mes-demandes.tsx) : une section noyée en
-            bas de l'Accueil, sans pull-to-refresh ni existence dans la barre
-            de navigation, ne servait pas le principe de suivi du BO. */}
-        {/* T4.4 — l'amorce de retour a vide, en premiere position : a cet
-            instant, c'est l'action la plus rentable de l'ecran. */}
-        {isTransporter ? <ReturnPromptBanner /> : null}
-        {/* T0.4 — le guide de demarrage, APRES l'amorce de retour et non avant.
-            L'amorce ne parait qu'apres une livraison et vise l'instant precis
-            ou la publication est evidente ; le guide, lui, reste tant qu'il
-            reste une etape. Le mettre en premier repousserait l'action la plus
-            rentable de l'ecran sous une liste de taches. Il se masque de
-            lui-meme quand les trois etapes sont faites. */}
-        {isTransporter ? <TransporterOnboardingGuide /> : null}
-        {/* T1.1 — le hub passe de « mes missions » a « mes retours » : le
-            retour est la racine du transporteur (IA-2). */}
-        {isTransporter ? <ReturnsHubSection /> : null}
-        {isTransporter ? <MissionsList /> : null}
-        {isTransporter ? <CompletedMissionsList /> : null}
-      </ScrollView>
-    </SafeAreaView>
+      {/* Sections rôle-aware. Le suivi des demandes du client vit désormais
+          dans son propre onglet (mes-demandes.tsx) : une section noyée en
+          bas de l'Accueil, sans pull-to-refresh ni existence dans la barre
+          de navigation, ne servait pas le principe de suivi du BO. */}
+      {/* T4.4 — l'amorce de retour a vide, en premiere position : a cet
+          instant, c'est l'action la plus rentable de l'ecran. */}
+      {isTransporter ? <ReturnPromptBanner /> : null}
+      {/* T0.4 — le guide de demarrage, APRES l'amorce de retour et non avant.
+          L'amorce ne parait qu'apres une livraison et vise l'instant precis
+          ou la publication est evidente ; le guide, lui, reste tant qu'il
+          reste une etape. Le mettre en premier repousserait l'action la plus
+          rentable de l'ecran sous une liste de taches. Il se masque de
+          lui-meme quand les trois etapes sont faites. */}
+      {isTransporter ? <TransporterOnboardingGuide /> : null}
+      {/* T1.1 — le hub passe de « mes missions » a « mes retours » : le
+          retour est la racine du transporteur (IA-2). */}
+      {isTransporter ? <ReturnsHubSection /> : null}
+      {isTransporter ? <MissionsList /> : null}
+      {isTransporter ? <CompletedMissionsList /> : null}
+    </AppScreen>
   );
 }
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
-  content: { padding: spacing.xl, gap: spacing.xl },
-  section: { marginBottom: -spacing.md },
-});

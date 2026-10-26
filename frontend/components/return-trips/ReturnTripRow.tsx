@@ -97,13 +97,13 @@ export default function ReturnTripRow({
         </p>
       </div>
 
-      <div className="mt-3 pt-3 border-t border-neutral-100 flex flex-wrap gap-2">
+      <div className="mt-3 pt-3 border-t border-line flex flex-wrap gap-2">
         <button
           type="button"
           data-testid="retours-ligne-editer"
           onClick={() => onEditer(trajet)}
           disabled={enCours}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none disabled:opacity-50"
         >
           <Pencil className="w-3.5 h-3.5" aria-hidden="true" />
           Éditer
@@ -114,7 +114,7 @@ export default function ReturnTripRow({
           data-testid="retours-ligne-prolonger"
           onClick={() => onProlonger(trajet)}
           disabled={enCours}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none disabled:opacity-50"
         >
           <Clock className="w-3.5 h-3.5" aria-hidden="true" />
           Prolonger d&apos;une semaine
@@ -125,7 +125,7 @@ export default function ReturnTripRow({
           data-testid="retours-ligne-dupliquer"
           onClick={() => onDupliquer(trajet)}
           disabled={enCours}
-          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none disabled:opacity-50"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm rounded-lg border border-neutral-200 text-neutral-700 hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none disabled:opacity-50"
         >
           <Copy className="w-3.5 h-3.5" aria-hidden="true" />
           Dupliquer

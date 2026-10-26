@@ -191,7 +191,7 @@ export default function JobActions({
 
     switch (variant) {
       case "primary":
-        return `${base} bg-accent-500 hover:bg-accent-600 active:bg-accent-700 text-white shadow-md hover:shadow-lg`;
+        return `${base} bg-blue-700 hover:bg-blue-800 active:bg-blue-900 text-white shadow-md hover:shadow-lg`;
       case "secondary":
         return `${base} bg-neutral-100 hover:bg-neutral-200 active:bg-neutral-300 text-neutral-700`;
       case "danger":
@@ -231,8 +231,8 @@ export default function JobActions({
   // Render passive states for COMPLETED and CANCELLED
   if (status === "CANCELLED") {
     return (
-      <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
-        <h3 className="text-lg font-bold text-neutral-900 mb-4">
+      <div className="bg-surface rounded-card shadow-card p-6">
+        <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4">
           {t.jobsComponents.actions.statusTitle}
         </h3>
         <div className="flex items-center gap-3 p-4 bg-neutral-100 rounded-xl">
@@ -253,8 +253,8 @@ export default function JobActions({
   }
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
-      <h3 className="text-lg font-bold text-neutral-900 mb-4">
+    <div className="bg-surface rounded-card shadow-card p-6">
+      <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4">
         {status === "COMPLETED"
           ? t.jobsComponents.actions.completedTitle
           : t.jobsComponents.actions.title}
@@ -288,7 +288,7 @@ export default function JobActions({
       )}
 
       {/* Action Buttons */}
-      <div className="space-y-3">
+      <div className="flex flex-col gap-3">
         {actions.map((action, index) => {
           const isActionLoading =
             isLoading &&

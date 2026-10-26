@@ -112,6 +112,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.neutral[300],
     borderRadius: radii.input,
+    backgroundColor: colors.neutral[50],
     padding: spacing.md,
     minHeight: 90,
     textAlignVertical: 'top',

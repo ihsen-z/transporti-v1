@@ -124,8 +124,9 @@ export default function HelpCenterPage() {
         <div className="w-14 h-14 bg-brand-600/5 rounded-full flex items-center justify-center mx-auto mb-4">
           <HelpCircle className="w-7 h-7 text-brand-600" />
         </div>
-        <h1 className="text-2xl font-bold text-neutral-900 mb-2">{h.title}</h1>
-        <p className="text-neutral-500 text-sm">{h.subtitle}</p>
+        <p className="text-[14.5px] leading-[1.55] text-ink-500">
+          {h.subtitle}
+        </p>
       </div>
 
       {/* Role tabs */}
@@ -151,18 +152,18 @@ export default function HelpCenterPage() {
       </div>
 
       {/* FAQ Sections */}
-      <div className="space-y-8">
+      <div className="flex flex-col gap-8">
         {sections.map((section, si) => {
           const Icon = section.icon;
           return (
             <div key={`${audience}-${si}`}>
               <div className="flex items-center gap-2 mb-4">
                 <Icon className="w-5 h-5 text-brand-600" />
-                <h2 className="text-lg font-bold text-neutral-900">
+                <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {section.title}
                 </h2>
               </div>
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2">
                 {section.questions.map((item, qi) => {
                   const key = `${audience}-${si}-${qi}`;
                   const isOpen = openKey === key;
@@ -183,7 +184,7 @@ export default function HelpCenterPage() {
                         />
                       </button>
                       {isOpen && (
-                        <div className="px-4 pb-3 text-sm text-neutral-600 border-t border-neutral-100 pt-3">
+                        <div className="px-4 pb-3 text-sm text-neutral-600 border-t border-line pt-3">
                           {item.a}
                         </div>
                       )}

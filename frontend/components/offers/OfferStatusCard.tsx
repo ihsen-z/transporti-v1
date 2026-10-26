@@ -58,19 +58,19 @@ interface OfferStatusCardProps {
 
 const STATUS_STYLES = {
   PENDING: {
-    color: "bg-amber-50 text-amber-700 border-amber-200",
+    color: "bg-warning-50 text-warning-700 border-warning-200",
     dotColor: "bg-amber-400",
     borderAccent: "border-s-amber-400",
     icon: Clock,
   },
   ACCEPTED: {
-    color: "bg-emerald-50 text-emerald-700 border-emerald-200",
-    dotColor: "bg-emerald-500",
+    color: "bg-green-50 text-green-700 border-green-200",
+    dotColor: "bg-green-500",
     borderAccent: "border-s-emerald-500",
     icon: CheckCircle,
   },
   REJECTED: {
-    color: "bg-red-50 text-red-700 border-red-200",
+    color: "bg-error-50 text-error-700 border-error-200",
     dotColor: "bg-red-400",
     borderAccent: "border-s-red-400",
     icon: XCircle,
@@ -92,15 +92,15 @@ const STATUS_STYLES = {
 const JOB_TYPE_STYLES = {
   TRANSPORT: {
     icon: Truck,
-    className: "bg-brand-600/5 text-brand-600",
+    className: "bg-blue-50 text-blue-700",
   },
   MOVING: {
     icon: Home,
-    className: "bg-purple-50 text-purple-600",
+    className: "bg-blue-50 text-blue-700",
   },
   DELIVERY: {
     icon: Package,
-    className: "bg-sky-50 text-sky-600",
+    className: "bg-blue-50 text-blue-700",
   },
 };
 
@@ -157,11 +157,11 @@ function OfferStatusCardInner({
   return (
     <div
       className={`
-        group bg-white rounded-2xl border border-s-[3px] transition-all duration-200
+        group bg-surface rounded-card border border-s-[3px] transition-all duration-200
         ${effectiveStyle.borderAccent}
         ${
           effectiveStatus === "ACCEPTED"
-            ? "border-emerald-200 shadow-sm shadow-emerald-50 hover:shadow-md hover:shadow-emerald-100/50"
+            ? "border-green-200 shadow-sm shadow-green-50 hover:shadow-md hover:shadow-green-100/50"
             : isMuted
               ? "border-neutral-200 opacity-70 hover:opacity-100"
               : "border-neutral-100 hover:shadow-md hover:-translate-y-0.5"
@@ -218,7 +218,7 @@ function OfferStatusCardInner({
 
       {/* Show transporter's message if present */}
       {offer.message && (
-        <div className="flex items-start gap-2 mb-3 px-3 py-2.5 bg-neutral-50 rounded-xl border border-neutral-100">
+        <div className="flex items-start gap-2 mb-3 px-3 py-2.5 bg-neutral-50 rounded-xl border border-line">
           <MessageCircle className="w-3.5 h-3.5 text-neutral-400 mt-0.5 flex-shrink-0" />
           <p className="text-xs text-neutral-500 line-clamp-2 italic leading-relaxed">
             &ldquo;{offer.message}&rdquo;
@@ -227,17 +227,17 @@ function OfferStatusCardInner({
       )}
 
       {/* Price breakdown — stored amounts, single money format (A5) */}
-      <div className="bg-neutral-50 rounded-xl p-3.5 mb-3 border border-neutral-100">
+      <div className="bg-neutral-50 rounded-xl p-3.5 mb-3 border border-line">
         <div className="grid grid-cols-3 gap-3">
           {/* Net (what the transporter receives) — first: it's THE number */}
           <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
+            <div className="flex items-center justify-center gap-1 text-green-500 mb-1">
               <Wallet className="w-3 h-3" />
               <p className="text-[10px] font-medium uppercase tracking-wider">
                 {t.netEarning}
               </p>
             </div>
-            <p className="text-sm font-bold text-emerald-600">
+            <p className="text-sm font-bold text-green-600">
               {formatTND(netEarning)}
             </p>
           </div>
@@ -278,8 +278,8 @@ function OfferStatusCardInner({
             <div
               className={`inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-lg ${
                 isUrgent
-                  ? "text-red-600 bg-red-50 font-semibold"
-                  : "text-amber-600 bg-amber-50 font-medium"
+                  ? "text-error-600 bg-error-50 font-semibold"
+                  : "text-warning-600 bg-warning-50 font-medium"
               }`}
             >
               <Clock
@@ -297,7 +297,7 @@ function OfferStatusCardInner({
             </div>
           )}
           {effectiveStatus === "ACCEPTED" && offer.client_name && (
-            <div className="inline-flex items-center gap-1.5 text-xs text-emerald-600 font-semibold bg-emerald-50 px-2.5 py-1 rounded-lg">
+            <div className="inline-flex items-center gap-1.5 text-xs text-green-600 font-semibold bg-green-50 px-2.5 py-1 rounded-lg">
               <CheckCircle className="w-3.5 h-3.5" />
               {t.clientLabel} {offer.client_name}
             </div>
@@ -322,7 +322,7 @@ function OfferStatusCardInner({
               className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 border ${
                 isWithdrawing
                   ? "text-neutral-400 border-neutral-200 cursor-not-allowed"
-                  : "text-red-500 border-red-200 hover:text-white hover:bg-red-500 hover:border-red-500"
+                  : "text-error-500 border-error-200 hover:text-white hover:bg-error-500 hover:border-red-500"
               }`}
             >
               {isWithdrawing ? (
@@ -338,7 +338,7 @@ function OfferStatusCardInner({
           {effectiveStatus === "ACCEPTED" && (
             <Link
               href="/messages"
-              className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-white hover:bg-emerald-500 px-3 py-1.5 rounded-lg transition-all duration-200 border border-emerald-200 hover:border-emerald-500"
+              className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-600 hover:text-white hover:bg-green-500 px-3 py-1.5 rounded-lg transition-all duration-200 border border-green-200 hover:border-green-500"
             >
               <MessageCircle className="w-3.5 h-3.5" />
               {t.contact}

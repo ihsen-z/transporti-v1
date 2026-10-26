@@ -24,7 +24,6 @@ import {
   FileText,
   RefreshCw,
   Banknote,
-  AlertCircle,
 } from "lucide-react";
 import JobCard from "@/components/dashboard/JobCard";
 import { useJobs } from "@/hooks/useJobs";
@@ -74,11 +73,11 @@ const MISSION_TABS: {
 const JOB_TYPE_CONFIG = {
   TRANSPORT: {
     icon: Truck,
-    className: "bg-brand-600/5 text-brand-600",
+    className: "bg-blue-50 text-blue-700",
   },
   MOVING: {
     icon: Home,
-    className: "bg-purple-50 text-purple-600",
+    className: "bg-blue-50 text-blue-700",
   },
 };
 
@@ -98,8 +97,8 @@ function getStatusConfig(status: string) {
     {
       PUBLISHED: {
         label: "Publiée",
-        color: "text-amber-700",
-        bgColor: "bg-amber-50 border-amber-200",
+        color: "text-warning-700",
+        bgColor: "bg-warning-50 border-warning-200",
       },
       MATCHED: {
         label: "Attribuée",
@@ -113,8 +112,8 @@ function getStatusConfig(status: string) {
       },
       COMPLETED: {
         label: "Terminée",
-        color: "text-emerald-700",
-        bgColor: "bg-emerald-50 border-emerald-200",
+        color: "text-green-700",
+        bgColor: "bg-green-50 border-green-200",
       },
       CANCELLED: {
         label: "Annulée",
@@ -123,8 +122,8 @@ function getStatusConfig(status: string) {
       },
       DISPUTED: {
         label: "Litige",
-        color: "text-red-700",
-        bgColor: "bg-red-50 border-red-200",
+        color: "text-error-700",
+        bgColor: "bg-error-50 border-error-200",
       },
     };
   return (
@@ -157,15 +156,15 @@ function StatCard({
 }) {
   return (
     <div
-      className={`rounded-2xl border p-4 shadow-sm hover:-translate-y-1 hover:shadow-lg transition-all duration-200 group ${
+      className={`rounded-2xl border p-4 shadow-sm hover:shadow-lg transition-all duration-200 group ${
         highlight
-          ? "bg-gradient-to-br from-emerald-50 to-white border-emerald-200"
+          ? "bg-green-50 border-green-200"
           : "bg-white border-neutral-100"
       }`}
     >
       <div className="flex items-center gap-3 mb-2">
         <div
-          className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconColor} transition-transform group-hover:scale-110`}
+          className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconColor} transition-transform`}
         >
           <Icon className="w-4 h-4" />
         </div>
@@ -207,10 +206,10 @@ const MissionCard = React.memo(function MissionCardInner({
   return (
     <div
       className={`
-      group bg-white rounded-2xl border border-s-[3px] transition-all duration-200 p-5
+      group bg-surface rounded-card border border-s-[3px] transition-all duration-200 p-5
       ${mission.status === "IN_PROGRESS" ? "border-s-brand-600 border-brand-600/20 hover:shadow-md hover:-translate-y-0.5" : ""}
-      ${mission.status === "COMPLETED" ? "border-s-emerald-500 border-emerald-200 shadow-sm shadow-emerald-50" : ""}
-      ${mission.is_return_trip ? "border-s-purple-400 border-purple-200" : ""}
+      ${mission.status === "COMPLETED" ? "border-s-emerald-500 border-green-200 shadow-sm shadow-green-50" : ""}
+      ${mission.is_return_trip ? "border-s-purple-400 border-blue-200" : ""}
       ${isMuted ? "border-s-neutral-300 border-neutral-200 opacity-70 hover:opacity-100" : ""}
       ${!mission.is_return_trip && mission.status !== "IN_PROGRESS" && mission.status !== "COMPLETED" && !isMuted ? "border-s-amber-400 border-neutral-100 hover:shadow-md hover:-translate-y-0.5" : ""}
     `}
@@ -220,7 +219,7 @@ const MissionCard = React.memo(function MissionCardInner({
         <div className="flex-1 min-w-0">
           {/* Return trip badge */}
           {mission.is_return_trip && (
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-purple-50 text-purple-600 mb-2">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-blue-50 text-blue-700 mb-2">
               <RotateCcw className="w-3 h-3" />
               {t.jobsList.returnTripBadge}
             </span>
@@ -275,7 +274,7 @@ const MissionCard = React.memo(function MissionCardInner({
 
       {/* Price breakdown — only for non-return-trip missions */}
       {!mission.is_return_trip && mission.offer_price > 0 && (
-        <div className="bg-neutral-50 rounded-xl p-3.5 mb-3 border border-neutral-100">
+        <div className="bg-neutral-50 rounded-xl p-3.5 mb-3 border border-line">
           <div className="grid grid-cols-3 gap-3">
             <div className="text-center">
               <div className="flex items-center justify-center gap-1 text-neutral-400 mb-1">
@@ -298,19 +297,19 @@ const MissionCard = React.memo(function MissionCardInner({
                   {t.jobsList.commission}
                 </p>
               </div>
-              <p className="text-sm font-semibold text-red-500">
+              <p className="text-sm font-semibold text-error-500">
                 -{mission.offer_commission.toFixed(0)}{" "}
                 <span className="text-xs font-normal">{t.jobsList.tnd}</span>
               </p>
             </div>
             <div className="text-center">
-              <div className="flex items-center justify-center gap-1 text-emerald-500 mb-1">
+              <div className="flex items-center justify-center gap-1 text-green-500 mb-1">
                 <Wallet className="w-3 h-3" />
                 <p className="text-[10px] font-medium uppercase tracking-wider">
                   {t.jobsList.netGain}
                 </p>
               </div>
-              <p className="text-sm font-bold text-emerald-600">
+              <p className="text-sm font-bold text-green-600">
                 {mission.offer_price_net.toFixed(0)}{" "}
                 <span className="text-xs font-medium">{t.jobsList.tnd}</span>
               </p>
@@ -321,9 +320,9 @@ const MissionCard = React.memo(function MissionCardInner({
 
       {/* Capacity info for return trips */}
       {mission.is_return_trip && mission.available_capacity && (
-        <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-purple-50 rounded-xl border border-purple-100">
-          <Package className="w-3.5 h-3.5 text-purple-500 flex-shrink-0" />
-          <p className="text-xs text-purple-600 font-medium">
+        <div className="flex items-center gap-2 mb-3 px-3 py-2 bg-blue-50 rounded-xl border border-blue-100">
+          <Package className="w-3.5 h-3.5 text-blue-600 flex-shrink-0" />
+          <p className="text-xs text-blue-700 font-medium">
             {mission.available_capacity}
           </p>
         </div>
@@ -342,7 +341,7 @@ const MissionCard = React.memo(function MissionCardInner({
         {mission.status === "IN_PROGRESS" && (
           <Link
             href="/messages"
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-emerald-600 hover:text-white hover:bg-emerald-500 px-3 py-1.5 rounded-lg transition-all duration-200 border border-emerald-200 hover:border-emerald-500"
+            className="inline-flex items-center gap-1.5 text-xs font-semibold text-green-600 hover:text-white hover:bg-green-500 px-3 py-1.5 rounded-lg transition-all duration-200 border border-green-200 hover:border-green-500"
           >
             <MessageSquare className="w-3.5 h-3.5" />
             {t.jobsList.messages}
@@ -451,10 +450,7 @@ function TransporterMissionsView() {
     return (
       <div className="p-6 lg:p-8 max-w-4xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-            {t.jobsList.title}
-          </h1>
-          <p className="text-neutral-500 mt-1">{t.jobsList.loading}</p>
+          <p className="text-[14px] text-ink-500">{t.jobsList.loading}</p>
         </div>
         <div className="flex items-center justify-center py-20">
           <div className="w-16 h-16 bg-brand-600/5 rounded-2xl flex items-center justify-center">
@@ -470,15 +466,12 @@ function TransporterMissionsView() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-            {t.jobsList.title}
-          </h1>
-          <p className="text-neutral-500 mt-1 text-sm">{t.jobsList.subtitle}</p>
+          <p className="text-[14px] text-ink-500">{t.jobsList.subtitle}</p>
         </div>
         <div className="flex gap-2">
           <Link
             href="/retours/nouveau"
-            className="inline-flex items-center gap-2 px-4 py-2.5 bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-700 hover:bg-blue-700 text-white text-sm font-semibold rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
           >
             <RotateCcw className="w-4 h-4" />
             {t.jobsList.proposeReturnTrip}
@@ -502,29 +495,29 @@ function TransporterMissionsView() {
           icon={FileText}
           label={t.jobsList.statTotal}
           value={String(missions.length)}
-          iconColor="bg-brand-600/10 text-brand-600"
+          iconColor="bg-blue-50 text-blue-700"
           valueColor="text-neutral-900"
         />
         <StatCard
           icon={Clock}
           label={t.jobsList.statInProgress}
           value={String(inProgressCount)}
-          iconColor="bg-amber-100 text-amber-600"
-          valueColor="text-amber-600"
+          iconColor="bg-warning-100 text-warning-600"
+          valueColor="text-warning-600"
         />
         <StatCard
           icon={CheckCircle}
           label={t.jobsList.statCompleted}
           value={String(completedCount)}
-          iconColor="bg-emerald-100 text-emerald-600"
-          valueColor="text-emerald-600"
+          iconColor="bg-green-100 text-green-600"
+          valueColor="text-green-600"
         />
         <StatCard
           icon={Wallet}
           label={t.jobsList.statEarnings}
           value={formatTND(confirmedEarnings ?? totalEarnings)}
-          iconColor="bg-emerald-100 text-emerald-600"
-          valueColor="text-emerald-700"
+          iconColor="bg-green-100 text-green-600"
+          valueColor="text-green-700"
           highlight
         />
       </div>
@@ -588,17 +581,17 @@ function TransporterMissionsView() {
             placeholder={t.jobsList.searchPlaceholder}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full ps-10 pe-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-brand-600/20 focus:border-brand-600 outline-none transition-all"
+            className="w-full ps-10 pe-4 py-2.5 bg-white border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-700/20 focus:border-brand-600 outline-none transition-all"
           />
         </div>
       </div>
 
       {/* Mission List */}
-      <div className="space-y-3">
+      <div className="flex flex-col gap-3">
         {filtered.length === 0 ? (
-          <div className="text-center py-20 bg-white rounded-2xl border border-neutral-100 shadow-sm">
+          <div className="text-center py-20 bg-surface rounded-card shadow-card shadow-sm">
             <div className="relative w-20 h-20 mx-auto mb-5">
-              <div className="absolute inset-0 bg-gradient-to-br from-brand-600/10 to-accent-500/10 rounded-2xl rotate-6" />
+              <div className="absolute inset-0 bg-blue-50 rounded-2xl rotate-6" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <Search className="w-10 h-10 text-brand-600 -rotate-6" />
               </div>
@@ -612,7 +605,7 @@ function TransporterMissionsView() {
             <div className="flex gap-3 justify-center mt-5">
               <Link
                 href="/demandes"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
               >
                 {t.jobsList.findMission}
                 <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
@@ -621,7 +614,7 @@ function TransporterMissionsView() {
                   T1.3 : cet ecran ne porte plus que les missions executees. */}
               <Link
                 href="/retours/nouveau"
-                className="inline-flex items-center gap-2 text-sm font-semibold text-purple-600 bg-purple-50 hover:bg-purple-100 px-5 py-2.5 rounded-xl transition-all border border-purple-200"
+                className="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 bg-blue-50 hover:bg-blue-100 px-5 py-2.5 rounded-xl transition-all border border-blue-200"
               >
                 <RotateCcw className="w-4 h-4" />
                 {t.jobsList.proposeTrip}
@@ -727,10 +720,9 @@ function ClientJobsView() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-neutral-900 mb-2">
-            {t.jobsList.clientTitle}
-          </h1>
-          <p className="text-neutral-600">{t.jobsList.clientSubtitle}</p>
+          <p className="text-[14.5px] leading-[1.55] text-ink-500">
+            {t.jobsList.clientSubtitle}
+          </p>
         </div>
         <Link
           href="/demandes/nouvelle"
@@ -743,13 +735,15 @@ function ClientJobsView() {
 
       {/* Stats Summary */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
-        <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
-          <p className="text-2xl font-bold text-neutral-900">{jobs.length}</p>
+        <div className="bg-surface rounded-tile shadow-card p-4 text-center">
+          <p className="text-[21px] font-extrabold tracking-heading text-ink-900">
+            {jobs.length}
+          </p>
           <p className="text-sm text-neutral-600">
             {t.jobsList.clientStatTotal}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
+        <div className="bg-surface rounded-tile shadow-card p-4 text-center">
           <p className="text-2xl font-bold text-orange-600">
             {jobs.filter((j) => j.status === "PUBLISHED").length}
           </p>
@@ -757,7 +751,7 @@ function ClientJobsView() {
             {t.jobsList.clientStatPublished}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
+        <div className="bg-surface rounded-tile shadow-card p-4 text-center">
           <p className="text-2xl font-bold text-accent-600">
             {jobs.filter((j) => j.status === "IN_PROGRESS").length}
           </p>
@@ -765,7 +759,7 @@ function ClientJobsView() {
             {t.jobsList.clientStatInProgress}
           </p>
         </div>
-        <div className="bg-white rounded-lg border border-neutral-200 p-4 text-center">
+        <div className="bg-surface rounded-tile shadow-card p-4 text-center">
           <p className="text-2xl font-bold text-green-600">
             {jobs.filter((j) => j.status === "COMPLETED").length}
           </p>
@@ -794,7 +788,7 @@ function ClientJobsView() {
               aria-selected={actif}
               data-testid={`expeditions-onglet-${cle}`}
               onClick={() => setOngletExpedition(cle)}
-              className={`px-4 py-2 rounded-xl text-sm font-semibold border focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none ${
+              className={`px-4 py-2 rounded-xl text-sm font-semibold border focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none ${
                 actif
                   ? "bg-brand-600 text-white border-brand-600"
                   : "bg-white text-neutral-700 border-neutral-200 hover:bg-neutral-50"
@@ -809,13 +803,13 @@ function ClientJobsView() {
 
       {/* Demandes envoyees sur des trajets retour, dans l onglet courant. */}
       {demandesDeLOnglet.length > 0 && (
-        <div className="space-y-3 mb-4">
+        <div className="flex flex-col gap-3 mb-4">
           {demandesDeLOnglet.map((demande) => (
             <Link
               key={`req-${demande.id}`}
               href={urlJob(demande.job, true)}
               data-testid="expeditions-ligne"
-              className="block bg-white rounded-xl border border-neutral-200 p-4 hover:border-brand-600/40 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none"
+              className="block bg-surface rounded-card shadow-card p-4 hover:border-brand-600/40 focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none"
             >
               <p className="font-semibold text-neutral-900">
                 {demande.job_pickup} → {demande.job_dropoff}
@@ -832,11 +826,11 @@ function ClientJobsView() {
 
       {/* Jobs List */}
       {jobsDeLOnglet.length === 0 && demandesDeLOnglet.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-12 text-center">
+        <div className="bg-surface rounded-card shadow-card p-12 text-center">
           <div className="w-16 h-16 bg-neutral-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <Package className="w-8 h-8 text-neutral-400" />
           </div>
-          <h3 className="text-lg font-semibold text-neutral-900 mb-2">
+          <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-2">
             {t.jobsList.clientEmptyTitle}
           </h3>
           <p className="text-neutral-600 mb-4">{t.jobsList.clientEmptyDesc}</p>
@@ -848,7 +842,7 @@ function ClientJobsView() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="flex flex-col gap-4">
           {paginateArray(jobsDeLOnglet, clientPage, CLIENT_PAGE_SIZE).map(
             (job) => (
               <div key={job.id} data-testid="expeditions-ligne">

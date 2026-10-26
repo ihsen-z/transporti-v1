@@ -20,7 +20,7 @@ import {
   EyeOff,
   Clock,
 } from "lucide-react";
-import { ApiError, getErrorMessage } from "@/lib/api/client";
+import { getErrorMessage } from "@/lib/api/client";
 import { getAuditLog } from "@/lib/services/admin";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
@@ -46,33 +46,33 @@ interface AuditResponse {
 }
 
 const ACTION_ICONS: Record<string, React.ReactNode> = {
-  USER_SUSPENDED: <Ban className="w-4 h-4 text-red-500" />,
+  USER_SUSPENDED: <Ban className="w-4 h-4 text-error-500" />,
   USER_ACTIVATED: <CheckCircle className="w-4 h-4 text-green-500" />,
-  PASSWORD_RESET: <KeyRound className="w-4 h-4 text-amber-500" />,
+  PASSWORD_RESET: <KeyRound className="w-4 h-4 text-warning-500" />,
   DOCUMENT_APPROVED: <ShieldCheck className="w-4 h-4 text-green-500" />,
-  DOCUMENT_REJECTED: <ShieldCheck className="w-4 h-4 text-red-500" />,
-  PROFILE_VERIFIED: <ShieldCheck className="w-4 h-4 text-emerald-500" />,
-  PROFILE_REJECTED: <ShieldCheck className="w-4 h-4 text-red-500" />,
-  DISPUTE_INVESTIGATED: <AlertTriangle className="w-4 h-4 text-amber-500" />,
+  DOCUMENT_REJECTED: <ShieldCheck className="w-4 h-4 text-error-500" />,
+  PROFILE_VERIFIED: <ShieldCheck className="w-4 h-4 text-green-500" />,
+  PROFILE_REJECTED: <ShieldCheck className="w-4 h-4 text-error-500" />,
+  DISPUTE_INVESTIGATED: <AlertTriangle className="w-4 h-4 text-warning-500" />,
   DISPUTE_RESOLVED: <AlertTriangle className="w-4 h-4 text-green-500" />,
-  DISPUTE_REJECTED: <AlertTriangle className="w-4 h-4 text-red-500" />,
+  DISPUTE_REJECTED: <AlertTriangle className="w-4 h-4 text-error-500" />,
   REVIEW_HIDDEN: <EyeOff className="w-4 h-4 text-neutral-500" />,
   REVIEW_SHOWN: <Eye className="w-4 h-4 text-blue-500" />,
   USER_WARNED: <AlertTriangle className="w-4 h-4 text-orange-500" />,
   ESCROW_RELEASED: <CreditCard className="w-4 h-4 text-green-500" />,
   COMMISSION_SETTLED: <CreditCard className="w-4 h-4 text-blue-500" />,
-  JOB_CANCELLED: <Truck className="w-4 h-4 text-red-500" />,
-  JOB_STATUS_FORCED: <Truck className="w-4 h-4 text-amber-500" />,
+  JOB_CANCELLED: <Truck className="w-4 h-4 text-error-500" />,
+  JOB_STATUS_FORCED: <Truck className="w-4 h-4 text-warning-500" />,
 };
 
 const ACTION_COLORS: Record<string, string> = {
-  USER_SUSPENDED: "bg-red-50 border-red-200",
+  USER_SUSPENDED: "bg-error-50 border-error-200",
   USER_ACTIVATED: "bg-green-50 border-green-200",
-  PASSWORD_RESET: "bg-amber-50 border-amber-200",
+  PASSWORD_RESET: "bg-warning-50 border-warning-200",
   DOCUMENT_APPROVED: "bg-green-50 border-green-200",
-  DOCUMENT_REJECTED: "bg-red-50 border-red-200",
+  DOCUMENT_REJECTED: "bg-error-50 border-error-200",
   DISPUTE_RESOLVED: "bg-green-50 border-green-200",
-  DISPUTE_REJECTED: "bg-red-50 border-red-200",
+  DISPUTE_REJECTED: "bg-error-50 border-error-200",
 };
 
 const TARGET_ICONS: Record<string, React.ReactNode> = {
@@ -147,11 +147,11 @@ export default function AdminAuditLogPage() {
   );
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white flex items-center gap-3">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white flex items-center gap-3">
             <ScrollText className="w-7 h-7 text-brand-600" />
             {t.audit.title}
           </h1>
@@ -200,7 +200,7 @@ export default function AdminAuditLogPage() {
               URL.revokeObjectURL(url);
             }}
             disabled={!entries.length}
-            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 px-4 py-2 bg-surface dark:bg-[#1e293b] border border-neutral-200 dark:border-neutral-700 rounded-lg text-sm font-medium text-neutral-700 dark:text-neutral-300 hover:bg-neutral-50 dark:hover:bg-neutral-800 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             <svg
               className="w-4 h-4"
@@ -220,7 +220,7 @@ export default function AdminAuditLogPage() {
           {data && (
             <>
               <div className="text-end">
-                <p className="text-2xl font-bold text-neutral-900 dark:text-white">
+                <p className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                   {data.totalCount}
                 </p>
                 <p className="text-xs text-neutral-500 dark:text-neutral-400">
@@ -241,7 +241,7 @@ export default function AdminAuditLogPage() {
       </div>
 
       {/* Filters */}
-      <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
+      <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
           <div className="flex items-center gap-2 text-sm text-neutral-500 dark:text-neutral-400">
             <Filter className="w-4 h-4" />
@@ -286,7 +286,7 @@ export default function AdminAuditLogPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+        <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-brand-600 mx-auto mb-4" />
           <p className="text-neutral-500 dark:text-neutral-400">
             Chargement du journal...
@@ -296,16 +296,16 @@ export default function AdminAuditLogPage() {
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm">
+        <div className="bg-error-50 border border-error-200 rounded-xl p-4 text-error-700 text-sm">
           ⚠️ {error}
         </div>
       )}
 
       {/* Entries */}
       {!loading && !error && (
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           {entries.length === 0 ? (
-            <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
+            <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-12 text-center">
               <ScrollText className="w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto mb-3" />
               <p className="text-neutral-500 dark:text-neutral-400 font-medium">
                 Aucune action enregistrée
@@ -318,7 +318,7 @@ export default function AdminAuditLogPage() {
             paginatedEntries.map((entry) => (
               <div
                 key={entry.id}
-                className={`bg-white dark:bg-[#1e293b] rounded-xl border p-4 hover:shadow-sm transition-shadow ${
+                className={`bg-surface dark:bg-[#1e293b] rounded-xl border p-4 hover:shadow-sm transition-shadow ${
                   ACTION_COLORS[entry.action] ||
                   "border-neutral-200 dark:border-neutral-700"
                 }`}

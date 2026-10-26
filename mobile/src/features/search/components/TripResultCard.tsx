@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
@@ -6,8 +6,9 @@ import { Card } from '@/shared/ui/Card';
 import { Avatar } from '@/shared/ui/Avatar';
 import { Badge } from '@/shared/ui/Badge';
 import { RouteRow } from '@/shared/ui/RouteRow';
-import { colors, spacing, fontSize, radii } from '@/shared/theme';
+import { colors, spacing, fontSize, radii, tracking } from '@/shared/theme';
 import type { TripResultDto } from '../api/dto';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   trip: TripResultDto;
@@ -29,11 +30,11 @@ export function TripResultCard({ trip, onRequest }: Props) {
       >
         <Avatar name={trip.owner_name} size={42} />
         <View style={styles.ownerBlock}>
-          <Text style={styles.owner} numberOfLines={1}>{trip.owner_name}</Text>
+          <Txt style={styles.owner} numberOfLines={1}>{trip.owner_name}</Txt>
           {trip.owner_rating !== null ? (
-            <Text style={styles.rating}>
+            <Txt style={styles.rating}>
               ★ {trip.owner_rating.toFixed(1)} ({trip.owner_review_count})
-            </Text>
+            </Txt>
           ) : null}
         </View>
         {trip.owner_verification_status === 'VERIFIED' ? (
@@ -71,15 +72,15 @@ export function TripResultCard({ trip, onRequest }: Props) {
           qui devait la convaincre. */}
       {trip.estimated_savings !== null && trip.savings_basis !== null ? (
         <View style={styles.economie} testID="recherche-trajet-economie">
-          <Text style={styles.economieMontant}>
+          <Txt style={styles.economieMontant}>
             {t('search.savings', { amount: Math.round(trip.estimated_savings) })}
-          </Text>
-          <Text
+          </Txt>
+          <Txt
             style={styles.economieBase}
             testID="recherche-trajet-economie-base"
           >
             {t('search.savings_basis', { amount: Math.round(trip.savings_basis) })}
-          </Text>
+          </Txt>
         </View>
       ) : null}
 
@@ -97,14 +98,14 @@ export function TripResultCard({ trip, onRequest }: Props) {
             toujours — mais la recette du 03/09 a trouve une ligne heritee sans
             prix, et la carte annoncait « – TND ». Un tiret suivi d'une devise
             ne veut rien dire ; « Prix a negocier » dit ce qu'il faut faire. */}
-        <Text style={styles.price} numberOfLines={1}>
+        <Txt style={styles.price} numberOfLines={1}>
           {trip.price_tnd_min === null
             ? t('search.price_negotiable')
             : t('search.price_range', {
                 min: trip.price_tnd_min,
                 max: trip.price_tnd_max ?? trip.price_tnd_min,
               })}
-        </Text>
+        </Txt>
         <Button
           testID={`trip-${trip.id}-request`}
           label={t('search.request.title')}
@@ -124,19 +125,22 @@ const styles = StyleSheet.create({
   route: { marginTop: spacing.md },
   meta: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md, flexWrap: 'wrap' },
   foot: { marginTop: spacing.lg, gap: spacing.md },
+  // Prix courant de la charte : 23/800, interlettrage serré.
   price: {
-    fontSize: fontSize.xl,
+    fontSize: fontSize.price,
     fontWeight: '800',
     color: colors.text.green,
+    letterSpacing: tracking.title,
   },
+  // Traitement « tag de valeur » de la charte : fond vert pâle, rayon 8, pas
+  // de liseré. Le contour en `green[600]` cerclait le bloc d'un vert plein qui
+  // criait plus fort que le prix lui-même.
   economie: {
     marginTop: spacing.lg,
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.md,
     paddingHorizontal: spacing.md,
-    borderRadius: radii.md,
+    borderRadius: radii.tag,
     backgroundColor: colors.green[50],
-    borderWidth: 1,
-    borderColor: colors.green[600],
     gap: 2,
   },
   economieMontant: {

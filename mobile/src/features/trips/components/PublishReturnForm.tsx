@@ -1,4 +1,4 @@
-import { Text, View } from 'react-native';
+import { View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/shared/ui/Button';
@@ -7,6 +7,7 @@ import { RouteSection } from './publish/RouteSection';
 import { ScheduleSection } from './publish/ScheduleSection';
 import { DetailsSection } from './publish/DetailsSection';
 import { publishStyles as s } from './publish/publishStyles';
+import { Txt } from '@/shared/ui/Txt';
 
 // Formulaire de publication d'un retour à vide (TRANSPORTER). Ce composant se
 // contente d'orchestrer : la logique vit dans usePublishTripForm, la validation
@@ -22,7 +23,7 @@ export function PublishReturnForm() {
   if (f.isSuccess) {
     return (
       <View style={s.successBox}>
-        <Text style={s.successText}>{t('trips.success', { count: f.successCount })}</Text>
+        <Txt style={s.successText}>{t('trips.success', { count: f.successCount })}</Txt>
         <Button
           testID="publish-voir-inventaire"
           label={t('trips.inventory.see_mine')}
@@ -60,7 +61,7 @@ export function PublishReturnForm() {
         onCapaciteLibre={f.onCapaciteLibre}
       />
 
-      {f.publishError ? <Text style={s.error}>{f.publishError}</Text> : null}
+      {f.publishError ? <Txt style={s.error}>{f.publishError}</Txt> : null}
 
       <Button
         testID="publish-submit"

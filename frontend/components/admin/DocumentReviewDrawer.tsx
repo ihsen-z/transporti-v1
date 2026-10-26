@@ -20,7 +20,6 @@ import {
   Shield,
   AlertTriangle,
   Loader2,
-  Image as ImageIcon,
   ExternalLink,
 } from "lucide-react";
 
@@ -45,9 +44,9 @@ const docStatusConfig = {
   rejected: {
     icon: XCircle,
     label: "Rejeté",
-    bg: "bg-red-50 border-red-200",
-    text: "text-red-700",
-    badge: "bg-red-100 text-red-700",
+    bg: "bg-error-50 border-error-200",
+    text: "text-error-700",
+    badge: "bg-error-100 text-error-700",
   },
   pending: {
     icon: Clock,
@@ -66,10 +65,10 @@ const profileStatusLabels: Record<string, { label: string; color: string }> = {
   PENDING: { label: "En attente", color: "bg-orange-100 text-orange-700" },
   PARTIALLY_REVIEWED: {
     label: "Partiellement vérifié",
-    color: "bg-brand-600/10 text-brand-600",
+    color: "bg-blue-50 text-blue-700",
   },
   VERIFIED: { label: "Vérifié", color: "bg-green-100 text-green-700" },
-  REJECTED: { label: "Rejeté", color: "bg-red-100 text-red-700" },
+  REJECTED: { label: "Rejeté", color: "bg-error-100 text-error-700" },
   SUSPENDED: { label: "Suspendu", color: "bg-neutral-200 text-neutral-800" },
 };
 
@@ -88,20 +87,23 @@ function isImageFile(url: string): boolean {
 /* -------------------------------------------------------------------------- */
 
 // Define which document types form recto/verso pairs
-const DOC_PAIR_MAP: Record<string, { groupLabel: string; side: "recto" | "verso" }> = {
-  CIN_FRONT:          { groupLabel: "Carte d'identité", side: "recto" },
-  CIN_BACK:           { groupLabel: "Carte d'identité", side: "verso" },
-  LICENSE_FRONT:      { groupLabel: "Permis de conduire", side: "recto" },
-  LICENSE_BACK:       { groupLabel: "Permis de conduire", side: "verso" },
-  CARTE_GRISE_FRONT:  { groupLabel: "Carte grise", side: "recto" },
-  CARTE_GRISE_BACK:   { groupLabel: "Carte grise", side: "verso" },
-  INSURANCE_FRONT:    { groupLabel: "Assurance véhicule", side: "recto" },
-  INSURANCE_BACK:     { groupLabel: "Assurance véhicule", side: "verso" },
+const DOC_PAIR_MAP: Record<
+  string,
+  { groupLabel: string; side: "recto" | "verso" }
+> = {
+  CIN_FRONT: { groupLabel: "Carte d'identité", side: "recto" },
+  CIN_BACK: { groupLabel: "Carte d'identité", side: "verso" },
+  LICENSE_FRONT: { groupLabel: "Permis de conduire", side: "recto" },
+  LICENSE_BACK: { groupLabel: "Permis de conduire", side: "verso" },
+  CARTE_GRISE_FRONT: { groupLabel: "Carte grise", side: "recto" },
+  CARTE_GRISE_BACK: { groupLabel: "Carte grise", side: "verso" },
+  INSURANCE_FRONT: { groupLabel: "Assurance véhicule", side: "recto" },
+  INSURANCE_BACK: { groupLabel: "Assurance véhicule", side: "verso" },
   // Legacy (standalone)
-  CARTE_GRISE:        { groupLabel: "Carte grise (ancien)", side: "recto" },
-  INSURANCE:          { groupLabel: "Assurance (ancien)", side: "recto" },
-  LICENSE:            { groupLabel: "Licence pro (ancien)", side: "recto" },
-  SELFIE:             { groupLabel: "Selfie", side: "recto" },
+  CARTE_GRISE: { groupLabel: "Carte grise (ancien)", side: "recto" },
+  INSURANCE: { groupLabel: "Assurance (ancien)", side: "recto" },
+  LICENSE: { groupLabel: "Licence pro (ancien)", side: "recto" },
+  SELFIE: { groupLabel: "Selfie", side: "recto" },
 };
 
 interface DocGroup {
@@ -244,13 +246,13 @@ export default function DocumentReviewDrawer({
       {/* Drawer */}
       <div className="fixed right-0 top-0 h-full w-full max-w-xl bg-white shadow-2xl z-50 flex flex-col animate-slide-in-right">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-neutral-100">
+        <div className="flex items-center justify-between p-6 border-b border-line">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-              <Shield className="w-5 h-5 text-purple-600" />
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
+              <Shield className="w-5 h-5 text-blue-700" />
             </div>
             <div>
-              <h2 className="text-lg font-bold text-neutral-900">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                 Vérification des documents
               </h2>
               {data && (
@@ -280,7 +282,7 @@ export default function DocumentReviewDrawer({
 
           {/* Error */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-xl p-4 text-red-700 text-sm flex items-center gap-2">
+            <div className="bg-error-50 border border-error-200 rounded-xl p-4 text-error-700 text-sm flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 flex-shrink-0" />
               {error}
             </div>
@@ -290,7 +292,7 @@ export default function DocumentReviewDrawer({
           {data && !loading && (
             <>
               {/* Profile Summary */}
-              <div className="bg-neutral-50 rounded-xl p-4 space-y-3">
+              <div className="bg-neutral-50 rounded-xl p-4 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
                   <div>
                     <p className="text-sm text-neutral-500">Transporteur</p>
@@ -346,13 +348,18 @@ export default function DocumentReviewDrawer({
 
               {/* Document List — Grouped Recto/Verso */}
               {groupDocuments(data.documents).map((group) => {
-                const renderDocCard = (doc: AdminDocument | undefined, sideLabel: string) => {
+                const renderDocCard = (
+                  doc: AdminDocument | undefined,
+                  sideLabel: string,
+                ) => {
                   if (!doc) {
                     return (
                       <div className="flex-1 min-w-0 border-2 border-dashed border-neutral-200 rounded-lg p-4 flex flex-col items-center justify-center text-center">
                         <FileText className="w-6 h-6 text-neutral-300 mb-1" />
                         <p className="text-xs text-neutral-400">{sideLabel}</p>
-                        <p className="text-[10px] text-neutral-300">Non soumis</p>
+                        <p className="text-[10px] text-neutral-300">
+                          Non soumis
+                        </p>
                       </div>
                     );
                   }
@@ -363,13 +370,17 @@ export default function DocumentReviewDrawer({
                   const fileUrl = doc.fileUrl || "";
 
                   return (
-                    <div className={`flex-1 min-w-0 border rounded-lg p-3 transition-all ${cfg.bg}`}>
+                    <div
+                      className={`flex-1 min-w-0 border rounded-lg p-3 transition-all ${cfg.bg}`}
+                    >
                       {/* Side label + Status */}
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-[10px] font-semibold text-neutral-500 uppercase tracking-wider">
                           {sideLabel}
                         </span>
-                        <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${cfg.badge}`}>
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium ${cfg.badge}`}
+                        >
                           <StatusIcon className="w-2.5 h-2.5" />
                           {cfg.label}
                         </span>
@@ -381,7 +392,7 @@ export default function DocumentReviewDrawer({
                           {isImageFile(fileUrl) ? (
                             <button
                               onClick={() => setPreviewUrl(fileUrl)}
-                              className="w-full h-24 bg-white rounded-md border border-neutral-200 overflow-hidden relative group cursor-pointer"
+                              className="w-full h-24 bg-white rounded-chip border border-neutral-200 overflow-hidden relative group cursor-pointer"
                             >
                               {/* eslint-disable-next-line @next/next/no-img-element */}
                               <img
@@ -398,7 +409,7 @@ export default function DocumentReviewDrawer({
                               href={getMediaUrl(fileUrl)}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="flex items-center gap-1.5 px-2 py-1.5 bg-white rounded-md border border-neutral-200 text-xs text-brand-600 hover:bg-brand-600/5 transition-colors"
+                              className="flex items-center gap-1.5 px-2 py-1.5 bg-white rounded-chip border border-neutral-200 text-xs text-brand-600 hover:bg-brand-600/5 transition-colors"
                             >
                               <ExternalLink className="w-3.5 h-3.5" />
                               PDF
@@ -409,16 +420,19 @@ export default function DocumentReviewDrawer({
 
                       {/* Rejection Reason */}
                       {doc.rejectionReason && (
-                        <div className="bg-red-100 rounded-md px-2 py-1.5 mb-2 flex items-start gap-1.5">
-                          <AlertTriangle className="w-3 h-3 text-red-500 flex-shrink-0 mt-0.5" />
-                          <p className="text-[10px] text-red-700">{doc.rejectionReason}</p>
+                        <div className="bg-error-100 rounded-chip px-2 py-1.5 mb-2 flex items-start gap-1.5">
+                          <AlertTriangle className="w-3 h-3 text-error-500 flex-shrink-0 mt-0.5" />
+                          <p className="text-[10px] text-error-700">
+                            {doc.rejectionReason}
+                          </p>
                         </div>
                       )}
 
                       {/* Reviewed info */}
                       {doc.reviewedAt && (
                         <p className="text-[10px] text-neutral-400 mb-2">
-                          Par {doc.reviewedBy || "Admin"} · {formatDate(doc.reviewedAt)}
+                          Par {doc.reviewedBy || "Admin"} ·{" "}
+                          {formatDate(doc.reviewedAt)}
                         </p>
                       )}
 
@@ -428,7 +442,7 @@ export default function DocumentReviewDrawer({
                           <button
                             onClick={() => handleApprove(doc.id)}
                             disabled={actionLoading === doc.id}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-green-600 text-white rounded-md text-[10px] font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-green-600 text-white rounded-chip text-[10px] font-medium hover:bg-green-700 transition-colors disabled:opacity-50"
                           >
                             {actionLoading === doc.id ? (
                               <Loader2 className="w-3 h-3 animate-spin" />
@@ -442,7 +456,7 @@ export default function DocumentReviewDrawer({
                           <button
                             onClick={() => setRejectDocId(doc.id)}
                             disabled={actionLoading === doc.id}
-                            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-red-600 text-white rounded-md text-[10px] font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
+                            className="flex-1 flex items-center justify-center gap-1 py-1.5 bg-error-600 text-white rounded-chip text-[10px] font-medium hover:bg-red-700 transition-colors disabled:opacity-50"
                           >
                             <XCircle className="w-3 h-3" />
                             Non
@@ -459,20 +473,30 @@ export default function DocumentReviewDrawer({
                 };
 
                 return (
-                  <div key={group.groupLabel} className="space-y-2">
+                  <div key={group.groupLabel} className="flex flex-col gap-2">
                     {/* Group Header */}
                     <div className="flex items-center gap-2">
                       <FileText className="w-4 h-4 text-brand-600" />
-                      <h4 className="text-sm font-semibold text-neutral-800">{group.groupLabel}</h4>
+                      <h4 className="text-sm font-semibold text-neutral-800">
+                        {group.groupLabel}
+                      </h4>
                     </div>
 
                     {/* Recto / Verso Side by Side */}
                     <div className="flex gap-3">
                       {renderDocCard(group.recto, "Recto")}
-                      {group.verso !== undefined || (!group.verso && DOC_PAIR_MAP[group.recto?.documentType || '']?.side === 'recto' && ['CIN_FRONT', 'LICENSE_FRONT', 'CARTE_GRISE_FRONT', 'INSURANCE_FRONT'].includes(group.recto?.documentType || ''))
+                      {group.verso !== undefined ||
+                      (!group.verso &&
+                        DOC_PAIR_MAP[group.recto?.documentType || ""]?.side ===
+                          "recto" &&
+                        [
+                          "CIN_FRONT",
+                          "LICENSE_FRONT",
+                          "CARTE_GRISE_FRONT",
+                          "INSURANCE_FRONT",
+                        ].includes(group.recto?.documentType || ""))
                         ? renderDocCard(group.verso, "Verso")
-                        : null
-                      }
+                        : null}
                     </div>
                   </div>
                 );
@@ -485,8 +509,8 @@ export default function DocumentReviewDrawer({
       {/* Reject Modal */}
       {rejectDocId !== null && (
         <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6">
-            <h3 className="text-lg font-bold text-neutral-900 mb-2">
+          <div className="bg-surface rounded-card shadow-xl max-w-md w-full p-6">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-2">
               Rejeter le document
             </h3>
             <p className="text-sm text-neutral-500 mb-4">
@@ -497,7 +521,7 @@ export default function DocumentReviewDrawer({
               onChange={(e) => setRejectReason(e.target.value)}
               placeholder="Raison du rejet (ex: Document illisible, date expirée...)"
               rows={3}
-              className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-accent-500 focus:border-transparent resize-none"
+              className="w-full border border-neutral-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-700 focus:border-transparent resize-none"
               autoFocus
             />
             <div className="flex gap-3 mt-4">
@@ -513,7 +537,7 @@ export default function DocumentReviewDrawer({
               <button
                 onClick={handleReject}
                 disabled={!rejectReason.trim() || actionLoading !== null}
-                className="flex-1 bg-red-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-error-600 text-white py-2.5 rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {actionLoading ? "En cours..." : "Confirmer le rejet"}
               </button>

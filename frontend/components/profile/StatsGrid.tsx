@@ -27,8 +27,8 @@ export function StatsGrid({
         trustScore >= 80
           ? "bg-accent-500/10 text-accent-600"
           : trustScore >= 50
-            ? "bg-amber-500/10 text-amber-600"
-            : "bg-red-500/10 text-red-600",
+            ? "bg-warning-500/10 text-warning-600"
+            : "bg-error-500/10 text-error-600",
     },
     {
       icon: CheckCircle2,
@@ -37,18 +37,20 @@ export function StatsGrid({
       iconBg:
         completionRate >= 90
           ? "bg-accent-500/10 text-accent-600"
-          : "bg-amber-500/10 text-amber-600",
+          : "bg-warning-500/10 text-warning-600",
     },
     {
       icon: Truck,
       label: t.profile.totalJobs,
       value: totalJobsCompleted.toString(),
-      iconBg: "bg-brand-600/10 text-brand-600",
+      iconBg: "bg-blue-50 text-blue-700",
     },
     {
       icon: Clock,
       label: t.profile.avgResponseTime,
-      value: responseTimeMinutes ? `${responseTimeMinutes} ${t.profile.min}` : "N/A",
+      value: responseTimeMinutes
+        ? `${responseTimeMinutes} ${t.profile.min}`
+        : "N/A",
       iconBg:
         responseTimeMinutes && responseTimeMinutes < 30
           ? "bg-accent-500/10 text-accent-600"
@@ -57,14 +59,14 @@ export function StatsGrid({
   ];
 
   return (
-    <div className="rounded-2xl overflow-hidden border border-neutral-100 shadow-sm">
+    <div className="rounded-2xl overflow-hidden border border-line shadow-sm">
       {/* Header — deep navy */}
-      <div className="px-6 py-4 bg-gradient-to-r from-brand-900 to-brand-600">
+      <div className="px-6 py-4 bg-band">
         <h3 className="text-base font-bold text-white tracking-wide">
           Statistiques
         </h3>
       </div>
-      <div className="bg-white grid grid-cols-2 divide-x divide-y divide-neutral-100">
+      <div className="bg-white grid grid-cols-2 divide-x divide-y divide-line">
         {stats.map((stat, i) => (
           <div
             key={stat.label}
@@ -76,7 +78,9 @@ export function StatsGrid({
             >
               <stat.icon className="w-5 h-5" />
             </div>
-            <p className="text-xl font-bold text-neutral-900">{stat.value}</p>
+            <p className="text-[19px] font-extrabold tracking-heading text-ink-900">
+              {stat.value}
+            </p>
             <p className="text-xs text-neutral-400 mt-1 font-medium">
               {stat.label}
             </p>

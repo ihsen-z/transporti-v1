@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /* -------------------------------------------------------------------------- */
 /*  TRANSPORTI LOGO — Official Brand Component                                */
@@ -66,52 +67,52 @@ const CONTEXT_CONFIGS: Record<Exclude<LogoContext, "custom">, ContextConfig> = {
   header: {
     variant: "color",
     containerClass: "",
-    svgClass: "drop-shadow-sm",
-    wordmarkColor: "text-neutral-900",
-    subtitleColor: "text-neutral-500",
+    svgClass: "",
+    wordmarkColor: "text-ink-900",
+    subtitleColor: "text-ink-500",
   },
   sidebar: {
     variant: "color",
     containerClass: "",
-    svgClass: "drop-shadow-sm",
-    wordmarkColor: "text-neutral-900",
-    subtitleColor: "text-neutral-500",
+    svgClass: "",
+    wordmarkColor: "text-ink-900",
+    subtitleColor: "text-ink-500",
   },
   "sidebar-dark": {
     variant: "color",
-    containerClass: "bg-white/95 rounded-lg p-1 shadow-sm",
+    containerClass: "bg-white/95 rounded-chip p-1",
     svgClass: "",
     wordmarkColor: "text-white",
-    subtitleColor: "text-blue-200",
+    subtitleColor: "text-on-blue-300",
   },
   footer: {
     variant: "color",
-    containerClass: "bg-white rounded-lg p-1.5 shadow-sm shadow-white/10",
+    containerClass: "bg-white rounded-chip p-1.5",
     svgClass: "",
     wordmarkColor: "text-white",
-    subtitleColor: "text-neutral-400",
+    subtitleColor: "text-on-blue-300",
   },
   auth: {
-    variant: "color",
-    containerClass:
-      "bg-white/95 backdrop-blur-md rounded-xl shadow-lg shadow-black/10 border border-white/30 p-2",
+    // Pastille verre 38px : alpha sur le degrade, sans backdrop-filter.
+    variant: "white",
+    containerClass: "bg-white/[0.18] border border-white/30 rounded-chip p-1.5",
     svgClass: "",
     wordmarkColor: "text-white",
-    subtitleColor: "text-blue-200",
+    subtitleColor: "text-on-blue-300",
   },
   hero: {
     variant: "white",
     containerClass: "",
-    svgClass: "drop-shadow-[0_0_12px_rgba(255,255,255,0.3)]",
+    svgClass: "",
     wordmarkColor: "text-white",
-    subtitleColor: "text-white/70",
+    subtitleColor: "text-on-blue-300",
   },
   mobile: {
     variant: "color",
     containerClass: "",
     svgClass: "",
-    wordmarkColor: "text-neutral-900",
-    subtitleColor: "text-neutral-500",
+    wordmarkColor: "text-ink-900",
+    subtitleColor: "text-ink-500",
   },
 };
 
@@ -151,12 +152,14 @@ function LogoWordmark({
           <path d={BLUE_PATH} fill={colors.bar} opacity={colors.barOpacity} />
           <path d={GREEN_PATH} fill={colors.arrow} />
         </svg>
-        <span className={`font-bold leading-tight ${wordmarkColor}`}>
+        <span
+          className={`text-[18px] font-extrabold leading-tight tracking-heading ${wordmarkColor}`}
+        >
           ransporti
         </span>
       </div>
       {subtitle && (
-        <span className={`text-[10px] font-medium ${subtitleColor} ms-0.5`}>
+        <span className={`text-[11px] font-semibold ${subtitleColor} ms-0.5`}>
           {subtitle}
         </span>
       )}
@@ -183,10 +186,9 @@ export default function TransportiLogo({
           variant,
           containerClass: "",
           svgClass: "",
-          wordmarkColor:
-            variant === "white" ? "text-white" : "text-neutral-900",
+          wordmarkColor: variant === "white" ? "text-white" : "text-ink-900",
           subtitleColor:
-            variant === "white" ? "text-white/70" : "text-neutral-500",
+            variant === "white" ? "text-on-blue-300" : "text-ink-500",
         };
 
   const colors = COLORS[config.variant];
@@ -224,12 +226,14 @@ export default function TransportiLogo({
         {config.containerClass ? logoElement : null}
         {config.containerClass ? (
           <div className="flex flex-col">
-            <span className={`font-bold leading-tight ${config.wordmarkColor}`}>
+            <span
+              className={`text-[18px] font-extrabold leading-tight tracking-heading ${config.wordmarkColor}`}
+            >
               Transporti
             </span>
             {subtitle && (
               <span
-                className={`text-[10px] font-medium ${config.subtitleColor}`}
+                className={`text-[11px] font-semibold ${config.subtitleColor}`}
               >
                 {subtitle}
               </span>
@@ -254,40 +258,47 @@ export default function TransportiLogo({
 
 /* -------------------------------------------------------------------------- */
 /*  Named exports for convenience                                              */
+/*                                                                            */
+/*  Les baselines viennent du dictionnaire (`t.brand`) et non du code : elles */
+/*  restaient en francais sur un site passe en RTL, jusque sur l ecran de      */
+/*  connexion. Verifie en recette le 08/09/2026.                              */
 /* -------------------------------------------------------------------------- */
 
 /** Header logo: [logo]ransporti + subtitle */
 export function HeaderLogo() {
+  const { t } = useAppI18n();
   return (
     <TransportiLogo
       context="header"
       size={34}
       showWordmark
-      subtitle="Logistique simplifiée"
+      subtitle={t.brand.taglineShort}
     />
   );
 }
 
 /** Sidebar logo (white bg): [logo]ransporti + PARTNER */
 export function SidebarLogo() {
+  const { t } = useAppI18n();
   return (
     <TransportiLogo
       context="sidebar"
       size={28}
       showWordmark
-      subtitle="Logistique simplifiée"
+      subtitle={t.brand.taglineShort}
     />
   );
 }
 
 /** Admin sidebar logo (dark bg): logo on white pill + Transporti text */
 export function AdminSidebarLogo() {
+  const { t } = useAppI18n();
   return (
     <TransportiLogo
       context="sidebar-dark"
       size={26}
       showWordmark
-      subtitle="Admin Panel"
+      subtitle={t.header.pageTitles.admin}
     />
   );
 }
@@ -299,12 +310,13 @@ export function FooterLogo() {
 
 /** Auth layout logo: on frosted glass + wordmark */
 export function AuthLogo() {
+  const { t } = useAppI18n();
   return (
     <TransportiLogo
       context="auth"
       size={38}
       showWordmark
-      subtitle="La logistique réinventée"
+      subtitle={t.brand.tagline}
     />
   );
 }

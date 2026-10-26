@@ -1,48 +1,39 @@
-import {
-  KeyboardAvoidingView,
-  Platform,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { PublishReturnForm } from '@/features/trips/components/PublishReturnForm';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
+import { BackButton } from '@/shared/ui/BackButton';
+import { Card } from '@/shared/ui/Card';
+import { Txt } from '@/shared/ui/Txt';
+import { colors, fontSize } from '@/shared/theme';
 
 // Onglet TRANSPORTEUR : publication d'un retour. Route mince = composition ;
 // la logique vit dans la feature trips (PublishReturnForm).
+//
+// Le clavier est géré par AppScreen : le formulaire compte une dizaine de
+// champs, et cet écran en portait sa propre copie du trio
+// SafeAreaView / KeyboardAvoidingView / ScrollView.
 export default function PublishScreen() {
   const { t } = useTranslation();
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <KeyboardAvoidingView
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        style={styles.flex}
-      >
-        <ScrollView
-          contentContainerStyle={styles.content}
-          keyboardShouldPersistTaps="handled"
-        >
-          <View style={styles.header}>
-            <Text style={styles.title}>{t('trips.publish.title')}</Text>
-            <Text style={styles.subtitle}>{t('trips.publish.subtitle')}</Text>
-          </View>
-
-          <PublishReturnForm />
-        </ScrollView>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
+    <AppScreen
+      testID="publish-screen"
+      header={
+        <AppHeader leading={<BackButton />} title={t('trips.publish.title')}>
+          <Txt style={styles.subtitle}>{t('trips.publish.subtitle')}</Txt>
+        </AppHeader>
+      }
+    >
+      <Card>
+        <PublishReturnForm />
+      </Card>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[0] },
-  flex: { flex: 1 },
-  content: { padding: spacing.xl, gap: spacing.xl },
-  header: { gap: spacing.xs },
-  title: { fontSize: fontSize['2xl'], fontWeight: '800', color: colors.neutral[900] },
-  subtitle: { fontSize: fontSize.md, color: colors.neutral[500] },
+  // Rendu DANS le bandeau bleu.
+  subtitle: { fontSize: fontSize.md, lineHeight: fontSize.md * 1.5, color: colors.text.onBlue },
 });

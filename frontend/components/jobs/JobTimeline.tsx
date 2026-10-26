@@ -52,8 +52,8 @@ export default function JobTimeline({ status }: JobTimelineProps) {
   ];
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-neutral-200 p-6">
-      <h3 className="text-lg font-bold text-neutral-900 mb-6">
+    <div className="bg-surface rounded-card shadow-card p-6">
+      <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-6">
         {t.jobsComponents.timeline.title}
       </h3>
 
@@ -88,7 +88,7 @@ export default function JobTimeline({ status }: JobTimelineProps) {
                       <div
                         className={`
                                                     w-10 h-10 rounded-full flex items-center justify-center transition-colors
-                                                    ${isCompleted ? "bg-accent-500 text-white" : ""}
+                                                    ${isCompleted ? "bg-blue-700 text-white" : ""}
                                                     ${isCurrent ? "bg-brand-600 text-white ring-4 ring-brand-600/10" : ""}
                                                     ${isUpcoming ? "bg-neutral-200 text-neutral-400" : ""}
                                                 `}
@@ -128,7 +128,7 @@ export default function JobTimeline({ status }: JobTimelineProps) {
 
           {/* Mobile Timeline - Vertical */}
           <div className="sm:hidden">
-            <div className="space-y-0">
+            <div className="flex flex-col gap-0">
               {timelineSteps.map((step, index) => {
                 const isCompleted = index < currentIndex;
                 const isCurrent = index === currentIndex;
@@ -143,7 +143,7 @@ export default function JobTimeline({ status }: JobTimelineProps) {
                       <div
                         className={`
                                                     w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 transition-colors
-                                                    ${isCompleted ? "bg-accent-500 text-white" : ""}
+                                                    ${isCompleted ? "bg-blue-700 text-white" : ""}
                                                     ${isCurrent ? "bg-brand-600 text-white ring-2 ring-brand-600/10" : ""}
                                                     ${isUpcoming ? "bg-neutral-200 text-neutral-400" : ""}
                                                 `}

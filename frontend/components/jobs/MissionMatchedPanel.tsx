@@ -42,7 +42,7 @@ export function MissionMatchedPanel({
   const router = useRouter();
 
   return (
-    <div className="bg-amber-50 border border-amber-300 rounded-xl p-4 text-amber-800">
+    <div className="bg-warning-50 border border-amber-300 rounded-xl p-4 text-warning-800">
       <h3 className="font-bold flex items-center gap-2 mb-2">
         <Clock className="w-5 h-5" />
         {t.jobDetail.matchedTitle}
@@ -76,7 +76,7 @@ export function MissionMatchedPanel({
           <button
             onClick={onConfirmerLeDemarrage}
             disabled={demarrageEnCours}
-            className="w-full py-2.5 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
+            className="w-full py-2.5 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50 transition-colors"
           >
             {demarrageEnCours ? (
               <Clock className="w-4 h-4 animate-spin" />
@@ -93,17 +93,17 @@ export function MissionMatchedPanel({
       {estLeTransporteurAssigne && job.booking_payment_method === "DIGITAL" && (
         <p className="text-sm">{t.jobDetail.matchedTransporterDigital}</p>
       )}
-      <div className="mt-3 space-y-2">
+      <div className="mt-3 flex flex-col gap-2">
         <button
           onClick={() => router.push(`/messages/${job.id}`)}
-          className="w-full py-2 bg-white border border-amber-300 text-amber-800 rounded-lg font-medium hover:bg-amber-100 flex items-center justify-center gap-2"
+          className="w-full py-2 bg-white border border-amber-300 text-warning-800 rounded-lg font-medium hover:bg-warning-100 flex items-center justify-center gap-2"
         >
           <MessageSquare className="w-4 h-4" />
           {t.jobDetail.openMessaging}
         </button>
         <Link
           href={`/reservation/${job.id}`}
-          className="w-full py-2 border border-amber-300 text-amber-800 rounded-lg font-medium hover:bg-amber-100 flex items-center justify-center gap-2"
+          className="w-full py-2 border border-amber-300 text-warning-800 rounded-lg font-medium hover:bg-warning-100 flex items-center justify-center gap-2"
         >
           <FileText className="w-4 h-4" />
           {t.jobDetail.viewBooking}

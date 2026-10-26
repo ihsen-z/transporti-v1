@@ -1,7 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { Card } from '@/shared/ui/Card';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { NotificationDto } from '../api/dto';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   notif: NotificationDto;
@@ -24,9 +25,9 @@ export function NotificationRow({ notif, onPress }: Props) {
       <Card style={[styles.row, !notif.is_read && styles.unread]}>
         {!notif.is_read ? <View style={styles.dot} /> : <View style={styles.dotPlaceholder} />}
         <View style={styles.flex}>
-          <Text style={styles.title} numberOfLines={1}>{notif.title}</Text>
-          <Text style={styles.message} numberOfLines={2}>{notif.message}</Text>
-          <Text style={styles.when}>{formatWhen(notif.created_at)}</Text>
+          <Txt style={styles.title} numberOfLines={1}>{notif.title}</Txt>
+          <Txt style={styles.message} numberOfLines={2}>{notif.message}</Txt>
+          <Txt style={styles.when}>{formatWhen(notif.created_at)}</Txt>
         </View>
       </Card>
     </Pressable>

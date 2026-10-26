@@ -1,90 +1,126 @@
-import { Shield, Clock, Users } from "lucide-react";
+"use client";
+
+import { usePathname } from "next/navigation";
+import { Shield, Clock, BadgeCheck } from "lucide-react";
 import { AuthLogo } from "@/components/brand/TransportiLogo";
+
+/* -------------------------------------------------------------------------- */
+/*  Coquille des écrans d'authentification                                    */
+/*                                                                            */
+/*  La charte range les écrans en deux familles (§1) et le tableau des écrans */
+/*  livrés (§7) place l'inscription en APPLICATIF, tandis que connexion,      */
+/*  onboarding, OTP et mot de passe oublié sont IMMERSIFS. Ce groupe de       */
+/*  routes porte donc les deux coquilles, choisies sur la route courante —    */
+/*  jamais mélangées sur un même écran : le verre ne vit que sur le bleu.     */
+/*                                                                            */
+/*  IMMERSIF   — dégradé plein écran, deux halos, cartes verre.              */
+/*  APPLICATIF — bandeau bleu haut à rayon 34px, fond #F6F8FC, cartes        */
+/*               blanches opaques ; la carte peut chevaucher le bandeau.      */
+/* -------------------------------------------------------------------------- */
+
+/** Routes de ce groupe qui suivent la famille applicative (charte §7). */
+const ROUTES_APPLICATIVES = ["/register"];
+
+const REPERES_CONFIANCE = [
+  { icon: Shield, text: "Paiement sécurisé, libéré à la livraison" },
+  { icon: BadgeCheck, text: "Transporteurs vérifiés, documents contrôlés" },
+  { icon: Clock, text: "Retours à vide : le bon corridor, au bon moment" },
+];
+
+/* -------------------------------- Immersif -------------------------------- */
+
+function CoquilleImmersive({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="immersive min-h-screen">
+      {/* Deux halos au maximum, jamais centrés, blur 60px, statiques */}
+      <div className="halo halo--green" aria-hidden />
+      <div className="halo halo--orange" aria-hidden />
+
+      <div className="relative z-[1] mx-auto grid min-h-screen w-full max-w-[1180px] items-center gap-12 px-5 py-10 lg:grid-cols-[1fr_minmax(0,440px)] lg:px-10">
+        {/* Colonne récit — desktop uniquement */}
+        <div className="hidden flex-col gap-6 lg:flex">
+          <AuthLogo />
+
+          <div className="flex flex-col gap-3">
+            <h2 className="text-[34px] font-extrabold leading-[1.15] tracking-title text-white">
+              Simple, rapide, <span className="text-green-300">fiable.</span>
+            </h2>
+            <p className="max-w-md text-[15px] leading-[1.55] text-on-blue-300">
+              La plateforme qui connecte expéditeurs et transporteurs en
+              Tunisie, et remplit les trajets retour au lieu de les laisser à
+              vide.
+            </p>
+          </div>
+
+          <ul className="glass flex max-w-md list-none flex-col gap-4">
+            {REPERES_CONFIANCE.map(({ icon: Icon, text }) => (
+              <li key={text} className="flex items-center gap-3">
+                <span className="glass-chip h-10 w-10 flex-shrink-0">
+                  <Icon
+                    className="h-[18px] w-[18px] text-white"
+                    strokeWidth={2}
+                  />
+                </span>
+                <span className="text-[14.5px] font-medium leading-[1.5] text-white">
+                  {text}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Colonne formulaire */}
+        <div className="mx-auto flex w-full max-w-[440px] flex-col gap-6">
+          <div className="flex justify-center lg:hidden">
+            <AuthLogo />
+          </div>
+          <div className="animate-fade-in-up">{children}</div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ------------------------------- Applicatif ------------------------------- */
+
+function CoquilleApplicative({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="min-h-screen bg-app">
+      {/* Bandeau bleu haut — un seul halo à l'intérieur (charte §4) */}
+      <header className="app-band px-5 pb-24 pt-10 sm:px-8">
+        {/* Le halo vit dans la lucarne : c est elle qui rogne, pas le bandeau,
+            afin que la carte puisse le chevaucher sans etre coupee. */}
+        <div className="app-band__glow">
+          <div className="halo halo--green !left-auto !end-[-70px] !top-[-40px]" />
+        </div>
+        <div className="mx-auto flex w-full max-w-[520px] flex-col gap-4">
+          <AuthLogo />
+        </div>
+      </header>
+
+      {/* La colonne remonte sur le bandeau : c'est la signature de la marque */}
+      <main className="mx-auto -mt-16 w-full max-w-[520px] px-5 pb-12 sm:px-8">
+        <div className="animate-fade-in-up">{children}</div>
+      </main>
+    </div>
+  );
+}
+
+/* --------------------------------- Racine --------------------------------- */
 
 export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <div className="min-h-screen flex">
-      {/* Left Brand Panel — visible on md+ only */}
-      <div className="hidden md:flex md:w-1/2 bg-gradient-to-br from-primary-800 via-primary-900 to-primary-900 p-12 flex-col justify-center items-center text-white relative overflow-hidden">
-        {/* Background dots pattern */}
-        <div className="absolute inset-0 opacity-10">
-          <div
-            className="absolute inset-0"
-            style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23ffffff' fill-opacity='0.3'%3E%3Ccircle cx='3' cy='3' r='1.5'/%3E%3C/g%3E%3C/svg%3E")`,
-            }}
-          />
-        </div>
+  const pathname = usePathname() ?? "";
+  const estApplicative = ROUTES_APPLICATIVES.some((route) =>
+    pathname.startsWith(route),
+  );
 
-        {/* Decorative gradient orbs */}
-        <div className="absolute top-20 right-20 w-72 h-72 bg-accent-500/20 rounded-full blur-3xl" />
-        <div className="absolute bottom-20 left-10 w-56 h-56 bg-brand-600/20 rounded-full blur-3xl" />
-
-        <div className="relative z-10 max-w-md text-center">
-          {/* Logo */}
-          <div className="flex items-center justify-center mb-8 animate-fade-in-up">
-            <AuthLogo />
-          </div>
-
-          {/* Tagline */}
-          <h2 className="text-3xl font-bold mb-4 animate-fade-in-up delay-100">
-            Simple, rapide, <span className="text-accent-400">fiable.</span>
-          </h2>
-          <p className="text-primary-200 mb-10 animate-fade-in-up delay-200">
-            La plateforme de logistique qui connecte clients et transporteurs
-            professionnels en Tunisie.
-          </p>
-
-          {/* Glass trust card */}
-          <div className="bg-white/10 backdrop-blur-md border border-white/20 rounded-2xl p-6 mb-8 animate-fade-in-up delay-300">
-            <div className="grid grid-cols-3 gap-4 text-center">
-              <div>
-                <div className="text-2xl font-bold">🚛</div>
-                <div className="text-xs text-primary-200 mt-1">Transport</div>
-              </div>
-              <div className="border-x border-white/20">
-                <div className="text-2xl font-bold">🏠</div>
-                <div className="text-xs text-primary-200 mt-1">
-                  Déménagement
-                </div>
-              </div>
-              <div>
-                <div className="text-2xl font-bold">📦</div>
-                <div className="text-xs text-primary-200 mt-1">Livraison</div>
-              </div>
-            </div>
-          </div>
-
-          {/* Trust bullets */}
-          <div className="space-y-3">
-            {[
-              { icon: Shield, text: "Paiement sécurisé par escrow" },
-              { icon: Clock, text: "Livraison rapide et fiable" },
-              { icon: Users, text: "Transporteurs vérifiés" },
-            ].map((item, i) => (
-              <div
-                key={i}
-                className={`flex items-center gap-3 text-sm text-blue-200 animate-fade-in-up`}
-                style={{ animationDelay: `${0.4 + i * 0.1}s` }}
-              >
-                <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center flex-shrink-0">
-                  <item.icon className="w-4 h-4" />
-                </div>
-                {item.text}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Right Content Panel — existing login/register pages */}
-      <div className="flex-1 flex items-center justify-center p-6 bg-gradient-to-br from-primary-50 via-white to-accent-50">
-        <div className="w-full max-w-md animate-fade-in">{children}</div>
-      </div>
-    </div>
+  return estApplicative ? (
+    <CoquilleApplicative>{children}</CoquilleApplicative>
+  ) : (
+    <CoquilleImmersive>{children}</CoquilleImmersive>
   );
 }

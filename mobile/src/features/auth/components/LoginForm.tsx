@@ -1,12 +1,13 @@
 import { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { Controller, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { useTranslation } from 'react-i18next';
 import { TextField } from '@/shared/ui/TextField';
 import { Button } from '@/shared/ui/Button';
-import { colors, spacing, fontSize } from '@/shared/theme';
+import { FormMessage } from '@/shared/ui/FormMessage';
+import { spacing } from '@/shared/theme';
 import { useLogin } from '../api/useLogin';
 
 // Les messages sont des CLÉS i18n (traduites au rendu) => schéma statique.
@@ -88,9 +89,7 @@ export function LoginForm() {
       />
 
       {serverError ? (
-        <Text testID="login-server-error" style={styles.serverError}>
-          {serverError}
-        </Text>
+        <FormMessage testID="login-server-error">{serverError}</FormMessage>
       ) : null}
 
       <Button
@@ -107,10 +106,5 @@ export function LoginForm() {
 
 const styles = StyleSheet.create({
   form: { gap: spacing.lg },
-  serverError: {
-    color: colors.text.error,
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-  },
   submit: { marginTop: spacing.sm },
 });

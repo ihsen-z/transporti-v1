@@ -46,7 +46,7 @@ export function CommissionSection() {
       data-testid="devenir-transporteur-commission"
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-neutral-900 text-center mb-3">
+        <h2 className="text-[28px] font-extrabold tracking-title text-ink-900 text-center mb-3">
           {b.commissionTitle}
         </h2>
         <p className="text-neutral-500 text-center max-w-2xl mx-auto mb-10">

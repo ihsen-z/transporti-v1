@@ -1,4 +1,4 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
@@ -50,13 +50,13 @@ export function ReturnsHubSection() {
     <View style={s.section}>
       {km > 0 ? (
         <View style={s.valeur} testID="hub-km-valorises">
-          <Text style={s.valeurChiffre}>
+          <Txt style={s.valeurChiffre}>
             {t('trips.hub.km_valued', { km: Math.round(km) })}
-          </Text>
+          </Txt>
           {remplissage !== null ? (
-            <Text style={s.valeurDetail}>
+            <Txt style={s.valeurDetail}>
               {t('trips.hub.fill_rate', { rate: remplissage })}
-            </Text>
+            </Txt>
           ) : null}
         </View>
       ) : null}
@@ -72,14 +72,14 @@ export function ReturnsHubSection() {
           <View style={s.liste} testID="hub-retours-liste">
             {enLigne.slice(0, 3).map((trajet) => (
               <View key={trajet.id} style={s.ligne}>
-                <Text style={s.corridor}>
+                <Txt style={s.corridor}>
                   {trajet.pickup_governorate} → {trajet.dropoff_governorate}
-                </Text>
-                <Text style={s.expiration}>
+                </Txt>
+                <Txt style={s.expiration}>
                   {t('trips.hub.expires_in_days', {
                     count: daysUntilExpiry(trajet),
                   })}
-                </Text>
+                </Txt>
               </View>
             ))}
           </View>
@@ -91,7 +91,7 @@ export function ReturnsHubSection() {
           accessibilityRole="button"
           style={s.lien}
         >
-          <Text style={s.lienTexte}>{t('trips.hub.manage')}</Text>
+          <Txt style={s.lienTexte}>{t('trips.hub.manage')}</Txt>
         </Pressable>
       </View>
     </View>

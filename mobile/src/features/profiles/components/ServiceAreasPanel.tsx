@@ -60,7 +60,8 @@ export function ServiceAreasPanel({ visible, onClose, userId }: Props) {
   }, [enregistrer.isSuccess, onClose, t]);
 
   const options = useMemo(
-    () => GOVERNORATES.map((g) => ({ code: g.code, label: estArabe ? g.nameAr : g.nameFr })),
+    () =>
+      GOVERNORATES.map((g) => ({ code: g.code, label: estArabe ? g.nameAr : g.nameFr })),
     [estArabe],
   );
 
@@ -157,9 +158,7 @@ export function ServiceAreasPanel({ visible, onClose, userId }: Props) {
 
           <Button
             testID="service-areas-enregistrer"
-            label={
-              enregistrer.isPending ? t('profile.saving') : t('profile.save')
-            }
+            label={enregistrer.isPending ? t('profile.saving') : t('profile.save')}
             loading={enregistrer.isPending}
             onPress={() => enregistrer.mutate(selection)}
           />

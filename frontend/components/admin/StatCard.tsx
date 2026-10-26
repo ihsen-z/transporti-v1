@@ -22,16 +22,16 @@ export default function StatCard({
   compact = false,
 }: StatCardProps) {
   const colorClasses = {
-    primary: "bg-brand-600/10 text-brand-600",
-    accent: "bg-accent-50 text-accent-600",
+    primary: "bg-blue-50 text-blue-700",
+    accent: "bg-green-50 text-green-600",
     warning: "bg-orange-50 text-orange-600",
-    danger: "bg-red-50 text-red-600",
+    danger: "bg-error-50 text-error-600",
     neutral: "bg-neutral-100 text-neutral-600",
   };
 
   const trendColors = {
     up: "text-green-600",
-    down: "text-red-600",
+    down: "text-error-600",
     neutral: "text-neutral-500",
   };
 
@@ -40,9 +40,9 @@ export default function StatCard({
 
   if (compact) {
     return (
-      <div className="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-100 dark:border-neutral-700 p-4 hover:shadow-md transition-all animate-fade-in">
+      <div className="bg-surface dark:bg-neutral-800 rounded-card shadow-card dark:border dark:border-neutral-700 p-4 hover-lift animate-fade-in">
         <div className="flex items-center gap-3">
-          <div className={`p-2 rounded-lg ${colorClasses[color]}`}>
+          <div className={`p-2 rounded-chip ${colorClasses[color]}`}>
             <Icon className="w-4 h-4" />
           </div>
           <div className="flex-1 min-w-0">
@@ -50,7 +50,7 @@ export default function StatCard({
               {title}
             </p>
             <div className="flex items-center gap-2">
-              <p className="text-lg font-bold text-neutral-900 dark:text-white">
+              <p className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                 {value}
               </p>
               {trend && trendValue && (
@@ -66,7 +66,7 @@ export default function StatCard({
   }
 
   return (
-    <div className="bg-white dark:bg-neutral-800 rounded-2xl border border-neutral-100 dark:border-neutral-700 p-6 hover:shadow-md hover:-translate-y-0.5 transition-all animate-fade-in">
+    <div className="bg-surface dark:bg-neutral-800 rounded-card shadow-card dark:border dark:border-neutral-700 p-6 hover-lift animate-fade-in">
       <div className="flex items-start justify-between mb-4">
         <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
           <Icon className="w-6 h-6" />
@@ -84,7 +84,7 @@ export default function StatCard({
         <p className="text-sm font-medium text-neutral-500 dark:text-neutral-400 mb-1">
           {title}
         </p>
-        <p className="text-2xl font-bold text-neutral-900 dark:text-white">
+        <p className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
           {value}
         </p>
         {subtitle && (

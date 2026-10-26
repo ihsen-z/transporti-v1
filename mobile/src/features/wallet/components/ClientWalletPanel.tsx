@@ -1,17 +1,9 @@
-import {
-  ActivityIndicator,
-  FlatList,
-  Modal,
-  Pressable,
-  StyleSheet,
-  View,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { ActivityIndicator, FlatList, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { Icon } from '@/shared/ui/icons';
 import { Txt } from '@/shared/ui/Txt';
 import { Card } from '@/shared/ui/Card';
 import { EmptyState } from '@/shared/ui/EmptyState';
+import { PanelScreen } from '@/shared/ui/PanelScreen';
 import { queryRefreshControl } from '@/shared/ui/queryRefreshControl';
 import { formatAmount } from '@/shared/format/money';
 import { colors, spacing, fontSize } from '@/shared/theme';
@@ -69,86 +61,55 @@ export function ClientWalletPanel({ visible, onClose }: Props) {
   );
 
   return (
-    <Modal visible={visible} animationType="slide" onRequestClose={onClose}>
-      <SafeAreaView style={styles.modal} edges={['top', 'bottom']}>
-        <View style={styles.header}>
-          <Txt style={styles.titre}>{t('client_wallet.title')}</Txt>
-          <Pressable
-            testID="portefeuille-client-fermer"
-            onPress={onClose}
-            accessibilityRole="button"
-            accessibilityLabel={t('common.close')}
-            hitSlop={12}
-          >
-            <Icon name="x" size={26} color={colors.neutral[700]} />
-          </Pressable>
-        </View>
-
-        {portefeuille.isLoading ? (
-          <ActivityIndicator
-            style={styles.chargement}
-            color={colors.brand[500]}
-          />
-        ) : (
-          <FlatList
-            data={d?.history ?? []}
-            keyExtractor={(item) => String(item.id)}
-            renderItem={rendreMouvement}
-            contentContainerStyle={styles.liste}
-            refreshControl={queryRefreshControl(portefeuille)}
-            ListHeaderComponent={
-              <View style={styles.entete}>
-                <View
-                  style={styles.tuiles}
-                  testID="portefeuille-client-tuiles"
-                >
-                  {tuiles.map(({ cle, montant }) => (
-                    <Card key={cle}>
-                      <View testID={`portefeuille-client-${cle}`}>
-                        <Txt style={styles.libelle}>
-                          {t(`client_wallet.${cle}`)}
-                        </Txt>
-                        <Txt style={styles.chiffre}>
-                          {formatAmount(montant)}
-                        </Txt>
-                      </View>
-                    </Card>
-                  ))}
-                </View>
-                {/* Dit explicitement ce que les tuiles ne doivent PAS
-                    suggérer : ces montants ne se cumulent pas. */}
-                <Txt style={styles.avertissement}>
-                  {t('client_wallet.no_total')}
-                </Txt>
-                <Txt style={styles.sousTitre}>
-                  {t('client_wallet.history_title')}
-                </Txt>
+    <PanelScreen
+      visible={visible}
+      title={t('client_wallet.title')}
+      onClose={onClose}
+      testID="portefeuille-client"
+      scroll={false}
+    >
+      {portefeuille.isLoading ? (
+        <ActivityIndicator style={styles.chargement} color={colors.brand[500]} />
+      ) : (
+        <FlatList
+          data={d?.history ?? []}
+          keyExtractor={(item) => String(item.id)}
+          renderItem={rendreMouvement}
+          contentContainerStyle={styles.liste}
+          refreshControl={queryRefreshControl(portefeuille)}
+          ListHeaderComponent={
+            <View style={styles.entete}>
+              <View style={styles.tuiles} testID="portefeuille-client-tuiles">
+                {tuiles.map(({ cle, montant }) => (
+                  <Card key={cle}>
+                    <View testID={`portefeuille-client-${cle}`}>
+                      <Txt style={styles.libelle}>{t(`client_wallet.${cle}`)}</Txt>
+                      <Txt style={styles.chiffre}>{formatAmount(montant)}</Txt>
+                    </View>
+                  </Card>
+                ))}
               </View>
-            }
-            ListEmptyComponent={
-              <EmptyState
-                icon="wallet"
-                title={t('client_wallet.empty_title')}
-                subtitle={t('client_wallet.empty_body')}
-                testID="portefeuille-client-vide"
-              />
-            }
-          />
-        )}
-      </SafeAreaView>
-    </Modal>
+              {/* Dit explicitement ce que les tuiles ne doivent PAS
+                    suggérer : ces montants ne se cumulent pas. */}
+              <Txt style={styles.avertissement}>{t('client_wallet.no_total')}</Txt>
+              <Txt style={styles.sousTitre}>{t('client_wallet.history_title')}</Txt>
+            </View>
+          }
+          ListEmptyComponent={
+            <EmptyState
+              icon="wallet"
+              title={t('client_wallet.empty_title')}
+              subtitle={t('client_wallet.empty_body')}
+              testID="portefeuille-client-vide"
+            />
+          }
+        />
+      )}
+    </PanelScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  modal: { flex: 1, backgroundColor: colors.neutral[50] },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.lg,
-  },
   titre: {
     fontSize: fontSize.xl,
     fontWeight: '800',

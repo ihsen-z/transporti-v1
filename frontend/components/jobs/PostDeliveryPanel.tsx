@@ -57,11 +57,11 @@ export function PostDeliveryPanel({
   const showReviewForm = !hasReviewed && (isOwner ? clientConfirmed : true);
 
   return (
-    <div className="space-y-4">
+    <div className="flex flex-col gap-4">
       {/* ---- ÉTAT PRINCIPAL (une seule carte à la fois) ---- */}
       {clientConfirmed ? (
         /* Paiement libéré — état final de succès */
-        <div className="bg-green-50 border border-green-200 rounded-xl p-5 animate-fade-in-up">
+        <div className="bg-green-50 rounded-tile p-5 animate-fade-in-up">
           <h3 className="font-bold flex items-center gap-2 mb-1 text-green-800">
             <ShieldCheck className="w-5 h-5" />
             {t.jobDetail.missionCompleted}
@@ -72,12 +72,12 @@ export function PostDeliveryPanel({
         </div>
       ) : isOwner ? (
         /* Client — action requise : confirmer la réception pour libérer l'escrow */
-        <div className="bg-amber-50 border border-amber-300 rounded-xl p-5 animate-fade-in-up">
+        <div className="bg-warning-50 border border-amber-300 rounded-xl p-5 animate-fade-in-up">
           <h3 className="font-bold flex items-center gap-2 mb-2 text-amber-900">
             <AlertCircle className="w-5 h-5" />
             {t.jobDetail.confirmDeliveryTitle}
           </h3>
-          <p className="text-sm text-amber-800 mb-4">
+          <p className="text-sm text-warning-800 mb-4">
             {t.jobDetail.confirmDeliveryDesc}
           </p>
           <button
@@ -115,7 +115,7 @@ export function PostDeliveryPanel({
 
       {hasReviewed && (
         <div className="bg-neutral-50 border border-neutral-200 rounded-xl p-4 flex items-center gap-2 text-neutral-600">
-          <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+          <Star className="w-4 h-4 text-warning-400 fill-warning-400" />
           <span className="text-sm">{t.jobDetail.alreadyReviewed}</span>
         </div>
       )}

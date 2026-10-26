@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
-  MessageSquare,
   Search,
   ArrowRight,
   Loader2,
@@ -16,7 +15,6 @@ import {
 import {
   getConversations,
   type Conversation as ConversationItem,
-  type Message as LastMessage,
 } from "@/lib/services/messaging";
 import { formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
@@ -59,19 +57,19 @@ function relativeTime(dateStr: string, t: AppTranslationKeys): string {
 const STATUS_STYLES: Record<string, { dotColor: string; className: string }> = {
   IN_PROGRESS: {
     dotColor: "bg-brand-600",
-    className: "bg-brand-600/5 text-brand-600",
+    className: "bg-blue-50 text-blue-700",
   },
   COMPLETED: {
-    dotColor: "bg-emerald-500",
-    className: "bg-emerald-50 text-emerald-600",
+    dotColor: "bg-green-500",
+    className: "bg-green-50 text-green-600",
   },
   DISPUTED: {
-    dotColor: "bg-red-500",
-    className: "bg-red-50 text-red-600",
+    dotColor: "bg-error-500",
+    className: "bg-error-50 text-error-600",
   },
   MATCHED: {
     dotColor: "bg-brand-600",
-    className: "bg-brand-600/5 text-brand-600",
+    className: "bg-blue-50 text-blue-700",
   },
   CANCELLED: {
     dotColor: "bg-neutral-400",
@@ -137,10 +135,10 @@ const ConversationCard = React.memo(function ConversationCardInner({
       {/* Avatar */}
       <div className="relative flex-shrink-0">
         <div
-          className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform group-hover:scale-105 ${
+          className={`w-12 h-12 rounded-full flex items-center justify-center transition-transform group-${
             hasUnread
               ? "bg-brand-600 text-white shadow-lg shadow-brand-600/20"
-              : "bg-gradient-to-br from-brand-600/10 to-brand-600/5 text-brand-600"
+              : "bg-blue-50 text-brand-600"
           }`}
         >
           <span
@@ -316,10 +314,7 @@ export default function MessagesInboxPage() {
       {/* Header */}
       <div className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 tracking-tight">
-            {t.messages.title}
-          </h1>
-          <p className="text-sm text-neutral-500 mt-1">
+          <p className="text-[13px] font-semibold text-ink-500">
             {loading
               ? t.common.loading
               : interpolate(
@@ -330,7 +325,7 @@ export default function MessagesInboxPage() {
                 )}
             {totalUnread > 0 && !loading && (
               <span className="ms-2 inline-flex items-center gap-1">
-                <span className="w-1.5 h-1.5 bg-brand-600 rounded-full animate-pulse" />
+                <span className="w-1.5 h-1.5 bg-brand-600 rounded-full" />
                 <span className="text-brand-600 font-semibold">
                   {interpolate(
                     totalUnread > 1
@@ -361,7 +356,7 @@ export default function MessagesInboxPage() {
               placeholder={t.common.search}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="ps-9 pe-4 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-accent-500/30 focus:border-accent-500 outline-none w-52 transition-all bg-neutral-50/50 focus:bg-white placeholder:text-neutral-400"
+              className="ps-9 pe-4 py-2.5 border border-neutral-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-700/30 focus:border-blue-700 outline-none w-52 transition-all bg-neutral-50/50 focus:bg-white placeholder:text-neutral-400"
             />
           </div>
         </div>
@@ -369,19 +364,19 @@ export default function MessagesInboxPage() {
 
       {/* Error State */}
       {error && (
-        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl mb-6 animate-fade-in">
-          <div className="w-10 h-10 bg-red-100 rounded-xl flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="w-5 h-5 text-red-500" />
+        <div className="flex items-center gap-3 p-4 bg-error-50 border border-error-200 rounded-2xl mb-6 animate-fade-in">
+          <div className="w-10 h-10 bg-error-100 rounded-xl flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="w-5 h-5 text-error-500" />
           </div>
           <div className="flex-1">
-            <p className="text-sm font-medium text-red-800">
+            <p className="text-sm font-medium text-error-700">
               {t.messages.loadError}
             </p>
-            <p className="text-xs text-red-600 mt-0.5">{error}</p>
+            <p className="text-xs text-error-600 mt-0.5">{error}</p>
           </div>
           <button
             onClick={() => fetchConversations()}
-            className="text-sm font-semibold text-red-600 hover:text-red-800 px-3 py-1.5 rounded-lg hover:bg-red-100 transition-colors"
+            className="text-sm font-semibold text-error-600 hover:text-error-700 px-3 py-1.5 rounded-lg hover:bg-error-100 transition-colors"
           >
             {t.common.retry}
           </button>
@@ -404,12 +399,12 @@ export default function MessagesInboxPage() {
       {!loading && !error && filteredConversations.length === 0 && (
         <div className="text-center py-20 animate-fade-in">
           <div className="relative w-24 h-24 mx-auto mb-6">
-            <div className="absolute inset-0 bg-gradient-to-br from-brand-600/10 to-accent-500/10 rounded-3xl rotate-6 animate-pulse" />
+            <div className="absolute inset-0 bg-blue-50 rounded-glass rotate-6" />
             <div className="absolute inset-0 flex items-center justify-center">
               <Inbox className="w-12 h-12 text-brand-600 -rotate-6" />
             </div>
           </div>
-          <h3 className="text-lg font-bold text-neutral-900 mb-2">
+          <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-2">
             {searchQuery
               ? t.messages.emptyNoResults
               : t.messages.emptyNoMessages}
@@ -422,7 +417,7 @@ export default function MessagesInboxPage() {
           {!searchQuery && (
             <Link
               href={role === "TRANSPORTER" ? "/demandes" : "/demandes/nouvelle"}
-              className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-white bg-accent-500 hover:bg-accent-600 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
+              className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
               {role === "TRANSPORTER"
                 ? t.messages.findMission
@@ -435,7 +430,7 @@ export default function MessagesInboxPage() {
 
       {/* Conversations List — Premium cards */}
       {!loading && filteredConversations.length > 0 && (
-        <div className="space-y-2">
+        <div className="flex flex-col gap-2">
           {filteredConversations.map((conv, index) => (
             <div
               key={conv.id}

@@ -23,20 +23,23 @@ export default function NavItem({
   return (
     <Link
       href={href}
-      className={`
-        flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition-all duration-200
+      aria-current={isActive ? "page" : undefined}
+      className={`flex min-h-[44px] items-center gap-3 rounded-field px-3.5 py-2.5
+        text-[14.5px] font-semibold transition-colors duration-120 ease-out
         ${
           isActive
-            ? "bg-brand-600/10 text-brand-600 shadow-sm"
-            : "text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
+            ? "bg-blue-50 text-blue-700"
+            : "text-ink-500 hover:bg-app hover:text-ink-900"
         }
-        ${isCollapsed ? "justify-center" : ""}
-      `}
+        ${isCollapsed ? "justify-center" : ""}`}
     >
       <Icon
-        className={`w-5 h-5 flex-shrink-0 ${isActive ? "text-brand-600" : "text-neutral-500"}`}
+        className={`h-[19px] w-[19px] flex-shrink-0 ${
+          isActive ? "text-blue-700" : "text-ink-300"
+        }`}
+        strokeWidth={isActive ? 2.3 : 2}
       />
-      {!isCollapsed && <span>{label}</span>}
+      {!isCollapsed && <span className="truncate">{label}</span>}
     </Link>
   );
 }

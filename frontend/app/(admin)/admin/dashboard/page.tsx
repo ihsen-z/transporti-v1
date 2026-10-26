@@ -288,11 +288,11 @@ function DashboardContent() {
     : "lg:grid-cols-4 md:grid-cols-2";
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 dark:text-white">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900 dark:text-white">
             {t.dashboard.title}
           </h1>
           <p className="text-neutral-500 dark:text-neutral-400">
@@ -304,7 +304,7 @@ function DashboardContent() {
           <div className="text-sm text-neutral-500 dark:text-neutral-400">
             {prefs.autoRefresh && (
               <span className="inline-flex items-center gap-1 me-2 px-2 py-0.5 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-full text-xs font-medium">
-                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                <span className="w-1.5 h-1.5 bg-green-500 rounded-full" />
                 Auto
               </span>
             )}
@@ -348,7 +348,7 @@ function DashboardContent() {
             ))}
           </div>
           {pivot && pivot.corridorA1.length > 0 && (
-            <div className="mt-4 bg-white dark:bg-neutral-900 rounded-2xl border border-neutral-100 dark:border-neutral-800 p-4">
+            <div className="mt-4 bg-white dark:bg-neutral-900 rounded-2xl border border-line dark:border-neutral-800 p-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-neutral-400 mb-2">
                 {t.dashboard.corridorA1Title}
               </p>
@@ -356,7 +356,7 @@ function DashboardContent() {
                 {pivot.corridorA1.map((c) => (
                   <span
                     key={c.corridor}
-                    className="text-xs px-2.5 py-1 rounded-full bg-purple-50 text-purple-700 border border-purple-200 font-medium"
+                    className="text-xs px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-medium"
                   >
                     {c.corridor} · {c.active_trips}
                   </span>
@@ -369,9 +369,9 @@ function DashboardContent() {
 
       {/* Revenue Chart — D4 + D2 Date Range */}
       {isWidgetVisible("section-jobs") && (
-        <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 transition-colors duration-300">
+        <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 p-6 transition-colors duration-300">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-            <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+            <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white">
               {locale === "ar" ? "تحليل الإيرادات" : "Analyse des revenus"}
             </h2>
             <div className="flex gap-1.5 bg-neutral-100 dark:bg-[#0f172a] rounded-lg p-1">
@@ -384,7 +384,7 @@ function DashboardContent() {
                 <button
                   key={range.days}
                   onClick={() => setChartDays(range.days)}
-                  className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                  className={`px-3 py-1.5 rounded-chip text-xs font-medium transition-colors ${
                     chartDays === range.days
                       ? "bg-brand-600 text-white shadow-sm"
                       : "text-neutral-500 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-white"
@@ -397,11 +397,11 @@ function DashboardContent() {
           </div>
           <div className="flex items-center gap-4 text-xs text-neutral-500 dark:text-neutral-400 mb-3">
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-500"></span>
+              <span className="h-2.5 w-2.5 rounded-full bg-blue-700" />
               {locale === "ar" ? "الإيرادات" : "Revenu brut"}
             </span>
             <span className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+              <span className="h-2.5 w-2.5 rounded-full bg-green-500" />
               {locale === "ar" ? "العمولة" : "Commission"}
             </span>
           </div>
@@ -415,7 +415,7 @@ function DashboardContent() {
         {isWidgetVisible("section-jobs") && (
           <div className="lg:col-span-2">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white">
                 {t.dashboard.recentJobs}
               </h2>
               <Link
@@ -430,18 +430,18 @@ function DashboardContent() {
         )}
 
         {/* Sidebar - Activity & Alerts */}
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {/* System Alerts */}
           {isWidgetVisible("section-alerts") && (
             <div>
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-4">
                 {t.dashboard.systemAlerts}
               </h2>
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 {systemAlerts.map((alert) => (
                   <div
                     key={alert.id}
-                    className={`p-4 rounded-lg border ${getAlertSeverityColor(alert.severity)}`}
+                    className={`rounded-tile p-4 ${getAlertSeverityColor(alert.severity)}`}
                   >
                     <div className="flex items-start justify-between">
                       <div>
@@ -451,7 +451,7 @@ function DashboardContent() {
                         </p>
                       </div>
                       {!alert.isRead && (
-                        <span className="w-2 h-2 bg-red-500 rounded-full flex-shrink-0 mt-1"></span>
+                        <span className="w-2 h-2 bg-error-500 rounded-full flex-shrink-0 mt-1"></span>
                       )}
                     </div>
                   </div>
@@ -463,10 +463,10 @@ function DashboardContent() {
           {/* Activity Feed */}
           {isWidgetVisible("section-activity") && (
             <div>
-              <h2 className="text-lg font-bold text-neutral-900 dark:text-white mb-4">
+              <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 dark:text-white mb-4">
                 {t.dashboard.recentActivity}
               </h2>
-              <div className="bg-white dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 divide-y divide-neutral-100 dark:divide-neutral-700">
+              <div className="bg-surface dark:bg-[#1e293b] rounded-xl border border-neutral-200 dark:border-neutral-700 divide-y divide-line dark:divide-neutral-700">
                 {activityLogs.slice(0, 5).map((log) => (
                   <div key={log.id} className="p-4 flex items-start gap-3">
                     <span className="text-lg">{getActivityIcon(log.type)}</span>

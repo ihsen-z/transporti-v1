@@ -1,6 +1,7 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { MessageDto } from '../api/dto';
+import { Txt } from '@/shared/ui/Txt';
 
 interface Props {
   message: MessageDto;
@@ -12,7 +13,7 @@ export function MessageBubble({ message, mine }: Props) {
   if (message.is_system) {
     return (
       <View style={styles.systemWrap}>
-        <Text style={styles.system}>{message.content}</Text>
+        <Txt style={styles.system}>{message.content}</Txt>
       </View>
     );
   }
@@ -20,8 +21,8 @@ export function MessageBubble({ message, mine }: Props) {
   return (
     <View style={[styles.wrap, mine ? styles.mineWrap : styles.otherWrap]}>
       <View style={[styles.bubble, mine ? styles.mine : styles.other]}>
-        {!mine ? <Text style={styles.sender}>{message.sender_name}</Text> : null}
-        <Text style={mine ? styles.textMine : styles.textOther}>{message.content}</Text>
+        {!mine ? <Txt style={styles.sender}>{message.sender_name}</Txt> : null}
+        <Txt style={mine ? styles.textMine : styles.textOther}>{message.content}</Txt>
       </View>
     </View>
   );

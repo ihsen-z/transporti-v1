@@ -33,7 +33,6 @@ import {
   MapPin,
   Calendar,
   Weight,
-  ImageOff,
   Pencil,
   Heart,
   Save,
@@ -43,7 +42,6 @@ import {
   Camera,
   Mail,
   Phone,
-  Upload,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -99,7 +97,9 @@ function StatItem({
       >
         <Icon className="w-5 h-5" />
       </div>
-      <p className="text-2xl font-bold text-neutral-900">{value}</p>
+      <p className="text-[21px] font-extrabold tracking-heading text-ink-900">
+        {value}
+      </p>
       <p className="text-[11px] text-neutral-500 mt-0.5 leading-tight">
         {label}
       </p>
@@ -122,7 +122,7 @@ function TrustBadge({
 }) {
   return (
     <div
-      className={`flex items-center justify-between gap-2 px-4 py-3 rounded-xl border ${color} transition-all hover:scale-[1.02]`}
+      className={`flex items-center justify-between gap-2 px-4 py-3 rounded-xl border ${color} transition-all`}
     >
       <div className="flex items-center gap-2">
         <Icon className="w-4 h-4 flex-shrink-0" />
@@ -455,7 +455,7 @@ export default function TransporterProfilePage({
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className=" flex items-center justify-center">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-brand-600 animate-spin mx-auto mb-3" />
           <p className="text-neutral-500">{t_i18n.profile.loadingProfile}</p>
@@ -466,9 +466,9 @@ export default function TransporterProfilePage({
 
   if (error || !transporter) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className=" flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">
+          <p className="text-error-500 mb-4">
             {error || t_i18n.profile.profileNotFound}
           </p>
           <Link
@@ -501,14 +501,14 @@ export default function TransporterProfilePage({
     trustBadges.push({
       icon: ShieldCheck,
       label: t_i18n.profile.verifiedIdentity,
-      color: "bg-emerald-50 border-emerald-200 text-emerald-700",
+      color: "bg-green-50 border-green-200 text-green-700",
     });
   }
   if (t.rating >= 4.5) {
     trustBadges.push({
       icon: Star,
       label: "Top noté",
-      color: "bg-amber-50 border-amber-200 text-amber-700",
+      color: "bg-warning-50 border-warning-200 text-warning-700",
     });
   }
   if ((t.completion_rate || 0) >= 90) {
@@ -522,7 +522,7 @@ export default function TransporterProfilePage({
     trustBadges.push({
       icon: Zap,
       label: t_i18n.profile.highlyReliable,
-      color: "bg-purple-50 border-purple-200 text-purple-700",
+      color: "bg-blue-50 border-blue-200 text-blue-700",
     });
   }
   // Fill with defaults if not enough badges
@@ -541,8 +541,8 @@ export default function TransporterProfilePage({
         <div
           className={`mb-4 px-5 py-3 rounded-xl text-sm font-semibold border ${
             saveMsg.type === "ok"
-              ? "bg-accent-50 text-accent-700 border-accent-200"
-              : "bg-red-50 text-red-700 border-red-200"
+              ? "bg-green-50 text-green-700 border-accent-200"
+              : "bg-error-50 text-error-700 border-error-200"
           }`}
         >
           {saveMsg.text}
@@ -571,12 +571,12 @@ export default function TransporterProfilePage({
             aria-pressed={estFavori}
             className={`inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-semibold transition-colors disabled:opacity-50 ${
               estFavori
-                ? "bg-red-50 border border-red-200 text-red-700 hover:bg-red-100"
+                ? "bg-error-50 border border-error-200 text-error-700 hover:bg-error-100"
                 : "bg-white border border-neutral-200 text-neutral-700 hover:bg-neutral-50"
             }`}
           >
             <Heart
-              className={`w-4 h-4 ${estFavori ? "fill-red-600 text-red-600" : ""}`}
+              className={`w-4 h-4 ${estFavori ? "fill-red-600 text-error-600" : ""}`}
               aria-hidden="true"
             />
             {estFavori ? t_i18n.favorites.remove : t_i18n.favorites.add}
@@ -605,7 +605,7 @@ export default function TransporterProfilePage({
             <button
               onClick={handleSave}
               disabled={saving}
-              className="inline-flex items-center gap-2 px-5 py-2 bg-accent-600 text-white rounded-xl text-sm font-semibold hover:bg-accent-700 transition-colors shadow-md disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2 bg-blue-700 text-white rounded-xl text-sm font-semibold hover:bg-blue-800 transition-colors shadow-md disabled:opacity-50"
             >
               {saving ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -621,18 +621,18 @@ export default function TransporterProfilePage({
       {/* ====== MAIN 2-COLUMN LAYOUT ====== */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ─────────── LEFT COLUMN (2/3) ─────────── */}
-        <div className="lg:col-span-2 space-y-5">
+        <div className="lg:col-span-2 flex flex-col gap-5">
           {/* ── HERO CARD ── */}
-          <div className="rounded-2xl overflow-hidden shadow-lg border border-neutral-100">
+          <div className="rounded-2xl overflow-hidden shadow-lg border border-line">
             {/* Navy gradient hero with profile info */}
-            <div className="bg-gradient-to-br from-brand-900 via-brand-700 to-brand-800 px-6 pt-6 pb-6 relative overflow-hidden">
+            <div className="bg-band px-6 pt-6 pb-6 relative overflow-hidden">
               {/* Decorative orbs */}
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-accent-500/10 rounded-full translate-y-1/2 -translate-x-1/2" />
 
               {/* Verified badge */}
               {t.is_verified && (
-                <div className="absolute top-4 end-4 flex items-center gap-1.5 bg-accent-500/90 backdrop-blur-sm text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg z-10">
+                <div className="absolute top-4 end-4 flex items-center gap-1.5 bg-accent-500/90 text-white text-xs font-semibold px-3 py-1.5 rounded-full shadow-lg z-10">
                   <BadgeCheck className="w-3.5 h-3.5" />
                   {t_i18n.profile.verified}
                 </div>
@@ -719,9 +719,9 @@ export default function TransporterProfilePage({
                       </div>
                     </div>
                   ) : (
-                    <h1 className="text-xl font-bold text-white truncate">
+                    <h2 className="text-xl font-bold text-white truncate">
                       {fullName}
-                    </h1>
+                    </h2>
                   )}
 
                   {/* Email / Phone in edit mode */}
@@ -779,7 +779,7 @@ export default function TransporterProfilePage({
 
                   {/* Rating */}
                   <div className="flex items-center gap-2 mt-1">
-                    <Star className="w-4 h-4 text-amber-400 fill-amber-400" />
+                    <Star className="w-4 h-4 text-warning-400 fill-warning-400" />
                     <span className="text-sm font-bold text-white">
                       {t.rating.toFixed(1)}
                     </span>
@@ -950,7 +950,7 @@ export default function TransporterProfilePage({
                     {t.specializations.map((spec) => (
                       <span
                         key={spec}
-                        className="text-xs bg-white/10 text-white/80 px-3 py-1.5 rounded-full font-medium border border-white/10 backdrop-blur-sm"
+                        className="text-xs bg-white/10 text-white/80 px-3 py-1.5 rounded-full font-medium border border-white/10"
                       >
                         {spec}
                       </span>
@@ -971,15 +971,15 @@ export default function TransporterProfilePage({
           )}
 
           {/* ── BIO / À PROPOS (UX-T5) ── */}
-          <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-neutral-100">
-              <h3 className="text-lg font-bold text-neutral-900">
+          <div className="bg-surface rounded-card shadow-card overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-line">
+              <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                 {t_i18n.profile.about}
               </h3>
             </div>
             <div className="p-5">
               {editing ? (
-                <div className="space-y-1">
+                <div className="flex flex-col gap-1">
                   <textarea
                     value={editBio}
                     onChange={(e) => setEditBio(e.target.value)}
@@ -1005,9 +1005,9 @@ export default function TransporterProfilePage({
           </div>
 
           {/* ── REVIEWS / AVIS CLIENTS ── */}
-          <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
-            <div className="px-6 py-4 border-b border-neutral-100 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-neutral-900">
+          <div className="bg-surface rounded-card shadow-card overflow-hidden shadow-sm">
+            <div className="px-6 py-4 border-b border-line flex items-center justify-between">
+              <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900">
                 {t_i18n.profile.reviewsTitle}
               </h3>
               <span className="text-xs font-semibold bg-brand-600 text-white px-3 py-1 rounded-full">
@@ -1015,7 +1015,7 @@ export default function TransporterProfilePage({
               </span>
             </div>
 
-            <div className="p-4 space-y-3">
+            <div className="p-4 flex flex-col gap-3">
               {visibleReviews.length === 0 ? (
                 <div className="text-center py-10">
                   <MessageSquare className="w-10 h-10 text-neutral-300 mx-auto mb-2" />
@@ -1045,7 +1045,7 @@ export default function TransporterProfilePage({
         </div>
 
         {/* ─────────── RIGHT COLUMN (1/3) ─────────── */}
-        <div className="lg:col-span-1 space-y-5">
+        <div className="lg:col-span-1 flex flex-col gap-5">
           {/* ── COMPLÉTUDE PROFIL (owner only, UX-T4) ── */}
           {isOwner &&
             (() => {
@@ -1098,8 +1098,8 @@ export default function TransporterProfilePage({
               const missing = checks.filter((c) => !c.done).slice(0, 3);
               if (pct >= 100) return null;
               return (
-                <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
-                  <div className="px-5 py-3 bg-gradient-to-r from-brand-600/5 to-accent-500/5 border-b border-neutral-100 flex items-center justify-between">
+                <div className="bg-surface rounded-card shadow-card overflow-hidden shadow-sm">
+                  <div className="px-5 py-3 bg-blue-50 border-b border-line flex items-center justify-between">
                     <h3 className="text-sm font-bold text-neutral-700">
                       {t_i18n.profile.completenessTitle}
                     </h3>
@@ -1107,15 +1107,15 @@ export default function TransporterProfilePage({
                       {pct}%
                     </span>
                   </div>
-                  <div className="p-5 space-y-3">
+                  <div className="p-5 flex flex-col gap-3">
                     <div className="w-full bg-neutral-100 rounded-full h-2 overflow-hidden">
                       <div
-                        className="h-2 rounded-full transition-all duration-700 bg-gradient-to-r from-brand-600 to-accent-500"
+                        className="h-2 rounded-full transition-all duration-700 bg-blue-700"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
                     {missing.length > 0 && (
-                      <div className="space-y-1.5">
+                      <div className="flex flex-col gap-1.5">
                         {missing.map((m, i) => (
                           <li
                             key={i}
@@ -1135,8 +1135,8 @@ export default function TransporterProfilePage({
             })()}
 
           {/* ── STATISTIQUES CARD ── */}
-          <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
-            <div className="px-5 py-3 bg-neutral-50 border-b border-neutral-100 flex items-center gap-2">
+          <div className="bg-surface rounded-card shadow-card overflow-hidden shadow-sm">
+            <div className="px-5 py-3 bg-neutral-50 border-b border-line flex items-center gap-2">
               <TrendingUp className="w-4 h-4 text-neutral-400" />
               <h3 className="text-sm font-bold text-neutral-700">
                 {t_i18n.profile.statistics}
@@ -1148,34 +1148,34 @@ export default function TransporterProfilePage({
                   icon={TrendingUp}
                   value={`${t.trust_score}/100`}
                   label={t_i18n.profile.trustScore}
-                  color="bg-brand-600/10 text-brand-600"
+                  color="bg-blue-50 text-blue-700"
                 />
                 <StatItem
                   icon={CheckCircle2}
                   value={`${t.completion_rate || 0}%`}
                   label={t_i18n.profile.completionRate}
-                  color="bg-accent-50 text-accent-600"
+                  color="bg-green-50 text-green-600"
                 />
                 <StatItem
                   icon={TruckIcon}
                   value={t.total_jobs_completed || 0}
                   label={t_i18n.profile.totalJobs}
-                  color="bg-purple-50 text-purple-600"
+                  color="bg-blue-50 text-blue-700"
                 />
                 <StatItem
                   icon={Clock}
                   value={`${t.avg_response_time_min || "--"} min`}
                   label={t_i18n.profile.avgResponseTime}
-                  color="bg-amber-50 text-amber-600"
+                  color="bg-warning-50 text-warning-600"
                 />
               </div>
             </div>
           </div>
 
           {/* ── VÉHICULE CARD ── */}
-          <div className="bg-white rounded-2xl border border-neutral-100 overflow-hidden shadow-sm">
+          <div className="bg-surface rounded-card shadow-card overflow-hidden shadow-sm">
             {/* Header — navy gradient */}
-            <div className="px-5 py-3 bg-gradient-to-r from-brand-900 to-brand-600">
+            <div className="px-5 py-3 bg-band">
               <h3 className="text-sm font-bold text-white tracking-wide">
                 {t_i18n.profile.vehicle}
               </h3>
@@ -1235,7 +1235,7 @@ export default function TransporterProfilePage({
             />
 
             {/* Vehicle details */}
-            <div className="p-5 space-y-4 border-t border-neutral-100">
+            <div className="p-5 flex flex-col gap-4 border-t border-line">
               {/* Type */}
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-lg bg-brand-600/8 flex items-center justify-center flex-shrink-0">
@@ -1249,7 +1249,7 @@ export default function TransporterProfilePage({
                     <select
                       value={editVehicleType}
                       onChange={(e) => setEditVehicleType(e.target.value)}
-                      className="mt-1 w-full px-2 py-1.5 border border-neutral-200 rounded-lg text-sm font-semibold text-neutral-900 bg-white"
+                      className="mt-1 field h-11 min-h-[44px]"
                     >
                       <option value="">{t_i18n.profile.select}</option>
                       {VEHICLE_TYPES.map((vt) => (
@@ -1259,7 +1259,7 @@ export default function TransporterProfilePage({
                       ))}
                     </select>
                   ) : (
-                    <p className="text-sm font-semibold text-neutral-900">
+                    <p className="text-[14px] font-bold text-ink-900">
                       {t.vehicle_type || t_i18n.profile.notSpecified}
                     </p>
                   )}
@@ -1282,12 +1282,12 @@ export default function TransporterProfilePage({
                         value={editCapacity}
                         onChange={(e) => setEditCapacity(e.target.value)}
                         placeholder="ex: 3500"
-                        className="w-24 px-2 py-1.5 border border-neutral-200 rounded-lg text-sm font-semibold text-neutral-900"
+                        className="w-24 px-2 py-1.5 border border-neutral-200 rounded-lg text-[14px] font-bold text-ink-900"
                       />
                       <span className="text-sm text-neutral-500">kg</span>
                     </div>
                   ) : (
-                    <p className="text-sm font-semibold text-neutral-900">
+                    <p className="text-[14px] font-bold text-ink-900">
                       {t.vehicle_capacity_kg
                         ? `${t.vehicle_capacity_kg.toLocaleString()} kg`
                         : t_i18n.profile.notSpecified}
@@ -1300,10 +1300,10 @@ export default function TransporterProfilePage({
               {t.insurance_valid_until && (
                 <div className="flex items-center gap-3">
                   <div
-                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isInsured ? "bg-accent-500/8" : "bg-red-500/8"}`}
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${isInsured ? "bg-accent-500/8" : "bg-error-500/8"}`}
                   >
                     <ShieldCheck
-                      className={`w-4 h-4 ${isInsured ? "text-accent-600" : "text-red-600"}`}
+                      className={`w-4 h-4 ${isInsured ? "text-accent-600" : "text-error-600"}`}
                     />
                   </div>
                   <div>
@@ -1311,7 +1311,7 @@ export default function TransporterProfilePage({
                       {t_i18n.profile.insurance}
                     </p>
                     <p
-                      className={`text-sm font-semibold ${isInsured ? "text-accent-600" : "text-red-600"}`}
+                      className={`text-sm font-semibold ${isInsured ? "text-accent-600" : "text-error-600"}`}
                     >
                       {isInsured
                         ? t_i18n.profile.insuranceValid

@@ -1,6 +1,5 @@
 import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useAuthStore } from '@/core/auth/authStore';
 import { TransporterMissionView } from '@/features/missions/components/TransporterMissionView';
@@ -11,6 +10,7 @@ import { CancelMissionSheet } from '@/features/tracking/components/CancelMission
 import { useJobEscrow } from '@/features/payments/api/useJobEscrow';
 import type { EscrowDetailDto } from '@/features/payments/api/dto';
 import { usePayJob } from '@/features/payments/api/usePayJob';
+import { clientDoitPayer } from '@/features/payments/paiementDu';
 import { useConfirmCompletion } from '@/features/payments/api/useConfirmCompletion';
 import { OpenReviewSheet } from '@/features/reviews/components/OpenReviewSheet';
 import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
@@ -20,7 +20,11 @@ import { Card } from '@/shared/ui/Card';
 import { Badge } from '@/shared/ui/Badge';
 import { Button } from '@/shared/ui/Button';
 import { RouteRow } from '@/shared/ui/RouteRow';
-import { Icon } from '@/shared/ui/icons';
+import { AppScreen } from '@/shared/ui/AppScreen';
+import { AppHeader } from '@/shared/ui/AppHeader';
+import { BackButton } from '@/shared/ui/BackButton';
+import { ActionBar } from '@/shared/ui/ActionBar';
+import { InfoBanner } from '@/shared/ui/InfoBanner';
 import { SkeletonList } from '@/shared/ui/SkeletonList';
 import { RouteUnavailable } from '@/shared/ui/RouteUnavailable';
 import { statusVariant } from '@/shared/ui/statusVariant';
@@ -41,7 +45,8 @@ export default function MissionScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const jobId = Number(id);
   const valid = Number.isFinite(jobId) && jobId > 0;
-  const isTransporter = useAuthStore((st) => st.user?.role) === 'TRANSPORTER';
+  const role = useAuthStore((st) => st.user?.role);
+  const isTransporter = role === 'TRANSPORTER';
 
   const job = useJobDetail(valid ? jobId : null);
   const pay = usePayJob();
@@ -56,8 +61,10 @@ export default function MissionScreen() {
   // serveur sur une mission payée en espèces.
   const escrow = useJobEscrow(valid ? jobId : null, isDigital);
 
-  // Paiement dû : mission acceptée, digitale, pas encore démarrée.
-  const awaitingPayment = d?.status === 'MATCHED' && isDigital;
+  // Paiement dû : la cliente, sur une mission acceptée, digitale, pas encore
+  // démarrée. Le RÔLE fait partie de la décision et non de son contexte de
+  // rendu — voir `clientDoitPayer`, qui existe pour cette raison.
+  const awaitingPayment = clientDoitPayer(role, d?.status, d?.booking_payment_method);
   // Réception à confirmer : le transporteur a livré, l'argent attend.
   const awaitingConfirmation = d?.status === 'COMPLETED' && !d.client_confirmed;
   const cancellable = d?.status === 'MATCHED' || d?.status === 'IN_PROGRESS';
@@ -85,24 +92,37 @@ export default function MissionScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
-      <View style={styles.header}>
-        <Pressable
-          testID="mission-detail-back"
-          onPress={() => router.back()}
-          accessibilityRole="button"
-          accessibilityLabel={t('common.back')}
-          hitSlop={12}
-        >
-          <Icon name="chevron-left" size={24} color={colors.neutral[900]} />
-        </Pressable>
-        <Txt style={styles.headerTitle}>{t('tracking.title')}</Txt>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.content}
-        refreshControl={queryRefreshControl(job)}
-      >
+    <AppScreen
+      testID="mission-screen"
+      header={
+        <AppHeader
+          leading={<BackButton testID="mission-detail-back" />}
+          title={t('tracking.title')}
+        />
+      }
+      refreshControl={queryRefreshControl(job)}
+      footer={
+        // Le paiement passe en BARRE D'ACTION FIXE (charte, §Barre d'action) :
+        // le total à gauche, l'action unique à droite. Il vivait dans une carte
+        // au milieu du défilement — sur une mission avec chronologie fournie,
+        // le bouton qui débloque la mission sortait de l'écran.
+        awaitingPayment && d?.accepted_transporter ? (
+          <ActionBar
+            testID="mission-detail-action-bar"
+            label={t('tracking.total')}
+            amount={`${formatAmount(d.accepted_transporter.total_price)} TND`}
+          >
+            <Button
+              testID="mission-detail-pay"
+              label={t('tracking.pay_cta')}
+              onPress={onPay}
+              variant="cta"
+              loading={pay.isPending}
+            />
+          </ActionBar>
+        ) : undefined
+      }
+    >
         {/* 7.1 — la meme route sert les deux roles. Une notification de
             mission doit pouvoir pointer `/mission/<id>` sans savoir qui
             tapera dessus ; deux routes obligeraient l'emetteur a le deviner.
@@ -168,18 +188,12 @@ export default function MissionScreen() {
               </Card>
             ) : null}
 
+            {/* Le bouton est descendu dans la barre fixe ; ce qui reste ici,
+                c'est la seule chose qu'il fallait lire AVANT de payer. */}
             {awaitingPayment ? (
-              <Card style={styles.actionCard}>
-                <Txt style={styles.sectionTitle}>{t('tracking.pay_title')}</Txt>
-                <Txt style={styles.hint}>{t('tracking.pay_hint')}</Txt>
-                <Button
-                  testID="mission-detail-pay"
-                  label={t('tracking.pay_cta')}
-                  onPress={onPay}
-                  variant="cta"
-                  loading={pay.isPending}
-                />
-              </Card>
+              <InfoBanner testID="mission-detail-pay-hint">
+                {t('tracking.pay_hint')}
+              </InfoBanner>
             ) : null}
 
             {awaitingConfirmation ? (
@@ -255,7 +269,6 @@ export default function MissionScreen() {
         )}
           </>
         )}
-      </ScrollView>
 
       <CancelMissionSheet
         jobId={cancelOpen ? jobId : null}
@@ -267,21 +280,11 @@ export default function MissionScreen() {
       />
       <OpenReviewSheet jobId={reviewOpen ? jobId : null} onClose={() => setReviewOpen(false)} />
       <OpenDisputeSheet jobId={disputeOpen ? jobId : null} onClose={() => setDisputeOpen(false)} />
-    </SafeAreaView>
+    </AppScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.neutral[50] },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
-    paddingHorizontal: spacing.xl,
-    paddingVertical: spacing.md,
-  },
-  headerTitle: { fontSize: fontSize.xl, fontWeight: '800', color: colors.neutral[900] },
-  content: { padding: spacing.xl, gap: spacing.lg, paddingTop: 0 },
   statusRow: { flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' },
   route: { marginTop: spacing.md },
   transporter: { fontSize: fontSize.md, color: colors.neutral[700], marginTop: spacing.sm },

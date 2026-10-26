@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
-import { Heart, Loader2, ShieldCheck } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { formatDate } from "@/lib/format";
@@ -76,13 +76,11 @@ export default function FavorisPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
       <header>
-        <h1 className="text-3xl font-bold text-neutral-900 mb-2 flex items-center gap-2">
-          <Heart className="w-7 h-7 text-brand-600" aria-hidden="true" />
-          {t.favorites.title}
-        </h1>
-        <p className="text-neutral-600">{t.favorites.subtitle}</p>
+        <p className="text-[14.5px] leading-[1.55] text-ink-500">
+          {t.favorites.subtitle}
+        </p>
       </header>
 
       {erreur ? (
@@ -94,12 +92,12 @@ export default function FavorisPage() {
           {t.favorites.empty}
         </p>
       ) : (
-        <ul data-testid="favoris-liste" className="space-y-3">
+        <ul data-testid="favoris-liste" className="flex flex-col gap-3">
           {favoris.map((favori) => (
             <li
               key={favori.id}
               data-testid="favoris-ligne"
-              className="bg-white rounded-xl border border-neutral-200 p-4 flex flex-wrap items-center justify-between gap-3"
+              className="bg-surface rounded-card shadow-card p-4 flex flex-wrap items-center justify-between gap-3"
             >
               <div>
                 <p className="font-semibold text-neutral-900 flex items-center gap-2">
@@ -107,7 +105,7 @@ export default function FavorisPage() {
                   {favori.is_verified && (
                     <span
                       data-testid="favoris-verifie"
-                      className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700"
+                      className="inline-flex items-center gap-1 text-xs font-medium text-green-700"
                     >
                       <ShieldCheck className="w-3.5 h-3.5" aria-hidden="true" />
                       {t.favorites.verified}
@@ -143,7 +141,7 @@ export default function FavorisPage() {
                   data-testid="favoris-retirer"
                   onClick={() => void retirer(favori.transporter_id)}
                   disabled={enCours === favori.transporter_id}
-                  className="px-4 py-2 border border-red-200 bg-red-50 text-red-700 rounded-lg text-sm font-medium hover:bg-red-100 transition-colors disabled:opacity-50"
+                  className="px-4 py-2 border border-error-200 bg-error-50 text-error-700 rounded-lg text-sm font-medium hover:bg-error-100 transition-colors disabled:opacity-50"
                 >
                   {t.favorites.remove}
                 </button>

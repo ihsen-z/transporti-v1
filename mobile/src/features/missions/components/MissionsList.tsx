@@ -1,10 +1,11 @@
-import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import { EmptyState } from '@/shared/ui/EmptyState';
 import type { MissionDto } from '../api/dto';
 import { useMyMissions } from '../api/useMyMissions';
 import { MissionCard } from './MissionCard';
+import { Txt } from '@/shared/ui/Txt';
 
 // Liste des missions actives du transporteur. Rendue via .map (et non FlatList)
 // car imbriquée dans le ScrollView de l'Accueil.
@@ -15,7 +16,7 @@ export function MissionsList() {
 
   return (
     <View style={styles.wrap}>
-      <Text style={styles.title}>{t('missions.title')}</Text>
+      <Txt style={styles.title}>{t('missions.title')}</Txt>
 
       {missions.isLoading ? (
         <ActivityIndicator color={colors.brand[500]} />

@@ -21,7 +21,16 @@ jest.mock('@/features/notifications/api/useUnreadCount', () => ({
   useUnreadCount: () => mockUseUnreadCount(),
 }));
 
-const TAB_NAMES = ['home', 'search', 'publish', 'requests', 'mes-demandes', 'messages', 'profile', 'gains'];
+const TAB_NAMES = [
+  'home',
+  'search',
+  'publish',
+  'requests',
+  'mes-demandes',
+  'messages',
+  'profile',
+  'gains',
+];
 
 function makeProps(currentName: string) {
   const navigate = jest.fn();
@@ -29,10 +38,7 @@ function makeProps(currentName: string) {
   const routes = TAB_NAMES.map((name) => ({ key: `${name}-key`, name }));
 
   const descriptors = Object.fromEntries(
-    routes.map((r) => [
-      r.key,
-      { options: { title: r.name, tabBarIcon: () => null } },
-    ]),
+    routes.map((r) => [r.key, { options: { title: r.name, tabBarIcon: () => null } }]),
   );
 
   // Cast ciblé : BottomTabBarProps est un type de react-navigation avec
@@ -125,7 +131,13 @@ describe('pastille messages non lus', () => {
     mockUseConversations.mockReturnValue({
       data: {
         pages: [
-          { results: [{ id: 1, unread_count: 5 }, { id: 2, unread_count: 3 }, { id: 3, unread_count: 0 }] },
+          {
+            results: [
+              { id: 1, unread_count: 5 },
+              { id: 2, unread_count: 3 },
+              { id: 3, unread_count: 0 },
+            ],
+          },
         ],
       },
     });
@@ -137,7 +149,7 @@ describe('pastille messages non lus', () => {
     expect(screen.getByText('2')).toBeTruthy();
   });
 
-  it('ne s\'affiche pas sans conversation non lue', () => {
+  it("ne s'affiche pas sans conversation non lue", () => {
     mockUseConversations.mockReturnValue({
       data: { pages: [{ results: [{ id: 1, unread_count: 0 }] }] },
     });
@@ -147,7 +159,6 @@ describe('pastille messages non lus', () => {
     expect(screen.queryByTestId('tab-messages-badge')).toBeNull();
   });
 });
-
 
 // Lot 7.4 (E-14) — la cloche ne vivait QUE sur l'Accueil : depuis « Mes
 // demandes », une conversation ou le profil, rien ne signalait qu'une décision
@@ -188,5 +199,80 @@ describe('7.4 — compteur de notifications sur la barre', () => {
     const { props } = makeProps('gains');
     render(<FloatingTabBar {...props} role="TRANSPORTER" />);
     expect(screen.getByTestId('tab-home-badge')).toBeTruthy();
+  });
+});
+
+// Écrans de DÉTAIL. Ils vivent dans le même navigateur à onglets (`href: null`
+// les retire de la barre, pas du navigateur), et la barre continuait donc de se
+// dessiner par-dessus : le dernier élément de leurs listes restait sous la
+// pilule, et depuis que le détail de mission porte une barre d'action fixe,
+// c'est le bouton de paiement qui passait dessous.
+function makeDetailProps(currentName: string, nestedIndex?: number) {
+  const routes = [
+    ...TAB_NAMES.map((name) => ({ key: `${name}-key`, name })),
+    { key: 'mission-key', name: 'mission/[id]' },
+    { key: 'transporteur-key', name: 'transporteur/[id]' },
+    { key: 'mes-retours-key', name: 'mes-retours' },
+  ].map((r) =>
+    // Une pile imbriquée dépliée au-delà de sa racine : messages/[jobId] est
+    // bien DANS l'onglet Messages, mais c'est un fil, pas la boîte.
+    r.name === currentName && nestedIndex !== undefined
+      ? { ...r, state: { index: nestedIndex, routes: [] } }
+      : r,
+  );
+
+  const descriptors = Object.fromEntries(
+    routes.map((r) => [r.key, { options: { title: r.name, tabBarIcon: () => null } }]),
+  );
+
+  return {
+    state: { routes, index: routes.findIndex((r) => r.name === currentName) },
+    descriptors,
+    navigation: {
+      emit: jest.fn(() => ({ defaultPrevented: false })),
+      navigate: jest.fn(),
+    },
+  } as unknown as BottomTabBarProps;
+}
+
+describe('la barre ne se dessine que sur une section', () => {
+  it('reste visible sur un onglet du rôle', () => {
+    render(<FloatingTabBar {...makeDetailProps('home')} role="CLIENT" />);
+    expect(screen.toJSON()).not.toBeNull();
+  });
+
+  it('reste visible sur le FAB du rôle (une section, pas un détail)', () => {
+    render(<FloatingTabBar {...makeDetailProps('search')} role="CLIENT" />);
+    expect(screen.toJSON()).not.toBeNull();
+  });
+
+  it.each(['mission/[id]', 'transporteur/[id]', 'mes-retours'])(
+    'disparaît sur %s',
+    (route) => {
+      render(<FloatingTabBar {...makeDetailProps(route)} role="TRANSPORTER" />);
+      expect(screen.toJSON()).toBeNull();
+    },
+  );
+
+  it('disparaît dans un fil de conversation, pas dans la boîte', () => {
+    // Racine de la pile : c'est la boîte de réception, une section.
+    render(<FloatingTabBar {...makeDetailProps('messages', 0)} role="CLIENT" />);
+    expect(screen.toJSON()).not.toBeNull();
+    screen.unmount();
+
+    // Un cran plus loin : un fil ouvert, dont le champ de saisie est en bas.
+    render(<FloatingTabBar {...makeDetailProps('messages', 1)} role="CLIENT" />);
+    expect(screen.toJSON()).toBeNull();
+  });
+
+  it("disparaît sur le profil du transporteur, qui l'atteint par son avatar", () => {
+    // Le profil est un onglet POUR LA CLIENTE et un écran empilé pour le
+    // transporteur : la même route, deux anatomies.
+    render(<FloatingTabBar {...makeDetailProps('profile')} role="CLIENT" />);
+    expect(screen.toJSON()).not.toBeNull();
+    screen.unmount();
+
+    render(<FloatingTabBar {...makeDetailProps('profile')} role="TRANSPORTER" />);
+    expect(screen.toJSON()).toBeNull();
   });
 });

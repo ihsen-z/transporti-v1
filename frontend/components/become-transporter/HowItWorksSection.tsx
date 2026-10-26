@@ -29,7 +29,7 @@ export function HowItWorksSection() {
       data-testid="devenir-transporteur-etapes"
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 className="text-3xl font-bold text-neutral-900 text-center mb-10">
+        <h2 className="text-[28px] font-extrabold tracking-title text-ink-900 text-center mb-10">
           {b.howTitle}
         </h2>
 
@@ -37,7 +37,7 @@ export function HowItWorksSection() {
           {etapes.map((etape, index) => (
             <li
               key={etape.titre}
-              className="bg-white rounded-2xl border border-neutral-200 p-6 flex gap-4"
+              className="bg-surface rounded-card shadow-card p-6 flex gap-4"
             >
               <span className="flex-shrink-0 w-9 h-9 rounded-full bg-primary-700 text-white font-bold flex items-center justify-center">
                 {index + 1}

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { Select } from '@/shared/ui/Select';
@@ -8,6 +8,7 @@ import { Button } from '@/shared/ui/Button';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import { DOCUMENT_TYPES, isExpiringType, type DocumentType } from '../data/documentTypes';
 import { useUploadDocument } from '../api/useUploadDocument';
+import { Txt } from '@/shared/ui/Txt';
 
 interface PickedImage {
   uri: string;
@@ -90,7 +91,7 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
         <Pressable style={styles.sheet} onPress={() => undefined}>
           {upload.isSuccess ? (
             <View style={styles.successBox}>
-              <Text style={styles.successText}>{t('trust.uploaded')}</Text>
+              <Txt style={styles.successText}>{t('trust.uploaded')}</Txt>
               <Button
                 testID="add-document-close"
                 label={t('common.close')}
@@ -100,7 +101,7 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
             </View>
           ) : (
             <>
-              <Text style={styles.title}>{t('trust.add_doc')}</Text>
+              <Txt style={styles.title}>{t('trust.add_doc')}</Txt>
               <Select
                 testID="add-document-type"
                 label={t('trust.doc_type')}
@@ -125,14 +126,14 @@ export function AddDocumentSheet({ visible, onClose }: Props) {
                 variant="primary"
               />
               {formError ? (
-                <Text testID="add-document-form-error" style={styles.error}>
+                <Txt testID="add-document-form-error" style={styles.error}>
                   {formError}
-                </Text>
+                </Txt>
               ) : null}
               {serverError ? (
-                <Text testID="add-document-server-error" style={styles.error}>
+                <Txt testID="add-document-server-error" style={styles.error}>
                   {serverError}
-                </Text>
+                </Txt>
               ) : null}
               <Button
                 testID="add-document-submit"

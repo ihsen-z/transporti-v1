@@ -31,7 +31,6 @@ import {
   Package,
   Star,
   FileText,
-  Upload,
   MessageCircle,
   User as UserIcon,
 } from "lucide-react";
@@ -80,13 +79,15 @@ function ClientStatCard({
   accent: string;
 }) {
   return (
-    <div className="bg-white rounded-2xl border border-neutral-100 p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+    <div className="bg-surface rounded-card shadow-card p-5 hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
       <div
         className={`w-11 h-11 rounded-xl flex items-center justify-center mb-3 ${accent}`}
       >
         <Icon className="w-5 h-5" />
       </div>
-      <p className="text-2xl font-bold text-neutral-900">{value}</p>
+      <p className="text-[21px] font-extrabold tracking-heading text-ink-900">
+        {value}
+      </p>
       <p className="text-sm text-neutral-500 mt-0.5">{label}</p>
     </div>
   );
@@ -252,9 +253,9 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
   /* --- Loading / Error --- */
   if (loading) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className=" flex items-center justify-center">
         <div className="text-center">
-          <Loader2 className="w-8 h-8 text-amber-600 animate-spin mx-auto mb-3" />
+          <Loader2 className="w-8 h-8 text-warning-600 animate-spin mx-auto mb-3" />
           <p className="text-neutral-500">Chargement du profil...</p>
         </div>
       </div>
@@ -263,9 +264,11 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
 
   if (error || !client) {
     return (
-      <div className="min-h-screen bg-neutral-50 flex items-center justify-center">
+      <div className=" flex items-center justify-center">
         <div className="text-center">
-          <p className="text-red-500 mb-4">{error || "Profil introuvable."}</p>
+          <p className="text-error-500 mb-4">
+            {error || "Profil introuvable."}
+          </p>
           <Link
             href="/dashboard"
             className="text-brand-600 hover:underline text-sm font-medium"
@@ -296,7 +299,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
 
   /* --- RENDER --- */
   return (
-    <div className="min-h-screen bg-neutral-50 p-4 lg:p-8 max-w-6xl mx-auto">
+    <div className=" p-4 lg:p-8 max-w-6xl mx-auto">
       {/* Avatar Cropper Modal */}
       {avatarCropSrc && (
         <ImageCropper
@@ -368,7 +371,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
           className={`mb-4 px-4 py-3 rounded-xl text-sm font-medium ${
             saveMsg.type === "ok"
               ? "bg-green-50 text-green-700 border border-green-200"
-              : "bg-red-50 text-red-700 border border-red-200"
+              : "bg-error-50 text-error-700 border border-error-200"
           }`}
         >
           {saveMsg.text}
@@ -378,10 +381,10 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
       {/* Main Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ===== LEFT COLUMN — Hero Card ===== */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 flex flex-col gap-6">
           {/* Hero Card — warm amber gradient */}
           <div className="relative rounded-2xl overflow-hidden shadow-xl">
-            <div className="bg-gradient-to-br from-amber-500 via-orange-500 to-rose-500 p-8 text-white relative">
+            <div className="bg-orange-500 p-8 text-white relative">
               {/* Decorative circles */}
               <div className="absolute top-0 right-0 w-48 h-48 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-white/5 rounded-full translate-y-1/2 -translate-x-1/2" />
@@ -398,7 +401,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                       className="w-24 h-24 rounded-full object-cover border-4 border-white/30 shadow-lg"
                     />
                   ) : (
-                    <div className="w-24 h-24 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-3xl font-bold border-4 border-white/30 shadow-lg">
+                    <div className="w-24 h-24 rounded-full bg-white/20 flex items-center justify-center text-3xl font-bold border-4 border-white/30 shadow-lg">
                       {initials}
                     </div>
                   )}
@@ -425,23 +428,23 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                         value={editFirstName}
                         onChange={(e) => setEditFirstName(e.target.value)}
                         placeholder="Prénom"
-                        className="flex-1 px-3 py-2 rounded-lg bg-white/20 backdrop-blur-sm text-white placeholder-white/60 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 text-lg font-bold"
+                        className="flex-1 px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/60 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 text-lg font-bold"
                       />
                       <input
                         type="text"
                         value={editLastName}
                         onChange={(e) => setEditLastName(e.target.value)}
                         placeholder="Nom"
-                        className="flex-1 px-3 py-2 rounded-lg bg-white/20 backdrop-blur-sm text-white placeholder-white/60 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 text-lg font-bold"
+                        className="flex-1 px-3 py-2 rounded-lg bg-white/20 text-white placeholder-white/60 border border-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 text-lg font-bold"
                       />
                     </div>
                   ) : (
-                    <h1 className="text-2xl font-bold mb-1 truncate">
+                    <h2 className="text-2xl font-bold mb-1 truncate">
                       {fullName}
-                    </h1>
+                    </h2>
                   )}
 
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 backdrop-blur-sm text-sm font-medium mb-3">
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/20 text-sm font-medium mb-3">
                     <UserIcon className="w-3.5 h-3.5" />
                     Client
                   </span>
@@ -466,7 +469,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                             value={editPhone}
                             onChange={(e) => setEditPhone(e.target.value)}
                             placeholder="+21612345678"
-                            className={`bg-white/20 backdrop-blur-sm px-2 py-1 rounded border text-white placeholder-white/60 text-sm focus:outline-none focus:ring-1 focus:ring-white/50 ${formErrors.phone ? "border-red-300" : "border-white/30"}`}
+                            className={`bg-white/20 px-2 py-1 rounded border text-white placeholder-white/60 text-sm focus:outline-none focus:ring-1 focus:ring-white/50 ${formErrors.phone ? "border-error-300" : "border-white/30"}`}
                           />
                         </div>
                         {formErrors.phone && (
@@ -511,12 +514,12 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
           </div>
 
           {/* Bio Section */}
-          <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-3 flex items-center gap-2">
-              <FileText className="w-5 h-5 text-amber-500" />À propos
+          <div className="bg-surface rounded-card shadow-card p-6 shadow-sm">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-3 flex items-center gap-2">
+              <FileText className="w-5 h-5 text-warning-500" />À propos
             </h3>
             {editing ? (
-              <div className="space-y-3">
+              <div className="flex flex-col gap-3">
                 <textarea
                   value={editBio}
                   onChange={(e) => setEditBio(e.target.value)}
@@ -543,22 +546,22 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
           </div>
 
           {/* Activity Summary */}
-          <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <Briefcase className="w-5 h-5 text-amber-500" />
+          <div className="bg-surface rounded-card shadow-card p-6 shadow-sm">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4 flex items-center gap-2">
+              <Briefcase className="w-5 h-5 text-warning-500" />
               Historique d&apos;activité
             </h3>
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center justify-between py-3 border-b border-neutral-50">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-lg bg-warning-50 text-warning-600 flex items-center justify-center">
                     <Package className="w-4 h-4" />
                   </div>
                   <span className="text-sm text-neutral-700">
                     Total annonces publiées
                   </span>
                 </div>
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {c.total_jobs_posted}
                 </span>
               </div>
@@ -571,7 +574,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                     Transports terminés
                   </span>
                 </div>
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {c.completed_jobs}
                 </span>
               </div>
@@ -584,20 +587,20 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                     Annonces actives
                   </span>
                 </div>
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {c.active_jobs}
                 </span>
               </div>
               <div className="flex items-center justify-between py-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-9 h-9 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center">
+                  <div className="w-9 h-9 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center">
                     <FileText className="w-4 h-4" />
                   </div>
                   <span className="text-sm text-neutral-700">
                     Offres reçues
                   </span>
                 </div>
-                <span className="text-lg font-bold text-neutral-900">
+                <span className="text-[17px] font-extrabold tracking-heading text-ink-900">
                   {c.total_offers_received}
                 </span>
               </div>
@@ -605,9 +608,9 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
           </div>
 
           {/* Reviews Section */}
-          <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
-            <h3 className="text-lg font-semibold text-neutral-900 mb-4 flex items-center gap-2">
-              <MessageCircle className="w-5 h-5 text-amber-500" />
+          <div className="bg-surface rounded-card shadow-card p-6 shadow-sm">
+            <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4 flex items-center gap-2">
+              <MessageCircle className="w-5 h-5 text-warning-500" />
               Avis reçus
               {c.review_count > 0 && (
                 <span className="ms-auto text-sm font-medium text-neutral-400">
@@ -616,7 +619,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
               )}
             </h3>
             {reviews.length > 0 ? (
-              <div className="space-y-4">
+              <div className="flex flex-col gap-4">
                 {reviews.slice(0, 5).map((r) => {
                   const initials = r.reviewer_name
                     .split(" ")
@@ -638,11 +641,11 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                   return (
                     <div
                       key={r.id}
-                      className="border border-neutral-100 rounded-xl p-4 hover:shadow-sm transition-shadow"
+                      className="border border-line rounded-xl p-4 hover:shadow-sm transition-shadow"
                     >
                       <div className="flex items-start justify-between mb-2">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-500 to-orange-600 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center text-white font-bold text-xs flex-shrink-0">
                             {initials}
                           </div>
                           <div>
@@ -655,7 +658,7 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                                   key={star}
                                   className={`w-3 h-3 ${
                                     star <= (r.rating || 0)
-                                      ? "text-amber-400 fill-amber-400"
+                                      ? "text-warning-400 fill-warning-400"
                                       : "text-neutral-200"
                                   }`}
                                 />
@@ -688,14 +691,14 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
         </div>
 
         {/* ===== RIGHT COLUMN — Stats ===== */}
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
           {/* Quick Stats */}
           <div className="grid grid-cols-2 gap-4">
             <ClientStatCard
               icon={Package}
               label="Annonces"
               value={c.total_jobs_posted}
-              accent="bg-amber-50 text-amber-600"
+              accent="bg-warning-50 text-warning-600"
             />
             <ClientStatCard
               icon={CheckCircle2}
@@ -713,16 +716,16 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
               icon={Star}
               label="Note"
               value={c.rating > 0 ? `${c.rating}/5` : "--"}
-              accent="bg-amber-50 text-amber-500"
+              accent="bg-warning-50 text-warning-500"
             />
           </div>
 
           {/* Member Card */}
-          <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
-            <h3 className="text-base font-semibold text-neutral-900 mb-4">
+          <div className="bg-surface rounded-card shadow-card p-6 shadow-sm">
+            <h3 className="text-[15.5px] font-bold text-ink-900 mb-4">
               Informations
             </h3>
-            <div className="space-y-4">
+            <div className="flex flex-col gap-4">
               <div className="flex items-center gap-3 text-sm">
                 <Calendar className="w-4 h-4 text-neutral-400" />
                 <div>
@@ -757,18 +760,18 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
 
           {/* Trust Score Badge (visible by both owner and visitors) */}
           {c.client_trust_score && (
-            <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
-              <h3 className="text-base font-semibold text-neutral-900 mb-3 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-emerald-500" />
+            <div className="bg-surface rounded-card shadow-card p-6 shadow-sm">
+              <h3 className="text-[15.5px] font-bold text-ink-900 mb-3 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5 text-green-500" />
                 Score de confiance
               </h3>
               <div className="flex items-center gap-4">
                 <div
                   className={`w-14 h-14 rounded-full flex items-center justify-center text-xl font-bold border-4 ${
                     c.client_trust_score.score >= 80
-                      ? "border-emerald-400 text-emerald-600 bg-emerald-50"
+                      ? "border-green-400 text-green-600 bg-green-50"
                       : c.client_trust_score.score >= 60
-                        ? "border-amber-400 text-amber-600 bg-amber-50"
+                        ? "border-amber-400 text-warning-600 bg-warning-50"
                         : c.client_trust_score.score >= 40
                           ? "border-orange-400 text-orange-600 bg-orange-50"
                           : "border-neutral-300 text-neutral-500 bg-neutral-50"
@@ -780,9 +783,9 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                   <span
                     className={`inline-block px-2.5 py-1 rounded-full text-xs font-semibold ${
                       c.client_trust_score.label === "excellent"
-                        ? "bg-emerald-100 text-emerald-700"
+                        ? "bg-green-100 text-green-700"
                         : c.client_trust_score.label === "good"
-                          ? "bg-amber-100 text-amber-700"
+                          ? "bg-warning-100 text-warning-700"
                           : c.client_trust_score.label === "average"
                             ? "bg-orange-100 text-orange-700"
                             : "bg-neutral-100 text-neutral-600"
@@ -806,9 +809,9 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
                 <div
                   className={`h-full rounded-full transition-all duration-500 ${
                     c.client_trust_score.score >= 80
-                      ? "bg-emerald-500"
+                      ? "bg-green-500"
                       : c.client_trust_score.score >= 60
-                        ? "bg-amber-500"
+                        ? "bg-warning-500"
                         : c.client_trust_score.score >= 40
                           ? "bg-orange-500"
                           : "bg-neutral-400"
@@ -850,24 +853,24 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
               if (pct >= 100) return null;
               const missing = checks.filter((ch) => !ch.done);
               return (
-                <div className="bg-white rounded-2xl border border-neutral-100 p-6 shadow-sm">
-                  <h3 className="text-base font-semibold text-neutral-900 mb-3 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-amber-500" />
+                <div className="bg-surface rounded-card shadow-card p-6 shadow-sm">
+                  <h3 className="text-[15.5px] font-bold text-ink-900 mb-3 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-warning-500" />
                     Complétude du profil
                   </h3>
                   <div className="flex items-center gap-3 mb-3">
                     <div className="flex-1 h-2.5 bg-neutral-100 rounded-full overflow-hidden">
                       <div
-                        className="h-full bg-gradient-to-r from-amber-400 to-amber-600 rounded-full transition-all duration-500"
+                        className="h-full bg-warning-500 rounded-full transition-all duration-500"
                         style={{ width: `${pct}%` }}
                       />
                     </div>
-                    <span className="text-sm font-bold text-amber-600">
+                    <span className="text-sm font-bold text-warning-600">
                       {pct}%
                     </span>
                   </div>
                   {missing.length > 0 && (
-                    <div className="space-y-1.5">
+                    <div className="flex flex-col gap-1.5">
                       <p className="text-xs text-neutral-400 mb-1">
                         Suggestions :
                       </p>
@@ -888,28 +891,28 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
 
           {/* Quick Actions for Owner */}
           {isOwner && !editing && (
-            <div className="bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border border-amber-100 p-6">
-              <h3 className="text-base font-semibold text-neutral-900 mb-3">
+            <div className="bg-orange-50 rounded-2xl border border-amber-100 p-6">
+              <h3 className="text-[15.5px] font-bold text-ink-900 mb-3">
                 Actions rapides
               </h3>
-              <div className="space-y-2">
+              <div className="flex flex-col gap-2">
                 <Link
                   href="/demandes/nouvelle"
-                  className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl text-sm font-medium text-neutral-700 hover:bg-amber-50 hover:text-amber-700 transition-colors border border-neutral-100"
+                  className="flex items-center gap-2 px-4 py-3 bg-surface rounded-tile text-sm font-medium text-neutral-700 hover:bg-warning-50 hover:text-warning-700 transition-colors border border-line"
                 >
                   <Package className="w-4 h-4" />
                   Publier une annonce
                 </Link>
                 <Link
                   href="/jobs"
-                  className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl text-sm font-medium text-neutral-700 hover:bg-amber-50 hover:text-amber-700 transition-colors border border-neutral-100"
+                  className="flex items-center gap-2 px-4 py-3 bg-surface rounded-tile text-sm font-medium text-neutral-700 hover:bg-warning-50 hover:text-warning-700 transition-colors border border-line"
                 >
                   <Briefcase className="w-4 h-4" />
                   Mes transports
                 </Link>
                 <Link
                   href="/messages"
-                  className="flex items-center gap-2 px-4 py-3 bg-white rounded-xl text-sm font-medium text-neutral-700 hover:bg-amber-50 hover:text-amber-700 transition-colors border border-neutral-100"
+                  className="flex items-center gap-2 px-4 py-3 bg-surface rounded-tile text-sm font-medium text-neutral-700 hover:bg-warning-50 hover:text-warning-700 transition-colors border border-line"
                 >
                   <Mail className="w-4 h-4" />
                   Messages

@@ -3,8 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { apiClient, ApiError } from "@/lib/api/client";
-import type { JobDetail } from "@/lib/types/jobs";
+import { ApiError } from "@/lib/api/client";
 import {
   type NatureDeJob,
   SEGMENT_PAR_NATURE,
@@ -27,7 +26,6 @@ import {
   confirmerLivraisonParLeClient,
   enregistrerJalon,
   envoyerDemandeSurTrajet,
-  getJobDetail,
   initierPaiement,
   marquerLivre,
   reserverTrajetRetour,
@@ -45,32 +43,18 @@ import ReturnPromptBanner from "@/components/return-trips/ReturnPromptBanner";
 import StatusBadge from "@/components/ui/StatusBadge";
 import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
-import { formatTND, formatDateTime } from "@/lib/format";
+import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
-import ConfirmModal from "@/components/ui/ConfirmModal";
-import Modal from "@/components/ui/Modal";
-import Button from "@/components/ui/Button";
-import { Textarea } from "@/components/ui/Input";
 import {
   BadgeCheck,
-  Clock,
-  CheckCircle,
-  CheckCircle2,
   ShieldAlert,
   Star,
   MapPin,
   Route,
-  MessageSquare,
   Truck,
-  CreditCard,
   ShieldCheck,
-  AlertCircle,
   AlertTriangle,
   Wallet,
-  FileText,
-  RotateCcw,
-  UserCheck,
-  Package,
   XCircle,
   ArrowRight,
   Eye,
@@ -461,14 +445,16 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
           </p>
           <button
             onClick={fetchJob}
-            className="mt-4 px-4 py-2 bg-brand-600 hover:bg-brand-700 text-white rounded-lg text-sm font-medium transition-colors"
+            className="mt-4 btn-base min-h-[44px] rounded-cta bg-blue-700 px-4 text-[14.5px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px"
           >
             {t.jobDetail.retry}
           </button>
         </div>
       );
     return (
-      <div className="p-8 text-center text-red-500">{t.jobDetail.notFound}</div>
+      <div className="p-8 text-center text-error-500">
+        {t.jobDetail.notFound}
+      </div>
     );
   }
 
@@ -517,10 +503,10 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
 
   return (
     <div className="min-h-screen bg-neutral-50 py-8 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl mx-auto space-y-8">
+      <div className="max-w-4xl mx-auto flex flex-col gap-8">
         {/* Status Banner */}
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-neutral-900">
+          <h1 className="text-[21px] font-extrabold tracking-heading text-ink-900">
             {interpolate(t.jobDetail.title, { id: job.id })}
           </h1>
           <StatusBadge status={job.status} />
@@ -551,8 +537,8 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
             {/* Accepted Transporter Info (visible when job is assigned) */}
             {job.accepted_transporter &&
               (job.status === "IN_PROGRESS" || isCompleted) && (
-                <div className="mt-6 bg-white rounded-xl shadow-sm border border-neutral-200 p-5">
-                  <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
+                <div className="mt-6 bg-surface rounded-card shadow-card p-5">
+                  <h3 className="text-[14px] font-bold text-ink-700 mb-3 flex items-center gap-2">
                     <Truck className="w-4 h-4 text-brand-600" />
                     {t.jobDetail.assignedTransporter}
                   </h3>
@@ -580,7 +566,7 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
                       </div>
                     </div>
                     <div className="text-end">
-                      <p className="text-lg font-bold text-neutral-900">
+                      <p className="text-[17px] font-extrabold tracking-heading text-ink-900">
                         {formatTND(
                           Number(job.accepted_transporter.total_price) || 0,
                         )}
@@ -606,14 +592,14 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
           <div className="space-y-6 min-w-0 flex-shrink-0">
             {/* Verification Gate */}
             {showVerificationGate && (
-              <div className="bg-amber-50 border border-amber-200 rounded-xl p-5">
+              <div className="bg-warning-50 rounded-tile p-5">
                 <div className="flex items-center gap-2 mb-2">
-                  <ShieldAlert className="w-5 h-5 text-amber-600" />
-                  <h3 className="font-semibold text-amber-800">
+                  <ShieldAlert className="w-5 h-5 text-warning-600" />
+                  <h3 className="font-semibold text-warning-800">
                     {t.jobDetail.verifRequired}
                   </h3>
                 </div>
-                <p className="text-sm text-amber-700 mb-3">
+                <p className="text-sm text-warning-700 mb-3">
                   {t.jobDetail.verifRequiredDesc}
                 </p>
                 <Link
@@ -665,9 +651,9 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
             {isTransporter && job.owner && (
               <Link
                 href={`/profile/${job.owner.id}`}
-                className="block bg-white rounded-xl shadow-sm p-4 border border-neutral-200 hover:border-brand-300 hover:shadow-md transition-all group"
+                className="block bg-surface rounded-card shadow-card p-4 border border-neutral-200 hover:border-brand-300 hover-lift group"
               >
-                <h3 className="text-sm font-semibold text-neutral-700 mb-3">
+                <h3 className="text-[14px] font-bold text-ink-700 mb-3">
                   {t.jobDetail.client}
                 </h3>
                 <div className="flex items-center gap-3">
@@ -681,7 +667,7 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
                     </p>
                     {job.owner.rating && (
                       <div className="flex items-center gap-1 text-xs text-neutral-500">
-                        <Star className="w-3 h-3 text-amber-400 fill-amber-400" />
+                        <Star className="w-3 h-3 text-warning-400 fill-warning-400" />
                         {job.owner.rating.toFixed(1)} ·{" "}
                         {job.owner.review_count || 0} {t.profile.reviews}
                       </div>
@@ -694,8 +680,8 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
 
             {/* Route Estimation */}
             {job.pickup_governorate && job.dropoff_governorate && (
-              <div className="bg-white rounded-xl shadow-sm p-4 border border-neutral-200">
-                <h3 className="text-sm font-semibold text-neutral-700 mb-2 flex items-center gap-2">
+              <div className="bg-surface rounded-card shadow-card p-4 border border-neutral-200">
+                <h3 className="text-[14px] font-bold text-ink-700 mb-2 flex items-center gap-2">
                   <Route className="w-4 h-4 text-brand-600" />
                   {t.jobDetail.routeEstimation}
                 </h3>
@@ -715,9 +701,9 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
 
             {/* Client Actions: Offers List */}
             {showOffersList && (
-              <div className="bg-white rounded-xl shadow-sm p-4 border">
+              <div className="bg-surface rounded-card shadow-card p-4 border">
                 <h3 className="font-bold text-neutral-900 mb-4 flex items-center gap-2">
-                  <BadgeCheck className="w-5 h-5 text-purple-600" />
+                  <BadgeCheck className="w-5 h-5 text-blue-700" />
                   {t.jobDetail.offersReceived}
                 </h3>
                 <OfferList
@@ -763,12 +749,12 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
             />
 
             {/* Trust & Security Banner */}
-            <div className="bg-white rounded-xl shadow-sm p-4 border border-neutral-200">
-              <h3 className="text-sm font-semibold text-neutral-700 mb-3 flex items-center gap-2">
+            <div className="bg-surface rounded-card shadow-card p-4 border border-neutral-200">
+              <h3 className="text-[14px] font-bold text-ink-700 mb-3 flex items-center gap-2">
                 <ShieldCheck className="w-4 h-4 text-green-600" />
                 {t.jobDetail.trustTitle}
               </h3>
-              <ul className="space-y-2">
+              <ul className="flex flex-col gap-2">
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
                   <ShieldCheck className="w-3.5 h-3.5 text-green-500 flex-shrink-0 mt-0.5" />
                   <span>{t.jobDetail.trustVerified}</span>
@@ -778,11 +764,11 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
                   <span>{t.jobDetail.trustEscrow}</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
-                  <AlertTriangle className="w-3.5 h-3.5 text-amber-500 flex-shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-3.5 h-3.5 text-warning-500 flex-shrink-0 mt-0.5" />
                   <span>{t.jobDetail.trustDisputes}</span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
-                  <Star className="w-3.5 h-3.5 text-amber-400 flex-shrink-0 mt-0.5" />
+                  <Star className="w-3.5 h-3.5 text-warning-400 flex-shrink-0 mt-0.5" />
                   <span>{t.jobDetail.trustReviews}</span>
                 </li>
               </ul>
@@ -870,7 +856,7 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
             {showDisputeButton && (
               <Link
                 href={`/litiges?job=${job.id}`}
-                className="flex items-center justify-center gap-2 w-full py-3 border border-red-200 bg-red-50 text-red-700 rounded-xl text-sm font-semibold hover:bg-red-100 transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-3 border border-error-200 bg-error-50 text-error-700 rounded-xl text-sm font-semibold hover:bg-error-100 transition-colors"
               >
                 <AlertTriangle className="w-4 h-4" />
                 {t.jobDetail.reportProblem}

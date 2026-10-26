@@ -1,4 +1,4 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Card } from '@/shared/ui/Card';
 import { Badge } from '@/shared/ui/Badge';
@@ -6,6 +6,7 @@ import { RouteRow } from '@/shared/ui/RouteRow';
 import { statusVariant } from '@/shared/ui/statusVariant';
 import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MyDisputeDto } from '../api/dto';
+import { Txt } from '@/shared/ui/Txt';
 
 export function DisputeRow({ dispute }: { dispute: MyDisputeDto }) {
   const { t } = useTranslation();
@@ -13,15 +14,15 @@ export function DisputeRow({ dispute }: { dispute: MyDisputeDto }) {
   return (
     <Card>
       <View style={styles.headerRow}>
-        <Text style={styles.reason} numberOfLines={1}>
+        <Txt style={styles.reason} numberOfLines={1}>
           {t(`disputes.reason.${dispute.reason}`)}
-        </Text>
+        </Txt>
         <Badge label={t(`disputes.status.${dispute.status}`)} variant={statusVariant(dispute.status)} />
       </View>
       <View style={styles.route}>
         <RouteRow from={dispute.job_summary.pickup} to={dispute.job_summary.dropoff} />
       </View>
-      <Text style={styles.desc} numberOfLines={2}>{dispute.description}</Text>
+      <Txt style={styles.desc} numberOfLines={2}>{dispute.description}</Txt>
     </Card>
   );
 }

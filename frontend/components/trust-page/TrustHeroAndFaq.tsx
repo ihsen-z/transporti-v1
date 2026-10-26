@@ -16,20 +16,23 @@ export function TrustHero() {
   const p = t.trustPage;
 
   return (
-    <section className="relative bg-gradient-to-br from-primary-700 via-primary-800 to-primary-900 text-white overflow-hidden">
-      <div className="relative max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-20 text-center">
-        <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm border border-white/20 rounded-full px-4 py-1.5 text-sm mb-6">
-          <span className="w-2 h-2 bg-accent-400 rounded-full animate-pulse" />
+    <section className="immersive relative overflow-hidden">
+      <div className="halo halo--green !top-[40px]" aria-hidden />
+      <div className="halo halo--orange !top-[200px]" aria-hidden />
+
+      <div className="relative z-[1] mx-auto max-w-4xl px-5 py-16 text-center sm:px-6 lg:px-8 lg:py-20">
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/30 bg-white/[0.16] px-3.5 py-1.5 text-[12.5px] font-semibold">
+          <span className="h-2 w-2 rounded-full bg-green-300" />
           {p.heroBadge}
         </div>
 
-        <h1 className="text-4xl sm:text-5xl font-bold mb-6 leading-tight">
+        <h1 className="mb-5 text-[34px] font-extrabold leading-[1.12] tracking-title sm:text-[44px]">
           {p.heroTitle1}
           <br />
-          <span className="text-accent-400">{p.heroTitle2}</span>
+          <span className="text-green-300">{p.heroTitle2}</span>
         </h1>
 
-        <p className="text-lg text-primary-100 max-w-2xl mx-auto">
+        <p className="mx-auto max-w-2xl text-[16px] leading-[1.55] text-on-blue-300">
           {p.heroDesc}
         </p>
       </div>
@@ -58,15 +61,15 @@ export function TrustFaq() {
     <>
       <section className="py-16 bg-neutral-50" data-testid="confiance-faq">
         <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h2 className="text-3xl font-bold text-neutral-900 text-center mb-10">
+          <h2 className="text-[28px] font-extrabold tracking-title text-ink-900 text-center mb-10">
             {p.faqTitle}
           </h2>
 
-          <div className="space-y-3">
+          <div className="flex flex-col gap-3">
             {questions.map(({ q, r }) => (
               <details
                 key={q}
-                className="group bg-white rounded-xl border border-neutral-200 p-5"
+                className="group bg-surface rounded-card shadow-card p-5"
               >
                 <summary className="font-semibold text-neutral-900 cursor-pointer list-none flex justify-between items-center gap-4">
                   {q}
@@ -83,22 +86,25 @@ export function TrustFaq() {
         </div>
       </section>
 
-      <section className="py-16 bg-primary-800 text-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h2 className="text-3xl font-bold mb-3">{p.finalTitle}</h2>
-          <p className="text-primary-100 mb-8">{p.finalDesc}</p>
+      <section className="immersive relative overflow-hidden py-16">
+        <div className="halo halo--orange !top-[-30px]" aria-hidden />
+
+        <div className="relative z-[1] mx-auto max-w-3xl px-5 text-center sm:px-6 lg:px-8">
+          <h2 className="mb-4 text-[28px] font-extrabold tracking-title sm:text-[34px]">
+            {p.finalTitle}
+          </h2>
+          <p className="mb-8 text-[16px] leading-[1.55] text-on-blue-300">
+            {p.finalDesc}
+          </p>
           <div className="flex flex-wrap gap-3 justify-center">
             <Link
               href="/demandes/nouvelle"
               data-testid="confiance-cta-publier"
-              className="inline-block bg-accent-500 hover:bg-accent-600 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-all hover:scale-105 shadow-lg"
+              className="cta btn-base px-8"
             >
               {p.finalCta}
             </Link>
-            <Link
-              href="/recherche"
-              className="inline-block bg-white/10 hover:bg-white/20 text-white font-semibold px-8 py-4 rounded-lg border border-white/30 text-lg transition-all"
-            >
+            <Link href="/recherche" className="btn-base btn-ghost-on-blue px-8">
               {p.finalSecondary}
             </Link>
           </div>

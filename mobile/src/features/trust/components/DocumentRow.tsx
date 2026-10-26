@@ -1,29 +1,30 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { colors, spacing, fontSize, radii } from '@/shared/theme';
 import type { DocumentDto } from '../api/dto';
+import { Txt } from '@/shared/ui/Txt';
 
 export function DocumentRow({ doc }: { doc: DocumentDto }) {
   const { t } = useTranslation();
 
   return (
     <View style={styles.card}>
-      <Text style={styles.type} numberOfLines={1}>
+      <Txt style={styles.type} numberOfLines={1}>
         {t(`trust.doc.${doc.document_type}`)}
-      </Text>
+      </Txt>
       <View style={styles.badges}>
         <View style={[styles.badge, { backgroundColor: doc.is_valid ? colors.green[600] : colors.warning }]}>
-          <Text style={styles.badgeText}>
+          <Txt style={styles.badgeText}>
             {doc.is_valid ? t('trust.badge_valid') : t('trust.badge_pending')}
-          </Text>
+          </Txt>
         </View>
         {doc.is_expired ? (
           <View style={[styles.badge, { backgroundColor: colors.error }]}>
-            <Text style={styles.badgeText}>{t('trust.badge_expired')}</Text>
+            <Txt style={styles.badgeText}>{t('trust.badge_expired')}</Txt>
           </View>
         ) : doc.expires_soon ? (
           <View style={[styles.badge, { backgroundColor: colors.cta[500] }]}>
-            <Text style={styles.badgeText}>{t('trust.badge_expires_soon')}</Text>
+            <Txt style={styles.badgeText}>{t('trust.badge_expires_soon')}</Txt>
           </View>
         ) : null}
       </View>

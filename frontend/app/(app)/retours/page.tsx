@@ -97,17 +97,17 @@ export default function MesRetoursPage() {
     <div className="max-w-3xl mx-auto px-4 py-6">
       <header className="flex flex-wrap items-center justify-between gap-3 mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-neutral-900 flex items-center gap-2">
+          <h2 className="text-[21px] font-extrabold tracking-heading text-ink-900 flex items-center gap-2">
             <RotateCcw className="w-6 h-6 text-brand-600" aria-hidden="true" />
             Mes retours publiés
-          </h1>
+          </h2>
           <p className="text-sm text-neutral-500 mt-1">
             Un trajet expiré disparaît de la recherche client.
           </p>
         </div>
         <Link
           href="/retours/nouveau"
-          className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cta-500 text-white font-semibold hover:bg-cta-600 focus-visible:ring-2 focus-visible:ring-cta-500/40 outline-none"
+          className="cta btn-base min-h-[48px] px-5 text-[15px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2"
         >
           <PlusCircle className="w-4 h-4" aria-hidden="true" />
           Publier un retour
@@ -115,12 +115,9 @@ export default function MesRetoursPage() {
       </header>
 
       {trajets === null && !erreur && (
-        <div className="space-y-3" aria-busy="true">
+        <div className="flex flex-col gap-3" aria-busy="true">
           {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="h-28 rounded-xl bg-neutral-100 animate-pulse"
-            />
+            <div key={i} className="skeleton h-28 rounded-card" />
           ))}
         </div>
       )}
@@ -133,7 +130,7 @@ export default function MesRetoursPage() {
           <button
             type="button"
             onClick={() => void charger()}
-            className="mt-3 px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-brand-600/30 outline-none"
+            className="mt-3 px-4 py-2 rounded-lg border border-neutral-200 text-sm font-medium hover:bg-neutral-50 focus-visible:ring-2 focus-visible:ring-blue-700/30 outline-none"
           >
             Réessayer
           </button>
@@ -156,7 +153,7 @@ export default function MesRetoursPage() {
           </p>
           <Link
             href="/retours/nouveau"
-            className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl bg-cta-500 text-white font-semibold hover:bg-cta-600 focus-visible:ring-2 focus-visible:ring-cta-500/40 outline-none"
+            className="btn-base min-h-[44px] rounded-cta bg-blue-700 px-4 text-[14.5px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-700 focus-visible:ring-offset-2"
           >
             <PlusCircle className="w-4 h-4" aria-hidden="true" />
             Publier mon premier retour
@@ -165,7 +162,7 @@ export default function MesRetoursPage() {
       )}
 
       {trajets && trajets.length > 0 && (
-        <div data-testid="retours-liste" className="space-y-3">
+        <div data-testid="retours-liste" className="flex flex-col gap-3">
           {trajets.map((trajet) => (
             <ReturnTripRow
               key={trajet.id}

@@ -1,0 +1,1015 @@
+<title>Audit général Transporti</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;600&family=Source+Serif+4:ital,opsz,wght@0,8..60,400;0,8..60,600;1,8..60,400&display=swap">
+
+<style>
+  /* Palette reprise de la charte du produit audité : le bleu profond de
+     Transporti, son fond applicatif, et son orange de CTA — dépensé ici sur
+     le seul constat qui coûte de l'argent. */
+  :root {
+    --ground:  #EEF2F8;
+    --surface: #FFFFFF;
+    --sunk:    #E2E9F5;
+    --ink:     #101B33;
+    --muted:   #55658A;
+    --faint:   #8695B4;
+    --rule:    #D3DEEE;
+    --brand:   #1E3A8A;
+    --accent:  #C6560E;
+    --link:    #23539E;
+    --mark:    #2C5AA6;
+    --good:    #0E6E39;
+    --good-bg: #E3F3E9;
+    --warn:    #8A4A0B;
+    --warn-bg: #FBEEDA;
+    --stop:    #93122F;
+    --stop-bg: #FCE6EB;
+
+    --display: Archivo, "Helvetica Neue", Arial, sans-serif;
+    --prose: "Source Serif 4", Georgia, "Times New Roman", serif;
+    --ui: Archivo, "Helvetica Neue", Arial, sans-serif;
+    --mono: "IBM Plex Mono", "SFMono-Regular", Consolas, monospace;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --ground:  #0A142E; --surface: #101E40; --sunk: #0C1836;
+      --ink: #E9EFFB; --muted: #9EB2D4; --faint: #6C81A8; --rule: #21335B;
+      --brand: #9FBCF2; --accent: #FF9245; --link: #8FB6F2; --mark: #6E9BE0;
+      --good: #63D18C; --good-bg: #0F2E1D;
+      --warn: #EFC078; --warn-bg: #33260F;
+      --stop: #FF9BAE; --stop-bg: #38141E;
+    }
+  }
+  :root[data-theme="dark"] {
+    --ground:  #0A142E; --surface: #101E40; --sunk: #0C1836;
+    --ink: #E9EFFB; --muted: #9EB2D4; --faint: #6C81A8; --rule: #21335B;
+    --brand: #9FBCF2; --accent: #FF9245; --link: #8FB6F2; --mark: #6E9BE0;
+    --good: #63D18C; --good-bg: #0F2E1D;
+    --warn: #EFC078; --warn-bg: #33260F;
+    --stop: #FF9BAE; --stop-bg: #38141E;
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--ground); color: var(--ink);
+    font-family: var(--prose); font-size: 17px; line-height: 1.62;
+    -webkit-font-smoothing: antialiased;
+  }
+  .page { max-width: 920px; margin: 0 auto; padding: 0 24px 96px; }
+
+  header.top { padding: 56px 0 30px; }
+  .eyebrow {
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 18px;
+  }
+  h1 {
+    font-family: var(--display); font-weight: 800;
+    font-size: clamp(35px, 5.6vw, 55px); line-height: 1.03;
+    letter-spacing: -0.032em; margin: 0 0 20px; text-wrap: balance;
+  }
+  .lede {
+    font-size: 19px; line-height: 1.56; color: var(--muted);
+    max-width: 60ch; margin: 0;
+  }
+  .lede strong { color: var(--ink); font-weight: 600; }
+
+  .stats {
+    display: flex; flex-wrap: wrap; gap: 14px 38px;
+    margin: 34px 0 0; padding: 20px 0 0;
+    border-top: 2px solid var(--ink);
+  }
+  .stat { padding: 2px 0; }
+  .stat .v {
+    font-family: var(--display); font-weight: 800; font-size: 30px;
+    letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.05;
+  }
+  .stat .l {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--faint); margin-top: 6px;
+  }
+
+  section { padding-top: 52px; }
+  /* L'eyebrow de section ne numérote pas : elle nomme la NATURE DE LA PREUVE.
+     C'est la distinction que tout ce rapport cherche à tenir. */
+  .basis {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--faint); margin: 0 0 9px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .basis::after { content: ""; flex: 1; height: 1px; background: var(--rule); }
+  .basis.mesure { color: var(--mark); }
+  h2 {
+    font-family: var(--display); font-weight: 700; font-size: 27px;
+    letter-spacing: -0.022em; line-height: 1.14; margin: 0 0 8px;
+    text-wrap: balance;
+  }
+  .sub { color: var(--muted); margin: 0 0 22px; max-width: 62ch; font-size: 16px; }
+  h3 {
+    font-family: var(--display); font-weight: 700; font-size: 18px;
+    letter-spacing: -0.012em; margin: 32px 0 9px;
+  }
+  p { max-width: 64ch; margin: 0 0 15px; }
+  ul.plain { margin: 0 0 16px; padding-inline-start: 22px; max-width: 64ch; }
+  ul.plain li { margin-bottom: 10px; }
+  code {
+    font-family: var(--mono); font-size: 0.82em;
+    background: var(--sunk); padding: 1px 5px; border-radius: 4px;
+  }
+  a { color: var(--link); text-underline-offset: 2px; }
+  a:focus-visible { outline: 2px solid var(--link); outline-offset: 3px; border-radius: 3px; }
+
+  .verdict {
+    display: inline-flex; align-items: center;
+    font-family: var(--mono); font-size: 11.5px; font-weight: 600;
+    letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 5px 11px; border-radius: 6px;
+  }
+  .verdict.ok  { background: var(--good-bg); color: var(--good); }
+  .verdict.att { background: var(--warn-bg); color: var(--warn); }
+  .verdict.non { background: var(--stop-bg); color: var(--stop); }
+  .chiffre-cle { color: var(--accent); font-weight: 600; }
+
+  .couv { display: flex; flex-direction: column; gap: 3px; margin: 20px 0 8px; }
+  .couv-row {
+    display: grid; grid-template-columns: minmax(0, 15em) 1fr auto;
+    align-items: center; gap: 14px;
+  }
+  .couv-row .nm { font-family: var(--ui); font-size: 14px; color: var(--muted); }
+  .seg { display: flex; height: 17px; gap: 2px; }
+  .seg i { display: block; }
+  .seg .mes { background: var(--mark); }
+  .seg .ana { background: var(--mark); opacity: 0.34; }
+  .seg .non { background: var(--rule); }
+  .couv-row .vl {
+    font-family: var(--mono); font-size: 11.5px; color: var(--muted);
+    min-width: 9em; text-align: end;
+  }
+  .legende {
+    display: flex; flex-wrap: wrap; gap: 6px 22px; margin-top: 16px;
+    font-family: var(--mono); font-size: 10.5px; color: var(--muted);
+    letter-spacing: 0.04em;
+  }
+  .legende span { display: inline-flex; align-items: center; gap: 8px; }
+  .legende b { display: block; width: 11px; height: 11px; }
+
+  figure.bloc {
+    margin: 22px 0 8px; padding: 22px 24px 20px;
+    background: var(--surface); border: 1px solid var(--rule);
+  }
+  figure.bloc figcaption {
+    font-family: var(--mono); font-size: 10.5px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--faint); margin-bottom: 18px;
+  }
+
+  /* Le trafic, à l'échelle : une seule échelle pour les quatre barres. */
+  .trafic { display: flex; flex-direction: column; gap: 14px; }
+  .trafic-row { display: grid; grid-template-columns: minmax(0,13em) 1fr; gap: 14px; align-items: center; }
+  .trafic-row .rt { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  /* La piste des barres est une colonne de grille FIXE, identique d'une ligne a
+     l'autre : en flex, la plus longue barre se faisait rétrécir pour laisser
+     place a son nombre, et l'échelle mentait de 8 %. */
+  .trafic-row .bar {
+    display: grid; grid-template-columns: 1fr 4.5em; gap: 10px; align-items: center;
+  }
+  .trafic-row .bar i { display: block; height: 14px; background: var(--mark); }
+  .trafic-row.sond .bar i { background: var(--accent); }
+  .trafic-row .n {
+    font-family: var(--mono); font-size: 12px; font-variant-numeric: tabular-nums;
+    color: var(--ink);
+  }
+  .echelle {
+    display: grid; grid-template-columns: minmax(0,13em) 1fr 4.5em; gap: 14px;
+    margin-top: 6px; font-family: var(--mono); font-size: 10px; color: var(--faint);
+  }
+  .echelle .axe { display: flex; justify-content: space-between; }
+
+  .scroller { overflow-x: auto; margin: 18px 0 8px; }
+  table {
+    border-collapse: collapse; width: 100%; min-width: 500px;
+    font-family: var(--ui); font-size: 14px; line-height: 1.5;
+  }
+  th, td {
+    text-align: start; padding: 10px 16px 10px 0;
+    border-bottom: 1px solid var(--rule); vertical-align: top;
+  }
+  th {
+    font-family: var(--mono); font-size: 10px; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--faint); border-bottom: 1.5px solid var(--ink);
+  }
+  td b { font-family: var(--ui); font-weight: 600; }
+  td.n {
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+    font-family: var(--mono); font-size: 13px;
+  }
+  td.st { font-family: var(--mono); font-size: 11.5px; color: var(--muted); }
+
+  .note {
+    border-inline-start: 2px solid var(--brand);
+    padding: 3px 0 3px 18px; margin: 22px 0;
+    color: var(--muted); font-size: 16px; max-width: 62ch;
+  }
+  .note b { color: var(--ink); font-weight: 600; }
+  .note.alerte { border-inline-start-color: var(--stop); }
+  .note.bien { border-inline-start-color: var(--good); }
+  .note.orange { border-inline-start-color: var(--accent); }
+
+  ol.reco { list-style: none; counter-reset: r; margin: 8px 0; padding: 0; }
+  ol.reco > li {
+    counter-increment: r; display: grid;
+    grid-template-columns: 32px 1fr; gap: 0 16px;
+    padding: 18px 0; border-top: 1px solid var(--rule); max-width: 68ch;
+  }
+  ol.reco > li::before {
+    content: counter(r); font-family: var(--mono); font-size: 12px;
+    font-weight: 600; color: var(--faint); padding-top: 4px;
+  }
+  ol.reco > li.tete::before { color: var(--accent); }
+  ol.reco h4 {
+    font-family: var(--display); font-weight: 700; font-size: 17px;
+    margin: 0 0 6px; letter-spacing: -0.012em;
+  }
+  ol.reco p { margin: 0; font-size: 15.5px; color: var(--muted); max-width: none; }
+  ol.reco .appui {
+    font-family: var(--mono); font-size: 11px; color: var(--faint);
+    margin-top: 9px; display: block; letter-spacing: 0.02em;
+  }
+  ol.reco > li.tete .appui { color: var(--accent); }
+
+  footer {
+    margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--rule);
+    font-size: 14.5px; color: var(--faint); max-width: 68ch;
+  }
+  footer .m { font-family: var(--mono); font-size: 12.5px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { animation: none !important; transition: none !important; }
+  }
+</style>
+
+<div class="page">
+
+<header class="top">
+  <p class="eyebrow">Audit général · 10 septembre 2026 · seconde édition</p>
+  <h1>Transporti, tenu à l'épreuve de l'exécution</h1>
+  <p class="lede">
+    Les deux parcours sont désormais joués sur appareil, pas seulement lus.
+    Soixante étapes mesurées, zéro erreur du serveur — et un bavardage de fond qui
+    représente <strong>81 % de tout le trafic</strong> et fait répondre au serveur
+    <strong>85 fois « trop de requêtes »</strong> à sa propre application.
+  </p>
+
+  <div class="stats">
+    <div class="stat"><div class="v" style="color:var(--good)">60</div><div class="l">étapes mesurées</div></div>
+    <div class="stat"><div class="v" style="color:var(--good)">0</div><div class="l">erreur applicative</div></div>
+    <div class="stat"><div class="v">2,83&#8202;s</div><div class="l">médiane transporteur</div></div>
+    <div class="stat"><div class="v" style="color:var(--accent)">81&#8202;%</div><div class="l">trafic de sondage</div></div>
+    <div class="stat"><div class="v" style="color:var(--stop)">85</div><div class="l">réponses 429</div></div>
+  </div>
+</header>
+
+<!-- Verdict ─────────────────────────────────────────────────────────────── -->
+<section>
+  <p class="basis">synthèse</p>
+  <h2>Verdict</h2>
+  <p class="sub">Trois phrases, puis les preuves.</p>
+
+  <p><span class="verdict ok">Ce que l'utilisateur touche fonctionne</span></p>
+  <p>
+    Soixante étapes jouées sur émulateur, transporteur et cliente. Aucune requête
+    n'échoue. Médiane <b>2,83 s</b> côté transporteur, et une recherche cliente
+    répond en <b>2,3 à 3,4 s</b>. Surtout, la plupart des écrans se rouvrent sans
+    toucher au réseau : <b>31 étapes clientes sur 35</b> sont servies par le cache.
+  </p>
+
+  <p style="margin-top:24px"><span class="verdict non">Mais l'application parle au serveur pour ne rien dire</span></p>
+  <p>
+    Sur <b>2 892 requêtes</b> observées, <span class="chiffre-cle">2 345 sont deux
+    compteurs de fond</span> — 81 %. Trois sondages tournent en parallèle sur un écran
+    de mission. Le limiteur de débit du serveur a fini par refuser
+    <b>85 requêtes</b> de l'application elle-même, sur douze minutes distinctes.
+    Ce n'est plus un gaspillage : c'est un déni de service que le produit s'infl­ige.
+  </p>
+
+  <p style="margin-top:24px"><span class="verdict att">Et le produit cache ses propres résultats</span></p>
+  <p>
+    Quatre fois, ce qu'une action produit tombe hors de l'écran : le résultat de
+    recherche, les issues d'une recherche vide, le quatrième onglet de suivi. Une
+    cinquième fois, c'est Android qui s'interpose — la demande de permission de
+    localisation surgit à l'instant précis où les résultats arrivent.
+  </p>
+</section>
+
+<!-- Couverture ──────────────────────────────────────────────────────────── -->
+<section>
+  <p class="basis">méthode &amp; couverture</p>
+  <h2>Ce qui est couvert, et comment</h2>
+  <p class="sub">
+    Trois niveaux de preuve, et il faut les distinguer : joué sur appareil, lu dans le
+    code, ou pas regardé du tout. Le parcours cliente a changé de catégorie depuis la
+    première édition de ce rapport.
+  </p>
+
+  <figure class="bloc">
+    <figcaption>Couverture par domaine</figcaption>
+    <div class="couv">
+      <div class="couv-row">
+        <div class="nm">Parcours transporteur</div>
+        <div class="seg">
+          <i class="mes" style="width:78%"></i><i class="ana" style="width:14%"></i><i class="non" style="width:8%"></i>
+        </div>
+        <div class="vl">25 étapes</div>
+      </div>
+      <div class="couv-row">
+        <div class="nm">Parcours cliente</div>
+        <div class="seg">
+          <i class="mes" style="width:70%"></i><i class="ana" style="width:22%"></i><i class="non" style="width:8%"></i>
+        </div>
+        <div class="vl">35 étapes</div>
+      </div>
+      <div class="couv-row">
+        <div class="nm">Design system mobile</div>
+        <div class="seg">
+          <i class="mes" style="width:88%"></i><i class="ana" style="width:12%"></i><i class="non" style="width:0%"></i>
+        </div>
+        <div class="vl">2 rôles, 2 langues</div>
+      </div>
+      <div class="couv-row">
+        <div class="nm">Application web</div>
+        <div class="seg">
+          <i class="mes" style="width:0%"></i><i class="ana" style="width:100%"></i><i class="non" style="width:0%"></i>
+        </div>
+        <div class="vl">47 écrans documentés</div>
+      </div>
+      <div class="couv-row">
+        <div class="nm">Administration</div>
+        <div class="seg">
+          <i class="mes" style="width:0%"></i><i class="ana" style="width:60%"></i><i class="non" style="width:40%"></i>
+        </div>
+        <div class="vl">9 écrans</div>
+      </div>
+    </div>
+    <div class="legende">
+      <span><b style="background:var(--mark)"></b> joué sur appareil</span>
+      <span><b style="background:var(--mark);opacity:.34"></b> lu dans le code</span>
+      <span><b style="background:var(--rule)"></b> non couvert</span>
+    </div>
+  </figure>
+
+  <div class="note">
+    <b>Ce qui a changé depuis la première édition.</b> Le parcours cliente y était
+    « lu dans le code » ; il est maintenant joué. Et l'exécution a corrigé deux
+    affirmations que la lecture m'avait fait écrire : l'état vide de la recherche
+    n'offre pas trois issues mais <b>deux</b>, et <b>aucune n'est visible</b> sans
+    défiler. La part du trafic de sondage, mesurée sur l'ensemble du journal et non
+    sur une seule passe, est de 81 % et non de 43 %.
+  </div>
+</section>
+
+<!-- Le sondage ──────────────────────────────────────────────────────────── -->
+<section>
+  <p class="basis mesure">mesuré · journal serveur</p>
+  <h2>Le bavardage de fond, chiffré</h2>
+  <p class="sub">
+    Toutes les requêtes servies pendant l'audit, lues dans le journal d'accès de
+    Django. Le mobile consomme exclusivement <code>/api/v1</code> : ce périmètre est
+    donc le sien.
+  </p>
+
+  <figure class="bloc">
+    <figcaption>Routes les plus appelées · même échelle pour toutes</figcaption>
+    <div class="trafic">
+      <div class="trafic-row sond">
+        <div class="rt">conversations/</div>
+        <div class="bar"><i style="width:100%"></i><span class="n">1 392</span></div>
+      </div>
+      <div class="trafic-row sond">
+        <div class="rt">notifications/unread</div>
+        <div class="bar"><i style="width:68.5%"></i><span class="n">953</span></div>
+      </div>
+      <div class="trafic-row sond">
+        <div class="rt">jobs/8/ <span style="color:var(--faint)">(1 mission)</span></div>
+        <div class="bar"><i style="width:24.4%"></i><span class="n">339</span></div>
+      </div>
+      <div class="trafic-row">
+        <div class="rt">jobs/8/messages/</div>
+        <div class="bar"><i style="width:3.3%"></i><span class="n">46</span></div>
+      </div>
+      <div class="trafic-row">
+        <div class="rt">return-trips/match/</div>
+        <div class="bar"><i style="width:2.1%"></i><span class="n">29</span></div>
+      </div>
+      <div class="trafic-row">
+        <div class="rt">trip-requests/my/</div>
+        <div class="bar"><i style="width:1.9%"></i><span class="n">26</span></div>
+      </div>
+      <div class="trafic-row">
+        <div class="rt">auth/profile/</div>
+        <div class="bar"><i style="width:1.4%"></i><span class="n">19</span></div>
+      </div>
+      <div class="trafic-row">
+        <div class="rt">addresses/</div>
+        <div class="bar"><i style="width:1.0%"></i><span class="n">14</span></div>
+      </div>
+    </div>
+    <div class="echelle">
+      <div></div>
+      <div class="axe"><span>0</span><span>696</span><span>1 392 requêtes</span></div>
+      <div></div>
+    </div>
+    <div class="legende">
+      <span><b style="background:var(--accent)"></b> sondage périodique</span>
+      <span><b style="background:var(--mark)"></b> réponse à un geste</span>
+    </div>
+  </figure>
+
+  <h3>Trois horloges qui tournent en même temps</h3>
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Sondage</th><th>Cadence</th><th>Portée</th><th>Appels</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><code>conversations/</code></td><td class="n">10,1 s</td>
+          <td>tous les écrans, en permanence</td><td class="n">1 392</td>
+        </tr>
+        <tr>
+          <td><code>notifications/unread-count/</code></td><td class="n">15,1 s</td>
+          <td>tous les écrans, en permanence</td><td class="n">953</td>
+        </tr>
+        <tr>
+          <td><code>jobs/&lt;id&gt;/</code></td><td class="n">15,1 s</td>
+          <td>l'écran de mission ouvert</td><td class="n">339</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Un téléphone posé sur l'écran d'une mission émet donc une requête toutes les
+    <b>4,3 secondes</b> en moyenne, sans que personne ne le touche. Sur les
+    82 minutes où cet écran est resté ouvert, cela fait 339 appels pour une donnée
+    qui n'a pas changé.
+  </p>
+
+  <div class="note orange">
+    <b>Et le serveur a fini par dire non.</b> 85 réponses <b>HTTP 429 — « trop de
+    requêtes »</b> adressées à l'application, réparties sur douze minutes distinctes :
+    32 sur <code>conversations/</code>, 31 sur <code>notifications/unread-count/</code>,
+    22 sur <code>jobs/8/</code>. Le limiteur de débit fait exactement son travail. Le
+    problème est qu'il le fait contre le client officiel du produit.
+  </div>
+
+  <div class="note bien">
+    <b>Le canal existe déjà pour s'en passer.</b> Le projet embarque
+    <code>expo-notifications</code> et le serveur possède une table de jetons
+    d'appareil. Ce qui manque n'est pas l'infrastructure, c'est la bascule.
+  </div>
+</section>
+
+<!-- Sous la ligne de flottaison ─────────────────────────────────────────── -->
+<section>
+  <p class="basis mesure">mesuré · sur appareil</p>
+  <h2>Quatre fois, le produit cache ce qu'il vient de faire</h2>
+  <p class="sub">
+    Quatre écrans différents, une seule cause : après une action, rien ne remonte le
+    résultat dans le champ de vision. Les ordonnées ci-dessous sont relevées dans
+    l'arbre d'accessibilité, sur un écran de 2 400 px dont les 226 px du bas sont
+    occupés par la barre d'onglets.
+  </p>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Écran</th><th>Ce qui est hors champ</th><th>Relevé</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Résultat de recherche</b></td>
+          <td>Tout. Ni la carte du trajet, ni le bouton « Envoyer une demande », ni
+              même le compteur « 1 trajet trouvé ». Au repos, l'écran est identique
+              avant et après la recherche.</td>
+          <td class="n">CTA à 2<br>défilements</td>
+        </tr>
+        <tr>
+          <td><b>Recherche sans résultat</b></td>
+          <td>Les deux issues proposées. « Élargir aux gouvernorats voisins » affleure
+              sous la barre d'onglets ; « Créer une alerte » n'apparaît qu'après
+              défilement.</td>
+          <td class="n">y = 2 090<br>puis 1 653</td>
+        </tr>
+        <tr>
+          <td><b>Mes demandes</b></td>
+          <td>Le quatrième onglet, « Terminées ». Les trois premières pilules
+              remplissent la largeur ; la rangée défile, mais rien ne l'indique.</td>
+          <td class="n">x &gt; 1 028<br>écran 1 080</td>
+        </tr>
+        <tr>
+          <td><b>Demande de transport</b></td>
+          <td>Le bouton d'envoi. Le formulaire compte cinq sections et une vingtaine
+              de contrôles ; l'envoi est au bout.</td>
+          <td class="st">non mesuré<br>(voir §&nbsp;limites)</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note alerte">
+    <b>Et Android s'interpose au pire moment.</b> La première recherche qui ramène un
+    résultat déclenche la demande de permission de localisation du système. Le
+    dialogue s'affiche <b>par-dessus les résultats</b>, à l'instant où ils arrivent :
+    la cliente voit une question sur sa position au moment où elle attendait des
+    trajets. Mon banc de test a mis trois passages à comprendre qu'il ne mesurait plus
+    que ce dialogue.
+  </div>
+
+  <div class="note bien">
+    <b>Le refus, lui, est bien encaissé.</b> Permission refusée, l'écran reste
+    entièrement utilisable : « 1 trajet trouvé », le transporteur et son badge
+    « Vérifié », la distance routière « ≈ 147 km », l'économie « 34 TND face à
+    171 TND pour un transport dédié », la fourchette 136,93 – 256,74 TND. Rien ne
+    dépend de la localisation. La demande n'était donc pas nécessaire là.
+  </div>
+</section>
+
+<!-- Fiabilité et vitesse ────────────────────────────────────────────────── -->
+<section>
+  <p class="basis mesure">mesuré · journal serveur</p>
+  <h2>Fiabilité et vitesse, les deux parcours</h2>
+  <p class="sub">
+    Latences lues dans le journal d'accès, horodaté à la milliseconde : du geste à la
+    dernière donnée servie. La sonde d'écran ne sert qu'à répondre oui ou non — elle
+    coûte 2,2 s par relevé et ne peut pas mesurer un délai.
+  </p>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Indicateur</th><th>Transporteur</th><th>Cliente</th><th>Lecture</th></tr></thead>
+      <tbody>
+        <tr><td>Étapes jouées</td><td class="n">25</td><td class="n">35</td><td>60 au total.</td></tr>
+        <tr><td>Erreurs applicatives</td><td class="n">0</td><td class="n">0</td><td>Aucun 4xx/5xx en réponse à un geste.</td></tr>
+        <tr><td>Latence médiane</td><td class="n">2,83 s</td><td class="st">sans objet</td><td>Côté cliente, quatre étapes seulement touchent le réseau : une médiane sur si peu d'échantillons ne mesure rien. Voir le détail ci-dessous.</td></tr>
+        <tr><td>p90</td><td class="n">6,39 s</td><td class="st">sans objet</td><td>Dix échantillons côté transporteur.</td></tr>
+        <tr><td>Démarrage à froid</td><td class="n">13,94 s</td><td class="n">10,9 – 19,8 s</td><td>Six requêtes en séquence. Bundle de développement, dispersion sur six passages.</td></tr>
+        <tr><td>Étapes sans réseau</td><td class="n">15 / 25</td><td class="n">31 / 35</td><td>Servies par le cache persistant.</td></tr>
+        <tr><td>Blocages réels</td><td class="n">0</td><td class="n">0</td><td>Les blocages annoncés par le banc étaient tous explicables.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>Les quatre étapes clientes qui parlent au serveur</h3>
+  <p>
+    Trente-et-une des trente-cinq étapes n'émettent aucune requête. Voici les autres,
+    avec leur dispersion sur les six passages du scénario.
+  </p>
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Étape</th><th>Latence</th><th>Ce qui est demandé</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Démarrage à froid</b></td><td class="n">10,9 – 19,8 s</td>
+          <td><code>trip-requests/my/</code> puis <code>auth/profile/</code> — en séquence, pas en parallèle.</td>
+        </tr>
+        <tr>
+          <td><b>Recherche, corridor vide</b></td><td class="n">2,3 – 3,4 s</td>
+          <td><code>return-trips/match/</code> — Tunis → Ariana.</td>
+        </tr>
+        <tr>
+          <td><b>Recherche, corridor servi</b></td><td class="n">2,3 – 2,7 s</td>
+          <td><code>return-trips/match/</code> — Tunis → Sousse, un trajet trouvé.</td>
+        </tr>
+        <tr>
+          <td><b>Ouvrir le formulaire de demande</b></td><td class="n">8,4 – 9,6 s</td>
+          <td><code>addresses/</code> — le carnet d'adresses, chargé à l'ouverture de la feuille.</td>
+        </tr>
+        <tr>
+          <td><b>Mes alertes corridor</b></td><td class="n">2,4 – 2,6 s</td>
+          <td><code>corridor-alerts/</code>.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <div class="note">
+    <b>Le point noir de ce tableau est le formulaire.</b> Huit à neuf secondes pour
+    ouvrir la feuille de demande, pour un seul appel au carnet d'adresses — sur
+    l'écran qui décide de la conversion. Le carnet pourrait être chargé avant, avec
+    les résultats, plutôt qu'au moment où la cliente appuie.
+  </div>
+
+  <div class="note bien">
+    <b>Le cache fait le gros du travail.</b> Côté cliente, 30 étapes sur 35 n'émettent
+    aucune requête : changer d'onglet, parcourir les quatre vues de suivi, ouvrir et
+    refermer les filtres ne coûtent rien. C'est mesuré, et c'est ce qui rend
+    l'application vive une fois lancée.
+  </div>
+
+  <h3>Ce que la cliente peut faire, état par état</h3>
+  <div class="scroller">
+    <table>
+      <thead><tr><th>État</th><th>Onglet</th><th>Action proposée</th></tr></thead>
+      <tbody>
+        <tr><td class="st">PENDING</td><td>En attente de réponse</td><td>Retirer sa demande.</td></tr>
+        <tr><td class="st">COUNTERED</td><td>En négociation</td><td>Accepter la contre-proposition, ou retirer.</td></tr>
+        <tr><td class="st">ACCEPTED</td><td>À payer</td><td>Suivre la mission — le paiement est derrière.</td></tr>
+        <tr><td class="st">REJECTED</td><td>Terminées</td><td><b>Aucune.</b></td></tr>
+        <tr><td class="st">CANCELLED</td><td>Terminées</td><td><b>Aucune.</b></td></tr>
+        <tr><td class="st">EXPIRED</td><td>Terminées</td><td><b>Aucune.</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p>
+    Les quatre onglets ont été ouverts sur appareil ; le compte de recette n'ayant
+    aucune demande, chacun affiche un vide <b>qui lui est propre</b> — « Aucune
+    contre-proposition à décider », « Aucune demande acceptée à payer ». Ce soin est
+    rare et il mérite d'être noté : le vide explique l'onglet, pas le produit.
+  </p>
+
+  <div class="note bien">
+    <b>Une divergence assumée, et écrite dans le code.</b> Le web a un cinquième
+    onglet « en cours » ; le mobile ne l'a pas, parce qu'une demande cliente reste
+    <code>ACCEPTED</code> une fois le transport engagé — l'onglet serait vide par
+    construction. Le commentaire qui l'explique est dans
+    <code>model/onglets.ts</code>. C'est le genre de décision qu'on aimerait trouver
+    documenté plus souvent.
+  </div>
+
+  <div class="note">
+    <b>Deux frictions mineures, relevées au passage.</b> L'onglet s'appelle « À
+    payer » et son bouton dit « Suivre la mission » — le paiement est bien derrière,
+    mais le bouton ne nomme pas ce qui va se passer. Et appuyer sur l'onglet
+    « Recherche » alors qu'on y est déjà <b>remet le formulaire à zéro</b> : le
+    corridor saisi est perdu.
+  </div>
+</section>
+
+<!-- Défauts de l'exécution ──────────────────────────────────────────────── -->
+<section>
+  <p class="basis mesure">mesuré · sur appareil</p>
+  <h2>Ce que seule l'exécution a trouvé</h2>
+  <p class="sub">
+    Huit défauts d'affichage, tous invisibles à <code>tsc</code>, à
+    <code>eslint</code> et aux 317 tests. C'est l'enseignement principal du chantier
+    de design : un design system se vérifie en le faisant tourner.
+  </p>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Défaut</th><th>Cause</th><th>Conséquence</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>Rectangle gris dans le verre</b></td>
+          <td><code>elevation</code> Android sur une surface translucide</td>
+          <td>Un rectangle à angles droits en travers de la carte de verre — l'inverse de ce que cherche un rayon de 26.</td>
+        </tr>
+        <tr>
+          <td><b>En-tête sous l'horloge</b></td>
+          <td><code>useSafeAreaInsets()</code> renvoie 0 sur cet Android</td>
+          <td>Marque et bascule de langue dessinées par-dessus la barre d'état. Le composant natif, lui, lit les vraies insets.</td>
+        </tr>
+        <tr>
+          <td><b>Onglets de 800 px de haut</b></td>
+          <td>Un <code>ScrollView</code> horizontal n'a pas de hauteur propre</td>
+          <td>Dans une colonne <code>flex: 1</code>, les pilules prenaient toute la place verticale.</td>
+        </tr>
+        <tr>
+          <td><b>Sous-titre recouvert</b></td>
+          <td>Chevauchement réglé séparément de la hauteur du bandeau</td>
+          <td>La carte qui remonte mangeait la dernière ligne de l'en-tête.</td>
+        </tr>
+        <tr>
+          <td><b>Chevron de retour sur un onglet</b></td>
+          <td><code>canGoBack()</code> devient vrai dès un changement d'onglet</td>
+          <td>La cliente avait un bouton retour sur sa page de réglages.</td>
+        </tr>
+        <tr>
+          <td><b>Barre d'onglets sur les détails</b></td>
+          <td><code>href: null</code> retire de la barre, pas du navigateur</td>
+          <td>Le bouton de <b>paiement</b> du détail de mission passait sous la barre.</td>
+        </tr>
+        <tr>
+          <td><b>Trois oranges sur un écran</b></td>
+          <td>Bouton flottant + bouton d'écran + CTA d'amorce</td>
+          <td>La charte n'en autorise qu'un. Trois se disputaient la même action.</td>
+        </tr>
+        <tr>
+          <td><b>Halos non miroités en arabe</b></td>
+          <td><code>left</code>/<code>right</code> au lieu de <code>start</code>/<code>end</code></td>
+          <td>Tout l'écran basculait, les deux sources de lumière restaient à leur bord physique.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note alerte">
+    <b>Un neuvième, que j'avais introduit.</b> En sortant le paiement dans une barre
+    d'action fixe, la condition a quitté le branchement par rôle : « Payer
+    maintenant » s'affichait au <b>transporteur</b>, sur une mission qu'il doit
+    encaisser. La décision est désormais une fonction nommée,
+    <code>clientDoitPayer(rôle, statut, mode)</code>, verrouillée par neuf tests.
+    Vérifié absent sur appareil.
+  </div>
+</section>
+
+<!-- Le banc ─────────────────────────────────────────────────────────────── -->
+<section>
+  <p class="basis">journal de bord</p>
+  <h2>Six choses que le banc de test a dû apprendre</h2>
+  <p class="sub">
+    Un banc qui accuse l'application de ses propres erreurs ne mesure rien. Ces six
+    corrections sont la raison pour laquelle les chiffres ci-dessus tiennent — et
+    elles serviront à quiconque reprendra ces scripts.
+  </p>
+
+  <ul class="plain">
+    <li>
+      <b>Un faux OK est pire qu'un faux blocage.</b> Le marqueur « Ariana » désignait
+      à la fois une option de la feuille de sélection et la valeur déjà retenue dans
+      le champ. Deux étapes se sont déclarées vertes sans que la feuille s'ouvre, et
+      le problème n'a fait surface que deux étapes plus loin. Les témoins sont
+      maintenant des identifiants qui n'existent que dans la feuille.
+    </li>
+    <li>
+      <b>Un geste de 180 ms est un lancer, pas un défilement.</b> La liste des
+      24 gouvernorats revenait à sa place. À 400 ms, la cible apparaît au premier
+      essai.
+    </li>
+    <li>
+      <b>Un champ peut être dans l'arbre et sous le bandeau.</b> À y = 513, le champ
+      d'arrivée existait pour la sonde et le tap partait dans le bandeau bleu fixe. Il
+      faut remonter l'écran avant de viser.
+    </li>
+    <li>
+      <b>Glisser vers le bas dans une feuille, c'est la congédier.</b> Mon défilement
+      « vers le haut du formulaire » fermait la feuille et emportait la saisie. On ne
+      parcourt donc le formulaire que dans un sens.
+    </li>
+    <li>
+      <b>Échap et Retour ferment la modale, clavier ouvert compris.</b> La modale de
+      React Native reçoit l'événement avant le clavier logiciel. Aucun des congés
+      évidents ne convient.
+    </li>
+    <li>
+      <b>La sonde devient aveugle quand un dialogue système ou le clavier est
+      affiché.</b> <code>uiautomator dump</code> ne rend plus alors que la fenêtre du
+      dessus. C'est ce qui a masqué le dialogue de localisation pendant trois
+      passages, et c'est ce qui empêche de vérifier une saisie deux secondes après
+      l'avoir faite.
+    </li>
+  </ul>
+
+  <div class="note">
+    <b>Une méthode, en une ligne.</b> Chaque bloc de scénario repart d'un onglet
+    vérifié, jamais d'un « retour » ; un bloc dont l'ancrage échoue est déclaré
+    <b>non testé</b>, pas bloqué. Et trois étapes du parcours cliente attendent
+    délibérément un échec : ce sont elles qui rapportent les constats du chapitre
+    précédent.
+  </div>
+</section>
+
+<!-- Environnement ───────────────────────────────────────────────────────── -->
+<section>
+  <p class="basis">journal de bord</p>
+  <h2>L'environnement, qui a coûté plus que le code</h2>
+  <p class="sub">Cinq obstacles rencontrés avant d'avoir pu mesurer quoi que ce soit. Ils se reproduiront.</p>
+
+  <ul class="plain">
+    <li>
+      <b>Disque plein.</b> 505 Mo libres sur 237 Go : l'émulateur refuse de démarrer,
+      il en réclame environ 2 Go. La recette a été bloquée une journée.
+    </li>
+    <li>
+      <b>Un client étranger sur le backend.</b> Pendant la première campagne, un autre
+      client bouclait sur l'authentification : dix tentatives en trois secondes, toutes
+      en 400, puis trois 429, retour à la normale 85 secondes plus tard. Ses requêtes
+      s'attribuaient à mes étapes et produisaient des latences de 43 secondes qui
+      n'existaient pas. Le filtre <code>/api/v1</code> les écarte.
+    </li>
+    <li>
+      <b>Metro exige <code>--offline</code> sans réseau.</b> L'Expo CLI appelle le
+      réseau au démarrage pour valider les versions et traite l'échec comme fatal.
+    </li>
+    <li>
+      <b><code>adb reverse</code> à reposer</b> quand Metro démarre avant l'AVD, sinon
+      le client de développement affiche « Unable to load script ».
+    </li>
+    <li>
+      <b><code>/tmp</code> n'est pas <code>/tmp</code>.</b> Git Bash le remappe sur le
+      répertoire temporaire de l'utilisateur ; Python cherche <code>C:\tmp</code>. Le
+      banc annonçait « 0 requête » sur des étapes qui en déclenchaient six.
+    </li>
+  </ul>
+</section>
+
+<!-- Outillage ───────────────────────────────────────────────────────────── -->
+<section>
+  <p class="basis">vérifié en commande</p>
+  <h2>État de l'outillage</h2>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Élément</th><th>État</th><th>Remarque</th></tr></thead>
+      <tbody>
+        <tr><td>Suite de tests mobile</td><td class="n">42 suites · 317 tests</td><td>Tous verts, relancés à la clôture de l'audit.</td></tr>
+        <tr><td><code>tsc --noEmit</code></td><td class="n">propre</td><td>Zéro erreur, mode strict.</td></tr>
+        <tr><td><code>eslint --max-warnings=0</code></td><td class="n">propre</td><td>Zéro avertissement.</td></tr>
+        <tr><td>Graphe de connaissances</td><td class="n">6 506 nœuds</td><td>11 041 arêtes, 867 fichiers dont 328 mobiles, 557 communautés.</td></tr>
+        <tr><td>Garde-fou de contraste</td><td class="n">15 cas</td><td>Chaque couleur de texte vérifiée AA en intégration continue.</td></tr>
+        <tr><td>Bancs de recette</td><td class="n">5 scripts</td><td>Le banc, deux scénarios, deux diagnostics. Mesures brutes en JSON.</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="note">
+    <b>Deux points sur le graphe.</b> <code>graphify . --update</code> échoue en
+    l'état : il réclame une clé LLM pour 58 documents et 20 images —
+    <code>--code-only</code> est le drapeau qui passe. Et faute de cette clé,
+    <b>393 communautés sur 557</b> portent le nom de leur nœud pivot au lieu d'un
+    libellé lisible.
+  </div>
+</section>
+
+<!-- Recommandations ─────────────────────────────────────────────────────── -->
+<section>
+  <p class="basis">à décider</p>
+  <h2>Recommandations</h2>
+  <p class="sub">Par ordre de ce qu'elles rapportent. Chacune adossée à un chiffre de ce rapport.</p>
+
+  <ol class="reco">
+    <li class="tete">
+      <div>
+        <h4>Remplacer les trois sondages par des notifications poussées</h4>
+        <p>
+          C'est la seule recommandation qui change la facture de tout le monde :
+          celle du serveur, celle de la batterie, celle du forfait. Le canal existe
+          déjà — <code>expo-notifications</code> et la table de jetons d'appareil. À
+          défaut, un intervalle qui s'allonge quand l'écran est inactif diviserait
+          déjà le volume par cinq.
+        </p>
+        <span class="appui">appui : 2 345 requêtes sur 2 892 · 85 réponses 429 · une requête toutes les 4,3 s sur un écran de mission</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Amener le résultat sous les yeux après une recherche</h4>
+        <p>
+          Faire défiler jusqu'au compteur dès la réponse, ou replier le formulaire.
+          Aujourd'hui l'écran est visuellement identique avant et après une recherche
+          fructueuse, et le bouton qui convertit est à deux défilements.
+        </p>
+        <span class="appui">appui : quatre constats du § « le produit cache ce qu'il vient de faire »</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Précharger le carnet d'adresses avec les résultats</h4>
+        <p>
+          Ouvrir la feuille de demande coûte huit à neuf secondes pour un seul appel,
+          celui du carnet d'adresses — sur l'écran même où la cliente décide de
+          s'engager. Cette donnée peut être chargée avec les résultats de recherche,
+          pendant qu'elle les lit.
+        </p>
+        <span class="appui">appui : 8,4 – 9,6 s mesurées sur six passages, une requête <code>addresses/</code></span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Ne demander la localisation qu'au moment où elle sert</h4>
+        <p>
+          Le dialogue système surgit par-dessus les résultats, au moment où la cliente
+          les attend. Rien sur cet écran n'en a besoin : refus accordé, tout
+          fonctionne. À demander à l'ouverture de la carte, si tant est qu'on la
+          demande.
+        </p>
+        <span class="appui">appui : dialogue observé sur la 1<sup>re</sup> recherche fructueuse ; écran intégralement fonctionnel après refus</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Rendre visible le quatrième onglet de suivi</h4>
+        <p>
+          Raccourcir les libellés, réduire les pilules, ou marquer le bord qui défile.
+          En l'état, « Terminées » existe et personne ne peut le deviner.
+        </p>
+        <span class="appui">appui : trois pilules occupent 1 028 px d'un écran de 1 080</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Offrir une suite à une demande refusée</h4>
+        <p>
+          Trois états sur six se terminent sans aucune action proposée, alors que la
+          suite évidente — chercher un autre trajet sur le même corridor — est à deux
+          écrans.
+        </p>
+        <span class="appui">appui : tableau des sorties par état</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Afficher l'accueil par étapes plutôt qu'en bloc</h4>
+        <p>
+          Six requêtes en séquence avant que l'accueil soit complet. Le hero dès sa
+          réponse, les sections ensuite : l'écran devient utile plus tôt sans rien
+          changer au serveur.
+        </p>
+        <span class="appui">appui : 13,94 s au démarrage à froid transporteur, six requêtes</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Distinguer un retour publié d'une mission à l'écran</h4>
+        <p>
+          Deux entités portent le même libellé sur le même écran. Un préfixe, une
+          icône ou une couleur de puce suffirait.
+        </p>
+        <span class="appui">appui : deux erreurs de cible consécutives du banc de test</span>
+      </div>
+    </li>
+    <li>
+      <div>
+        <h4>Isoler le backend de recette</h4>
+        <p>
+          Une campagne de mesure a besoin d'un serveur qui ne serve qu'elle — et d'un
+          limiteur de débit dont le seuil est connu, puisqu'il se déclenche.
+        </p>
+        <span class="appui">appui : dix 400 puis trois 429 d'un client tiers, 85 s de rétablissement</span>
+      </div>
+    </li>
+  </ol>
+</section>
+
+<!-- Limites ─────────────────────────────────────────────────────────────── -->
+<section>
+  <p class="basis">limites de l'audit</p>
+  <h2>Ce que ce rapport ne dit pas</h2>
+  <p class="sub">Nommé plutôt que passé sous silence.</p>
+
+  <div class="scroller">
+    <table>
+      <thead><tr><th>Non couvert</th><th>Raison</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><b>L'envoi d'une demande, et les 23 contrôles du formulaire</b></td>
+          <td>Obstacle instrumental, pas produit : le formulaire s'ouvre, le premier
+              champ accepte la frappe — c'est vérifié dans la trace, relevé juste
+              après l'appui. Mais dès que le clavier logiciel est affiché, la sonde ne
+              rend plus la fenêtre de l'application, et les trois congés de clavier
+              possibles ferment la feuille et emportent la saisie. Rien n'a été
+              soumis, donc rien n'est à défaire.</td>
+        </tr>
+        <tr>
+          <td><b>Le paiement</b></td>
+          <td>Il déplace de l'argent et rien dans l'application ne le défait. Le
+              compte de recette cliente n'a d'ailleurs aucune demande acceptée :
+              atteindre cet écran demanderait qu'un transporteur accepte d'abord, donc
+              deux comptes en va-et-vient.</td>
+        </tr>
+        <tr>
+          <td><b>Les actions financières terminales du transporteur</b> — soumettre un
+              retrait, publier un retour</td>
+          <td>La première crée un enregistrement qu'aucune action de l'application ne
+              défait ; la seconde ajoute une annonce visible aux clients. Les
+              formulaires sont ouverts et mesurés, les boutons non pressés.</td>
+        </tr>
+        <tr>
+          <td><b>Les mots de passe</b></td>
+          <td>Je n'en saisis pas, y compris pour les comptes de recette documentés. Les
+              deux sessions ont été ouvertes par le propriétaire du projet.</td>
+        </tr>
+        <tr>
+          <td><b>L'application web à l'exécution</b></td>
+          <td>Ses 47 écrans sont documentés depuis le code — routes, libellés,
+              modèles, règles métier — mais aucun n'a été ouvert dans un navigateur
+              pendant cet audit.</td>
+        </tr>
+        <tr>
+          <td><b>Les écrans d'administration</b></td>
+          <td>Inventoriés et décrits, jamais exercés. Ils demandent un compte
+              d'administration.</td>
+        </tr>
+        <tr>
+          <td><b>La tenue en charge</b></td>
+          <td>Un seul utilisateur, une base sqlite locale, un émulateur. Rien ici ne
+              prédit le comportement à plusieurs centaines de clients — sinon que le
+              limiteur de débit est déjà atteint par un seul téléphone.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<footer>
+  Audit conduit du 6 au 10 septembre 2026. Recette jouée sur Pixel 7 API 35 avec les
+  comptes de recette transporteur et cliente, backend Django local sur sqlite, bundle
+  de développement servi par Metro. Mesures brutes dans
+  <span class="m">mobile/.recette-mesures*.json</span> ; banc dans
+  <span class="m">mobile/.recette.py</span> ; scénarios dans
+  <span class="m">mobile/.parcours-transporteur.py</span> et
+  <span class="m">mobile/.parcours-client.py</span>. Deux rapports détaillés
+  complètent celui-ci : la recette du parcours transporteur et le guide fonctionnel de
+  l'application web.
+</footer>
+
+</div>

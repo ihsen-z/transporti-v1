@@ -9,8 +9,9 @@ import {
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { Txt } from '@/shared/ui/Txt';
+import { useOnBlue } from '@/shared/ui/SurfaceTone';
 import { resolveFontFamily } from '@/shared/theme/typography';
-import { colors, radii, spacing, fontSize, focusRing } from '@/shared/theme';
+import { colors, glass, radii, fontSize, focusRing, FIELD_HEIGHT } from '@/shared/theme';
 
 interface Props {
   label: string;
@@ -40,6 +41,7 @@ export function TextField({
   testID,
 }: Props) {
   const { i18n } = useTranslation();
+  const onBlue = useOnBlue();
   const [focused, setFocused] = useState(false);
   // Alignement du texte suivant le sens de lecture (derja AR = RTL).
   const textAlign = I18nManager.isRTL ? 'right' : 'left';
@@ -47,15 +49,37 @@ export function TextField({
   const fontFamily = resolveFontFamily('400', i18n.language);
 
   // L'erreur prime sur le focus : un champ fautif reste rouge même en saisie.
-  const showRing = focused && !error;
+  const showFocus = focused && !error;
+  // L'anneau de focus n'existe que sur fond clair. Sur le bleu, un halo pâle
+  // se noierait dans le dégradé : le verre s'y opacifie à la place.
+  const showRing = showFocus && !onBlue;
+
+  const surface = onBlue
+    ? showFocus
+      ? {
+          backgroundColor: glass.fieldFocus.background,
+          borderColor: glass.fieldFocus.border,
+        }
+      : { backgroundColor: glass.field.background, borderColor: glass.field.border }
+    : showFocus
+      ? { backgroundColor: colors.neutral[0], borderColor: focusRing.borderColor }
+      : { backgroundColor: colors.neutral[50], borderColor: colors.neutral[300] };
 
   return (
     <View style={styles.wrap}>
-      <Txt style={[styles.label, { textAlign }]}>{label}</Txt>
+      <Txt
+        style={[
+          styles.label,
+          { textAlign, color: onBlue ? colors.onBlue[200] : colors.neutral[500] },
+        ]}
+      >
+        {label}
+      </Txt>
       <View>
-        {/* Anneau de focus (charte : box-shadow 0 0 0 4px #eef2ff). Rendu en
-            premier donc DERRIÈRE le champ, et en débord négatif : il n'occupe
-            aucune place dans le flux, donc rien ne bouge à la prise de focus. */}
+        {/* Anneau de focus (charte : box-shadow 0 0 0 4px rgba(30,58,138,.08)).
+            Rendu en premier donc DERRIÈRE le champ, et en débord négatif : il
+            n'occupe aucune place dans le flux, donc rien ne bouge à la prise de
+            focus. */}
         {showRing ? <View pointerEvents="none" style={styles.ring} /> : null}
         <TextInput
           testID={testID}
@@ -63,8 +87,13 @@ export function TextField({
           accessibilityHint={error}
           style={[
             styles.input,
-            { textAlign, fontFamily },
-            showRing ? styles.inputFocused : null,
+            {
+              textAlign,
+              fontFamily,
+              color: onBlue ? colors.onBlue[100] : colors.neutral[900],
+            },
+            surface,
+            showFocus ? styles.focused : null,
             error ? styles.inputError : null,
           ]}
           value={value}
@@ -75,7 +104,7 @@ export function TextField({
             onBlur?.();
           }}
           placeholder={placeholder}
-          placeholderTextColor={colors.neutral[400]}
+          placeholderTextColor={onBlue ? 'rgba(255,255,255,0.6)' : colors.neutral[400]}
           secureTextEntry={secureTextEntry}
           keyboardType={keyboardType}
           autoCapitalize={autoCapitalize}
@@ -83,7 +112,13 @@ export function TextField({
         />
       </View>
       {error ? (
-        <Txt testID={testID ? `${testID}-error` : undefined} style={[styles.error, { textAlign }]}>
+        <Txt
+          testID={testID ? `${testID}-error` : undefined}
+          style={[
+            styles.error,
+            { textAlign, color: onBlue ? colors.text.errorOnBlue : colors.text.error },
+          ]}
+        >
           {error}
         </Txt>
       ) : null}
@@ -92,24 +127,20 @@ export function TextField({
 }
 
 const styles = StyleSheet.create({
-  wrap: { gap: spacing.xs },
-  label: {
-    fontSize: fontSize.sm,
-    fontWeight: '600',
-    color: colors.neutral[700],
-  },
-  // Charte (.inp) : rayon 14, bordure 1 px #e5e7eb, texte 15.
+  // Charte : libellé au-dessus, gap 7 px.
+  wrap: { gap: 7 },
+  label: { fontSize: fontSize.label, fontWeight: '600' },
+  // Charte (.field) : rayon 14, hauteur 52, padding latéral 15, texte 15.
   input: {
-    minHeight: 52,
+    minHeight: FIELD_HEIGHT,
     borderWidth: 1,
-    borderColor: colors.neutral[300],
     borderRadius: radii.input,
-    paddingHorizontal: spacing.lg,
+    paddingHorizontal: 15,
     fontSize: fontSize.md,
-    color: colors.neutral[900],
-    backgroundColor: colors.neutral[0],
   },
-  inputFocused: { borderColor: focusRing.borderColor },
+  // Bord franc à la saisie, dans les deux familles.
+  focused: { borderWidth: 1.5 },
+  // Charte (§9, états d'erreur) : bord rouge, message 12,5 px sous le champ.
   inputError: { borderColor: colors.error },
   ring: {
     position: 'absolute',
@@ -120,5 +151,5 @@ const styles = StyleSheet.create({
     borderRadius: radii.input + focusRing.width,
     backgroundColor: focusRing.color,
   },
-  error: { fontSize: fontSize.sm, color: colors.text.error },
+  error: { fontSize: fontSize.label, fontWeight: '600' },
 });

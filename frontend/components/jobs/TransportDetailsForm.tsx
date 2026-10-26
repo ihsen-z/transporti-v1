@@ -22,22 +22,22 @@ export function TransportDetailsForm({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col gap-6">
       <div>
-        <label className="block text-sm font-medium text-neutral-700 mb-1">
+        <label className="label mb-[7px]">
           {t.jobsComponents.transportForm.itemsDesc}
         </label>
         <textarea
           value={data.description || ""}
           onChange={(e) => handleChange("description", e.target.value)}
           placeholder={t.jobsComponents.transportForm.itemsPlaceholder}
-          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500 min-h-[100px]"
+          className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-700 min-h-[100px]"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
+          <label className="label mb-[7px]">
             <Weight className="inline w-4 h-4 me-1" />{" "}
             {t.jobsComponents.transportForm.weightLabel}
           </label>
@@ -47,12 +47,12 @@ export function TransportDetailsForm({
             onChange={(e) =>
               handleChange("specifications", { weight: e.target.value })
             }
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500"
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-700"
             placeholder={t.jobsComponents.transportForm.weightPlaceholder}
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-neutral-700 mb-1">
+          <label className="label mb-[7px]">
             <Box className="inline w-4 h-4 me-1" />{" "}
             {t.jobsComponents.transportForm.volumeLabel}
           </label>
@@ -63,7 +63,7 @@ export function TransportDetailsForm({
             onChange={(e) =>
               handleChange("specifications", { volume: e.target.value })
             }
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-accent-500"
+            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-700"
             placeholder={t.jobsComponents.transportForm.volumePlaceholder}
           />
         </div>

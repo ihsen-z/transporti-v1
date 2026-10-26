@@ -20,15 +20,16 @@ import StatusBadge from "@/components/ui/StatusBadge";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import {
-  ArrowLeft,
-  Send,
-  Info,
   AlertTriangle,
-  Truck,
-  Loader2,
-  Lock,
+  ArrowLeft,
   ChevronDown,
   ChevronUp,
+  Info,
+  Loader2,
+  Lock,
+  Phone,
+  Send,
+  Truck,
 } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -248,27 +249,27 @@ export default function MessagingPage() {
         <div
           className={`border rounded-xl p-6 max-w-md text-center ${
             errorType === "403"
-              ? "bg-red-50 border-red-200"
+              ? "bg-error-50 border-error-200"
               : errorType === "404"
-                ? "bg-amber-50 border-amber-200"
+                ? "bg-warning-50 border-warning-200"
                 : "bg-neutral-50 border-neutral-200"
           }`}
         >
           <AlertTriangle
             className={`w-8 h-8 mx-auto mb-3 ${
               errorType === "403"
-                ? "text-red-500"
+                ? "text-error-500"
                 : errorType === "404"
-                  ? "text-amber-500"
+                  ? "text-warning-500"
                   : "text-neutral-400"
             }`}
           />
           <h3
             className={`text-lg font-semibold mb-2 ${
               errorType === "403"
-                ? "text-red-800"
+                ? "text-error-700"
                 : errorType === "404"
-                  ? "text-amber-800"
+                  ? "text-warning-800"
                   : "text-neutral-800"
             }`}
           >
@@ -281,9 +282,9 @@ export default function MessagingPage() {
           <p
             className={`text-sm mb-4 ${
               errorType === "403"
-                ? "text-red-600"
+                ? "text-error-600"
                 : errorType === "404"
-                  ? "text-amber-600"
+                  ? "text-warning-600"
                   : "text-neutral-600"
             }`}
           >
@@ -320,7 +321,7 @@ export default function MessagingPage() {
         </button>
 
         <div className="flex-1 min-w-0">
-          <p className="text-sm font-semibold text-neutral-900 truncate">
+          <p className="text-[14px] font-bold text-ink-900 truncate">
             {otherParty?.name || t.messages.conversationFallback}
           </p>
           {job && (
@@ -349,9 +350,10 @@ export default function MessagingPage() {
         <div className="border-b border-neutral-200 flex-shrink-0">
           <button
             onClick={() => setShowContact(!showContact)}
-            className="w-full px-4 py-2 flex items-center justify-between text-xs text-emerald-700 bg-emerald-50/50 hover:bg-emerald-50 transition-colors"
+            className="w-full px-4 py-2 flex items-center justify-between text-xs text-green-700 bg-green-50/50 hover:bg-green-50 transition-colors"
           >
-            <span className="flex items-center gap-1.5 font-medium">
+            <span className="flex items-center gap-1.5 font-semibold">
+              <Phone className="h-3.5 w-3.5" strokeWidth={2.2} />
               {interpolate(t.messages.contactOf, {
                 name: otherParty.name || t.messages.yourContact,
               })}
@@ -363,7 +365,7 @@ export default function MessagingPage() {
             )}
           </button>
           {showContact && (
-            <div className="px-4 py-3 bg-emerald-50/30">
+            <div className="px-4 py-3 bg-green-50/30">
               <ContactReveal
                 isBookingConfirmed={true}
                 phone={otherParty.phone || undefined}
@@ -456,12 +458,12 @@ export default function MessagingPage() {
       {/*  Bypass Warning                                                  */}
       {/* ---------------------------------------------------------------- */}
       {bypassWarning && (
-        <div className="px-4 py-2 bg-amber-50 border-t border-amber-200 flex items-start gap-2 flex-shrink-0">
-          <AlertTriangle className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
-          <p className="text-xs text-amber-700">{bypassWarning}</p>
+        <div className="px-4 py-2 bg-warning-50 border-t border-warning-200 flex items-start gap-2 flex-shrink-0">
+          <AlertTriangle className="w-4 h-4 text-warning-600 flex-shrink-0 mt-0.5" />
+          <p className="text-xs text-warning-700">{bypassWarning}</p>
           <button
             onClick={() => setBypassWarning(null)}
-            className="text-amber-600 hover:text-amber-800 text-xs font-medium ms-auto flex-shrink-0"
+            className="text-warning-600 hover:text-warning-800 text-xs font-medium ms-auto flex-shrink-0"
           >
             ✕
           </button>
@@ -490,7 +492,7 @@ export default function MessagingPage() {
               onKeyDown={handleKeyDown}
               placeholder={t.messages.messagePlaceholder}
               rows={1}
-              className="flex-1 p-3 border border-neutral-300 rounded-xl resize-none focus:ring-2 focus:ring-accent-500 focus:border-brand-600 text-sm max-h-32"
+              className="flex-1 p-3 border border-neutral-300 rounded-xl resize-none focus:ring-2 focus:ring-blue-700 focus:border-brand-600 text-sm max-h-32"
             />
             <button
               onClick={handleSend}
