@@ -9,6 +9,7 @@ import { RouteRow } from '@/shared/ui/RouteRow';
 import { colors, spacing, fontSize, radii, tracking } from '@/shared/theme';
 import type { TripResultDto } from '../api/dto';
 import { Txt } from '@/shared/ui/Txt';
+import { formatApiAmount } from '@/shared/format/money';
 
 interface Props {
   trip: TripResultDto;
@@ -102,8 +103,8 @@ export function TripResultCard({ trip, onRequest }: Props) {
           {trip.price_tnd_min === null
             ? t('search.price_negotiable')
             : t('search.price_range', {
-                min: trip.price_tnd_min,
-                max: trip.price_tnd_max ?? trip.price_tnd_min,
+                min: formatApiAmount(trip.price_tnd_min),
+                max: formatApiAmount(trip.price_tnd_max ?? trip.price_tnd_min),
               })}
         </Txt>
         <Button
