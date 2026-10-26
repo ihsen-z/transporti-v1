@@ -2107,6 +2107,7 @@ export const fr = {
       transports: "Transports",
       users: "Utilisateurs",
       payments: "Paiements",
+      commissions: "Commissions",
       verifications: "Vérifications",
       disputes: "Litiges",
       reviews: "Avis",

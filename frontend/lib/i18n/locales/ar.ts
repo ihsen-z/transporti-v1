@@ -1959,6 +1959,7 @@ export const ar = {
       transports: "النقليات",
       users: "المستخدمون",
       payments: "المدفوعات",
+      commissions: "العمولات",
       verifications: "التحقق",
       disputes: "النزاعات",
       reviews: "التقييمات",
