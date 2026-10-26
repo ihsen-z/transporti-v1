@@ -1,11 +1,12 @@
 import { useInfiniteQuery } from '@tanstack/react-query';
 import { apiClient } from '@/core/api/client';
+import { POLL_INTERVAL_MS } from '@/core/api/polling';
 import type { ConversationListDto, Paginated } from './dto';
 
 // GET /api/v1/conversations/ — inbox du user. 5.2 : peut croître sans limite
 // sur la durée de vie du compte — `useInfiniteQuery`, piloté par le
-// défilement de la FlatList (messages/index.tsx). Polling léger (10s) sur les
-// non-lus conservé : il ne rafraîchit que les pages déjà chargées.
+// défilement de la FlatList (messages/index.tsx). Le sondage des non-lus ne
+// rafraîchit que les pages déjà chargées ; sa cadence vit dans core/api/polling.ts.
 async function fetchConversationsPage(
   pageUrl: string | null,
 ): Promise<Paginated<ConversationListDto>> {
@@ -21,6 +22,8 @@ export function useConversations() {
     queryFn: ({ pageParam }) => fetchConversationsPage(pageParam),
     initialPageParam: null as string | null,
     getNextPageParam: (lastPage) => lastPage.next,
-    refetchInterval: 10_000,
+    refetchInterval: POLL_INTERVAL_MS.conversations,
+    // Cadence lente : un retour dans l'app rafraîchit aussitôt la pastille.
+    refetchOnWindowFocus: true,
   });
 }

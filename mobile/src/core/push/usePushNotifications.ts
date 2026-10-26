@@ -2,10 +2,12 @@ import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import * as Notifications from 'expo-notifications';
 import { useRouter } from 'expo-router';
+import { useQueryClient } from '@tanstack/react-query';
 import { env } from '@/core/env';
 import { reportError } from '@/core/observability';
 import { useAuthStore } from '@/core/auth/authStore';
 import { resolveNotificationRoute } from '@/features/notifications/data/notificationRoute';
+import { queriesToRefresh } from '@/features/notifications/data/notificationRefresh';
 import { useRegisterDevice } from '@/features/notifications/api/useRegisterDevice';
 
 // Présentation en premier plan : sans ce handler, un push reçu app ouverte
@@ -22,8 +24,8 @@ Notifications.setNotificationHandler({
   }),
 });
 
-function readRouteData(response: Notifications.NotificationResponse) {
-  const data = response.notification.request.content.data as
+function readRouteData(notification: Notifications.Notification) {
+  const data = notification.request.content.data as
     | (Record<string, unknown> & { type?: unknown })
     | undefined;
   if (!data || typeof data.type !== 'string') return null;
@@ -44,6 +46,7 @@ export function usePushNotifications(): void {
   const status = useAuthStore((s) => s.status);
   const role = useAuthStore((s) => s.user?.role);
   const router = useRouter();
+  const queryClient = useQueryClient();
   const register = useRegisterDevice();
   const attempted = useRef(false);
 
@@ -82,7 +85,7 @@ export function usePushNotifications(): void {
 
   useEffect(() => {
     const onResponse = (response: Notifications.NotificationResponse) => {
-      const route = readRouteData(response);
+      const route = readRouteData(response.notification);
       if (!route) return;
       const target = resolveNotificationRoute(route.type, route.metadata, role);
       if (target) router.push(target);
@@ -97,4 +100,19 @@ export function usePushNotifications(): void {
     const subscription = Notifications.addNotificationResponseReceivedListener(onResponse);
     return () => subscription.remove();
   }, [router, role]);
+
+  // Push reçu l'application ouverte : on rafraîchit tout de suite ce qu'il
+  // concerne, au lieu d'attendre le prochain sondage (désormais lent, voir
+  // core/api/polling.ts). Sans compte EAS, aucun push n'arrive et ce listener
+  // reste muet : les sondages assurent seuls la fraîcheur.
+  useEffect(() => {
+    const subscription = Notifications.addNotificationReceivedListener((notification) => {
+      const route = readRouteData(notification);
+      if (!route) return;
+      for (const queryKey of queriesToRefresh(route.type, route.metadata)) {
+        void queryClient.invalidateQueries({ queryKey });
+      }
+    });
+    return () => subscription.remove();
+  }, [queryClient]);
 }
