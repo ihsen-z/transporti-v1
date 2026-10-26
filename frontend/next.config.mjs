@@ -62,6 +62,13 @@ const nextConfig = {
                 hostname: '*.onrender.com',
                 pathname: '/media/**',
             },
+            // Avatars servis par le bucket privé Cloudflare R2 (liens signés).
+            // Les photos de chargement passent, elles, par /media/ du serveur.
+            {
+                protocol: 'https',
+                hostname: '*.r2.cloudflarestorage.com',
+                pathname: '/**',
+            },
         ],
     },
 };

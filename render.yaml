@@ -1,116 +1,136 @@
+# =============================================================================
+# Render : le serveur Django de Transporti (offre GRATUITE)
+# Mode d'emploi pas à pas : docs/GUIDE_MISE_EN_PRODUCTION_RENDER.md
+#
+# Hébergement gratuit retenu le 26/10/2026 :
+#   - serveur Django : CE service, offre gratuite de Render ;
+#   - base PostgreSQL : Neon (gratuit, n'expire pas) — plus de base Render :
+#     la base gratuite de Render expire au bout de 30 jours, c'est ce qui a
+#     cassé la production en octobre 2026 ;
+#   - site Next.js : Netlify (netlify.toml à la racine), pour laisser à ce
+#     service seul les 750 heures gratuites mensuelles du compte Render ;
+#   - tâches planifiées : cron externe (cron-job.org ou GitHub Actions) qui
+#     appelle POST /api/v1/taches-planifiees/ — l'offre gratuite n'a pas de
+#     service « worker ».
+#
+# Ce fichier sert de référence : le service existe déjà, créé à la main. Un
+# Blueprint NOUVEAU ne le reprendrait pas, il créerait une copie. Le guide
+# explique comment saisir ces variables directement dans le tableau de bord.
+#
+# Syntaxe vérifiée le 26/10/2026 sur https://render.com/docs/blueprint-spec :
+# `runtime:` remplace `env:` ; `sync: false` = valeur demandée dans le tableau
+# de bord à la création du Blueprint (ignorée ensuite).
+# =============================================================================
+
 services:
-  # ---------------------------------------------------------
-  # BACKEND - Django API (Docker)
-  # ---------------------------------------------------------
   - type: web
-    name: transporti-backend
-    env: docker
+    # Nom EXACT du service existant (avec un tiret bas) ; son adresse est
+    # https://transporti-v1.onrender.com, appelée par le site et le mobile.
+    name: transporti_v1
+    runtime: docker
     rootDir: backend
     region: frankfurt # Proche de la Tunisie pour une faible latence
-    plan: starter # Plan idéal pour 50 utilisateurs (env. 7$/mois)
-    healthCheckPath: /api/schema/
+    # Offre gratuite : le service s'endort après 15 min sans trafic (réveil
+    # d'environ une minute). Le guide décrit un cron qui le garde éveillé en
+    # appelant /ping/ : un seul service gratuit sur le compte tient dans les
+    # 750 heures du mois (31 j x 24 h = 744 h).
+    plan: free
+    # /ping/ répond SANS toucher à la base (transporti_core/cron.py). /health/
+    # fait un SELECT 1 : appelé toutes les quelques secondes, il empêcherait
+    # Neon de se mettre en pause et épuiserait ses heures de calcul gratuites.
+    healthCheckPath: /ping/
     envVars:
-      # Lier la base de données PostgreSQL automatiquement
+      # --- Base Neon ---
+      # Chaîne de connexion copiée depuis Neon (bouton « Connect »), avec
+      # ?sslmode=require. ATTENTION : supprimer la variable DB_URL_OVERRIDE
+      # du service existant, elle passe AVANT DATABASE_URL (settings.py).
       - key: DATABASE_URL
-        fromDatabase:
-          name: transporti-db
-          property: connectionString
-      
-      # Génération automatique et sécurisée des clés secrètes par Render
+        sync: false
+
+      # Clés secrètes : générées par Render si elles n'existent pas encore
+      # (les clés actuelles du service sont conservées).
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
-      
-      # Variables d'environnement de production
+
       - key: ENV
         value: production
       - key: DEBUG
         value: "False"
-      
-      # Sécurité & CORS (Domaines auto-générés par Render)
+      # daphne écoute sur le port 8000 (CMD du Dockerfile).
+      - key: PORT
+        value: "8000"
+
+      # --- Adresses ---
       - key: ALLOWED_HOSTS
         value: transporti-v1.onrender.com
+      # Adresse du site Netlify (ex. https://transporti.netlify.app), connue
+      # une fois le site créé. Sans elle, le navigateur bloque les appels du
+      # site (CORS) et les liens des e-mails pointent au mauvais endroit.
       - key: CORS_ALLOWED_ORIGINS
-        value: https://transporti-frontend.onrender.com
+        sync: false
       - key: FRONTEND_URL
-        value: https://transporti-frontend.onrender.com
+        sync: false
 
       # Deep links mobiles (mot de passe oublié → transporti://reset-password).
-      # L'écran de réception existe côté mobile depuis le Lot 3 (3.7) : sans
-      # cette déclaration, MOBILE_DEEP_LINK_ENABLED restait à son défaut
-      # 'false' en production et l'e-mail n'aurait jamais porté le lien mobile.
       - key: MOBILE_APP_SCHEME
         value: transporti
       - key: MOBILE_DEEP_LINK_ENABLED
         value: "true"
 
-      # Push (Lot 4.2, décision 4.1 = Expo Push). Reste en SANDBOX tant
-      # qu'aucun appareil réel n'a pu être testé (pas de compte Expo/EAS dans
-      # cet environnement) — un seul flip de variable ici suffira le jour où
-      # un build EAS existe, aucun redéploiement de code n'est nécessaire.
+      # Push : reste en SANDBOX tant qu'aucun build EAS n'existe.
       - key: PUSH_NOTIFICATION_MODE
         value: SANDBOX
 
-  # ---------------------------------------------------------
-  # SCHEDULER - Tâches périodiques (expiration des offres,
-  # auto-release escrow…) via la management command
-  # run_scheduled_tasks. Sans ce worker, aucune tâche planifiée
-  # ne tourne en production.
-  # ---------------------------------------------------------
-  - type: worker
-    name: transporti-scheduler
-    env: docker
-    rootDir: backend
-    region: frankfurt
-    plan: starter
-    # Remplace le CMD daphne du Dockerfile (l'entrypoint tourne aussi :
-    # migrate est idempotent, et le seed est sauté car RUN_SEED n'est pas défini)
-    dockerCommand: python manage.py run_scheduled_tasks
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: transporti-db
-          property: connectionString
-      - key: SECRET_KEY
-        fromService:
-          type: web
-          name: transporti-backend
-          envVarKey: SECRET_KEY
-      - key: JWT_SECRET_KEY
-        fromService:
-          type: web
-          name: transporti-backend
-          envVarKey: JWT_SECRET_KEY
-      - key: ENV
-        value: production
-      - key: DEBUG
-        value: "False"
-      - key: ALLOWED_HOSTS
-        value: transporti-v1.onrender.com
+      # --- Tâches planifiées (cron externe) ---
+      # Secret attendu dans l'en-tête « Authorization: Bearer … » de
+      # POST /api/v1/taches-planifiees/. Le recopier dans le cron externe.
+      - key: CRON_SECRET
+        generateValue: true
 
-  # ---------------------------------------------------------
-  # FRONTEND - Next.js App (Node)
-  # ---------------------------------------------------------
-  - type: web
-    name: transporti-frontend
-    env: node
-    rootDir: frontend
-    region: frankfurt
-    plan: starter
-    buildCommand: npm install && npm run build
-    startCommand: npm run start
-    envVars:
-      # Lier l'URL de l'API déployée ci-dessus
-      - key: NEXT_PUBLIC_API_URL
-        value: https://transporti-v1.onrender.com
+      # --- Argent (décision du fondateur : espèces seules au lancement) ---
+      # Avec ENV=production, Django REFUSE de démarrer si PAYMENT_GATEWAY garde
+      # son défaut SANDBOX. DISABLED coupe le paiement en ligne
+      # (payments/online.py) ; aucun secret de webhook n'est alors exigé.
+      - key: PAYMENT_GATEWAY
+        value: DISABLED
+      - key: COD_MAX_AMOUNT
+        value: "300"
+      - key: COMMISSION_DEBT_LIMIT
+        value: "60"
 
-databases:
-  # ---------------------------------------------------------
-  # DATABASE - PostgreSQL
-  # ---------------------------------------------------------
-  - name: transporti-db
-    region: frankfurt
-    plan: starter
-    databaseName: transporti_prod
-    user: transporti_admin
+      # --- Fichiers envoyés : Cloudflare R2 (compatible S3) ---
+      # Sans bucket, les fichiers vont sur le disque du conteneur, effacé à
+      # chaque déploiement. NE PAS définir AWS_S3_CUSTOM_DOMAIN ni
+      # MEDIA_CDN_URL : le bucket reste privé et les liens sont signés.
+      - key: AWS_STORAGE_BUCKET_NAME
+        sync: false # ex. transporti-media
+      - key: AWS_S3_ENDPOINT_URL
+        sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_REGION_NAME
+        value: auto # R2 n'a pas de région : « auto » est la valeur attendue
+
+      # --- E-mails : Brevo en SMTP (offre gratuite) ---
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        value: smtp-relay.brevo.com # vérifier dans Brevo, onglet SMTP
+      # 2525 et non 587 : l'offre gratuite de Render bloque les ports sortants
+      # 25, 465 et 587 (render.com/docs/free). Brevo accepte 2525.
+      - key: EMAIL_PORT
+        value: "2525"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        sync: false # « Login » SMTP affiché par Brevo (xxx@smtp-brevo.com)
+      # Malgré son nom, cette variable porte le MOT DE PASSE SMTP quel que
+      # soit le fournisseur : y coller la clé SMTP Brevo.
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false # expéditeur VÉRIFIÉ dans Brevo, ex. Transporti <contact@...>

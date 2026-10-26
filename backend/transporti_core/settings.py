@@ -82,6 +82,9 @@ if IS_PRODUCTION:
     # Force HTTPS in production
     SECURE_SSL_REDIRECT = True
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    # Le contrôle de santé de Render appelle /ping/ en HTTP interne : sans
+    # exemption, il recevrait une redirection 301 au lieu de la vraie réponse.
+    SECURE_REDIRECT_EXEMPT = [r'^ping/$']
     
     # Secure cookies
     SESSION_COOKIE_SECURE = True
@@ -194,17 +197,27 @@ WSGI_APPLICATION = 'transporti_core.wsgi.application'
 
 # Database: PostgreSQL via DATABASE_URL (Docker/Render) or SQLite fallback for dev.
 # dj-database-url gère les schémas postgres:// et postgresql://, les ports
-# implicites et les query params Render (?sslmode=require).
+# implicites et les query params (?sslmode=require, posé par Neon et Render).
 _db_url = os.environ.get('DB_URL_OVERRIDE') or os.environ.get('DATABASE_URL', '')
 if _db_url:
     import dj_database_url
     DATABASES = {
         'default': dj_database_url.parse(
             _db_url,
-            conn_max_age=600,  # Connection pooling: 10 min
+            # Base de production : Neon gratuit (décision du 26/10/2026). Neon
+            # met la base en pause après 5 min sans requête et coupe alors les
+            # connexions. Une connexion gardée plus longtemps (600 s avant)
+            # donnait « SSL SYSCALL error: EOF detected » au réveil. On la garde
+            # 60 s au plus, et Django vérifie qu'elle vit avant de la réutiliser.
+            conn_max_age=60,
+            conn_health_checks=True,
+            # L'adresse « -pooler » de Neon passe par PgBouncer en mode
+            # transaction, qui ne supporte pas les curseurs côté serveur.
+            disable_server_side_cursors='-pooler' in _db_url,
         )
     }
-    DATABASES['default'].setdefault('OPTIONS', {})['connect_timeout'] = 5
+    # Le réveil d'une base Neon en pause prend quelques secondes.
+    DATABASES['default'].setdefault('OPTIONS', {})['connect_timeout'] = 10
 else:
     # SQLite fallback for local dev without Docker
     DATABASES = {
@@ -468,6 +481,11 @@ COD_MAX_AMOUNT = Decimal(os.environ.get('COD_MAX_AMOUNT', '300'))
 # (payments/debt.py). Décision du fondateur du 25/10/2026 : 60 TND par défaut.
 COMMISSION_DEBT_LIMIT = Decimal(os.environ.get('COMMISSION_DEBT_LIMIT', '60'))
 
+# Tâches planifiées déclenchées de l'extérieur (cron-job.org ou GitHub
+# Actions) : sur l'offre gratuite, pas de service « worker » qui tourne en
+# continu. Sans secret, la route est fermée (transporti_core/cron.py).
+CRON_SECRET = os.environ.get('CRON_SECRET', '')
+
 # Webhook signature validation (Sprint 2 R4)
 # MUST be set in production to prevent forged webhook calls
 PAYMENT_WEBHOOK_SECRET = os.environ.get('PAYMENT_WEBHOOK_SECRET', '')
@@ -562,6 +580,10 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'apikey')
 EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY', '')
+# Délai max d'une connexion SMTP, en secondes. Sans lui, un port bloqué (Render
+# gratuit bloque 25, 465 et 587) faisait attendre la requête jusqu'à ce que la
+# plateforme la coupe, au lieu d'échouer vite.
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@transporti.tn')
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
