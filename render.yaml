@@ -120,8 +120,10 @@ services:
         value: django.core.mail.backends.smtp.EmailBackend
       - key: EMAIL_HOST
         value: smtp-relay.brevo.com # vérifier dans Brevo, onglet SMTP
+      # 2525 et non 587 : l'offre gratuite de Render bloque les ports sortants
+      # 25, 465 et 587 (render.com/docs/free). Brevo accepte 2525.
       - key: EMAIL_PORT
-        value: "587"
+        value: "2525"
       - key: EMAIL_USE_TLS
         value: "True"
       - key: EMAIL_HOST_USER

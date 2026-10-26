@@ -580,6 +580,10 @@ EMAIL_PORT = int(os.environ.get('EMAIL_PORT', '587'))
 EMAIL_USE_TLS = os.environ.get('EMAIL_USE_TLS', 'True').lower() == 'true'
 EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'apikey')
 EMAIL_HOST_PASSWORD = os.environ.get('SENDGRID_API_KEY', '')
+# Délai max d'une connexion SMTP, en secondes. Sans lui, un port bloqué (Render
+# gratuit bloque 25, 465 et 587) faisait attendre la requête jusqu'à ce que la
+# plateforme la coupe, au lieu d'échouer vite.
+EMAIL_TIMEOUT = int(os.environ.get('EMAIL_TIMEOUT', '10'))
 
 DEFAULT_FROM_EMAIL = os.environ.get('DEFAULT_FROM_EMAIL', 'noreply@transporti.tn')
 FRONTEND_URL = os.environ.get('FRONTEND_URL', 'http://localhost:3000')
