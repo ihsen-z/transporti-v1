@@ -1,33 +1,63 @@
+# =============================================================================
+# Blueprint Render de Transporti (production)
+# Mode d'emploi pas à pas : docs/GUIDE_MISE_EN_PRODUCTION_RENDER.md
+#
+# Syntaxe vérifiée le 26/10/2026 sur https://render.com/docs/blueprint-spec :
+#   - `runtime:` remplace l'ancien champ `env:` (déprécié) ;
+#   - `sync: false` = Render DEMANDE la valeur dans le tableau de bord, mais
+#     UNIQUEMENT à la création initiale du Blueprint. Sur un Blueprint déjà
+#     existant, ces variables sont ignorées : il faut alors les saisir à la
+#     main dans l'onglet « Environment » du service (voir le guide) ;
+#   - un service absent du fichier n'est jamais supprimé par une synchro.
+#
+# ATTENTION AUX NOMS : un Blueprint retrouve les ressources par leur nom.
+# Le backend réel s'appelle `transporti-v1` (https://transporti-v1.onrender.com,
+# l'adresse appelée par le site et par l'application mobile). L'ancien nom
+# `transporti-backend` aurait fait créer un SECOND backend, vide.
+# =============================================================================
+
 services:
   # ---------------------------------------------------------
-  # BACKEND - Django API (Docker)
+  # BACKEND - Django API (Docker, servi par daphne)
   # ---------------------------------------------------------
   - type: web
-    name: transporti-backend
-    env: docker
+    name: transporti-v1
+    runtime: docker
     rootDir: backend
     region: frankfurt # Proche de la Tunisie pour une faible latence
-    plan: starter # Plan idéal pour 50 utilisateurs (env. 7$/mois)
-    healthCheckPath: /api/schema/
+    # Plan payant « starter » (0.5 CPU / 512 Mo, env. 7 $/mois) : un service
+    # gratuit s'endort après 15 min sans trafic et met ~50 s à se réveiller —
+    # l'application mobile paraîtrait en panne à chaque premier appel.
+    plan: starter
+    # /health/ fait un simple SELECT 1 sur la base (transporti_core/urls.py).
+    # L'ancien /api/schema/ générait tout le schéma OpenAPI à chaque contrôle.
+    healthCheckPath: /health/
     envVars:
       # Lier la base de données PostgreSQL automatiquement
       - key: DATABASE_URL
         fromDatabase:
           name: transporti-db
           property: connectionString
-      
+
       # Génération automatique et sécurisée des clés secrètes par Render
+      # (uniquement si aucune valeur n'existe déjà : les clés actuelles du
+      # service sont conservées, les sessions en cours ne sautent pas).
       - key: SECRET_KEY
         generateValue: true
       - key: JWT_SECRET_KEY
         generateValue: true
-      
+
       # Variables d'environnement de production
       - key: ENV
         value: production
       - key: DEBUG
         value: "False"
-      
+      # daphne écoute sur le port 8000 (CMD du Dockerfile). Render prend 10000
+      # par défaut et sait d'habitude détecter un autre port ; on le déclare
+      # pour ne pas dépendre de cette détection.
+      - key: PORT
+        value: "8000"
+
       # Sécurité & CORS (Domaines auto-générés par Render)
       - key: ALLOWED_HOSTS
         value: transporti-v1.onrender.com
@@ -52,17 +82,75 @@ services:
       - key: PUSH_NOTIFICATION_MODE
         value: SANDBOX
 
+      # --- Argent (décision du fondateur : espèces seules au lancement) ---
+      # Avec ENV=production, Django REFUSE de démarrer si PAYMENT_GATEWAY garde
+      # son défaut SANDBOX (la passerelle bac à sable déclare tout paiement
+      # abouti sans encaisser). DISABLED coupe le paiement en ligne
+      # (payments/online.py) : pas de compte marchand Konnect, donc pas de
+      # PAYMENT_WEBHOOK_SECRET exigé dans ce mode.
+      - key: PAYMENT_GATEWAY
+        value: DISABLED
+      # Plafond d'une course payée en espèces, en TND (seule source du chiffre).
+      - key: COD_MAX_AMOUNT
+        value: "300"
+      # Dette de commission maximale d'un transporteur avant blocage, en TND
+      # (décision du 25/10/2026).
+      - key: COMMISSION_DEBT_LIMIT
+        value: "60"
+
+      # --- Fichiers envoyés : Cloudflare R2 (compatible S3) ---
+      # Sans bucket, les fichiers vont sur le disque du conteneur, effacé à
+      # chaque déploiement. Les valeurs secrètes sont demandées par Render
+      # (sync: false) et ne doivent jamais être écrites dans ce fichier.
+      # NE PAS définir AWS_S3_CUSTOM_DOMAIN ni MEDIA_CDN_URL : le bucket reste
+      # privé et les liens sont signés (documents KYC sensibles) ; un domaine
+      # personnalisé produirait des liens non signés.
+      - key: AWS_STORAGE_BUCKET_NAME
+        sync: false # ex. transporti-media
+      - key: AWS_S3_ENDPOINT_URL
+        sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+      - key: AWS_ACCESS_KEY_ID
+        sync: false
+      - key: AWS_SECRET_ACCESS_KEY
+        sync: false
+      - key: AWS_S3_REGION_NAME
+        value: auto # R2 n'a pas de région : « auto » est la valeur attendue
+
+      # --- E-mails (mot de passe oublié, notifications) : Brevo en SMTP ---
+      # Le défaut du code est la console : aucun e-mail ne part. Le code
+      # suppose SendGrid par défaut ; on le redirige vers Brevo (offre
+      # gratuite permanente, SendGrid n'en a plus).
+      - key: EMAIL_BACKEND
+        value: django.core.mail.backends.smtp.EmailBackend
+      - key: EMAIL_HOST
+        value: smtp-relay.brevo.com # vérifier dans Brevo, onglet SMTP
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: EMAIL_HOST_USER
+        sync: false # « Login » SMTP affiché par Brevo (xxx@smtp-brevo.com)
+      # Malgré son nom, cette variable porte le MOT DE PASSE SMTP quel que
+      # soit le fournisseur (settings.py la lit pour EMAIL_HOST_PASSWORD) :
+      # y coller la clé SMTP Brevo.
+      - key: SENDGRID_API_KEY
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false # expéditeur VÉRIFIÉ dans Brevo, ex. Transporti <contact@...>
+
   # ---------------------------------------------------------
   # SCHEDULER - Tâches périodiques (expiration des offres,
-  # auto-release escrow…) via la management command
+  # auto-release escrow, purge KYC…) via la management command
   # run_scheduled_tasks. Sans ce worker, aucune tâche planifiée
   # ne tourne en production.
   # ---------------------------------------------------------
   - type: worker
     name: transporti-scheduler
-    env: docker
+    runtime: docker
     rootDir: backend
     region: frankfurt
+    # Pas d'offre gratuite pour les workers : starter (env. 7 $/mois) est le
+    # plus petit plan.
     plan: starter
     # Remplace le CMD daphne du Dockerfile (l'entrypoint tourne aussi :
     # migrate est idempotent, et le seed est sauté car RUN_SEED n'est pas défini)
@@ -75,12 +163,12 @@ services:
       - key: SECRET_KEY
         fromService:
           type: web
-          name: transporti-backend
+          name: transporti-v1
           envVarKey: SECRET_KEY
       - key: JWT_SECRET_KEY
         fromService:
           type: web
-          name: transporti-backend
+          name: transporti-v1
           envVarKey: JWT_SECRET_KEY
       - key: ENV
         value: production
@@ -89,15 +177,56 @@ services:
       - key: ALLOWED_HOSTS
         value: transporti-v1.onrender.com
 
+      # Le worker charge les MÊMES réglages Django que le backend : sans
+      # PAYMENT_GATEWAY, il refuserait de démarrer lui aussi.
+      - key: PAYMENT_GATEWAY
+        value: DISABLED
+      - key: COD_MAX_AMOUNT
+        value: "300"
+      - key: COMMISSION_DEBT_LIMIT
+        value: "60"
+
+      # La purge quotidienne des pièces KYC (purge_kyc_documents) efface des
+      # fichiers : le worker doit voir le même bucket que le backend. Les
+      # valeurs sont recopiées depuis le backend, pas ressaisies.
+      - key: AWS_STORAGE_BUCKET_NAME
+        fromService:
+          type: web
+          name: transporti-v1
+          envVarKey: AWS_STORAGE_BUCKET_NAME
+      - key: AWS_S3_ENDPOINT_URL
+        fromService:
+          type: web
+          name: transporti-v1
+          envVarKey: AWS_S3_ENDPOINT_URL
+      - key: AWS_ACCESS_KEY_ID
+        fromService:
+          type: web
+          name: transporti-v1
+          envVarKey: AWS_ACCESS_KEY_ID
+      - key: AWS_SECRET_ACCESS_KEY
+        fromService:
+          type: web
+          name: transporti-v1
+          envVarKey: AWS_SECRET_ACCESS_KEY
+      - key: AWS_S3_REGION_NAME
+        value: auto
+      # Pas de variables e-mail ici : aucune tâche planifiée n'envoie d'e-mail
+      # (les e-mails partent des vues web du backend).
+
   # ---------------------------------------------------------
   # FRONTEND - Next.js App (Node)
   # ---------------------------------------------------------
   - type: web
     name: transporti-frontend
-    env: node
+    runtime: node
     rootDir: frontend
     region: frankfurt
-    plan: starter
+    # Plan gratuit : le produit principal est l'application mobile ; le site
+    # (vitrine + back-office admin) peut s'endormir après 15 min sans visite
+    # (~50 s au réveil). Passer à « starter » (env. 7 $/mois) si le site doit
+    # répondre instantanément.
+    plan: free
     buildCommand: npm install && npm run build
     startCommand: npm run start
     envVars:
@@ -109,8 +238,16 @@ databases:
   # ---------------------------------------------------------
   # DATABASE - PostgreSQL
   # ---------------------------------------------------------
+  # Le nom doit être EXACTEMENT celui de la base existante dans le tableau de
+  # bord, sinon une synchro crée une nouvelle base vide et y branche le
+  # backend (vérifier avant toute synchro, voir le guide).
   - name: transporti-db
     region: frankfurt
-    plan: starter
+    # Pas de `plan` volontairement : l'ancien « starter » n'existe plus pour
+    # Postgres. Sans ce champ, Render GARDE le plan d'une base existante et
+    # crée une base neuve sur le plus petit plan payant (0.1c-256mb, ex.
+    # basic-256mb, env. 6 $/mois + stockage). Ne jamais rester sur « free » :
+    # une base gratuite expire 30 jours après sa création, puis est SUPPRIMÉE
+    # 14 jours plus tard avec toutes ses données.
     databaseName: transporti_prod
     user: transporti_admin
