@@ -19,6 +19,7 @@ from payments.models import CommissionLedger, EscrowTransaction
 from support.models import AuditLog, Dispute
 from messaging.models import Conversation, Message
 from notifications.models import Notification
+from users.seed_corridor import seed_corridor
 
 
 class Command(BaseCommand):
@@ -45,6 +46,7 @@ class Command(BaseCommand):
             self.seed_users()
             self.seed_jobs()
             self.seed_return_trips()
+            self.seed_corridor()
             self.seed_offers()
             self.seed_payments()
             self.seed_disputes()
@@ -462,6 +464,14 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS(
             '   ✓ 2 return trips (1 publié à J+2 avec réservation immédiate, '
             '1 échu pour le scénario expiration)'
+        ))
+
+    def seed_corridor(self):
+        """Catalogue du corridor pilote Tunis - Sousse - Sfax (users/seed_corridor.py)."""
+        self.stdout.write('🛣️  Seeding corridor Tunis - Sousse - Sfax...')
+        nombre = seed_corridor(self._creer_job)
+        self.stdout.write(self.style.SUCCESS(
+            f'   ✓ 3 transporteurs vérifiés, {nombre} trajets retour sur le corridor'
         ))
 
     def seed_offers(self):
