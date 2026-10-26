@@ -12,6 +12,11 @@ from ..serializers import (
     ReturnTripCreateSerializer, TransportJobDetailSerializer, OfferDetailSerializer,
 )
 from users.permissions import RequireRole
+from payments.online import (
+    PAIEMENT_EN_LIGNE_INDISPONIBLE,
+    default_payment_method,
+    online_payment_enabled,
+)
 
 
 class ReturnTripCreateView(generics.CreateAPIView):
@@ -105,7 +110,7 @@ class BookReturnTripView(APIView):
 
         # Parse request body
         proposed_price = request.data.get('proposed_price')
-        payment_method = request.data.get('payment_method', 'DIGITAL')
+        payment_method = request.data.get('payment_method', default_payment_method())
 
         if not proposed_price:
             return Response(
@@ -127,6 +132,12 @@ class BookReturnTripView(APIView):
         if payment_method not in ('DIGITAL', 'COD'):
             return Response(
                 {'error': 'Mode de paiement invalide. Utilisez DIGITAL ou COD.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if payment_method == 'DIGITAL' and not online_payment_enabled():
+            return Response(
+                {'error': PAIEMENT_EN_LIGNE_INDISPONIBLE},
                 status=status.HTTP_400_BAD_REQUEST
             )
 

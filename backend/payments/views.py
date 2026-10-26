@@ -12,6 +12,7 @@ from .serializers import (
 )
 from .services import release_escrow_on_completion, settle_commission_debt, create_escrow_on_booking
 from .gateway import get_payment_gateway
+from .online import PAIEMENT_EN_LIGNE_INDISPONIBLE, online_payment_enabled
 from logistics.models import TransportJob, Offer
 from logistics.participants import get_paying_client, is_job_participant
 from users.permissions import RequireRole
@@ -31,6 +32,9 @@ class InitiatePaymentView(APIView):
     permission_classes = [IsAuthenticated, RequireRole.for_roles('CLIENT')]
 
     def post(self, request):
+        if not online_payment_enabled():
+            return Response({'error': PAIEMENT_EN_LIGNE_INDISPONIBLE}, status=status.HTTP_400_BAD_REQUEST)
+
         job_id = request.data.get('job_id')
         if not job_id:
             return Response({'error': 'job_id is required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -139,6 +143,12 @@ class PaymentWebhookView(APIView):
     permission_classes = []  # Public endpoint
 
     def post(self, request):
+        # Mode « espèces seules » : aucun paiement en ligne n'existe, et le
+        # secret de signature n'est alors pas exigé (settings.py). Tout appel
+        # est refusé avant même de lire la référence.
+        if not online_payment_enabled():
+            return Response({'error': 'Online payment is disabled.'}, status=status.HTTP_404_NOT_FOUND)
+
         # R4: Verify webhook signature before processing
         from .webhook_security import verify_webhook_signature
         verify_webhook_signature(request)

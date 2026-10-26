@@ -268,7 +268,10 @@ class ConfigurationServieAuxEcransTests(APITestCase):
         reponse = self.client.get(f'{V1}/payments/config/')
 
         self.assertEqual(reponse.status_code, 200)
-        self.assertEqual(reponse.data, {'cod_max_amount': 300.0, 'commission_debt_limit': 60.0})
+        self.assertEqual(reponse.data, {
+            'cod_max_amount': 300.0, 'commission_debt_limit': 60.0,
+            'online_payment_enabled': True,
+        })
 
     @override_settings(COD_MAX_AMOUNT=Decimal('450'))
     def test_suit_le_reglage_du_serveur(self):

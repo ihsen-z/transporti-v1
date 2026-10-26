@@ -15,14 +15,17 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .debt import cod_max_amount, commission_debt_limit
+from .online import online_payment_enabled
 
 
 class PaymentConfigView(APIView):
-    """GET /api/v1/payments/config/ — plafond espèces et plafond de dette."""
+    """GET /api/v1/payments/config/ — plafonds et paiement en ligne ouvert ou non."""
     permission_classes = [AllowAny]
 
     def get(self, request):
         return Response({
             'cod_max_amount': float(cod_max_amount()),
             'commission_debt_limit': float(commission_debt_limit()),
+            # Faux en mode « espèces seules » : les écrans masquent l'option.
+            'online_payment_enabled': online_payment_enabled(),
         })

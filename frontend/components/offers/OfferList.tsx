@@ -33,7 +33,8 @@ export function OfferList({
   const router = useRouter();
   const [offers, setOffers] = useState<JobOffer[]>([]);
   // Plafond espèces lu sur le serveur (il était écrit 300 en dur ici).
-  const { cod_max_amount: COD_MAX_TND } = usePaymentConfig();
+  const { cod_max_amount: COD_MAX_TND, online_payment_enabled } =
+    usePaymentConfig();
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<JobOffer | null>(null);
@@ -188,28 +189,30 @@ export function OfferList({
             </p>
 
             <div className="flex flex-col gap-3">
-              {/* Digital Payment Option */}
-              <button
-                onClick={() => confirmAccept("DIGITAL")}
-                disabled={accepting}
-                className="w-full flex items-start gap-4 p-4 border-2 border-brand-600/20 rounded-xl hover:border-brand-600 hover:bg-brand-600/5 transition-all text-start disabled:opacity-50"
-              >
-                <div className="w-12 h-12 rounded-xl bg-brand-600/10 flex items-center justify-center flex-shrink-0">
-                  <CreditCard className="w-6 h-6 text-brand-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-neutral-900">
-                    {t.offersComponents.paymentDigital}
-                  </p>
-                  <p className="text-sm text-neutral-500 mt-0.5">
-                    {t.offersComponents.paymentDigitalDesc}
-                  </p>
-                  <div className="flex items-center gap-1 text-xs text-green-600 mt-1">
-                    <ShieldCheck className="w-3 h-3" />
-                    <span>{t.offersComponents.protectedBy}</span>
+              {/* Digital Payment Option — absente en mode « espèces seules » */}
+              {online_payment_enabled ? (
+                <button
+                  onClick={() => confirmAccept("DIGITAL")}
+                  disabled={accepting}
+                  className="w-full flex items-start gap-4 p-4 border-2 border-brand-600/20 rounded-xl hover:border-brand-600 hover:bg-brand-600/5 transition-all text-start disabled:opacity-50"
+                >
+                  <div className="w-12 h-12 rounded-xl bg-brand-600/10 flex items-center justify-center flex-shrink-0">
+                    <CreditCard className="w-6 h-6 text-brand-600" />
                   </div>
-                </div>
-              </button>
+                  <div>
+                    <p className="font-semibold text-neutral-900">
+                      {t.offersComponents.paymentDigital}
+                    </p>
+                    <p className="text-sm text-neutral-500 mt-0.5">
+                      {t.offersComponents.paymentDigitalDesc}
+                    </p>
+                    <div className="flex items-center gap-1 text-xs text-green-600 mt-1">
+                      <ShieldCheck className="w-3 h-3" />
+                      <span>{t.offersComponents.protectedBy}</span>
+                    </div>
+                  </div>
+                </button>
+              ) : null}
 
               {/* COD Option */}
               <button
@@ -245,9 +248,13 @@ export function OfferList({
                     <div className="flex items-center gap-1 text-xs text-error-500 mt-1">
                       <AlertCircle className="w-3 h-3" />
                       <span>
-                        {interpolate(t.offersComponents.codMax, {
-                          n: COD_MAX_TND,
-                        })}
+                        {online_payment_enabled
+                          ? interpolate(t.offersComponents.codMax, {
+                              n: COD_MAX_TND,
+                            })
+                          : interpolate(t.booking.codUnavailableCashOnly, {
+                              threshold: COD_MAX_TND,
+                            })}
                       </span>
                     </div>
                   )}

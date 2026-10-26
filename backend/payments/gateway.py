@@ -332,6 +332,12 @@ def get_payment_gateway() -> PaymentGateway:
     """
     gateway_type = getattr(settings, 'PAYMENT_GATEWAY', 'SANDBOX')
 
+    if gateway_type == 'DISABLED':
+        # Mode « espèces seules » (payments/online.py) : surtout ne pas
+        # retomber sur SandboxGateway, qui déclare tout paiement réussi.
+        from .online import PaiementEnLigneCoupe
+        raise PaiementEnLigneCoupe("PAYMENT_GATEWAY='DISABLED' : aucun paiement en ligne.")
+
     if gateway_type == 'KONNECT':
         return KonnectGateway()
     elif gateway_type == 'D17':

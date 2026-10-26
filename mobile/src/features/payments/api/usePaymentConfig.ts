@@ -7,6 +7,8 @@ import { apiClient } from '@/core/api/client';
 export interface PaymentConfig {
   cod_max_amount: number;
   commission_debt_limit: number;
+  /** Faux en mode « espèces seules » : l'option en ligne est masquée. */
+  online_payment_enabled: boolean;
 }
 
 // Valeurs par défaut du serveur, affichées tant que la réponse n'est pas là
@@ -15,6 +17,9 @@ export interface PaymentConfig {
 export const PAYMENT_CONFIG_DEFAUT: PaymentConfig = {
   cod_max_amount: 300,
   commission_debt_limit: 60,
+  // Faux tant que le serveur n'a pas répondu : les espèces marchent toujours,
+  // alors qu'un paiement en ligne proposé à tort serait refusé.
+  online_payment_enabled: false,
 };
 
 async function fetchPaymentConfig(): Promise<PaymentConfig> {

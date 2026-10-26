@@ -20,7 +20,7 @@ import {
   type RequestOption,
 } from './requestSchema';
 import { usePaymentConfig } from '@/features/payments/api/usePaymentConfig';
-import { formatAmount } from '@/shared/format/money';
+import { paymentOptions } from './paymentOptions';
 
 // Toute la logique de la demande cliente. La feuille ne fait que composer.
 
@@ -94,19 +94,11 @@ export function useSendRequestForm(trip: TripResultDto | null, onClose: () => vo
     () => TIME_SLOTS.map((s) => ({ value: s, label: s })),
     [],
   );
-  // Plafond espèces lu sur le serveur, plus écrit en dur dans le libellé.
+  // Plafond espèces et mode « espèces seules » lus sur le serveur.
   const paymentConfig = usePaymentConfig();
   const methodOptions = useMemo<RequestOption[]>(
-    () => [
-      {
-        value: 'COD',
-        label: t('search.request.method_cod', {
-          max: formatAmount(paymentConfig.cod_max_amount),
-        }),
-      },
-      { value: 'DIGITAL', label: t('search.request.method_digital') },
-    ],
-    [t, paymentConfig.cod_max_amount],
+    () => paymentOptions(paymentConfig, t),
+    [t, paymentConfig],
   );
 
   /**

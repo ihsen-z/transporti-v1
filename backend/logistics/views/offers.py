@@ -116,7 +116,9 @@ class OfferAcceptView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        payment_method = serializer.validated_data.get('payment_method', 'DIGITAL')
+        # Toujours présent : le serializer fournit le défaut (COD en mode
+        # « espèces seules ») et refuse DIGITAL quand le paiement en ligne est coupé.
+        payment_method = serializer.validated_data['payment_method']
 
         # Get offer with row lock to prevent race conditions
         try:
