@@ -4,9 +4,9 @@ GET /media/<chemin> — fichiers publics (photos de chargement, etc.).
 Avant, cette route servait le dossier MEDIA_ROOT du disque, en entier et sans
 connexion : pièces d'identité comprises. Elle a changé sur deux points :
 - elle lit par le stockage configuré (default_storage) : disque local en
-  développement, bucket R2 en production. Les URL déjà enregistrées en base
+  développement, bucket Backblaze B2 en production. Les URL déjà enregistrées en base
   (`/media/uploads/photos/…`, TransportJob.photos) restent donc valides une
-  fois R2 branché ;
+  fois le bucket branché ;
 - elle refuse le dossier des pièces KYC, qui ne se lisent que par lien signé
   (trust/fichiers.py).
 """

@@ -164,7 +164,7 @@ urlpatterns = [
 from django.urls import re_path
 from .media import servir_media
 
-# Fichiers publics, lus par le stockage configuré (disque ou R2). Les pièces
+# Fichiers publics, lus par le stockage configuré (disque ou B2). Les pièces
 # KYC en sont exclues : elles ne se lisent que par lien signé (trust/fichiers.py).
 urlpatterns += [
     re_path(r'^media/(?P<chemin>.*)$', servir_media, name='media-public'),

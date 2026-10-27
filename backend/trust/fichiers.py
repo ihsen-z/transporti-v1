@@ -7,7 +7,7 @@ par la route publique /media/ à quiconque avait l'URL.
 
 Désormais :
 - tout passe par le stockage configuré (default_storage) : disque local en
-  développement, bucket privé Cloudflare R2 en production ;
+  développement, bucket privé Backblaze B2 en production ;
 - aucune URL publique : le propriétaire ou l'administrateur reçoit un lien
   signé valable LIEN_VALIDITE secondes (views_fichiers.FichierKycView le
   vérifie, puis renvoie le fichier lu dans le stockage) ;

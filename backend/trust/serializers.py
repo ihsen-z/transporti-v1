@@ -104,7 +104,7 @@ class VerificationDocumentUploadSerializer(serializers.Serializer):
         # 2. Generate encryption IV placeholder (for future AES encryption)
         encryption_iv = secrets.token_hex(16)  # 32-char hex string
 
-        # 3. Écriture par le stockage configuré (bucket privé R2 en production,
+        # 3. Écriture par le stockage configuré (bucket privé B2 en production,
         #    disque local en développement) : voir trust/fichiers.py.
         s3_key = enregistrer_piece(trust_profile.user_id, document_type, uploaded_file)
 
