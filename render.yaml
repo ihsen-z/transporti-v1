@@ -100,20 +100,24 @@ services:
       - key: COMMISSION_DEBT_LIMIT
         value: "60"
 
-      # --- Fichiers envoyés : Cloudflare R2 (compatible S3) ---
+      # --- Fichiers envoyés : Backblaze B2 (compatible S3, gratuit sans
+      # carte bancaire jusqu'à 10 Go ; choisi le 27/10/2026 à la place de
+      # Cloudflare R2, qui exige un moyen de paiement) ---
       # Sans bucket, les fichiers vont sur le disque du conteneur, effacé à
       # chaque déploiement. NE PAS définir AWS_S3_CUSTOM_DOMAIN ni
       # MEDIA_CDN_URL : le bucket reste privé et les liens sont signés.
       - key: AWS_STORAGE_BUCKET_NAME
         sync: false # ex. transporti-media
       - key: AWS_S3_ENDPOINT_URL
-        sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+        sync: false # https://s3.<région>.backblazeb2.com, ex. https://s3.eu-central-003.backblazeb2.com
       - key: AWS_ACCESS_KEY_ID
         sync: false
       - key: AWS_SECRET_ACCESS_KEY
         sync: false
+      # Région du compte B2, lue dans l'adresse S3 (ex. eu-central-003).
+      # Obligatoire : elle entre dans la signature des liens temporaires.
       - key: AWS_S3_REGION_NAME
-        value: auto # R2 n'a pas de région : « auto » est la valeur attendue
+        sync: false
 
       # --- E-mails : Brevo en SMTP (offre gratuite) ---
       - key: EMAIL_BACKEND

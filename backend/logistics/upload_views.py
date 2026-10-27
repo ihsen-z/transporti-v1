@@ -156,7 +156,7 @@ class PhotoUploadView(APIView):
             saved_path = default_storage.save(upload_path, ContentFile(compressed_content))
 
             # URL stable servie par /media/, qui lit le stockage configuré
-            # (disque ou R2). Elle est enregistrée en base (TransportJob.photos) :
+            # (disque ou B2). Elle est enregistrée en base (TransportJob.photos) :
             # une URL signée du bucket expirerait au bout d'une heure.
             photo_url = request.build_absolute_uri(
                 reverse('media-public', kwargs={'chemin': saved_path})

@@ -681,7 +681,8 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static'] if (BASE_DIR / 'static').is_dir() else []
 
 # Media storage — S3-compatible object storage si AWS_STORAGE_BUCKET_NAME est
-# défini (S3, Cloudflare R2, Supabase Storage via AWS_S3_ENDPOINT_URL), sinon
+# défini (production : Backblaze B2, choisi le 27/10/2026 car gratuit sans
+# carte bancaire ; tout service S3 marche via AWS_S3_ENDPOINT_URL), sinon
 # FileSystemStorage local. IMPORTANT sur Render : le FS est éphémère, les
 # uploads sont perdus à chaque redeploy → configurer un bucket en production.
 AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME', '')
@@ -694,6 +695,17 @@ if AWS_STORAGE_BUCKET_NAME:
     AWS_DEFAULT_ACL = None          # bucket privé par défaut
     AWS_QUERYSTRING_AUTH = True     # URLs signées (documents KYC sensibles)
     AWS_S3_FILE_OVERWRITE = False   # pas d'écrasement silencieux
+    # Depuis début 2025, boto3 ajoute d'office des sommes de contrôle
+    # (x-amz-checksum-crc32…) à chaque envoi. Backblaze B2, comme d'autres
+    # services compatibles S3, refuse ces en-têtes (HTTP 400) : aucun fichier
+    # ne partirait. « when_required » ne les envoie que si l'opération les
+    # exige. Signature v4 imposée : c'est elle qui signe les liens temporaires.
+    from botocore.config import Config as _BotoConfig
+    AWS_S3_CLIENT_CONFIG = _BotoConfig(
+        signature_version='s3v4',
+        request_checksum_calculation='when_required',
+        response_checksum_validation='when_required',
+    )
     _default_storage_backend = "storages.backends.s3boto3.S3Boto3Storage"
 else:
     _default_storage_backend = "django.core.files.storage.FileSystemStorage"

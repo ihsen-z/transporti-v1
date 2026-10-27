@@ -4,7 +4,7 @@ Rédigé le 26/10/2026. Pour le fondateur : chaque étape est courte et se fait
 dans un navigateur. Aucune ligne de code à écrire.
 
 Les libellés de boutons et les limites ont été vérifiés dans la documentation
-officielle de Render, Neon, Netlify, cron-job.org, Cloudflare et Brevo à cette
+officielle de Render, Neon, Netlify, cron-job.org, Backblaze et Brevo à cette
 date. Quand un libellé n'a pas pu être vérifié, il est marqué **(à vérifier)** :
 l'écran peut avoir un nom un peu différent, cherchez le plus proche.
 
@@ -37,7 +37,7 @@ Deux causes :
 | Base PostgreSQL | **Neon**, offre Free, à Francfort | n'expire pas, contrairement à celle de Render |
 | Site web Next.js | **Netlify**, offre Free | usage commercial accepté (l'offre gratuite de Vercel l'interdit) ; libère les heures gratuites de Render pour le serveur |
 | Tâches planifiées | **cron-job.org** (gratuit) | l'offre gratuite de Render n'a pas de service « worker » |
-| Fichiers envoyés | **Cloudflare R2** (gratuit jusqu'à 10 Go) | les fichiers survivent aux redéploiements |
+| Fichiers envoyés | **Backblaze B2** (gratuit jusqu'à 10 Go, sans carte) | les fichiers survivent aux redéploiements |
 | E-mails | **Brevo** (gratuit) | « mot de passe oublié » fonctionne enfin |
 
 **Prérequis côté code (à faire avant les étapes 4 et 5) :** les branches
@@ -50,7 +50,7 @@ que soient les réglages.
 
 > **Pièces KYC (pièces d'identité, selfies).** Sans la PR #14, le code écrit
 > ces pièces sur le disque du serveur : elles sont **effacées à chaque
-> déploiement**. Avec la PR #14 fusionnée, elles vont dans R2, en privé.
+> déploiement**. Avec la PR #14 fusionnée, elles vont dans B2, en privé.
 > N'acceptez pas de vraies pièces d'identité avant cette fusion.
 
 ### Coûts par mois
@@ -61,7 +61,7 @@ que soient les réglages.
 | Base PostgreSQL | Neon Free | 0 $ |
 | Site web | Netlify Free | 0 $ |
 | Tâches planifiées | cron-job.org | 0 $ |
-| Fichiers | Cloudflare R2 (10 Go gratuits) | 0 $ |
+| Fichiers | Backblaze B2 (10 Go gratuits, sans carte) | 0 $ |
 | E-mails | Brevo Free (300 e-mails par jour, à vérifier) | 0 $ |
 | **Total** | | **0 DT par mois** |
 
@@ -103,53 +103,67 @@ Le reste peut rester gratuit.
 
 ---
 
-## 1. Cloudflare R2 : le stockage des fichiers
+## 1. Backblaze B2 : le stockage des fichiers
 
-R2 garde les fichiers envoyés (avatars, photos de marchandise et, avec la PR
-#14, pièces KYC) hors du serveur, pour qu'ils survivent aux redéploiements.
+B2 garde les fichiers envoyés (avatars, photos de marchandise, pièces KYC) hors
+du serveur, pour qu'ils survivent aux redéploiements. Choisi le 27/10/2026 à la
+place de Cloudflare R2, qui exige une carte bancaire même pour son offre
+gratuite. B2 : **aucune carte demandée**, **10 Go gratuits**, compatible S3
+(le code n'a eu besoin que d'un réglage, déjà fait).
 
-### 1.1 Activer R2
+Limites à connaître : les téléchargements sont gratuits jusqu'à **3 fois le
+volume stocké** par mois. Sans carte enregistrée, un dépassement **bloque**
+l'accès au lieu de vous facturer.
 
-1. Créez un compte gratuit sur https://dash.cloudflare.com (ou connectez-vous).
-2. Dans le menu de gauche : **Storage & databases > R2 > Overview**.
-3. Suivez le parcours d'activation (« checkout ») pour ajouter R2 au compte.
-   L'offre gratuite inclut 10 Go par mois. Cloudflare peut demander une carte
-   bancaire ou PayPal même pour l'offre gratuite **(à vérifier)**.
+### 1.1 Créer le compte (région EU Central)
 
-### 1.2 Créer le bucket
+1. Inscrivez-vous sur https://www.backblaze.com/sign-up/cloud-storage
+   (« No credit card required »).
+2. **Région : choisissez EU Central** (centre de données d'Amsterdam), la plus
+   proche de la Tunisie. **La région ne peut plus être changée ensuite** : il
+   faudrait recréer un compte.
+3. Confirmez votre adresse e-mail.
 
-1. Sur la page R2, cliquez **Create bucket**.
-2. Nom : `transporti-media` (minuscules, sans espace).
-3. Emplacement : laissez le choix automatique. Classe de stockage : **Standard**
-   (seule celle-ci a une offre gratuite).
-4. Cliquez **Create bucket**.
-5. **N'activez pas l'accès public** (pas de « r2.dev », pas de domaine
-   personnalisé). Le bucket doit rester privé : le serveur fabrique des liens
-   signés qui expirent au bout d'une heure.
+### 1.2 Créer le bucket privé
 
-### 1.3 Créer la clé d'accès (API token)
+1. Dans le menu **B2 Cloud Storage**, ouvrez **Buckets** puis
+   **Create a Bucket** (libellés à vérifier).
+2. **Bucket Unique Name** : `transporti-media`. Le nom doit être unique chez
+   tous les clients de Backblaze : s'il est déjà pris, ajoutez quelques
+   chiffres (ex. `transporti-media-2610`) et notez le nom exact retenu.
+3. **Files in Bucket are : Private**. Jamais « Public » : le serveur fabrique
+   des liens signés qui expirent, notamment pour les pièces d'identité.
+4. Laissez les autres options par défaut (pas de chiffrement payant, pas
+   d'Object Lock) et validez.
+5. Sur la fiche du bucket, notez l'**Endpoint**, de la forme
+   `s3.eu-central-003.backblazeb2.com`. La partie du milieu
+   (`eu-central-003`, peut-être un autre numéro) est la **région S3**.
 
-1. Revenez sur **Storage & databases > R2 > Overview**.
-2. À côté de **API Tokens**, cliquez **Manage**.
-3. Cliquez **Create Account API token**. Ce type de jeton reste valable même si
-   un utilisateur quitte le compte.
-4. Permission : **Object Read & Write**. N'utilisez pas « Admin » : cette
-   permission vaut pour tout le compte.
-5. Choisissez **Apply to specific buckets only**, puis sélectionnez
-   `transporti-media`.
-6. Validez (**Create API Token**).
-7. **Copiez tout de suite** ces deux valeurs dans un endroit sûr (gestionnaire
-   de mots de passe). La seconde n'est affichée qu'une seule fois :
-   - **Access Key ID**
-   - **Secret Access Key**
-8. Notez aussi l'**adresse S3** (endpoint), affichée en bas de la page de
-   confirmation et sur la page R2 Overview. Elle a cette forme :
-   `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`
-   (`<ACCOUNT_ID>` est l'identifiant de votre compte Cloudflare, une suite de
-   32 caractères).
+### 1.3 Créer la clé d'accès (Application Key)
 
-Vous avez maintenant les **4 valeurs R2** : nom du bucket, endpoint, Access
-Key ID, Secret Access Key.
+1. Menu **Application Keys** > **Add a New Application Key**.
+2. **Name of Key** : `transporti-render`.
+3. **Allow access to Bucket(s)** : uniquement votre bucket (pas « All »).
+4. **Type of Access** : **Read and Write**.
+5. Validez (**Create New Key**).
+6. **Copiez tout de suite** ces deux valeurs dans votre gestionnaire de mots
+   de passe. La seconde n'est affichée **qu'une seule fois** :
+   - **keyID**
+   - **applicationKey**
+   N'utilisez pas la « Master Application Key » du compte : elle ouvre tout.
+
+Vous avez maintenant les **5 valeurs B2** :
+
+| Valeur Backblaze | Variable Render | Exemple |
+|---|---|---|
+| nom du bucket | `AWS_STORAGE_BUCKET_NAME` | `transporti-media` |
+| Endpoint, précédé de `https://` | `AWS_S3_ENDPOINT_URL` | `https://s3.eu-central-003.backblazeb2.com` |
+| région, lue dans l'endpoint | `AWS_S3_REGION_NAME` | `eu-central-003` |
+| keyID | `AWS_ACCESS_KEY_ID` | (secret) |
+| applicationKey | `AWS_SECRET_ACCESS_KEY` | (secret) |
+
+Les noms de variables commencent par `AWS_` parce que le code parle le
+protocole S3 d'Amazon, que B2 imite. Il ne s'agit pas d'un compte Amazon.
 
 ---
 
@@ -387,11 +401,11 @@ CRON_SECRET=<secret de 48 caractères>
 PAYMENT_GATEWAY=DISABLED
 COD_MAX_AMOUNT=300
 COMMISSION_DEBT_LIMIT=60
-AWS_STORAGE_BUCKET_NAME=transporti-media
-AWS_S3_ENDPOINT_URL=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
-AWS_ACCESS_KEY_ID=<Access Key ID R2>
-AWS_SECRET_ACCESS_KEY=<Secret Access Key R2>
-AWS_S3_REGION_NAME=auto
+AWS_STORAGE_BUCKET_NAME=<nom exact du bucket B2>
+AWS_S3_ENDPOINT_URL=https://s3.<région>.backblazeb2.com
+AWS_ACCESS_KEY_ID=<keyID B2>
+AWS_SECRET_ACCESS_KEY=<applicationKey B2>
+AWS_S3_REGION_NAME=<région, ex. eu-central-003>
 EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
 EMAIL_HOST=smtp-relay.brevo.com
 EMAIL_PORT=2525
@@ -602,8 +616,8 @@ et relancez **Manual Deploy > Deploy latest commit**.
 ### 8.5 Les fichiers survivent à un redéploiement
 
 1. Sur le site, connectez-vous et changez la **photo de profil** (avatar).
-2. Dans Cloudflare, bucket `transporti-media` : un fichier doit apparaître
-   dans le dossier `avatars/`.
+2. Dans Backblaze, **Buckets** > votre bucket > **Browse Files** (libellé à
+   vérifier) : un fichier doit apparaître dans le dossier `avatars/`.
 3. Dans Render, `transporti_v1` > **Manual Deploy** > **Deploy latest
    commit**.
 4. Une fois le déploiement terminé, rechargez le profil : la photo doit
@@ -659,6 +673,9 @@ valeurs des variables, commentés), et on règle le service à la main comme au
 - cron-job.org : cron-job.org/en/faq (gratuit, délai de 30 s, POST et
   en-têtes, notifications), docs.cron-job.org/rest-api.html.
 - GitHub : docs.github.com, événement `schedule` des Actions.
-- Cloudflare : developers.cloudflare.com/r2 (get-started/s3, api/tokens,
-  pricing). Brevo : developers.brevo.com/docs/smtp-integration (ports 587,
+- Backblaze : backblaze.com/sign-up/cloud-storage (« No credit card
+  required »), backblaze.com/cloud-storage/pricing (10 Go gratuits,
+  téléchargements gratuits jusqu'à 3 fois le stockage),
+  backblaze.com/docs/cloud-storage-data-regions (EU Central = Amsterdam,
+  région définitive). Brevo : developers.brevo.com/docs/smtp-integration (ports 587,
   2525 et 465).
