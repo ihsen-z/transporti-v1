@@ -66,6 +66,17 @@ npx eas-cli@latest build --platform android --profile pilote
 L'offre gratuite limite le nombre de constructions par mois : ne relancez pas
 une construction sans changement de code.
 
+Le dossier doit être sur la branche `master` à jour, avec ses dépendances
+installées (`npm ci` dans `mobile`). Si la construction s'arrête sur « Failed
+to compute project fingerprint », relancez-la en sautant ce calcul annexe :
+
+```bash
+EAS_SKIP_AUTO_FINGERPRINT=1 npx eas-cli@latest build --platform android --profile pilote
+```
+
+La première construction a été lancée le 28/10/2026 : le keystore existe
+déjà chez Expo, la question de l'étape 1 ne sera donc plus posée.
+
 ## Étape 2 : installer sur un téléphone Android
 
 1. Sur le téléphone, ouvrez le lien dans **Chrome** (ou scannez le QR code
