@@ -45,8 +45,15 @@ Trois profils dans `eas.json` :
 | Profil | Distribution | Backend visé |
 |---|---|---|
 | `development` | interne, client de dev | émulateur (`10.0.2.2:8000`) |
-| `preview` | interne (APK / TestFlight) | staging Render |
+| `pilote` | interne (APK à installer par lien) | production Render |
 | `production` | stores | production Render |
+
+`pilote` remplace l'ancien profil `preview`, qui visait un serveur de staging
+qui n'existe pas. Il sert à donner l'application aux transporteurs du pilote
+sans passer par le Play Store : voir `docs/GUIDE_APK_PILOTE.md`.
+
+Le projet Expo est `@senzen/transporti-mobile` (`extra.eas.projectId` dans
+`app.json`, posé par `eas init` le 28/10/2026).
 
 Le versionnement est **distant** (`appVersionSource: "remote"`) : EAS incrémente
 `versionCode`/`buildNumber`, il n'y a rien à gérer dans `app.json` et donc aucun

@@ -19,11 +19,12 @@
         "simulator": true
       }
     },
-    "preview": {
+    "pilote": {
       "distribution": "internal",
-      "channel": "preview",
+      "channel": "pilote",
+      "autoIncrement": true,
       "env": {
-        "EXPO_PUBLIC_API_BASE_URL": "https://transporti-backend-staging.onrender.com"
+        "EXPO_PUBLIC_API_BASE_URL": "https://transporti-v1.onrender.com"
       },
       "android": {
         "buildType": "apk"
