@@ -115,10 +115,12 @@ export default function ConfidentialitePage() {
             nécessaires à la facturation et à nos obligations comptables.
           </li>
           <li>
-            <strong>Aucune donnée de carte bancaire.</strong> Les paiements en
-            ligne sont traités par notre prestataire de paiement&nbsp;: vos
-            coordonnées bancaires ne transitent jamais par Transporti et ne sont
-            jamais stockées par nous.
+            <strong>Aucune donnée de carte bancaire.</strong> Le paiement se
+            fait aujourd&apos;hui en espèces, entre le client et le
+            transporteur. Lorsque le paiement en ligne sera proposé, il sera
+            traité par un prestataire de paiement agréé&nbsp;: vos coordonnées
+            bancaires ne transiteront jamais par Transporti et ne seront jamais
+            stockées par nous.
           </li>
         </Liste>
 
@@ -178,24 +180,38 @@ export default function ConfidentialitePage() {
         </Liste>
 
         <p className="font-semibold text-neutral-900">Nos sous-traitants</p>
+        <p>
+          Ils traitent vos données uniquement pour notre compte, pour le service
+          indiqué&nbsp;:
+        </p>
         <Liste>
           <li>
-            <strong>Prestataire de paiement</strong> (Konnect, Tunisie) —
-            traitement des paiements en ligne et des remboursements.
+            <strong>Render</strong> (Allemagne) — hébergement du serveur de
+            l&apos;application.
           </li>
           <li>
-            <strong>Google Maps</strong> — affichage des cartes et des
-            corridors.
+            <strong>Neon</strong> (Allemagne) — hébergement de la base de
+            données.
           </li>
           <li>
-            <strong>Expo</strong> — acheminement des notifications vers votre
-            appareil.
+            <strong>Backblaze</strong> (Pays-Bas) — stockage des photos et des
+            documents de vérification.
           </li>
           <li>
-            <strong>Hébergeur</strong> —{" "}
-            <ARemplir>nom et pays d&apos;hébergement</ARemplir>.
+            <strong>Brevo</strong> (France) — envoi des e-mails de
+            service&nbsp;: bienvenue, réinitialisation du mot de passe, suivi de
+            vos offres et de votre vérification.
+          </li>
+          <li>
+            <strong>Netlify</strong> (États-Unis) — diffusion des pages du site
+            web. Il reçoit les données techniques de connexion (adresse IP,
+            navigateur), pas le contenu de votre compte.
           </li>
         </Liste>
+        <p>
+          Avant d&apos;ajouter un prestataire — paiement en ligne, cartes,
+          notifications sur le téléphone — nous mettrons cette liste à jour.
+        </p>
 
         <p className="font-semibold text-neutral-900">Les autorités</p>
         <p>
@@ -209,7 +225,27 @@ export default function ConfidentialitePage() {
         </p>
       </Section>
 
-      <Section id="duree" numero={5} titre="Combien de temps nous les gardons">
+      <Section id="hebergement" numero={5} titre="Où sont stockées vos données">
+        <p>
+          Les serveurs de Transporti sont situés dans l&apos;Union
+          européenne&nbsp;: en Allemagne, aux Pays-Bas et en France. Le site web
+          est diffusé par une société américaine, Netlify. Vos données sont donc{" "}
+          <strong>transférées hors de Tunisie</strong> pour être hébergées.
+        </p>
+        <p>
+          Ce transfert est encadré par la loi organique n°&nbsp;2004-63 et
+          soumis à l&apos;autorisation de l&apos;Instance nationale de
+          protection des données personnelles (INPDP)&nbsp;:{" "}
+          <ARemplir>référence de l&apos;autorisation de l&apos;INPDP</ARemplir>.
+        </p>
+        <p>
+          Nos prestataires n&apos;utilisent pas vos données à leurs propres
+          fins&nbsp;: leurs conditions de traitement les engagent à les protéger
+          et à ne les traiter que pour notre compte.
+        </p>
+      </Section>
+
+      <Section id="duree" numero={6} titre="Combien de temps nous les gardons">
         <Liste>
           <li>
             <strong>Compte actif</strong> — vos données sont conservées tant que
@@ -242,7 +278,7 @@ export default function ConfidentialitePage() {
 
       <Section
         id="cloture"
-        numero={6}
+        numero={7}
         titre="Fermer votre compte : ce qui disparaît, ce qui reste"
       >
         <p>
@@ -286,7 +322,7 @@ export default function ConfidentialitePage() {
         </Encadre>
       </Section>
 
-      <Section id="droits" numero={7} titre="Vos droits">
+      <Section id="droits" numero={8} titre="Vos droits">
         <p>
           Conformément à la loi n°&nbsp;2004-63, vous disposez d&apos;un droit
           d&apos;accès, de rectification et d&apos;opposition sur vos données.
@@ -317,7 +353,7 @@ export default function ConfidentialitePage() {
         </p>
       </Section>
 
-      <Section id="securite" numero={8} titre="Comment nous les protégeons">
+      <Section id="securite" numero={9} titre="Comment nous les protégeons">
         <Liste>
           <li>
             Les échanges avec l&apos;application sont chiffrés en transit.
@@ -343,7 +379,7 @@ export default function ConfidentialitePage() {
         </p>
       </Section>
 
-      <Section id="mineurs" numero={9} titre="Mineurs">
+      <Section id="mineurs" numero={10} titre="Mineurs">
         <p>
           Le service n&apos;est pas destiné aux personnes de moins de 18 ans et
           nous ne collectons pas sciemment leurs données. Si vous constatez
@@ -354,7 +390,7 @@ export default function ConfidentialitePage() {
 
       <Section
         id="modifications"
-        numero={10}
+        numero={11}
         titre="Modifications de cette politique"
       >
         <p>
@@ -364,7 +400,7 @@ export default function ConfidentialitePage() {
         </p>
       </Section>
 
-      <Section id="contact" numero={11} titre="Nous écrire">
+      <Section id="contact" numero={12} titre="Nous écrire">
         <p>
           <ARemplir>adresse e-mail dédiée aux données personnelles</ARemplir>
         </p>

@@ -7,6 +7,8 @@ import {
   Encadre,
   ARemplir,
 } from "@/components/legal/LegalPage";
+import { SectionPrix } from "@/components/legal/conditions/SectionPrix";
+import { lirePaymentConfigServeur } from "@/lib/services/paymentConfigServeur";
 
 export const metadata: Metadata = {
   title: "Conditions générales d'utilisation",
@@ -14,7 +16,13 @@ export const metadata: Metadata = {
     "Les règles d'usage de Transporti : rôle de la plateforme, engagements de chaque partie, prix et commissions, paiement, litiges et clôture de compte.",
 };
 
-export default function ConditionsPage() {
+export default async function ConditionsPage() {
+  // Comme l'aide : en mode « espèces seules », les articles qui parlent de
+  // fonds retenus par la plateforme changent, car ce séquestre n'existe pas
+  // encore. Les plafonds affichés viennent aussi du serveur.
+  const paymentConfig = await lirePaymentConfigServeur();
+  const enLigne = paymentConfig.online_payment_enabled;
+
   return (
     <LegalPage
       titre="Conditions générales d'utilisation"
@@ -80,11 +88,20 @@ export default function ConditionsPage() {
           possession et ne la manipule à aucun moment.
         </p>
         <Encadre titre="Ce dont Transporti répond, et ce dont il ne répond pas">
-          <p>
-            Transporti répond du bon fonctionnement de la plateforme, de la
-            retenue des fonds jusqu&apos;à la confirmation de livraison, et du
-            traitement des litiges qui lui sont soumis.
-          </p>
+          {enLigne ? (
+            <p>
+              Transporti répond du bon fonctionnement de la plateforme, de la
+              retenue des fonds jusqu&apos;à la confirmation de livraison, et du
+              traitement des litiges qui lui sont soumis.
+            </p>
+          ) : (
+            <p>
+              Transporti répond du bon fonctionnement de la plateforme et du
+              traitement des litiges qui lui sont soumis. Le prix est payé en
+              espèces, directement du client au transporteur&nbsp;: Transporti
+              ne détient pas cette somme.
+            </p>
+          )}
           <p>
             Transporti ne répond pas de l&apos;exécution du transport lui-même :
             ponctualité, état de la marchandise à l&apos;arrivée, conformité du
@@ -143,57 +160,7 @@ export default function ConditionsPage() {
         </p>
       </Section>
 
-      <Section id="prix" numero={6} titre="Prix, commission et paiement">
-        <p>
-          Le prix est celui convenu entre le client et le transporteur. Le
-          client paie ce prix&nbsp;; Transporti prélève une commission sur la
-          somme revenant au transporteur.
-        </p>
-        <Encadre titre="Taux de commission appliqués">
-          <Liste>
-            <li>
-              <strong>8&nbsp;%</strong> sur une mission conclue via un trajet
-              retour — taux réduit, parce que valoriser un retour à vide est la
-              raison d&apos;être de la plateforme.
-            </li>
-            <li>
-              <strong>12&nbsp;%</strong> sur une mission de transport de
-              marchandise.
-            </li>
-            <li>
-              <strong>15&nbsp;%</strong> sur un déménagement.
-            </li>
-          </Liste>
-          <p>
-            Le montant net revenant au transporteur, commission déduite, lui est
-            affiché avant qu&apos;il n&apos;accepte. Aucune commission
-            n&apos;est prélevée sur une mission qui n&apos;aboutit pas.
-          </p>
-        </Encadre>
-        <p className="font-semibold text-neutral-900">
-          Deux modes de paiement&nbsp;:
-        </p>
-        <Liste>
-          <li>
-            <strong>Paiement en ligne (séquestre).</strong> Le client règle à
-            l&apos;acceptation. La somme est{" "}
-            <strong>retenue par la plateforme</strong> et n&apos;est versée au
-            transporteur qu&apos;après confirmation de la livraison par le
-            client. C&apos;est ce qui protège les deux parties.
-          </li>
-          <li>
-            <strong>Paiement à la livraison, en espèces.</strong> Le client
-            règle directement le transporteur. Ce mode est{" "}
-            <strong>limité à 300&nbsp;TND</strong> par mission. La commission
-            reste due à Transporti et devient une dette du transporteur, réglée
-            sur ses gains.
-          </li>
-        </Liste>
-        <p>
-          Les paiements en ligne sont traités par un prestataire de paiement
-          agréé. Transporti n&apos;a accès à aucune donnée de carte bancaire.
-        </p>
-      </Section>
+      <SectionPrix config={paymentConfig} />
 
       <Section
         id="livraison"
@@ -202,7 +169,7 @@ export default function ConditionsPage() {
       >
         <p>
           Le transporteur confirme son départ, puis clôt la mission à la
-          livraison. Pour clore une mission payée en ligne, il doit saisir un{" "}
+          livraison. Pour clore une mission, il doit saisir un{" "}
           <strong>code de livraison à quatre chiffres</strong> que seul le
           client détient. Sans ce code, la mission ne peut pas être déclarée
           livrée.
@@ -212,10 +179,12 @@ export default function ConditionsPage() {
           visible par le client dans le déroulé de la mission et sert de preuve
           en cas de contestation.
         </p>
-        <p>
-          La confirmation de réception par le client libère les fonds retenus
-          vers le transporteur.
-        </p>
+        {enLigne ? (
+          <p>
+            Pour une mission payée en ligne, la confirmation de réception par le
+            client libère les fonds retenus vers le transporteur.
+          </p>
+        ) : null}
       </Section>
 
       <Section id="annulation" numero={8} titre="Annulation">
@@ -225,26 +194,56 @@ export default function ConditionsPage() {
           et a fortiori après le départ du transporteur, engage la
           responsabilité de son auteur envers l&apos;autre partie.
         </p>
-        <p>
-          Lorsque la somme est retenue par la plateforme, elle est restituée au
-          client selon l&apos;issue du dossier, le cas échéant après examen
-          d&apos;un litige.
-        </p>
+        {enLigne ? (
+          <p>
+            Lorsque la somme est retenue par la plateforme, elle est restituée
+            au client selon l&apos;issue du dossier, le cas échéant après examen
+            d&apos;un litige.
+          </p>
+        ) : (
+          <p>
+            Le paiement n&apos;intervenant qu&apos;à la livraison, une mission
+            annulée avant ne donne lieu à aucun paiement par
+            l&apos;intermédiaire de Transporti, ni à aucune commission.
+          </p>
+        )}
       </Section>
 
       <Section id="litiges" numero={9} titre="Litiges entre utilisateurs">
-        <p>
-          Chaque partie peut ouvrir un litige depuis la mission concernée.
-          L&apos;ouverture d&apos;un litige <strong>gèle le versement</strong>{" "}
-          des fonds retenus jusqu&apos;à sa résolution.
-        </p>
-        <p>
-          Nos équipes examinent les éléments fournis par les deux parties —
-          messages, photos, jalons de la mission — et décident de la répartition
-          des fonds retenus. Cette décision porte sur les seules sommes détenues
-          par la plateforme et ne préjuge pas des droits que chacun peut faire
-          valoir devant les tribunaux.
-        </p>
+        {enLigne ? (
+          <>
+            <p>
+              Chaque partie peut ouvrir un litige depuis la mission concernée.
+              L&apos;ouverture d&apos;un litige{" "}
+              <strong>gèle le versement</strong> des fonds retenus jusqu&apos;à
+              sa résolution.
+            </p>
+            <p>
+              Nos équipes examinent les éléments fournis par les deux parties —
+              messages, photos, jalons de la mission — et décident de la
+              répartition des fonds retenus. Cette décision porte sur les seules
+              sommes détenues par la plateforme et ne préjuge pas des droits que
+              chacun peut faire valoir devant les tribunaux.
+            </p>
+          </>
+        ) : (
+          <>
+            <p>
+              Chaque partie peut ouvrir un litige depuis la mission concernée.
+              Le paiement se faisant en espèces entre les parties, Transporti ne
+              détient aucune somme à geler ou à répartir.
+            </p>
+            <p>
+              Nos équipes examinent les éléments fournis par les deux parties —
+              messages, photos, jalons de la mission. S&apos;il est établi que
+              le transporteur n&apos;a pas été payé, Transporti peut annuler la
+              commission correspondante. Les manquements constatés peuvent
+              conduire aux mesures prévues à l&apos;article «&nbsp;Suspension et
+              clôture&nbsp;». Cet examen ne préjuge pas des droits que chacun
+              peut faire valoir devant les tribunaux.
+            </p>
+          </>
+        )}
       </Section>
 
       <Section id="avis" numero={10} titre="Avis et réputation">
