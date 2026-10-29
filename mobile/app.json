@@ -60,7 +60,11 @@
     "extra": {
       "router": {
         "origin": false
+      },
+      "eas": {
+        "projectId": "c3b01f64-fa4e-4ede-9a23-1569a718dfc1"
       }
-    }
+    },
+    "owner": "senzen"
   }
 }

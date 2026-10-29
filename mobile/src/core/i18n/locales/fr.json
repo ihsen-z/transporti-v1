@@ -425,7 +425,7 @@
     "badge_return": "Retour à vide",
     "no_results_title": "Aucun trajet retour pour l'instant",
     "no_results_hint": "Créez une alerte : on vous prévient dès qu'un trajet compatible est publié.",
-    "map_unavailable": "Carte indisponible : la clé Google Maps n'est pas configurée.",
+    "map_unavailable": "La carte n'est pas encore disponible. Les trajets sont listés ci-dessous.",
     "map_distance": "≈ {{km}} km par la route",
     "create_alert": "Créer une alerte corridor",
     "alert_created": "Alerte créée. Vous serez notifié.",
