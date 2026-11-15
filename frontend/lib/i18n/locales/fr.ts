@@ -1497,6 +1497,8 @@ export const fr = {
     trustCash:
       "Paiement en espèces à la livraison, code de livraison à 4 chiffres",
     trustDisputes: "Notre équipe examine chaque litige",
+    addressesMasked:
+      "L'adresse exacte et les indications d'accès vous sont communiquées une fois votre offre acceptée.",
     trustReviews: "Avis laissés après une mission réalisée",
     missionInProgress: "Mission en cours",
     assignedToYou:

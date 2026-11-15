@@ -32,6 +32,9 @@ export interface JobDetail extends JobListItem {
   dropoff_lat: number | null;
   dropoff_lng: number | null;
   pickup_governorate?: string;
+  /** Vrai tant que le lecteur n'est pas engagé : le serveur ne renvoie alors
+   *  que le gouvernorat, des coordonnées arrondies et aucune indication. */
+  addresses_masked?: boolean;
   dropoff_governorate?: string;
   goods_type: string;
   goods_weight: string | null;

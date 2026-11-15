@@ -729,6 +729,13 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
                     {job.dropoff_governorate}
                   </div>
                 </div>
+                {/* Avant accord, le serveur masque l'adresse : on le dit plutôt
+                    que de laisser croire à une annonce incomplète. */}
+                {job.addresses_masked && (
+                  <p className="mt-2 text-xs text-neutral-500">
+                    {t.jobDetail.addressesMasked}
+                  </p>
+                )}
               </div>
             )}
 

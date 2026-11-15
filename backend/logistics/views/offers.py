@@ -245,7 +245,8 @@ class OfferAcceptView(generics.GenericAPIView):
             'message': 'Offre acceptée. ' + client_next_step(payment_method),
             'payment_method': payment_method,
             'job': TransportJobDetailSerializer(job, context={'show_contact': True, 'request': request}).data,
-            'accepted_offer': OfferDetailSerializer(offer).data
+            # La requête est passée pour que le client voie ses propres adresses.
+            'accepted_offer': OfferDetailSerializer(offer, context={'request': request}).data
         }
 
         # Send email notification to transporter

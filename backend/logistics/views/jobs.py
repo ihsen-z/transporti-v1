@@ -136,6 +136,8 @@ class JobPublicListView(generics.ListAPIView):
             queryset = queryset.filter(dropoff_governorate=dropoff_gov)
 
         # Full-text search (Phase 3: ?q=keyword)
+        # On cherche dans le gouvernorat, jamais dans l'adresse : chercher un nom
+        # de rue permettrait de retrouver une adresse masquée (address_privacy).
         search_q = self.request.query_params.get('q', '').strip()
         if search_q:
             try:
@@ -143,8 +145,8 @@ class JobPublicListView(generics.ListAPIView):
                 from django.contrib.postgres.search import SearchVector, SearchQuery, SearchRank
                 search_vector = SearchVector('title', weight='A') + \
                                 SearchVector('description', weight='B') + \
-                                SearchVector('pickup_address', weight='C') + \
-                                SearchVector('dropoff_address', weight='C')
+                                SearchVector('pickup_governorate', weight='C') + \
+                                SearchVector('dropoff_governorate', weight='C')
                 search_query = SearchQuery(search_q, config='french')
                 queryset = queryset.annotate(
                     search_rank=SearchRank(search_vector, search_query)
@@ -155,8 +157,8 @@ class JobPublicListView(generics.ListAPIView):
                 queryset = queryset.filter(
                     Q(title__icontains=search_q) |
                     Q(description__icontains=search_q) |
-                    Q(pickup_address__icontains=search_q) |
-                    Q(dropoff_address__icontains=search_q)
+                    Q(pickup_governorate__icontains=search_q) |
+                    Q(dropoff_governorate__icontains=search_q)
                 )
 
         # Price range filters (?min_price=X&max_price=Y)
