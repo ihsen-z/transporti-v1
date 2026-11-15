@@ -23,10 +23,9 @@ import {
   DollarSign,
   Loader2,
   AlertCircle,
-  Wifi,
-  WifiOff,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useAppI18n";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
 
 /* -------------------------------------------------------------------------- */
 /*  Status Config                                                              */
@@ -65,14 +64,12 @@ const reasonLabels: Record<string, string> = {
 type FilterTab = "ALL" | "OPEN" | "INVESTIGATING" | "RESOLVED";
 
 export default function AdminDisputesPage() {
-  const {
-    data: disputes,
-    loading,
-    error,
-    source,
-    refetch,
-  } = useAdminDisputes();
+  const { data: disputes, loading, error, refetch } = useAdminDisputes();
   const { t } = useI18n();
+  // Sans paiement en ligne il n'existe pas de séquestre : rembourser, verser
+  // ou partager échouerait côté serveur. Le litige ne porte pas le mode de
+  // paiement de sa mission ; on s'appuie donc sur le réglage global.
+  const { online_payment_enabled } = usePaymentConfig();
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [selectedDispute, setSelectedDispute] = useState<BackendDispute | null>(
     null,
@@ -378,21 +375,6 @@ export default function AdminDisputesPage() {
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {/* Data Source Indicator */}
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
-              source === "api"
-                ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
-                : "bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800"
-            }`}
-          >
-            {source === "api" ? (
-              <Wifi className="w-3 h-3" />
-            ) : (
-              <WifiOff className="w-3 h-3" />
-            )}
-            {source === "api" ? "API Live" : "Mock Data"}
-          </div>
           {openCount > 0 && (
             <div className="flex items-center gap-2 bg-error-50 dark:bg-red-900/20 border border-error-200 dark:border-red-800 px-4 py-2 rounded-lg">
               <AlertTriangle className="w-4 h-4 text-error-600" />
@@ -642,14 +624,27 @@ export default function AdminDisputesPage() {
                 className="w-full border border-neutral-200 dark:border-neutral-600 rounded-xl px-4 py-2.5 text-sm bg-white dark:bg-[#0f172a] text-neutral-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-700"
               >
                 <option value="NONE">Aucun mouvement (note seule)</option>
-                <option value="REFUND_CLIENT">
-                  Rembourser le client (intégral)
-                </option>
-                <option value="RELEASE_TRANSPORTER">
-                  Verser au transporteur
-                </option>
-                <option value="SPLIT">Partage (remboursement partiel)</option>
+                {online_payment_enabled && (
+                  <>
+                    <option value="REFUND_CLIENT">
+                      Rembourser le client (intégral)
+                    </option>
+                    <option value="RELEASE_TRANSPORTER">
+                      Verser au transporteur
+                    </option>
+                    <option value="SPLIT">
+                      Partage (remboursement partiel)
+                    </option>
+                  </>
+                )}
               </select>
+              {!online_payment_enabled && (
+                <p className="text-xs text-neutral-400 mt-1">
+                  Le paiement se fait en espèces : Transporti ne détient aucun
+                  argent, la décision ne peut donc déclencher ni remboursement
+                  ni versement. Elle est consignée par la note ci-dessus.
+                </p>
+              )}
 
               {resolveOutcome === "SPLIT" && (
                 <div className="mt-3">

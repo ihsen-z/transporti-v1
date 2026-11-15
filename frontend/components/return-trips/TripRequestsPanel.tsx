@@ -16,7 +16,7 @@ import {
   Loader2,
   Zap,
 } from "lucide-react";
-import { ApiError } from "@/lib/api/client";
+import { ApiError, getApiErrorReason, isKycRequired } from "@/lib/api/client";
 import {
   acceptRequest,
   counterRequest,
@@ -123,15 +123,14 @@ export function TripRequestsPanel({ job, onChanged }: TripRequestsPanelProps) {
       onChanged();
     } catch (error) {
       if (error instanceof ApiError && error.body) {
-        const body = error.body as Record<string, unknown>;
-        const first = Object.values(body).find(
-          (v) => typeof v === "string" || Array.isArray(v),
-        );
+        // Motif lisible du serveur (detail/error/message, sinon 1re erreur de
+        // champ) ; pièces non validées : lien vers la page des documents.
         showToast(
           "error",
-          Array.isArray(first)
-            ? String(first[0])
-            : String(first || t.actionError),
+          getApiErrorReason(error) ?? t.actionError,
+          isKycRequired(error)
+            ? { label: allT.common.kycLink, href: "/documents" }
+            : undefined,
         );
       } else {
         showToast("error", t.actionError);

@@ -84,6 +84,45 @@ function unwrapList<T>(response: T[] | { results?: T[] }): T[] {
   return Array.isArray(response) ? response : (response.results ?? []);
 }
 
+/** Pages maximum suivies pour une liste : borne de sécurité contre une boucle infinie. */
+const MAX_PAGES = 50;
+
+/**
+ * Charge TOUTES les pages d'une liste DRF paginée.
+ *
+ * `unwrapList` ne lit que `results` : au-delà de la première page (PAGE_SIZE
+ * = 20 côté serveur), les éléments suivants disparaissaient sans erreur. Ici
+ * on suit `next` jusqu'à épuisement. `next` est une URL absolue : on n'en
+ * garde que le chemin et la requête, pour repasser par le client commun
+ * (adresse d'API, jeton, délai).
+ */
+interface PageDrf<T> {
+  results?: T[];
+  next?: string | null;
+}
+
+async function getAllPages<T>(firstPath: string): Promise<T[]> {
+  const items: T[] = [];
+  let path: string | null = firstPath;
+
+  for (let page = 0; path !== null && page < MAX_PAGES; page++) {
+    const response: T[] | PageDrf<T> = await apiClient.get<T[] | PageDrf<T>>(
+      path,
+    );
+    items.push(...unwrapList(response));
+
+    const next: string | null =
+      Array.isArray(response) || !response.next ? null : response.next;
+    if (next === null) {
+      path = null;
+    } else {
+      const adresse: URL = new URL(next, "http://placeholder.local");
+      path = `${adresse.pathname}${adresse.search}`;
+    }
+  }
+  return items;
+}
+
 export async function getAdminJobs(): Promise<ServiceResult<AdminJob[]>> {
   const response = await apiClient.get<AdminJob[] | { results?: AdminJob[] }>(
     "/api/admin/jobs/",
@@ -136,10 +175,10 @@ export async function getSystemAlerts(): Promise<ServiceResult<SystemAlert[]>> {
 export async function getAdminDisputes(): Promise<
   ServiceResult<BackendDispute[]>
 > {
-  const response = await apiClient.get<
-    BackendDispute[] | { results?: BackendDispute[] }
-  >("/api/admin/disputes/?all=true");
-  return { data: unwrapList(response), source: "api" };
+  const data = await getAllPages<BackendDispute>(
+    "/api/admin/disputes/?all=true",
+  );
+  return { data, source: "api" };
 }
 
 export async function investigateDispute(

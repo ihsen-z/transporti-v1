@@ -206,10 +206,10 @@ test.describe("P4 — page publique « Devenir transporteur »", () => {
 
 test.describe("P3 — page publique « Confiance et securite »", () => {
   /**
-   * Elle repond a l'objection n°1 du persona client. La page d'accueil affirme
-   * « paiement securise par escrow » et « transporteurs verifies » sans jamais
-   * dire ce que ces mots recouvrent : une affirmation non etayee ne leve pas
-   * une objection, elle la deplace.
+   * Elle repond a l'objection n°1 du persona client. Le service ouvre en
+   * ESPECES SEULES : la page dit ce qui protege reellement (paiement a la
+   * reception, code de livraison, avis, verification des pieces, litiges
+   * examines par l'equipe) et ne promet aucun sequestre.
    */
 
   test("la page porte son propre titre", async ({ page }) => {
@@ -224,7 +224,7 @@ test.describe("P3 — page publique « Confiance et securite »", () => {
     await page.goto("/confiance");
 
     for (const section of [
-      "confiance-escrow",
+      "confiance-protections",
       "confiance-verification",
       "confiance-litiges",
       "confiance-faq",
@@ -235,32 +235,31 @@ test.describe("P3 — page publique « Confiance et securite »", () => {
     await expect(page.locator("main")).not.toContainText("trustPage.");
   });
 
-  test("le delai de versement automatique est ANNONCE, pas tu", async ({
+  test("la page ne promet ni sequestre ni gel de l'argent", async ({
     page,
   }) => {
-    // Le seul fait de la page qui puisse jouer contre le client : sans
-    // confirmation de sa part, l'argent part au bout de 48 h. Une page de
-    // confiance qui tait la seule chose susceptible de surprendre ne merite
-    // pas son nom. Ce test interdit de le retirer discretement.
+    // Lancement en especes seules : Transporti ne retient aucun argent. Une
+    // promesse de sequestre, de gel ou de remboursement automatique serait
+    // fausse. Ce test interdit de la reintroduire discretement.
     await page.goto("/confiance");
 
-    const encart = page.getByTestId("confiance-delai");
-    await expect(encart).toBeVisible();
-    await expect(encart).toContainText("48");
-    // Et il ne doit jamais paraitre seul : c'est le litige qui le rend
-    // acceptable. Annoncer le delai sans son garde-fou serait pire que se
-    // taire.
-    await expect(encart).toContainText("litige");
+    const main = page.locator("main");
+    await expect(main).not.toContainText(/escrow|s[ée]questr|gel[ée]/i);
+    // ... et ce qui protege REELLEMENT doit y etre : code de livraison et
+    // litiges.
+    await expect(page.getByTestId("confiance-protections")).toContainText(
+      "4 chiffres",
+    );
+    await expect(page.getByTestId("confiance-litiges")).toBeVisible();
   });
 
   test("les interpolations sont resolues, pas rendues brutes", async ({
     page,
   }) => {
-    // `{heures}` et `{score}` non remplaces s'afficheraient tels quels. Les
-    // testID ne le verraient pas.
+    // `{score}` non remplace s'afficherait tel quel. Les testID ne le
+    // verraient pas.
     await page.goto("/confiance");
 
-    await expect(page.locator("main")).not.toContainText("{heures}");
     await expect(page.locator("main")).not.toContainText("{score}");
     await expect(page.getByTestId("confiance-verification")).toContainText(
       "50",
@@ -286,7 +285,7 @@ test.describe("P3 — page publique « Confiance et securite »", () => {
     await expect(page.locator("main")).not.toContainText("trustPage.");
     // Les chiffres doivent survivre a la traduction : une interpolation
     // oubliee dans le dictionnaire arabe ne se verrait pas autrement.
-    await expect(page.locator("main")).not.toContainText("{heures}");
+    await expect(page.locator("main")).not.toContainText("{score}");
   });
 });
 

@@ -3,7 +3,7 @@
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import { TrustHero, TrustFaq } from "@/components/trust-page/TrustHeroAndFaq";
-import { EscrowSection } from "@/components/trust-page/EscrowSection";
+import { ProtectionsSection } from "@/components/trust-page/ProtectionsSection";
 import { VerificationSection } from "@/components/trust-page/VerificationSection";
 import { DisputeSection } from "@/components/trust-page/DisputeSection";
 
@@ -11,14 +11,12 @@ import { DisputeSection } from "@/components/trust-page/DisputeSection";
  * P3 — « Confiance et sécurité ». Page PUBLIQUE.
  *
  * Elle répond à l'objection n°1 du persona client (Vision §7) : le manque de
- * confiance envers un transporteur inconnu. La page d'accueil affirme
- * « paiement sécurisé par escrow » et « transporteurs vérifiés » sans jamais
- * dire ce que ces mots recouvrent — une affirmation non étayée ne lève pas une
- * objection, elle la déplace.
+ * confiance envers un transporteur inconnu. Le service ouvre en espèces
+ * seules : la page dit ce qui protège réellement (paiement à la réception,
+ * code de livraison, avis, vérification des pièces, litiges examinés par
+ * l'équipe) et ce que la plateforme ne fait pas (retenir ou rembourser).
  *
- * Trois sections, une par mécanisme réel : le séquestre, la vérification, le
- * litige. Chaque fait affiché a été vérifié dans le code ; les deux chiffres
- * (délai de versement automatique, score minimum pour les espèces) viennent de
+ * Les deux chiffres affichés (score minimum pour les espèces, ...) viennent de
  * `lib/garanties.ts`, aligné sur le backend par un test qui échoue en cas de
  * dérive.
  *
@@ -31,7 +29,7 @@ export default function ConfiancePage() {
       <Header />
       <main className="flex-1 pt-16">
         <TrustHero />
-        <EscrowSection />
+        <ProtectionsSection />
         <VerificationSection />
         <DisputeSection />
         <TrustFaq />

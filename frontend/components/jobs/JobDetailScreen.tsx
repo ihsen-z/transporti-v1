@@ -1,9 +1,18 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { ApiError } from "@/lib/api/client";
+import {
+  ApiError,
+  getApiErrorCode,
+  getRetryAfterSeconds,
+} from "@/lib/api/client";
+import {
+  minutesDeVerrouillage,
+  urlPreuveReutilisable,
+  type PreuveTeleversee,
+} from "@/lib/jobs/codeLivraison";
 import {
   type NatureDeJob,
   SEGMENT_PAR_NATURE,
@@ -362,6 +371,8 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
   const [deliveryPin, setDeliveryPin] = useState("");
   const [podFile, setPodFile] = useState<File | null>(null);
   const [milestoneLoading, setMilestoneLoading] = useState(false);
+  // Photo déjà téléversée : un essai refusé ne doit pas la renvoyer.
+  const preuveTeleversee = useRef<PreuveTeleversee | null>(null);
 
   const handleMarkDelivered = async () => {
     const hasBooking = !!job?.booking_payment_method;
@@ -374,14 +385,31 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
     try {
       // La photo de preuve est optionnelle : le service rend une chaine vide
       // quand elle echoue, et la livraison s'enregistre quand meme.
-      const podPhotoUrl = podFile ? await televerserPhotoPreuve(podFile) : "";
+      const { url: podPhotoUrl, preuve } = await urlPreuveReutilisable(
+        podFile,
+        preuveTeleversee.current,
+        televerserPhotoPreuve,
+      );
+      preuveTeleversee.current = preuve;
       await marquerLivre(job!.id, deliveryPin.trim(), podPhotoUrl);
       showToast("success", t.jobDetail.markedDelivered);
       setDeliveryPin("");
       setPodFile(null);
+      preuveTeleversee.current = null;
       fetchJob();
     } catch (err) {
-      if (err instanceof ApiError && err.body) {
+      if (getApiErrorCode(err) === "PIN_LOCKED") {
+        // 423 : trop d'essais. Sans délai = verrouillé jusqu'au support.
+        const secondes = getRetryAfterSeconds(err);
+        showToast(
+          "error",
+          secondes
+            ? interpolate(t.jobDetail.pinLockedTimed, {
+                minutes: minutesDeVerrouillage(secondes),
+              })
+            : t.jobDetail.pinLockedSupport,
+        );
+      } else if (err instanceof ApiError && err.body) {
         showToast("error", String(err.body?.error || t.jobDetail.confirmError));
       } else {
         showToast("error", t.jobDetail.networkRetry);
@@ -766,7 +794,11 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
                 </li>
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
                   <Wallet className="w-3.5 h-3.5 text-brand-600 flex-shrink-0 mt-0.5" />
-                  <span>{t.jobDetail.trustEscrow}</span>
+                  <span>
+                    {paymentConfig.online_payment_enabled
+                      ? t.jobDetail.trustEscrow
+                      : t.jobDetail.trustCash}
+                  </span>
                 </li>
                 <li className="flex items-start gap-2 text-xs text-neutral-600">
                   <AlertTriangle className="w-3.5 h-3.5 text-warning-500 flex-shrink-0 mt-0.5" />

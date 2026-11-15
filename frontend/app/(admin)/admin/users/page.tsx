@@ -37,6 +37,7 @@ import {
   MinusSquare,
 } from "lucide-react";
 import { ApiError, getErrorMessage } from "@/lib/api/client";
+import { config as apiConfig } from "@/lib/config";
 import { getAdminUserDetail, getAdminUsersPage } from "@/lib/services/admin";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
@@ -769,9 +770,6 @@ export default function AdminUsersPage() {
     [selectedIds, refetch],
   );
 
-  // Source indicator (always API now)
-  const source = "api" as const;
-
   // Open action modal
   const openAction = useCallback((action: ModalAction, user: AdminUser) => {
     setSelectedUser(user);
@@ -1032,14 +1030,11 @@ export default function AdminUsersPage() {
                   alert("Session expirée. Veuillez vous reconnecter.");
                   return;
                 }
-                const baseUrl =
-                  process.env.NEXT_PUBLIC_API_URL ||
-                  (process.env.NODE_ENV === "production"
-                    ? "https://transporti-v1.onrender.com"
-                    : "http://localhost:8000");
-                const res = await fetch(`${baseUrl}/api/admin/users/export/`, {
-                  headers: { Authorization: `Bearer ${token}` },
-                });
+                // Adresse d'API commune (lib/config.ts), jamais recopiée ici.
+                const res = await fetch(
+                  `${apiConfig.API_BASE_URL}/api/admin/users/export/`,
+                  { headers: { Authorization: `Bearer ${token}` } },
+                );
                 if (!res.ok) throw new Error(`HTTP ${res.status}`);
                 const blob = await res.blob();
                 const url = window.URL.createObjectURL(blob);
@@ -1060,19 +1055,6 @@ export default function AdminUsersPage() {
             <Download className="w-4 h-4" />
             {t.users.exportCsv}
           </button>
-          {/* Source Badge */}
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-              source === "api"
-                ? "bg-green-50 text-green-700 border border-green-200"
-                : "bg-orange-50 text-orange-700 border border-orange-200"
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${source === "api" ? "bg-green-500" : "bg-orange-500"}`}
-            />
-            {source === "api" ? "API Live" : "Mock Data"}
-          </div>
         </div>
       </div>
 

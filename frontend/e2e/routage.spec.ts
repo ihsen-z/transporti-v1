@@ -25,7 +25,7 @@ const REDIRECTIONS: ReadonlyArray<readonly [string, string]> = [
   ["/settings", "/compte"],
   ["/disputes", "/litiges"],
   ["/verification", "/documents"],
-  ["/transporter/7", "/transporteur/7"],
+  ["/transporter/7", "/profile/7"],
   ["/booking/42", "/reservation/42"],
 ];
 
@@ -40,6 +40,7 @@ const DESTINATIONS: ReadonlyArray<string> = [
   "/compte",
   "/litiges",
   "/documents",
+  "/profile/7",
   "/transporteur/7",
   "/reservation/42",
 ];

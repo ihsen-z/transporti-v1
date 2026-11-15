@@ -9,8 +9,6 @@ import {
   DollarSign,
   Loader2,
   AlertCircle,
-  Wifi,
-  WifiOff,
   Unlock,
   RotateCcw,
   X,
@@ -40,14 +38,9 @@ export default function AdminPaymentsPage() {
     data: payments,
     loading: loadingPayments,
     error: errorPayments,
-    source: sourcePayments,
     refetch: refetchPayments,
   } = useAdminPayments();
-  const {
-    data: stats,
-    loading: loadingStats,
-    source: sourceStats,
-  } = useAdminStats();
+  const { data: stats, loading: loadingStats } = useAdminStats();
 
   // Escrow action modal state
   const [escrowModal, setEscrowModal] = useState<{
@@ -311,36 +304,6 @@ export default function AdminPaymentsPage() {
           <p className="text-neutral-500 dark:text-neutral-400">
             Gestion financière et suivi des escrows
           </p>
-        </div>
-        <div className="flex items-center gap-2">
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
-              sourcePayments === "api"
-                ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
-                : "bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800"
-            }`}
-          >
-            {sourcePayments === "api" ? (
-              <Wifi className="w-3 h-3" />
-            ) : (
-              <WifiOff className="w-3 h-3" />
-            )}
-            Paiements: {sourcePayments === "api" ? "API Live" : "Mock"}
-          </div>
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium ${
-              sourceStats === "api"
-                ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
-                : "bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800"
-            }`}
-          >
-            {sourceStats === "api" ? (
-              <Wifi className="w-3 h-3" />
-            ) : (
-              <WifiOff className="w-3 h-3" />
-            )}
-            Stats: {sourceStats === "api" ? "API Live" : "Mock"}
-          </div>
         </div>
       </div>
 

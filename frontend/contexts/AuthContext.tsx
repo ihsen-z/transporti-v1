@@ -11,9 +11,11 @@ import {
 import { useRouter } from "next/navigation";
 import { type AuthUser, type UserRole, getDefaultRedirect } from "@/lib/auth";
 import { apiClient, ApiError } from "@/lib/api/client";
+import { classifyLoginError, type LoginErrorKind } from "@/lib/api/loginError";
 import {
   storeTokens,
   clearTokens,
+  revokeSessionOnServer,
   hasTokens,
   getAccessToken,
   sessionEvents,
@@ -83,7 +85,12 @@ interface AuthContextType {
   loginWithCredentials: (
     email: string,
     password: string,
-  ) => Promise<{ success: boolean; role?: UserRole; error?: string }>;
+  ) => Promise<{
+    success: boolean;
+    role?: UserRole;
+    /** Nature de l'échec ; l'écran choisit le texte traduit. */
+    errorKind?: LoginErrorKind;
+  }>;
   /** Real register — creates account via backend API */
   registerWithCredentials: (
     payload: RegisterPayload,
@@ -92,7 +99,12 @@ interface AuthContextType {
   loginWithSocialToken: (
     provider: "google" | "facebook",
     accessToken: string,
-  ) => Promise<{ success: boolean; role?: UserRole; isNewUser?: boolean; error?: string }>;
+  ) => Promise<{
+    success: boolean;
+    role?: UserRole;
+    isNewUser?: boolean;
+    error?: string;
+  }>;
   /** Set role for new social users (called from /select-role page) */
   setUserRole: (
     newRole: "CLIENT" | "TRANSPORTER",
@@ -209,7 +221,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (
       email: string,
       password: string,
-    ): Promise<{ success: boolean; role?: UserRole; error?: string }> => {
+    ): Promise<{
+      success: boolean;
+      role?: UserRole;
+      errorKind?: LoginErrorKind;
+    }> => {
       setIsLoading(true);
       try {
         const data = await apiClient.post<AuthApiResponse>(
@@ -230,14 +246,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         return { success: true, role: authUser.role };
       } catch (err) {
-        if (err instanceof ApiError && err.body) {
-          const messages = Object.values(err.body).flat();
-          return {
-            success: false,
-            error: String(messages[0] || "Login failed."),
-          };
-        }
-        return { success: false, error: "Network error. Please try again." };
+        // Le texte du serveur est en anglais : on ne renvoie que la nature de
+        // l'échec, l'écran de connexion affiche le message fr/ar.
+        return { success: false, errorKind: classifyLoginError(err) };
       } finally {
         setIsLoading(false);
       }
@@ -290,10 +301,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     async (
       provider: "google" | "facebook",
       accessToken: string,
-    ): Promise<{ success: boolean; role?: UserRole; isNewUser?: boolean; error?: string }> => {
+    ): Promise<{
+      success: boolean;
+      role?: UserRole;
+      isNewUser?: boolean;
+      error?: string;
+    }> => {
       setIsLoading(true);
       try {
-        const data = await apiClient.post<AuthApiResponse & { is_new_user?: boolean }>(
+        const data = await apiClient.post<
+          AuthApiResponse & { is_new_user?: boolean }
+        >(
           `/api/auth/social/${provider}/`,
           { access_token: accessToken },
           { skipAuth: true },
@@ -309,7 +327,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         localStorage.setItem(STORAGE_KEY, authUser.role);
         localStorage.setItem(USER_DATA_KEY, JSON.stringify(authUser));
 
-        return { success: true, role: authUser.role, isNewUser: !!data.is_new_user };
+        return {
+          success: true,
+          role: authUser.role,
+          isNewUser: !!data.is_new_user,
+        };
       } catch (err) {
         if (err instanceof ApiError && err.body) {
           const messages = Object.values(err.body).flat();
@@ -368,6 +390,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = useCallback(() => {
     setUser(null);
     setRole("guest");
+    // Révoque le refresh token côté serveur avant de l'effacer d'ici.
+    revokeSessionOnServer();
     clearTokens();
     localStorage.removeItem(STORAGE_KEY);
     localStorage.removeItem(USER_DATA_KEY);

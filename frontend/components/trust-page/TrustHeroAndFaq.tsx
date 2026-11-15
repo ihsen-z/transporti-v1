@@ -2,8 +2,6 @@
 
 import Link from "next/link";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
-import { interpolate } from "@/lib/i18n/interpolate";
-import { GARANTIES_AFFICHEES } from "@/lib/garanties";
 
 /**
  * P3 — l'ouverture et la clôture de la page « Confiance et sécurité ».
@@ -44,16 +42,11 @@ export function TrustFaq() {
   const { t } = useAppI18n();
   const p = t.trustPage;
 
-  // Le délai apparaît deux fois sur la page — dans l'encart du séquestre et
-  // ici. Les deux lisent la même constante : un désaccord entre les deux
-  // serait pire que l'absence de l'information.
-  const heures = GARANTIES_AFFICHEES.ESCROW_AUTO_RELEASE_HOURS;
-
   const questions = [
     { q: p.faqQ1, r: p.faqA1 },
     { q: p.faqQ2, r: p.faqA2 },
     { q: p.faqQ3, r: p.faqA3 },
-    { q: p.faqQ4, r: interpolate(p.faqA4, { heures }) },
+    { q: p.faqQ4, r: p.faqA4 },
     { q: p.faqQ5, r: p.faqA5 },
   ];
 

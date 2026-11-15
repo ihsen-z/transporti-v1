@@ -42,7 +42,7 @@ export default function Header() {
   const navLinks = [
     { href: "/", label: h.home },
     { href: "/confiance", label: h.trust },
-    { href: "/help", label: h.help },
+    { href: "/aide", label: h.help },
   ];
 
   return (

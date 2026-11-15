@@ -6,6 +6,7 @@ import DataTable from "@/components/admin/DataTable";
 import StatusBadge from "@/components/admin/StatusBadge";
 import DocumentReviewDrawer from "@/components/admin/DocumentReviewDrawer";
 import { formatTimeAgoShort } from "@/lib/format";
+import { getMediaUrl } from "@/lib/imageUtils";
 import { useAdminVerifications, useAdminProfiles } from "@/hooks/useAdminData";
 import {
   approveVerification,
@@ -91,7 +92,6 @@ export default function AdminVerificationsPage() {
   // Data hooks
   const {
     data: allVerifications,
-    source: verifSource,
     loading: verifLoading,
     error: verifError,
     refetch: refetchVerifications,
@@ -99,13 +99,10 @@ export default function AdminVerificationsPage() {
 
   const {
     data: allProfiles,
-    source: profileSource,
     loading: profileLoading,
     error: profileError,
     refetch: refetchProfiles,
   } = useAdminProfiles();
-
-  const source = mainView === "requests" ? verifSource : profileSource;
 
   // ── Verification request handlers ──
   const handleApprove = async (id: number) => {
@@ -286,13 +283,7 @@ export default function AdminVerificationsPage() {
           </button>
           {v.documentUrl && (
             <a
-              href={
-                v.documentUrl.startsWith("http")
-                  ? v.documentUrl
-                  : process.env.NODE_ENV === "production"
-                    ? `https://transporti-v1.onrender.com${v.documentUrl}`
-                    : `http://localhost:8000${v.documentUrl}`
-              }
+              href={getMediaUrl(v.documentUrl)}
               target="_blank"
               rel="noopener noreferrer"
               title="Voir le document"
@@ -489,18 +480,6 @@ export default function AdminVerificationsPage() {
               </span>
             </div>
           )}
-          <div
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-              source === "api"
-                ? "bg-green-50 text-green-700 border border-green-200 dark:bg-green-900/20 dark:text-green-400 dark:border-green-800"
-                : "bg-orange-50 text-orange-700 border border-orange-200 dark:bg-orange-900/20 dark:text-orange-400 dark:border-orange-800"
-            }`}
-          >
-            <span
-              className={`w-2 h-2 rounded-full ${source === "api" ? "bg-green-500" : "bg-orange-500"}`}
-            />
-            {source === "api" ? "API Live" : "Mock Data"}
-          </div>
         </div>
       </div>
 
