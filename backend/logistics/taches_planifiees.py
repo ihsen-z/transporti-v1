@@ -28,6 +28,10 @@ TACHES = [
     ('auto_release_escrow', 4 * 60 * 60, 'Auto-release escrow after 48h', FREQUENTES),
     ('reveal_stale_reviews', 24 * 60 * 60, 'Auto-reveal reviews after 7 days', QUOTIDIENNES),
     ('purge_kyc_documents', 24 * 60 * 60, 'Purge KYC documents 5 years past expiry', QUOTIDIENNES),
+    # Commande fournie par simplejwt : supprime les refresh tokens expirés de la
+    # liste noire (OutstandingToken + BlacklistedToken), qui grossit à chaque
+    # rafraîchissement. Un seul DELETE indexé sur expires_at : rapide.
+    ('flushexpiredtokens', 24 * 60 * 60, 'Flush expired JWT refresh tokens', QUOTIDIENNES),
 ]
 
 GROUPES = (FREQUENTES, QUOTIDIENNES)

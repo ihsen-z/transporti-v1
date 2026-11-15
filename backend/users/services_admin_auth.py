@@ -19,6 +19,7 @@ from django.contrib.auth import authenticate
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from users.models import User
+from users import login_lockout
 from analytics.security_logs import (
     log_admin_login_success,
     log_admin_login_failed,
@@ -38,9 +39,6 @@ logger = logging.getLogger('transporti.security')
 ADMIN_ACCESS_TOKEN_LIFETIME = timedelta(minutes=15)
 ADMIN_REFRESH_TOKEN_LIFETIME = timedelta(hours=1)
 ADMIN_SESSION_CACHE_PREFIX = 'admin_session:'
-ADMIN_FAILED_LOGIN_CACHE_PREFIX = 'admin_failed:'
-MAX_FAILED_LOGIN_ATTEMPTS = 5
-LOCKOUT_DURATION = timedelta(minutes=30)
 
 
 # =============================================================================
@@ -50,11 +48,6 @@ LOCKOUT_DURATION = timedelta(minutes=30)
 def _get_session_cache_key(user_id: int) -> str:
     """Get cache key for admin session."""
     return f"{ADMIN_SESSION_CACHE_PREFIX}{user_id}"
-
-
-def _get_failed_login_cache_key(email: str) -> str:
-    """Get cache key for failed login attempts."""
-    return f"{ADMIN_FAILED_LOGIN_CACHE_PREFIX}{email}"
 
 
 def get_active_admin_session(user_id: int) -> dict | None:
@@ -118,33 +111,6 @@ def is_session_valid(user_id: int, session_id: str) -> bool:
 
 
 # =============================================================================
-# FAILED LOGIN TRACKING
-# =============================================================================
-
-def get_failed_login_count(email: str) -> int:
-    """Get number of failed login attempts."""
-    return cache.get(_get_failed_login_cache_key(email), 0)
-
-
-def increment_failed_login(email: str) -> int:
-    """Increment and return failed login count."""
-    cache_key = _get_failed_login_cache_key(email)
-    count = cache.get(cache_key, 0) + 1
-    cache.set(cache_key, count, timeout=int(LOCKOUT_DURATION.total_seconds()))
-    return count
-
-
-def clear_failed_logins(email: str) -> None:
-    """Clear failed login attempts after successful login."""
-    cache.delete(_get_failed_login_cache_key(email))
-
-
-def is_account_locked(email: str) -> bool:
-    """Check if account is locked due to too many failed attempts."""
-    return get_failed_login_count(email) >= MAX_FAILED_LOGIN_ATTEMPTS
-
-
-# =============================================================================
 # ADMIN JWT TOKENS
 # =============================================================================
 
@@ -196,30 +162,32 @@ def admin_login(email: str, password: str, ip_address: str) -> dict:
         ValidationError: If credentials invalid or account locked
         PermissionDenied: If user is not admin
     """
-    # Check if account is locked
-    if is_account_locked(email):
+    # Verrou propre au back-office, par e-mail + adresse du client : un tiers
+    # ne bloque que sa propre adresse (users/login_lockout.py).
+    scope = login_lockout.ADMIN_SCOPE
+    if login_lockout.is_locked(scope, email, ip_address):
         log_admin_login_failed(email, ip_address, "account_locked")
         raise ValidationError(
             "Account temporarily locked due to too many failed attempts. "
             "Please try again in 30 minutes."
         )
-    
+
     # Authenticate
     user = authenticate(username=email, password=password)
-    
+
     if not user:
-        failed_count = increment_failed_login(email)
-        
-        if failed_count >= MAX_FAILED_LOGIN_ATTEMPTS:
+        failed_count = login_lockout.record_failure(scope, email, ip_address)
+
+        if failed_count >= login_lockout.MAX_FAILED_ATTEMPTS:
             log_admin_account_locked(email, ip_address, failed_count)
             raise ValidationError(
                 "Account temporarily locked due to too many failed attempts."
             )
-        
-        remaining = MAX_FAILED_LOGIN_ATTEMPTS - failed_count
+
+        remaining = login_lockout.MAX_FAILED_ATTEMPTS - failed_count
         log_admin_login_failed(email, ip_address, f"invalid_credentials, {remaining} attempts remaining")
         raise ValidationError(f"Invalid credentials. {remaining} attempts remaining.")
-    
+
     # Verify admin role
     if user.role not in ['ADMIN', 'MODERATOR']:
         log_admin_login_failed(email, ip_address, f"not_admin, role={user.role}")
@@ -229,8 +197,8 @@ def admin_login(email: str, password: str, ip_address: str) -> dict:
         log_admin_login_failed(email, ip_address, "account_inactive")
         raise ValidationError("Account is inactive.")
     
-    # Clear failed login attempts
-    clear_failed_logins(email)
+    # Clear failed login attempts (this address only)
+    login_lockout.clear(scope, email, ip_address)
     
     # Create session (revokes any existing)
     session = create_admin_session(user, ip_address)

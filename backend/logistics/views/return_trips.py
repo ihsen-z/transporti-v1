@@ -12,6 +12,7 @@ from ..serializers import (
     ReturnTripCreateSerializer, TransportJobDetailSerializer, OfferDetailSerializer,
 )
 from users.permissions import RequireRole
+from ..acceptance_messages import client_next_step
 from payments.online import (
     PAIEMENT_EN_LIGNE_INDISPONIBLE,
     default_payment_method,
@@ -28,7 +29,9 @@ class ReturnTripCreateView(generics.CreateAPIView):
     serializer_class = ReturnTripCreateSerializer
 
     def create(self, request, *args, **kwargs):
-        # Plafond de dette de commission : pas de nouveau trajet au-delà.
+        # KYC obligatoire (403 KYC_REQUIRED), puis plafond de dette.
+        from ..kyc import ensure_transporter_verified
+        ensure_transporter_verified(request.user)
         from payments.debt import ensure_transporter_can_engage
         ensure_transporter_can_engage(request.user)
 
@@ -103,9 +106,11 @@ class BookReturnTripView(APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        # Transporteur au-delà du plafond de dette : réponse neutre au client.
-        from payments.debt import is_blocked_for_debt, transporter_unavailable_response
-        if is_blocked_for_debt(job.owner):
+        # Transporteur non vérifié (KYC), refusé, suspendu ou au-delà du
+        # plafond de dette : même réponse neutre au client, sans la raison.
+        from payments.debt import transporter_unavailable_response
+        from ..kyc import transporter_can_be_booked
+        if not transporter_can_be_booked(job.owner):
             return transporter_unavailable_response()
 
         # Parse request body
@@ -166,6 +171,20 @@ class BookReturnTripView(APIView):
             valid_until=timezone.now() + timezone.timedelta(days=7),
         )
 
+        # --- Demande ACCEPTED : c'est par elle que le client d'un trajet retour
+        # est reconnu (get_job_client / get_paying_client). Sans elle, le
+        # client d'une réservation directe ne voyait jamais son code de
+        # livraison, et la mission ne pouvait pas être terminée.
+        from ..models import ReturnTripRequest
+        ReturnTripRequest.objects.create(
+            job=job,
+            client=request.user,
+            description=(request.data.get('description') or 'Réservation directe')[:1000],
+            proposed_price=proposed_price,
+            payment_method=payment_method,
+            status=ReturnTripRequest.Status.ACCEPTED,
+        )
+
         # --- D3 (escrow strict): job becomes MATCHED, never IN_PROGRESS here.
         # DIGITAL → starts when the escrow is HELD (payments/initiate + verify).
         # COD → starts when the transporter confirms (confirm-start).
@@ -189,9 +208,8 @@ class BookReturnTripView(APIView):
         # --- Create conversation + system message ---
         try:
             from messaging.services import get_or_create_conversation, send_system_message
-            conversation = get_or_create_conversation(job)
-            # Return trips: owner == transporter — add the CLIENT explicitly
-            conversation.participants.add(request.user)
+            # Participants synchronisés depuis la demande ACCEPTED ci-dessus.
+            get_or_create_conversation(job)
             client_name = f"{request.user.first_name} {request.user.last_name}".strip()
             if payment_method == 'DIGITAL':
                 next_step = "💳 Prochaine étape : le client procède au paiement sécurisé pour démarrer la mission."
@@ -224,7 +242,7 @@ class BookReturnTripView(APIView):
 
         # --- Response ---
         response_data = {
-            'message': f'Trajet retour réservé ({payment_method}). Mission assignée — en attente de paiement.',
+            'message': 'Trajet retour réservé. ' + client_next_step(payment_method),
             'payment_method': payment_method,
             'proposed_price': str(proposed_price),
             'job': TransportJobDetailSerializer(job, context={'show_contact': True, 'request': request}).data,
@@ -261,6 +279,10 @@ class ReturnTripManageView(APIView):
         job, error = self._get_own_trip(request, job_id)
         if error:
             return error
+        # Modifier (ou republier) un trajet, c'est s'engager à nouveau :
+        # KYC obligatoire (403 KYC_REQUIRED). La suppression reste permise.
+        from ..kyc import ensure_transporter_verified
+        ensure_transporter_verified(request.user)
         serializer = ReturnTripUpdateSerializer(job, data=request.data, partial=True)
         serializer.is_valid(raise_exception=True)
         serializer.save()

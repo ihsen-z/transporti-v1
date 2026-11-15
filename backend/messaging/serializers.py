@@ -19,7 +19,11 @@ class MessageSerializer(serializers.ModelSerializer):
 
     def get_sender_name(self, obj) -> str:
         if obj.sender:
-            return f"{obj.sender.first_name} {obj.sender.last_name[0]}."
+            # Le nom de famille peut être vide (compte créé sans nom) :
+            # l'indexer directement provoquait une erreur 500.
+            nom = obj.sender.last_name
+            initiale = f" {nom[0]}." if nom else ""
+            return f"{obj.sender.first_name}{initiale}".strip() or "Utilisateur"
         return "System"
 
 

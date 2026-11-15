@@ -94,20 +94,17 @@ def is_job_participant(user, job) -> bool:
     return client is not None and client.id == user.id
 
 
-def is_conversation_participant(user, job) -> bool:
+def get_current_participants(job) -> list:
     """
-    Broader rule used by the messaging layer only.
+    The two CURRENT sides of this job (transporter, client), without None.
 
-    On top of the strict rule, it honours an explicit membership in
-    ``Conversation.participants`` — the acceptance path adds the client there
-    directly (logistics/views/trip_requests.py), and a moderator may add
-    someone for support reasons. Keeping this as a distinct function avoids
-    widening the rule that governs money, reviews and disputes.
+    Messaging relies on this, never on ``Conversation.participants`` alone:
+    that stored list used to keep a transporter (or return-trip client) who had
+    cancelled, so the evicted party kept reading, writing and receiving the
+    notifications meant for the new one.
     """
-    if is_job_participant(user, job):
-        return True
-
-    conversation = getattr(job, 'conversation', None)
-    if conversation is None:
-        return False
-    return conversation.participants.filter(id=user.id).exists()
+    parties = []
+    for party in (get_job_transporter(job), get_job_client(job)):
+        if party is not None and all(p.id != party.id for p in parties):
+            parties.append(party)
+    return parties

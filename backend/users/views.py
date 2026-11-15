@@ -9,9 +9,21 @@ from django.conf import settings as django_settings
 
 from .serializers import UserRegistrationSerializer, UserLoginSerializer, UserProfileSerializer
 from .services_account_closure import ClotureImpossible, cloturer_compte
+from . import login_lockout
+from .tokens import issue_user_tokens
+from transporti_core.client_ip import get_client_ip
+from .services_sessions import revoke_all_refresh_tokens
 from transporti_core.throttling import AuthRateThrottle
 
 logger = logging.getLogger('transporti')
+
+# Côté le plus long d'un avatar après ré-encodage (pixels)
+AVATAR_MAX_DIMENSION = 512
+
+ACCOUNT_LOCKED_MESSAGE = (
+    'Too many failed login attempts. Please try again in 30 minutes '
+    'or reset your password.'
+)
 
 def seed_db_view(request):
     import io
@@ -82,41 +94,39 @@ class LoginView(APIView):
     throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
+        # Verrouillage : 5 échecs → 30 min, par e-mail saisi (qu'il existe ou
+        # non : la réponse ne trahit rien) ET adresse du client, distinct de
+        # celui du back-office (users/login_lockout.py). Un tiers anonyme ne
+        # peut plus bloquer le compte d'un autre depuis sa propre adresse.
+        email_key = str(request.data.get('email', '')).strip().lower()
+        client_ip = get_client_ip(request)
+        scope = login_lockout.USER_SCOPE
+        if email_key and login_lockout.is_locked(scope, email_key, client_ip):
+            logger.warning("USER_LOGIN_LOCKED: too many failed attempts")
+            return Response(
+                {'error': ACCOUNT_LOCKED_MESSAGE, 'code': 'account_locked'},
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+            )
+
         serializer = UserLoginSerializer(data=request.data)
-        
+
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            
+            login_lockout.clear(scope, email_key, client_ip)
+
             logger.info(f"USER_LOGIN: user_id={user.id}, email={user.email}")
             
-            # Generate JWT tokens
-            refresh = RefreshToken.for_user(user)
-            
-            # Add custom claims
-            effective_role = user.role
-            if user.is_superuser or user.is_staff:
-                effective_role = 'ADMIN'
-                
-            refresh['role'] = effective_role
-            refresh['is_verified'] = user.is_phone_verified
-            
-            # Add trust status for transporters
-            if user.role == 'TRANSPORTER':
-                try:
-                    refresh['trust_status'] = user.trust_profile.verification_status
-                except AttributeError:
-                    logger.warning(f"USER_LOGIN: transporter {user.id} missing trust_profile")
-                    refresh['trust_status'] = 'UNVERIFIED'
-            
+            # Jetons : même contenu partout (users/tokens.py).
+            tokens = issue_user_tokens(user)
+
             return Response({
                 'message': 'Login successful.',
                 'user': UserProfileSerializer(user).data,
-                'tokens': {
-                    'refresh': str(refresh),
-                    'access': str(refresh.access_token),
-                }
+                'tokens': tokens,
             }, status=status.HTTP_200_OK)
-        
+
+        if email_key:
+            login_lockout.record_failure(scope, email_key, client_ip)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -234,10 +244,18 @@ class ChangePasswordView(APIView):
 
         request.user.set_password(new_password)
         request.user.save()
+        # Toutes les sessions ouvertes (autres appareils compris) tombent...
+        revoke_all_refresh_tokens(request.user, reason='password_change')
+        # ... sauf celle qui fait la demande : une NOUVELLE paire, émise après
+        # la révocation, remplace la sienne (même forme que la connexion).
+        tokens = issue_user_tokens(request.user)
 
         logger.info(f"PASSWORD_CHANGED: user_id={request.user.id}")
 
-        return Response({'message': 'Mot de passe modifié avec succès.'})
+        return Response({
+            'message': 'Mot de passe modifié avec succès.',
+            'tokens': tokens,
+        })
 
 
 class DeleteAccountView(APIView):
@@ -400,6 +418,18 @@ class AvatarUploadView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Le type déclaré ne prouve rien : on relit l'image avec Pillow et on
+        # stocke un JPEG neuf, sous un nom aléatoire (transporti_core/images.py).
+        from transporti_core.images import InvalidImage, reencode_as_jpeg
+        try:
+            clean_avatar = reencode_as_jpeg(avatar_file, max_dimension=AVATAR_MAX_DIMENSION)
+        except InvalidImage:
+            logger.warning(f"AVATAR_REJECTED: user_id={request.user.id}, not a valid image")
+            return Response(
+                {'error': 'Le fichier n\'est pas une image valide.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         # Get or create profile
         from .models import Profile
         profile, created = Profile.objects.get_or_create(user=request.user)
@@ -412,7 +442,7 @@ class AvatarUploadView(APIView):
                 pass
 
         # Save new avatar
-        profile.avatar = avatar_file
+        profile.avatar = clean_avatar
         profile.save()
 
         # Build the full URL
@@ -451,6 +481,8 @@ class PasswordResetRequestView(APIView):
     and none ever was.
     """
     permission_classes = [AllowAny]
+    # Même plafond que la connexion : évite d'inonder une boîte de liens.
+    throttle_classes = [AuthRateThrottle]
 
     def post(self, request):
         from django.contrib.auth import get_user_model
@@ -482,9 +514,10 @@ class PasswordResetRequestView(APIView):
             if mobile_enabled:
                 mobile_scheme = getattr(django_settings, 'MOBILE_APP_SCHEME', 'transporti')
                 mobile_link = f"{mobile_scheme}://reset-password?uid={uid}&token={token}"
-                logger.info(f"PASSWORD_RESET_REQUESTED: email={email}, link={reset_link}, mobile_link={mobile_link}")
-            else:
-                logger.info(f"PASSWORD_RESET_REQUESTED: email={email}, link={reset_link}")
+
+            # Jamais le lien dans les journaux : il contient le jeton, donc
+            # quiconque lit les logs pourrait prendre le compte.
+            logger.info(f"PASSWORD_RESET_REQUESTED: user_id={user.id}")
 
             # Actually send the message. Failure is logged inside the service and
             # must not change the response — leaking "this address is unknown"
@@ -502,10 +535,10 @@ class PasswordResetRequestView(APIView):
                     },
                 )
             except Exception as exc:
-                logger.error(f"PASSWORD_RESET_EMAIL_FAILED: email={email}, error={exc}")
+                logger.error(f"PASSWORD_RESET_EMAIL_FAILED: user_id={user.id}, error={exc.__class__.__name__}")
         except User.DoesNotExist:
             # Silent — no information leak
-            logger.info(f"PASSWORD_RESET_REQUESTED: email={email} (not found)")
+            logger.info("PASSWORD_RESET_REQUESTED: unknown email")
 
         return Response({
             'message': 'Si un compte existe avec cette adresse, un lien de réinitialisation a été envoyé.'
@@ -536,12 +569,6 @@ class PasswordResetConfirmView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        if len(new_password) < 8:
-            return Response(
-                {'error': 'Le mot de passe doit contenir au moins 8 caractères.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
         try:
             user_id = force_str(urlsafe_base64_decode(uid))
             user = User.objects.get(pk=user_id)
@@ -557,8 +584,34 @@ class PasswordResetConfirmView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Mêmes règles que l'inscription et le changement de mot de passe
+        # (AUTH_PASSWORD_VALIDATORS). Le message `error` garde le mot
+        # « caractères » : c'est ce que l'app mobile lit pour afficher
+        # « mot de passe trop faible » plutôt que « lien invalide ».
+        from django.contrib.auth.password_validation import validate_password
+        from django.core.exceptions import ValidationError
+        try:
+            validate_password(new_password, user)
+        except ValidationError as e:
+            messages = list(e.messages)
+            return Response(
+                {
+                    'error': (
+                        'Mot de passe trop faible (au moins 8 caractères, '
+                        'ni trop courant ni uniquement des chiffres). '
+                        + ' '.join(messages)
+                    ),
+                    'new_password': messages,
+                },
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
         user.set_password(new_password)
         user.save()
+        # Lien utilisé : on ferme les sessions ouvertes et on lève le
+        # verrouillage de connexion éventuel.
+        revoke_all_refresh_tokens(user, reason='password_reset')
+        login_lockout.clear_all_for_email(user.email)
         logger.info(f"PASSWORD_RESET_CONFIRMED: user_id={user.id}")
 
         return Response({

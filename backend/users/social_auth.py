@@ -15,24 +15,28 @@ RULES:
 - New users default to CLIENT role
 """
 import logging
-import requests as http_requests
 
 from rest_framework import status, serializers
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
-from django.conf import settings
 from django.db import transaction
 
 from .models import User, Profile
 from .serializers import UserProfileSerializer
+from .social_verification import (
+    SocialAuthError, SocialIdentity,
+    facebook_is_configured, google_is_configured,
+    verify_facebook_token, verify_google_token,
+)
 from transporti_core.throttling import AuthRateThrottle
 
 logger = logging.getLogger('transporti')
 
-# Timeout for provider API calls (seconds)
-PROVIDER_TIMEOUT = 10
+# Comptes à privilèges : jamais connectables par Google/Facebook (une boîte
+# e-mail compromise ne doit pas ouvrir le back-office).
+PRIVILEGED_ROLES = ('ADMIN', 'MODERATOR')
 
 
 # =============================================================================
@@ -75,6 +79,15 @@ def _social_login_or_create(email, first_name, last_name, avatar_url, provider):
 
     try:
         user = User.objects.get(email=email)
+        if user.role in PRIVILEGED_ROLES or user.is_staff or user.is_superuser:
+            logger.warning(
+                f"SOCIAL_LOGIN_REFUSED_PRIVILEGED: provider={provider}, user_id={user.id}"
+            )
+            raise SocialAuthError(
+                'Social login is not available for this account. '
+                'Please sign in with your email and password.',
+                status.HTTP_403_FORBIDDEN,
+            )
         logger.info(
             f"SOCIAL_LOGIN: provider={provider}, user_id={user.id}, "
             f"email={email}, action=LOGIN"
@@ -150,213 +163,75 @@ class RoleChoiceSerializer(serializers.Serializer):
 
 
 # =============================================================================
-# GOOGLE SIGN-IN
+# GOOGLE / FACEBOOK
 # =============================================================================
 
-class GoogleLoginView(APIView):
+class _SocialLoginView(APIView):
+    """
+    Base commune : la route n'existe (404) que si le fournisseur est configuré,
+    puis le jeton est vérifié (social_verification.py), puis on connecte.
+    """
+    permission_classes = [AllowAny]
+    throttle_classes = [AuthRateThrottle]
+    provider = ''
+
+    def is_configured(self) -> bool:
+        raise NotImplementedError
+
+    def verify(self, access_token: str) -> SocialIdentity:
+        raise NotImplementedError
+
+    def post(self, request):
+        # Fournisseur non configuré : on se comporte comme une route absente,
+        # avant même de lire la requête.
+        if not self.is_configured():
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = SocialTokenSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            identity = self.verify(serializer.validated_data['access_token'])
+            user, is_new = _social_login_or_create(
+                email=identity.email,
+                first_name=identity.first_name,
+                last_name=identity.last_name,
+                avatar_url=identity.avatar_url,
+                provider=self.provider,
+            )
+        except SocialAuthError as exc:
+            return Response({'error': exc.message}, status=exc.http_status)
+
+        return _build_social_response(user, is_new)
+
+
+class GoogleLoginView(_SocialLoginView):
     """
     POST /api/auth/social/google/
     Accepts { access_token } from Google Identity Services.
-    Validates with Google, creates/finds user, returns JWT.
     """
-    permission_classes = [AllowAny]
-    throttle_classes = [AuthRateThrottle]
+    provider = 'google'
 
-    def post(self, request):
-        serializer = SocialTokenSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    def is_configured(self) -> bool:
+        return google_is_configured()
 
-        access_token = serializer.validated_data['access_token']
-
-        # Validate token with Google
-        try:
-            resp = http_requests.get(
-                'https://www.googleapis.com/oauth2/v3/userinfo',
-                headers={'Authorization': f'Bearer {access_token}'},
-                timeout=PROVIDER_TIMEOUT,
-            )
-        except http_requests.RequestException as e:
-            logger.error(f"SOCIAL_AUTH_ERROR: provider=google, error={str(e)}")
-            return Response(
-                {'error': 'Failed to connect to Google. Please try again.'},
-                status=status.HTTP_502_BAD_GATEWAY,
-            )
-
-        if resp.status_code != 200:
-            logger.warning(
-                f"SOCIAL_AUTH_INVALID_TOKEN: provider=google, "
-                f"status={resp.status_code}"
-            )
-            return Response(
-                {'error': 'Invalid or expired Google token.'},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        data = resp.json()
-        email = data.get('email')
-
-        if not email:
-            return Response(
-                {'error': 'Google account does not have an email address.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Optional: verify the token was issued for our client ID
-        google_client_id = getattr(settings, 'GOOGLE_CLIENT_ID', '')
-        if google_client_id:
-            # Cross-check with tokeninfo endpoint for audience validation
-            try:
-                tokeninfo_resp = http_requests.get(
-                    'https://www.googleapis.com/oauth2/v3/tokeninfo',
-                    params={'access_token': access_token},
-                    timeout=PROVIDER_TIMEOUT,
-                )
-                if tokeninfo_resp.status_code == 200:
-                    tokeninfo = tokeninfo_resp.json()
-                    aud = tokeninfo.get('aud', '')
-                    if aud and aud != google_client_id:
-                        logger.warning(
-                            f"SOCIAL_AUTH_AUD_MISMATCH: provider=google, "
-                            f"expected={google_client_id}, got={aud}"
-                        )
-                        return Response(
-                            {'error': 'Token was not issued for this application.'},
-                            status=status.HTTP_401_UNAUTHORIZED,
-                        )
-            except http_requests.RequestException:
-                # Non-blocking: if tokeninfo check fails, continue
-                # The userinfo check already validated the token
-                pass
-
-        user, is_new = _social_login_or_create(
-            email=email,
-            first_name=data.get('given_name', ''),
-            last_name=data.get('family_name', ''),
-            avatar_url=data.get('picture', ''),
-            provider='google',
-        )
-
-        return _build_social_response(user, is_new)
+    def verify(self, access_token: str) -> SocialIdentity:
+        return verify_google_token(access_token)
 
 
-# =============================================================================
-# FACEBOOK LOGIN
-# =============================================================================
-
-class FacebookLoginView(APIView):
+class FacebookLoginView(_SocialLoginView):
     """
     POST /api/auth/social/facebook/
     Accepts { access_token } from Facebook Login SDK.
-    Validates with Facebook Graph API, creates/finds user, returns JWT.
     """
-    permission_classes = [AllowAny]
-    throttle_classes = [AuthRateThrottle]
+    provider = 'facebook'
 
-    def post(self, request):
-        serializer = SocialTokenSerializer(data=request.data)
-        if not serializer.is_valid():
-            return Response(
-                serializer.errors,
-                status=status.HTTP_400_BAD_REQUEST
-            )
+    def is_configured(self) -> bool:
+        return facebook_is_configured()
 
-        access_token = serializer.validated_data['access_token']
-
-        # Validate token with Facebook Graph API
-        try:
-            resp = http_requests.get(
-                'https://graph.facebook.com/me',
-                params={
-                    'fields': 'id,email,first_name,last_name,picture.type(large)',
-                    'access_token': access_token,
-                },
-                timeout=PROVIDER_TIMEOUT,
-            )
-        except http_requests.RequestException as e:
-            logger.error(f"SOCIAL_AUTH_ERROR: provider=facebook, error={str(e)}")
-            return Response(
-                {'error': 'Failed to connect to Facebook. Please try again.'},
-                status=status.HTTP_502_BAD_GATEWAY,
-            )
-
-        if resp.status_code != 200:
-            logger.warning(
-                f"SOCIAL_AUTH_INVALID_TOKEN: provider=facebook, "
-                f"status={resp.status_code}"
-            )
-            return Response(
-                {'error': 'Invalid or expired Facebook token.'},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
-
-        data = resp.json()
-        email = data.get('email')
-
-        if not email:
-            return Response(
-                {'error': 'Facebook account does not have a verified email. '
-                          'Please use email/password registration.'},
-                status=status.HTTP_400_BAD_REQUEST,
-            )
-
-        # Optional: Validate the token was issued for our Facebook App
-        fb_app_id = getattr(settings, 'FACEBOOK_APP_ID', '')
-        fb_app_secret = getattr(settings, 'FACEBOOK_APP_SECRET', '')
-        if fb_app_id and fb_app_secret:
-            try:
-                debug_resp = http_requests.get(
-                    'https://graph.facebook.com/debug_token',
-                    params={
-                        'input_token': access_token,
-                        'access_token': f'{fb_app_id}|{fb_app_secret}',
-                    },
-                    timeout=PROVIDER_TIMEOUT,
-                )
-                if debug_resp.status_code == 200:
-                    debug_data = debug_resp.json().get('data', {})
-                    if not debug_data.get('is_valid', False):
-                        logger.warning(
-                            "SOCIAL_AUTH_TOKEN_INVALID: provider=facebook, "
-                            "debug_token reports invalid"
-                        )
-                        return Response(
-                            {'error': 'Facebook token is invalid.'},
-                            status=status.HTTP_401_UNAUTHORIZED,
-                        )
-                    token_app_id = str(debug_data.get('app_id', ''))
-                    if token_app_id != fb_app_id:
-                        logger.warning(
-                            f"SOCIAL_AUTH_APP_MISMATCH: provider=facebook, "
-                            f"expected={fb_app_id}, got={token_app_id}"
-                        )
-                        return Response(
-                            {'error': 'Token was not issued for this application.'},
-                            status=status.HTTP_401_UNAUTHORIZED,
-                        )
-            except http_requests.RequestException:
-                # Non-blocking: if debug check fails, continue
-                # The graph/me call already validated the token
-                pass
-
-        # Extract avatar URL from nested Facebook picture object
-        avatar_url = ''
-        picture_data = data.get('picture', {})
-        if isinstance(picture_data, dict):
-            avatar_url = picture_data.get('data', {}).get('url', '')
-
-        user, is_new = _social_login_or_create(
-            email=email,
-            first_name=data.get('first_name', ''),
-            last_name=data.get('last_name', ''),
-            avatar_url=avatar_url,
-            provider='facebook',
-        )
-
-        return _build_social_response(user, is_new)
+    def verify(self, access_token: str) -> SocialIdentity:
+        return verify_facebook_token(access_token)
 
 
 # =============================================================================
@@ -376,6 +251,12 @@ class SocialUserSetRoleView(APIView):
     # Requires authentication — user must have JWT from social login
 
     def post(self, request):
+        # Sans fournisseur social configuré, aucun « nouveau compte social »
+        # ne peut exister : la route se comporte comme absente (comme
+        # _SocialLoginView), au lieu de servir de porte de changement de rôle.
+        if not (google_is_configured() or facebook_is_configured()):
+            return Response({'detail': 'Not found.'}, status=status.HTTP_404_NOT_FOUND)
+
         serializer = RoleChoiceSerializer(data=request.data)
         if not serializer.is_valid():
             return Response(

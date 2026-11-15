@@ -38,26 +38,6 @@ class RequireRole(BasePermission):
         return request.user.role in self.allowed_roles
 
 
-class RequireVerification(BasePermission):
-    """
-    DRF Permission class requiring TRANSPORTER to be VERIFIED.
-    Used for offer submission and other trust-gated actions.
-    """
-    def has_permission(self, request, view):
-        if not request.user or not request.user.is_authenticated:
-            return False
-        
-        # Only applies to transporters
-        if request.user.role != 'TRANSPORTER':
-            return True  # Non-transporters pass (guard doesn't apply)
-        
-        try:
-            trust_profile = request.user.trust_profile
-            return trust_profile.verification_status == 'VERIFIED'
-        except:
-            return False
-
-
 class RequireOwner(BasePermission):
     """
     DRF Permission class for object-level ownership verification.

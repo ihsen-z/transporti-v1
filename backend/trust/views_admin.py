@@ -40,12 +40,8 @@ from .services_admin import (
 logger = logging.getLogger('transporti.security')
 
 
-def get_client_ip(request) -> str:
-    """Extract client IP from request."""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        return x_forwarded_for.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR', 'unknown')
+# Règle unique (DRF + NUM_PROXIES), réexportée pour les appelants existants.
+from transporti_core.client_ip import get_client_ip  # noqa: E402,F401
 
 
 class AdminTrustListView(generics.ListAPIView):

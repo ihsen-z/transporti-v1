@@ -2,10 +2,8 @@
 URL configuration for transporti_core project.
 Production-hardened with health check endpoint.
 """
-from django.contrib import admin
 from django.urls import path, include
 from django.http import JsonResponse
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from .views_admin import (
     AdminStatsView, AdminJobListView, AdminJobDetailView, AdminUserListView,
     AdminActivityView, AdminAlertsView,
@@ -20,6 +18,7 @@ from .views_admin_users import (
 from admin_audit.views import AdminAuditLogView
 from .views_admin_export import AdminExportUsersCSV, AdminExportJobsCSV
 from .cron import ping, taches_planifiees
+from .urls_outils import outils_patterns
 
 
 def health_check(request):
@@ -45,7 +44,10 @@ def health_check(request):
         status['database'] = 'error'
         status['status'] = 'degraded'
     
-    return JsonResponse(status)
+    # 503 quand la base est en panne : une sonde HTTP doit le voir.
+    # (Render surveille /ping/, qui ne touche pas la base et reste à 200.)
+    http_status = 200 if status['status'] == 'healthy' else 503
+    return JsonResponse(status, status=http_status)
 
 
 # =============================================================================
@@ -90,11 +92,9 @@ urlpatterns = [
     path('ping/', ping, name='ping'),
     path('api/v1/taches-planifiees/', taches_planifiees, name='taches_planifiees'),
     
-    path('admin/', admin.site.urls),
-    
-    # API Schema
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+    # Admin Django et documentation d'API : montés selon DJANGO_ADMIN_ENABLED
+    # et API_DOCS_PUBLIC (voir urls_outils.py).
+    *outils_patterns(),
 
     # =========================================================================
     # V1 API (for mobile clients)

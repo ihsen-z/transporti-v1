@@ -140,7 +140,23 @@ class Booking(models.Model):
         max_length=4, default=generate_delivery_pin,
         help_text="4-digit code the client gives at delivery (POD)"
     )
-    
+    # Anti-devinette du code de livraison (payments/delivery_pin.py) : après
+    # 5 codes faux, la saisie est bloquée 15 minutes.
+    pin_failed_attempts = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Codes de livraison faux saisis depuis le dernier code juste"
+    )
+    pin_locked_until = models.DateTimeField(
+        null=True, blank=True,
+        help_text="Saisie du code de livraison bloquée jusqu'à cette date"
+    )
+    # Plafond total : après 3 blocages, la saisie reste fermée jusqu'à ce que
+    # le support remette ce compteur à zéro (admin Django ou SQL).
+    pin_lock_count = models.PositiveSmallIntegerField(
+        default=0,
+        help_text="Blocages du code de livraison (3 = bloqué jusqu'à intervention du support)"
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:

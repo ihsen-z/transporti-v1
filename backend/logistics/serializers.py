@@ -414,7 +414,9 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         job = attrs['job']
 
-        # Plafond de dette de commission (403, pas une erreur de champ).
+        # KYC obligatoire puis plafond de dette (403, pas une erreur de champ).
+        from logistics.kyc import ensure_transporter_verified
+        ensure_transporter_verified(user)
         from payments.debt import ensure_transporter_can_engage
         ensure_transporter_can_engage(user)
 

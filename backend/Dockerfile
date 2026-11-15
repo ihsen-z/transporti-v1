@@ -32,5 +32,7 @@ EXPOSE 8000
 # Entrypoint for migrations
 ENTRYPOINT ["/app/entrypoint.sh"]
 
-# Default command (overridden by docker-compose)
-CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "transporti_core.asgi:application"]
+# Default command (overridden by docker-compose). Forme « sh -c » pour que
+# ${PORT} soit lu au démarrage : Render fournit le port à écouter ; 8000 par
+# défaut. « exec » laisse daphne recevoir les signaux d'arrêt.
+CMD ["sh", "-c", "exec daphne -b 0.0.0.0 -p ${PORT:-8000} transporti_core.asgi:application"]

@@ -34,8 +34,14 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # =============================================================================
 
 # SECURITY: Environment detection (must be FIRST for production guards)
-ENV = os.environ.get('ENV', os.environ.get('DJANGO_ENV', 'development')).lower()
-IS_PRODUCTION = ENV in ('production', 'prod', 'live')
+# Render pose RENDER=true dans tous ses conteneurs : sans ENV, le service se
+# croyait en développement (admin Django, documentation publique, clé de
+# développement acceptée, gardes sautées). RENDER suffit donc à passer en
+# production. La CI (ENV=test), les tests et le poste local ne posent pas RENDER.
+_ON_RENDER = os.environ.get('RENDER', '').strip().lower() in ('true', '1', 'yes')
+_ENV_RAW = os.environ.get('ENV', os.environ.get('DJANGO_ENV', ''))
+ENV = (_ENV_RAW or ('production' if _ON_RENDER else 'development')).lower()
+IS_PRODUCTION = ENV in ('production', 'prod', 'live') or _ON_RENDER
 
 # SECURITY: Debug mode - defaults to False for production safety
 DEBUG = os.environ.get('DEBUG', 'False').lower() in ('true', '1', 'yes')
@@ -122,6 +128,9 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'drf_spectacular',
+    # Liste noire des refresh tokens : requise par BLACKLIST_AFTER_ROTATION et
+    # par la déconnexion (POST auth/logout/). Migrations fournies par simplejwt.
+    'rest_framework_simplejwt.token_blacklist',
 
     # Transporti V1 Modules
     'users',
@@ -156,11 +165,12 @@ ROOT_URLCONF = 'transporti_core.urls'
 # CORS CONFIGURATION
 # =============================================================================
 
-CORS_ALLOWED_ORIGINS = [
-    origin.strip() for origin in
-    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:8081,http://localhost:8082,https://transporti-frontend.onrender.com').split(',')
-    if origin.strip()
-]
+# Espaces et « / » final retirés de chaque origine : une faute de saisie
+# (« https://site.netlify.app/ ») faisait échouer migrate (corsheaders.E014).
+from transporti_core.production_guards import normalize_origins as _normalize_origins
+CORS_ALLOWED_ORIGINS = _normalize_origins(
+    os.environ.get('CORS_ALLOWED_ORIGINS', 'http://localhost:3000,http://localhost:3001,http://localhost:5173,http://localhost:8081,http://localhost:8082,https://transporti-frontend.onrender.com')
+)
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -313,6 +323,13 @@ REST_FRAMEWORK = {
         'payment': '10/minute',     # Payment actions rate limit
         'messaging': '60/minute',   # Messaging endpoints (polling support)
     },
+    # Nombre de proxys de confiance devant Django (variable NUM_PROXIES).
+    # Sans cette valeur, DRF prend le X-Forwarded-For tel que le client l'envoie :
+    # en changeant cet en-tête à chaque requête, on échappait à tous les plafonds
+    # anonymes. Avec N, DRF ne retient que l'adresse ajoutée par le N-ième proxy.
+    # Défaut 1 = Render (un seul proxy). 0 = pas de proxy (REMOTE_ADDR seul).
+    # Derrière Nginx + Render, mettre 2.
+    'NUM_PROXIES': int(os.environ.get('NUM_PROXIES', '1')),
 }
 
 # Interrupteur de limitation de debit, pour les suites de bout en bout UNIQUEMENT.
@@ -359,6 +376,22 @@ SPECTACULAR_SETTINGS = {
         'drf_spectacular.hooks.postprocess_schema_enums',
     ],
 }
+
+# Outils exposés (lus par transporti_core/urls_outils.py).
+# Le back-office réel est le site Next.js : l'admin Django n'est qu'un outil de
+# secours, et la documentation d'API décrit toutes les routes.
+#   DJANGO_ADMIN_ENABLED : monte /admin/. Défaut : faux en production, vrai ailleurs.
+#   API_DOCS_PUBLIC      : /api/docs/ et /api/schema/ ouverts à tous. Défaut :
+#                          faux en production (réservés aux ADMIN), vrai ailleurs.
+def _drapeau(nom: str, defaut: bool) -> bool:
+    valeur = os.environ.get(nom)
+    if valeur is None or valeur.strip() == '':
+        return defaut
+    return valeur.strip().lower() in ('true', '1', 'yes')
+
+
+DJANGO_ADMIN_ENABLED = _drapeau('DJANGO_ADMIN_ENABLED', not IS_PRODUCTION)
+API_DOCS_PUBLIC = _drapeau('API_DOCS_PUBLIC', not IS_PRODUCTION)
 
 
 # =============================================================================
@@ -527,6 +560,14 @@ if IS_PRODUCTION:
             "CRITICAL: KONNECT_API_URL pointe la preproduction en production. "
             f"Valeur actuelle : {KONNECT_API_URL}"
         )
+
+# SECURITY: base, adresse du site et stockage des fichiers. Sans elles, la
+# production retombait en silence sur SQLite, des liens en localhost et un
+# disque éphémère. Chaque refus nomme la variable et renvoie au guide de mise
+# en production (transporti_core/production_guards.py).
+if IS_PRODUCTION:
+    from transporti_core.production_guards import check_production_environment
+    check_production_environment(os.environ)
 
 
 # =============================================================================
@@ -715,7 +756,10 @@ STORAGES = {
         "BACKEND": _default_storage_backend,
     },
     "staticfiles": {
-        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+        # Compression sans manifeste : la variante « Manifest » réécrit les
+        # références des CSS et levait MissingFileError sur une source map
+        # absente du paquet DRF (bootstrap.min.css.map) pendant collectstatic.
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
     },
 }
 
@@ -732,13 +776,19 @@ FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024  # 10MB
 # =============================================================================
 # This MUST be at the end of settings.py to validate all settings are loaded
 
-# Only run validation when Django is actually starting (not during migrations, etc.)
+# En production : à chaque commande. En développement : sous runserver seulement.
 import sys
-if 'runserver' in sys.argv or 'gunicorn' in sys.argv[0] if sys.argv else False or IS_PRODUCTION:
+# Production : TOUJOURS (daphne, migrate, collectstatic…). L'ancienne condition
+# « A or B if C else D or E » se lisait « (A or B) if C else (D or E) » : sous
+# daphne elle était fausse et la validation ne tournait jamais.
+_lance_serveur_dev = 'runserver' in sys.argv
+if IS_PRODUCTION or _lance_serveur_dev:
     try:
         from transporti_core.security_validator import validate_production_security, validate_jwt_settings
-        validate_production_security()
-        validate_jwt_settings()
+        # Le module de réglages lui-même, déjà complet à cette ligne.
+        _ce_module = sys.modules[__name__]
+        validate_production_security(_ce_module)
+        validate_jwt_settings(_ce_module)
     except ImportError:
         # Validator not yet available (first migrations, etc.)
         pass

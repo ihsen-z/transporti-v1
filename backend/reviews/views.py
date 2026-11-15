@@ -19,7 +19,14 @@ class ReviewCreateView(generics.CreateAPIView):
 
     def perform_create(self, serializer):
         # validation logic is in serializer.validate()
-        serializer.save()
+        review = serializer.save()
+
+        # Prévenir la personne évaluée (best effort : n'empêche jamais l'avis)
+        try:
+            from notifications.services import notify_review_received
+            notify_review_received(review)
+        except Exception:
+            pass
 
 
 class ReviewListView(generics.ListAPIView):

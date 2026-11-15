@@ -338,8 +338,12 @@ class JobConfirmStartView(APIView):
             pass
         try:
             from notifications.services import notify
+            # Le vrai client : sur un trajet retour, job.owner est le transporteur.
+            client = get_job_client(job)
+            if client is None:
+                raise ValueError('mission sans client engagé')
             notify(
-                user=job.owner,
+                user=client,
                 notification_type='JOB_STARTED',
                 title='Mission démarrée',
                 message=f'Le transporteur a confirmé le démarrage de la mission #{job.id} (paiement à la livraison).',
@@ -669,8 +673,12 @@ class JobEventsView(APIView):
                 'ARRIVED_PICKUP': 'Le transporteur est arrivé au point de chargement.',
                 'LOADED': 'Vos biens sont chargés — le transporteur est en route.',
             }
+            # Le vrai client : sur un trajet retour, job.owner est le transporteur.
+            client = get_job_client(job)
+            if client is None:
+                raise ValueError('mission sans client engagé')
             notify(
-                user=job.owner, notification_type='JOB_STARTED',
+                user=client, notification_type='JOB_STARTED',
                 title='📍 Suivi de votre mission',
                 message=labels[event],
                 metadata={'job_id': job.id, 'event': event},
@@ -717,9 +725,31 @@ class JobCompleteView(APIView):
                      'code': 'PIN_REQUIRED'},
                     status=status.HTTP_400_BAD_REQUEST
                 )
-            if pin != booking.delivery_pin:
+            # Compteur d'échecs : 5 codes faux → saisie bloquée 15 minutes.
+            from payments.delivery_pin import PIN_INVALID, PIN_LOCKED, check_delivery_pin
+            result = check_delivery_pin(booking, pin)
+            if result.status == PIN_LOCKED and result.permanent:
+                # 3e blocage : fermé jusqu'à intervention, pas de délai à attendre.
                 return Response(
-                    {'error': 'Code de livraison incorrect.', 'code': 'PIN_INVALID'},
+                    {'error': 'Trop de codes faux sur cette livraison. La saisie est bloquée : '
+                              'contactez le support Transporti.',
+                     'code': PIN_LOCKED},
+                    status=status.HTTP_423_LOCKED
+                )
+            if result.status == PIN_LOCKED:
+                minutes = max(1, -(-result.retry_after_seconds // 60))  # arrondi au-dessus
+                response = Response(
+                    {'error': f'Trop de codes faux. Saisie bloquée, réessayez dans {minutes} min.',
+                     'code': PIN_LOCKED,
+                     'retry_after_seconds': result.retry_after_seconds},
+                    status=status.HTTP_423_LOCKED
+                )
+                response['Retry-After'] = str(result.retry_after_seconds)
+                return response
+            if result.status == PIN_INVALID:
+                return Response(
+                    {'error': 'Code de livraison incorrect.', 'code': PIN_INVALID,
+                     'remaining_attempts': result.remaining_attempts},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 

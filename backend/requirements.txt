@@ -1,19 +1,26 @@
-Django>=5.0,<6.0
-djangorestframework>=3.14.0
-djangorestframework-simplejwt>=5.3.0
-django-cors-headers>=4.3.0
-django-filter>=23.2
-dj-database-url>=2.1.0
-django-storages[s3]>=1.14.2
-psycopg2-binary>=2.9.9
-drf-spectacular>=0.26.5
-python-dotenv>=1.0.0
-Pillow>=10.1.0
-whitenoise>=6.6.0
+# Versions exactes, relevées le 15/11/2026 dans le venv de développement
+# (backend/venv) : sans épinglage, chaque build Docker prenait la dernière
+# version de chaque paquet. Ces versions-ci fonctionnent : l'échec de
+# collectstatic (MissingFileError sur une source map du paquet DRF) venait du
+# stockage « Manifest » de whitenoise, corrigé en passant à
+# CompressedStaticFilesStorage (transporti_core/settings.py, STORAGES).
+Django==5.2.9
+djangorestframework==3.16.1
+djangorestframework-simplejwt==5.5.1
+django-cors-headers==4.9.0
+django-filter==25.2
+dj-database-url==3.1.2
+django-storages[s3]==1.14.6
+psycopg2-binary==2.9.11
+drf-spectacular==0.29.0
+python-dotenv==1.2.1
+Pillow==12.0.0
+whitenoise==6.12.0
+redis==7.1.0
+requests==2.32.5
+markdown==3.10
+# Absents du venv de développement (non relevables) : bornes inchangées.
 daphne>=4.1.0
 channels>=4.0.0
 channels-redis>=4.2.0
-redis>=5.0.1
-requests>=2.31.0
-markdown>=3.4.4
 sentry-sdk[django]>=2.0.0

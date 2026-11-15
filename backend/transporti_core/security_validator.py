@@ -19,6 +19,10 @@ class SecurityBootError(Exception):
     pass
 
 
+# Longueur minimale de SECRET_KEY. 32 et non 50 : la clé générée par Render
+# (generateValue) fait 44 caractères et doit passer.
+MIN_SECRET_KEY_LENGTH = 32
+
 INSECURE_SECRET_KEY_PATTERNS = [
     'django-insecure',
     'dev-only',
@@ -29,7 +33,19 @@ INSECURE_SECRET_KEY_PATTERNS = [
 ]
 
 
-def validate_production_security():
+def _settings_source(config):
+    """
+    Réglages à valider. settings.py se passe lui-même (son module) : relire
+    django.conf.settings pendant son propre chargement casserait un module de
+    réglages qui l'importe (ex. un module de test « from ... import * »).
+    """
+    if config is not None:
+        return config
+    from django.conf import settings
+    return settings
+
+
+def validate_production_security(config=None):
     """
     Validate security settings at Django startup.
     
@@ -38,7 +54,7 @@ def validate_production_security():
     Raises:
         SecurityBootError: If any security check fails in production
     """
-    from django.conf import settings
+    settings = _settings_source(config)
     
     env = os.environ.get('ENV', os.environ.get('DJANGO_ENV', 'development')).lower()
     is_production = env in ('production', 'prod', 'live')
@@ -62,8 +78,11 @@ def validate_production_security():
             break
     
     # Check minimum length
-    if len(secret_key) < 50:
-        errors.append(f"SECRET_KEY is too short ({len(secret_key)} chars). Minimum 50 characters required.")
+    if len(secret_key) < MIN_SECRET_KEY_LENGTH:
+        errors.append(
+            f"SECRET_KEY is too short ({len(secret_key)} chars). "
+            f"Minimum {MIN_SECRET_KEY_LENGTH} characters required."
+        )
     
     # =========================================================================
     # 2. DEBUG MODE VALIDATION
@@ -141,10 +160,10 @@ def validate_production_security():
     )
 
 
-def validate_jwt_settings():
+def validate_jwt_settings(config=None):
     """Validate JWT configuration settings."""
-    from django.conf import settings
     from datetime import timedelta
+    settings = _settings_source(config)
     
     jwt_settings = getattr(settings, 'SIMPLE_JWT', {})
     
