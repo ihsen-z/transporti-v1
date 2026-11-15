@@ -3,6 +3,7 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import { useTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
+import { useRefetchOnTabFocus } from '@/core/api/useRefetchOnTabFocus';
 import { colors, fontSize, spacing, SCREEN_PADDING } from '@/shared/theme';
 import { AppScreen } from '@/shared/ui/AppScreen';
 import { AppHeader } from '@/shared/ui/AppHeader';
@@ -44,6 +45,7 @@ export default function RequestsScreen() {
 
   const [onglet, setOnglet] = useState<OngletId>('a-decider');
   const demandes = useReceivedRequests(onglet);
+  useRefetchOnTabFocus([['receivedRequests']]);
 
   // `data ?? []` produit une union `TripRequestDto[] | never[]` : TypeScript ne
   // resout pas `.map` sur une union de types tableau. D'ou la variable typee.

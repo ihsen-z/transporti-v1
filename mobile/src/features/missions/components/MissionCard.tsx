@@ -15,6 +15,7 @@ import { colors, spacing, fontSize } from '@/shared/theme';
 import type { MissionDto } from '../api/dto';
 import { useConfirmStart } from '../api/useConfirmStart';
 import { useCompleteJob } from '../api/useCompleteJob';
+import { completeErrorText } from '../api/completeErrorText';
 import { DeliveryProofPicker } from './DeliveryProofPicker';
 import { Txt } from '@/shared/ui/Txt';
 
@@ -151,7 +152,7 @@ export function MissionCard({ mission }: { mission: MissionDto }) {
           />
           {completeErrKey ? (
             <Txt testID={`mission-${mission.id}-complete-error`} style={styles.error}>
-              {t(`missions.errors.${completeErrKey}`)}
+              {complete.error ? completeErrorText(complete.error, t) : null}
             </Txt>
           ) : null}
           <Pressable

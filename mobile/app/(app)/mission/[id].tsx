@@ -10,7 +10,7 @@ import { CancelMissionSheet } from '@/features/tracking/components/CancelMission
 import { useJobEscrow } from '@/features/payments/api/useJobEscrow';
 import type { EscrowDetailDto } from '@/features/payments/api/dto';
 import { usePayJob } from '@/features/payments/api/usePayJob';
-import { clientDoitPayer } from '@/features/payments/paiementDu';
+import { clientDoitPayer, isAwaitingConfirmation } from '@/features/payments/paiementDu';
 import { useConfirmCompletion } from '@/features/payments/api/useConfirmCompletion';
 import { OpenReviewSheet } from '@/features/reviews/components/OpenReviewSheet';
 import { OpenDisputeSheet } from '@/features/disputes/components/OpenDisputeSheet';
@@ -65,8 +65,10 @@ export default function MissionScreen() {
   // démarrée. Le RÔLE fait partie de la décision et non de son contexte de
   // rendu — voir `clientDoitPayer`, qui existe pour cette raison.
   const awaitingPayment = clientDoitPayer(role, d?.status, d?.booking_payment_method);
-  // Réception à confirmer : le transporteur a livré, l'argent attend.
-  const awaitingConfirmation = d?.status === 'COMPLETED' && !d.client_confirmed;
+  // Réception à confirmer : le transporteur a livré, l'argent attend. Seul un
+  // paiement en ligne a un séquestre à libérer ; en espèces le serveur répond
+  // 400 à `confirm-completion`, la carte serait une action morte.
+  const awaitingConfirmation = isAwaitingConfirmation(d?.status, d?.booking_payment_method, d?.client_confirmed);
   const cancellable = d?.status === 'MATCHED' || d?.status === 'IN_PROGRESS';
 
   const onPay = () => {

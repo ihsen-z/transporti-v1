@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { tokenService } from './tokenService';
+import { revokeRefreshToken } from './serverLogout';
 import { queryClient } from '@/core/api/queryClient';
 import { clearPersistedQueries } from '@/core/api/queryPersister';
 
@@ -53,6 +54,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     set({ user });
   },
   async logout() {
+    // Révocation serveur du jeton, lancée AVANT l'effacement local (il faut
+    // encore le lire) mais jamais attendue : sans réseau, la déconnexion locale
+    // doit se faire quand même. `revokeRefreshToken` n'échoue jamais.
+    const [refresh, access] = await Promise.all([
+      tokenService.getRefresh().catch(() => null),
+      tokenService.getAccess().catch(() => null),
+    ]);
+    void revokeRefreshToken(refresh, access);
     await tokenService.clear();
     // Le cache React Query est persisté dans MMKV, en clair : sans cette purge,
     // les données du compte précédent (messages, trajets, téléphones) seraient

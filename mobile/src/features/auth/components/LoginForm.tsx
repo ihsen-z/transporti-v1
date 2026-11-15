@@ -46,7 +46,9 @@ export function LoginForm() {
     const key =
       login.error.kind === 'invalid_credentials'
         ? 'auth.errors.invalid_credentials'
-        : 'auth.errors.network';
+        : login.error.kind === 'locked'
+          ? 'auth.errors.locked'
+          : 'auth.errors.network';
     return t(key);
   }, [login.error, t]);
 

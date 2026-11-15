@@ -24,7 +24,10 @@ async function postMessage({ jobId, content }: SendArgs): Promise<void> {
     if (isAxiosError(err)) {
       // 400 = conversation verrouillée / contenu invalide.
       if (err.response?.status === 400) throw new SendMessageError('locked');
-      if (err.response?.status === 403) throw new SendMessageError('forbidden');
+      // 403 ou 404 = on n'est pas (ou plus) participant de la mission : le
+      // serveur répond 404 à un tiers pour ne pas révéler que la mission existe.
+      const status = err.response?.status;
+      if (status === 403 || status === 404) throw new SendMessageError('forbidden');
       if (!err.response) throw new SendMessageError('network');
     }
     throw new SendMessageError('unknown');

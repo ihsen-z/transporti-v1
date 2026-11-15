@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { apiClient } from '@/core/api/client';
 import { extractServerMessage } from '@/core/api/serverMessage';
+import { parseServerRefusal } from '@/core/api/serverRefusal';
 import type { RespondRequest } from './dto';
 
 export type RespondErrorKind = 'validation' | 'forbidden' | 'network' | 'unknown';
@@ -13,6 +14,8 @@ export class RespondError extends Error {
   constructor(
     public readonly kind: RespondErrorKind,
     public readonly serverMessage?: string,
+    // `KYC_REQUIRED` / `COMMISSION_DEBT_LIMIT` quand le serveur en fournit un.
+    public readonly code?: string,
   ) {
     super(kind);
     this.name = 'RespondError';
@@ -35,7 +38,8 @@ async function postRespond({ requestId, body }: RespondArgs): Promise<void> {
         throw new RespondError('validation', extractServerMessage(err.response.data) ?? undefined);
       }
       if (err.response?.status === 403) {
-        throw new RespondError('forbidden', extractServerMessage(err.response.data) ?? undefined);
+        const refus = parseServerRefusal(err.response.data);
+        throw new RespondError('forbidden', refus.message ?? undefined, refus.code ?? undefined);
       }
       if (!err.response) throw new RespondError('network');
     }

@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
+import { isAxiosError } from 'axios';
 import { useTrustStatus } from '@/features/trust/api/useTrustStatus';
+import type { VerificationStatus } from '@/features/trust/api/dto';
 
 // T1.2 (lot 1) — pré-remplissage du véhicule depuis le profil de confiance.
 //
@@ -46,6 +48,11 @@ export type PartCapacite = 'tout' | 'moitie' | null;
 export function useVehiclePrefill(): {
   vehicule: VehiculeProfil;
   chargement: boolean;
+  // Même requête que le panneau « Vérification » : aucune requête de plus.
+  verificationStatus: VerificationStatus | undefined;
+  // Vrai quand la requête est terminée ET a répondu (même « pas de dossier » :
+  // 404). Faux pendant le chargement et sur une panne réseau, où l'on ne sait pas.
+  verificationSettled: boolean;
 } {
   // `enabled` est requis par le hook : la requête est toujours pertinente ici,
   // puisque l'écran de publication est réservé aux transporteurs.
@@ -67,7 +74,13 @@ export function useVehiclePrefill(): {
     };
   }, [status.data]);
 
-  return { vehicule, chargement: status.isPending };
+  return {
+    vehicule,
+    chargement: status.isPending,
+    verificationStatus: status.data?.verification_status,
+    verificationSettled:
+      status.isSuccess || (isAxiosError(status.error) && status.error.response?.status === 404),
+  };
 }
 
 /**

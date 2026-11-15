@@ -11,6 +11,8 @@ import {
 import { nextDays, TIME_SLOTS, toScheduledTime } from '../../data/schedule';
 import { useEstimatePrice } from '../../api/useEstimatePrice';
 import { usePublishReturnTrip } from '../../api/usePublishReturnTrip';
+import { isKycRequired, refusalText } from '@/core/api/refusalText';
+import { needsVerificationNotice } from '@/features/trust/data/verification';
 import { publishSchema, type FormOption, type PublishFormValues } from './publishSchema';
 import {
   useVehiclePrefill,
@@ -29,7 +31,7 @@ export function usePublishTripForm() {
   const [routeHint, setRouteHint] = useState<string | null>(null);
 
   // T1.2 — le véhicule vient du profil et n'est jamais ressaisi.
-  const { vehicule } = useVehiclePrefill();
+  const { vehicule, verificationStatus, verificationSettled } = useVehiclePrefill();
   const [partCapacite, setPartCapacite] = useState<PartCapacite>(null);
 
   // T4.4 — itinéraire transmis par l'amorce de fin de mission, déjà inversé.
@@ -183,9 +185,14 @@ export function usePublishTripForm() {
         })
       : null;
 
+  // Un 403 peut venir de trois causes (pas transporteur, dette de commission,
+  // pièces non validées) : le message du serveur prime, le code sert de repli.
   const publishError = publish.error
-    ? t(`trips.errors.${publish.error.kind === 'validation' ? 'validation' : publish.error.kind === 'forbidden' ? 'forbidden' : 'network'}`)
+    ? publish.error.kind === 'forbidden'
+      ? refusalText(publish.error.serverMessage, publish.error.code, t, 'trips.errors.forbidden')
+      : t(`trips.errors.${publish.error.kind === 'validation' ? 'validation' : 'network'}`)
     : null;
+  const publishKycRequired = isKycRequired(publish.error?.code);
 
   // C5.9 — remplissage depuis le carnet d'adresses. Le hook expose un
   // GESTIONNAIRE plutot que `setValue` brut : la section de route n'a pas a
@@ -225,6 +232,9 @@ export function usePublishTripForm() {
     onSubmit,
     publishPending: publish.isPending,
     publishError,
+    publishKycRequired,
+    // Bandeau préventif : transporteur pas encore vérifié.
+    showVerificationNotice: needsVerificationNotice(verificationStatus, verificationSettled),
     isSuccess: publish.isSuccess,
     successCount: publish.data?.matching_requests_count ?? 0,
     // T1.2 — pré-remplissage et choix tactile de la capacité.

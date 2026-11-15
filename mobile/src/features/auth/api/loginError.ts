@@ -2,7 +2,7 @@
 // fonction pure, donc testable sans axios ni store.
 
 // Types d'erreur métier exposés à l'UI (pas de fuite d'axios dans l'écran).
-export type LoginErrorKind = 'invalid_credentials' | 'network' | 'unknown';
+export type LoginErrorKind = 'invalid_credentials' | 'locked' | 'network' | 'unknown';
 
 export class LoginError extends Error {
   constructor(public readonly kind: LoginErrorKind) {
@@ -11,11 +11,20 @@ export class LoginError extends Error {
   }
 }
 
-// Un 400 d'identifiants vient de `serializer.errors` (UserLoginSerializer) :
-// c'est un objet JSON portant la clé `email` ou `password`, qu'axios a parsé.
+// Un 400 d'identifiants est un objet JSON, jamais une page HTML. Le serveur
+// répondait jadis `{email: "No account found…"}` ou `{password: "Invalid
+// password."}` ; il répond désormais UN message neutre, identique pour un
+// e-mail inconnu et un mauvais mot de passe (pas d'énumération de comptes).
+// La clé qui porte ce message n'est pas figée : on reconnaît les clés
+// historiques de champ ET les clés génériques `error` / `non_field_errors` /
+// `code`. On ne s'appuie JAMAIS sur le texte lui-même, qui peut changer.
+//
+// `detail` seul reste « inconnu » : DRF s'en sert pour une requête mal formée.
+const CREDENTIAL_KEYS = ['email', 'password', 'error', 'non_field_errors', 'code'];
+
 function isCredentialFieldError(data: unknown): boolean {
   if (typeof data !== 'object' || data === null) return false;
-  return 'email' in data || 'password' in data;
+  return CREDENTIAL_KEYS.some((key) => key in data);
 }
 
 /**
@@ -32,6 +41,9 @@ function isCredentialFieldError(data: unknown): boolean {
  */
 export function classifyLoginError(status: number | undefined, data: unknown): LoginErrorKind {
   if (status === undefined) return 'network';
+  // Compte verrouillé après des échecs répétés (423), ou limiteur de tentatives
+  // (429) : dans les deux cas réessayer tout de suite est inutile.
+  if (status === 423 || status === 429) return 'locked';
   if (status === 400) {
     return isCredentialFieldError(data) ? 'invalid_credentials' : 'unknown';
   }

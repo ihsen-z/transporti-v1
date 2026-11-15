@@ -6,6 +6,7 @@ import { AppHeader } from '@/shared/ui/AppHeader';
 import { MyRequestsList } from '@/features/my-requests/components/MyRequestsList';
 import { MyRequestsTabs } from '@/features/my-requests/components/MyRequestsTabs';
 import { useMyRequests } from '@/features/my-requests/api/useMyRequests';
+import { useRefetchOnTabFocus } from '@/core/api/useRefetchOnTabFocus';
 import {
   compterParOnglet,
   type OngletDemande,
@@ -28,6 +29,7 @@ export default function MesDemandesScreen() {
   // Même queryKey que MyRequestsList (React Query dédoublonne) : ce qui donne
   // le pull-to-refresh à l'écran est aussi ce que la liste affiche.
   const requests = useMyRequests();
+  useRefetchOnTabFocus([['myRequests']]);
   const [onglet, setOnglet] = useState<OngletDemande>('attente');
 
   const compteurs = compterParOnglet(requests.data ?? []);

@@ -8,6 +8,8 @@ import { ScheduleSection } from './publish/ScheduleSection';
 import { DetailsSection } from './publish/DetailsSection';
 import { publishStyles as s } from './publish/publishStyles';
 import { Txt } from '@/shared/ui/Txt';
+import { KycRequiredLink } from '@/features/trust/components/KycRequiredLink';
+import { VerificationNotice } from '@/features/trust/components/VerificationNotice';
 
 // Formulaire de publication d'un retour à vide (TRANSPORTER). Ce composant se
 // contente d'orchestrer : la logique vit dans usePublishTripForm, la validation
@@ -36,6 +38,7 @@ export function PublishReturnForm() {
 
   return (
     <View style={s.form}>
+      {f.showVerificationNotice ? <VerificationNotice /> : null}
       <RouteSection
         control={f.control}
         errors={f.errors}
@@ -62,6 +65,7 @@ export function PublishReturnForm() {
       />
 
       {f.publishError ? <Txt style={s.error}>{f.publishError}</Txt> : null}
+      {f.publishKycRequired ? <KycRequiredLink testID="publish-kyc-required-open" /> : null}
 
       <Button
         testID="publish-submit"

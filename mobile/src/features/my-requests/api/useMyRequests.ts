@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { POLL_INTERVAL_MS } from '@/core/api/polling';
 import { fetchAllPages } from '@/core/api/fetchAllPages';
 import type { MyRequestDto } from './dto';
 
@@ -15,5 +16,8 @@ export function useMyRequests() {
   return useQuery({
     queryKey: ['myRequests'],
     queryFn: fetchMyRequests,
+    // Pas de push au lancement : sondage + rechargement au retour dans l'app.
+    refetchInterval: POLL_INTERVAL_MS.myRequests,
+    refetchOnWindowFocus: true,
   });
 }

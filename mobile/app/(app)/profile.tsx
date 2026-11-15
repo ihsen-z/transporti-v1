@@ -1,6 +1,6 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Alert, Pressable, StyleSheet, View } from 'react-native';
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Icon } from '@/shared/ui/icons';
 import { AppScreen } from '@/shared/ui/AppScreen';
 import { AppHeader } from '@/shared/ui/AppHeader';
@@ -48,6 +48,12 @@ export default function ProfileScreen() {
   // `client/wallet/` a ete ecrit pour ce lot.
   const [portefeuilleOpen, setPortefeuilleOpen] = useState(false);
   const [trustOpen, setTrustOpen] = useState(false);
+  // `?verification=1` : arrivée depuis un refus « pièces non validées » (ou le
+  // bandeau de la publication), le panneau de vérification s'ouvre aussitôt.
+  const { verification } = useLocalSearchParams<{ verification?: string }>();
+  useEffect(() => {
+    if (verification === '1') setTrustOpen(true);
+  }, [verification]);
   const [zonesOpen, setZonesOpen] = useState(false);
   const [adressesOpen, setAdressesOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);

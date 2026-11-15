@@ -27,3 +27,19 @@ export function clientDoitPayer(
   // espèces se règle à la livraison, il n'y a rien à payer dans l'application.
   return role !== 'TRANSPORTER' && status === 'MATCHED' && paymentMethod === 'DIGITAL';
 }
+
+/**
+ * La carte « Confirmer la réception » doit-elle s'afficher ?
+ *
+ * `client_confirmed` ne devient vrai que lorsqu'un séquestre est libéré. Une
+ * mission en espèces n'en a pas : le champ y reste faux pour toujours et
+ * `payments/confirm-completion/` répond 400. La carte n'est donc proposée que
+ * pour un paiement en ligne.
+ */
+export function isAwaitingConfirmation(
+  status: string | undefined,
+  paymentMethod: string | null | undefined,
+  clientConfirmed: boolean | undefined,
+): boolean {
+  return paymentMethod === 'DIGITAL' && status === 'COMPLETED' && !clientConfirmed;
+}
