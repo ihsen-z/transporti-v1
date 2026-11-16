@@ -256,14 +256,16 @@ test.describe("P3 — page publique « Confiance et securite »", () => {
   test("les interpolations sont resolues, pas rendues brutes", async ({
     page,
   }) => {
-    // `{score}` non remplace s'afficherait tel quel. Les testID ne le
-    // verraient pas.
+    // Une variable non remplacee s'afficherait telle quelle, entre
+    // accolades. Les testID ne le verraient pas.
     await page.goto("/confiance");
 
-    await expect(page.locator("main")).not.toContainText("{score}");
-    await expect(page.getByTestId("confiance-verification")).toContainText(
-      "50",
-    );
+    await expect(page.locator("main")).not.toContainText(/\{[a-zA-Z_]+\}/);
+    // La regle affichee est celle que le serveur applique : des pieces
+    // validees, et non un score minimal (qui n'est lu par aucun garde-fou).
+    const verification = page.getByTestId("confiance-verification");
+    await expect(verification).toContainText("pièces ont été validées");
+    await expect(verification).not.toContainText("sur 100");
   });
 
   test("l'entree est visible dans l'en-tete", async ({ page }) => {
