@@ -382,7 +382,9 @@ function TransporterMissionsView() {
         setMissions((await getTransporterMissions()).data);
         // K4 vient de l'endpoint canonique (contrat stats.py), non bloquant.
         void getTransporterStats().then((s) =>
-          setConfirmedEarnings(s ? s.earnings_confirmed : null),
+          setConfirmedEarnings(
+            s ? (s.earnings_total ?? s.earnings_confirmed) : null,
+          ),
         );
       } catch (e) {
         console.error("Failed to fetch missions:", e);

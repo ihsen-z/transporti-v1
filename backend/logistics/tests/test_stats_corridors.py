@@ -185,6 +185,59 @@ class RevenuParCorridorTest(TestCase):
             "la ventilation par corridor doit se reconcilier avec K4 au dinar pres",
         )
 
+    def _mission_especes(self, depart, arrivee, net, km, statut=None):
+        """Une mission payee en ESPECES : aucun escrow, une reservation COD."""
+        from payments.models import Booking
+        job = self._mission_payee(depart, arrivee, net, km, is_return=True)
+        EscrowTransaction.objects.filter(booking_reference=job).delete()
+        Booking.objects.create(
+            job=job, accepted_offer=job.offers.get(),
+            final_price=Decimal(str(net)), commission_rate=Decimal('0.08'),
+            payment_method='COD', delivery_pin='1234',
+        )
+        if statut is not None:
+            TransportJob.objects.filter(id=job.id).update(status=statut)
+        return job
+
+    def test_une_mission_livree_en_especes_compte_dans_son_corridor(self):
+        """
+        Le lancement se fait en especes seules : sans cela, l'ecran Performance
+        et les « gains » restaient a zero pour un transporteur qui livre.
+        """
+        self._mission_especes('Sfax', 'Tunis', 120, 270)
+
+        lignes = revenue_by_corridor(self.transporteur)
+
+        self.assertEqual(len(lignes), 1)
+        self.assertEqual(lignes[0]['revenue_net'], 120.0)
+        self.assertEqual(lignes[0]['missions'], 1)
+
+    def test_une_mission_en_especes_non_livree_ne_compte_pas(self):
+        """Tant que la mission n'est pas livree, les especes ne sont pas encaissees."""
+        self._mission_especes(
+            'Sfax', 'Tunis', 120, 270, statut=TransportJob.Status.IN_PROGRESS,
+        )
+
+        self.assertEqual(revenue_by_corridor(self.transporteur), [])
+        self.assertEqual(
+            get_transporter_stats(self.transporteur)['earnings_total'], 0.0,
+        )
+
+    def test_les_gains_affiches_additionnent_escrow_et_especes(self):
+        """`earnings_total` = K4 + K4 bis, et se reconcilie avec les corridors."""
+        self._mission_payee('Tunis', 'Sousse', 60, 140)
+        self._mission_especes('Sfax', 'Tunis', 120, 270)
+
+        stats = get_transporter_stats(self.transporteur)
+
+        self.assertEqual(stats['earnings_confirmed'], 60.0)
+        self.assertEqual(stats['earnings_cod_collected'], 120.0)
+        self.assertEqual(stats['earnings_total'], 180.0)
+        self.assertEqual(
+            sum(l['revenue_net'] for l in revenue_by_corridor(self.transporteur)),
+            stats['earnings_total'],
+        )
+
     def test_les_missions_sans_gouvernorat_sont_ecartees(self):
         """Une paire vide produirait une ligne « → » incomprehensible."""
         job = self._mission_payee('Sfax', 'Tunis', 100, 270, is_return=True)

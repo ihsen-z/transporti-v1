@@ -38,6 +38,9 @@ export interface StatistiquesTransporteur {
   active_offers: number;
   potential_earnings: number;
   earnings_confirmed: number;
+  /** Gains réellement acquis : séquestre libéré + espèces encaissées. C'est
+   *  le chiffre à afficher ; `earnings_confirmed` seul vaut 0 en espèces. */
+  earnings_total?: number;
   /** B-3b — retrospectif. Livre au lot 1, consomme par T5.4 seulement. */
   revenue_by_corridor?: RevenuParCorridor[];
   /** B-3b — prospectif : ce qui transforme un bilan en invitation a publier. */

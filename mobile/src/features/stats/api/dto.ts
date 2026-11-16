@@ -10,6 +10,9 @@ export interface TransporterStatsDto {
   active_offers: number; // K2
   pending_offers: number; // K3
   earnings_confirmed: number; // K4 — escrow libéré
+  /** K4 + K4 bis — gains réellement acquis, espèces comprises. C'est le chiffre
+   *  à afficher : K4 seul vaut 0 en espèces. Absent d'un ancien serveur. */
+  earnings_total?: number;
   earnings_pending: number; // K11
   potential_earnings: number; // K5
   completed_missions: number; // K6

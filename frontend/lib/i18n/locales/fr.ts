@@ -2481,7 +2481,7 @@ export const fr = {
     subtitle: "Ce que rapportent vos corridors, et où la demande vous attend.",
     revenueTitle: "Revenu par corridor",
     revenueHint:
-      "Revenu net encaissé, escrow libéré. Un aller et un retour sont deux corridors distincts.",
+      "Revenu net de vos missions livrées. Un aller et un retour sont deux corridors distincts.",
     revenueEmpty:
       "Aucune mission payée pour l'instant. Vos corridors apparaîtront ici dès votre première livraison confirmée.",
     colCorridor: "Corridor",

@@ -138,6 +138,13 @@ def get_transporter_stats(user) -> dict:
         # à part de K4 : l'argent n'est jamais passé par la plateforme, donc il
         # n'est ni « confirmé » par un escrow, ni retirable.
         'earnings_cod_collected': float(wallet['cod_collected_net']),
+        # Ce que le transporteur a réellement gagné, tous moyens confondus :
+        # K4 + K4 bis. C'est le chiffre à AFFICHER comme « gains ». En espèces
+        # seules K4 vaut toujours 0 : l'afficher seul disait à un transporteur
+        # qui avait livré dix missions qu'il n'avait rien gagné.
+        'earnings_total': float(
+            wallet['released_net'] + wallet['cod_collected_net']
+        ),
         'potential_earnings': float(potential_net),         # K5
         'completed_missions': completed,                    # K6
         'completion_rate': completion_rate,                 # K7 (None → « — »)
