@@ -2,6 +2,8 @@
 
 /**
  * Portefeuille transporteur (Sprint 2 — WS-A A2, décision D4).
+ * En mode « espèces seules » (online_payment_enabled faux), l'écran se réduit
+ * à la commission due et à son plafond : components/wallet/CommissionDebtView.
  * Solde disponible / en attente / dette COD, historique des mouvements,
  * demande de retrait manuelle (virement traité en back-office).
  * Chiffres servis par GET /api/wallet/ (formules DICTIONNAIRE_KPI K10/K11).
@@ -28,6 +30,8 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDateTime } from "@/lib/format";
 import { useToast } from "@/components/ui/Toast";
 import { ClientWalletView } from "@/components/wallet/ClientWalletView";
+import { CommissionDebtView } from "@/components/wallet/CommissionDebtView";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 import { urlJob } from "@/lib/routes/jobs";
 
 export default function WalletPage() {
@@ -35,6 +39,7 @@ export default function WalletPage() {
   const { t: allT } = useAppI18n();
   const t = allT.wallet;
   const { showToast } = useToast();
+  const { online_payment_enabled, commission_debt_limit } = usePlatformConfig();
 
   const [data, setData] = useState<WalletData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -135,6 +140,18 @@ export default function WalletPage() {
           {allT.errors.retry}
         </button>
       </div>
+    );
+  }
+
+  // Espèces seules : ni solde retirable, ni retrait, ni historique de
+  // séquestre. Défaut tant que le serveur n'a pas répondu.
+  if (!online_payment_enabled) {
+    return (
+      <CommissionDebtView
+        data={data}
+        plafond={commission_debt_limit}
+        onRefresh={fetchWallet}
+      />
     );
   }
 

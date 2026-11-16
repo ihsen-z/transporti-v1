@@ -393,6 +393,12 @@ def _drapeau(nom: str, defaut: bool) -> bool:
 DJANGO_ADMIN_ENABLED = _drapeau('DJANGO_ADMIN_ENABLED', not IS_PRODUCTION)
 API_DOCS_PUBLIC = _drapeau('API_DOCS_PUBLIC', not IS_PRODUCTION)
 
+# Canal « classique » (le client publie un besoin, les transporteurs font des
+# offres) : différé après le lancement, seul le canal « trajet retour » ouvre.
+# Faux en production, vrai ailleurs (développement, tests, CI) pour que le code
+# reste exercé. Voir logistics/classic_channel.py.
+CLASSIC_CHANNEL_ENABLED = _drapeau('CLASSIC_CHANNEL_ENABLED', not IS_PRODUCTION)
+
 
 # =============================================================================
 # CORS — NOTE: Primary CORS config is defined above (L120-134)

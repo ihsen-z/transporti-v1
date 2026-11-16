@@ -11,9 +11,12 @@ transporteur ou son argent est gagne, et surtout ou publier ensuite. Sans
 ventilation par corridor, il voit un total sans savoir quoi en faire.
 
 Point d'attention sur la reconciliation : la formule ci-dessous reprend
-**exactement** celle de `released_net` dans `payments.services.get_wallet_summary`
-(offres ACCEPTED dont la mission porte un escrow RELEASED). C'est deliberé — la
-somme des corridors doit egaler K4 au dinar pres. Toute autre base de calcul
+**exactement** celles de `released_net` et de `cod_collected_net` dans
+`payments.services.get_wallet_summary` : offres ACCEPTED dont la mission porte
+un escrow RELEASED, plus celles dont la mission payee en especes est livree.
+C'est delibere — la somme des corridors doit egaler `earnings_total`
+(K4 + K4 bis) au dinar pres. Sans les especes, cet ecran restait vide pendant
+tout le lancement, qui se fait en especes seules. Toute autre base de calcul
 produirait deux chiffres divergents pour la meme realite, ce que le
 `DICTIONNAIRE_KPI.md` interdit explicitement.
 """
@@ -22,6 +25,17 @@ from decimal import Decimal
 from django.db.models import Sum, Count, Q
 
 from .models import Offer, TransportJob
+
+
+def _gain_acquis() -> Q:
+    """Filtre d'une offre dont le gain est acquis : escrow libere ou especes encaissees."""
+    from payments.models import Booking
+    escrow_libere = Q(job__escrow_transactions__status='RELEASED')
+    especes_encaissees = Q(
+        job__booking__payment_method=Booking.PaymentMethod.COD,
+        job__status=TransportJob.Status.COMPLETED,
+    )
+    return escrow_libere | especes_encaissees
 
 
 def revenue_by_corridor(transporter, limit: int = 10) -> list[dict]:
@@ -34,7 +48,8 @@ def revenue_by_corridor(transporter, limit: int = 10) -> list[dict]:
     - `pickup_governorate` / `dropoff_governorate` : la paire orientee. Sfax vers
       Tunis et Tunis vers Sfax sont deux corridors distincts, parce qu'un retour
       a vide a un sens.
-    - `revenue_net` : Σ `price_net`, meme base que K4 (escrow RELEASED).
+    - `revenue_net` : Σ `price_net`, meme base que `earnings_total`
+      (escrow RELEASED ou especes encaissees sur mission livree).
     - `missions` : nombre de missions payees sur ce corridor.
     - `km` : Σ `distance_km` de ces missions.
     - `return_trip_missions` : combien viennent d'un trajet retour. C'est ce qui
@@ -46,11 +61,7 @@ def revenue_by_corridor(transporter, limit: int = 10) -> list[dict]:
     """
     lignes = (
         Offer.objects
-        .filter(
-            transporter=transporter,
-            status='ACCEPTED',
-            job__escrow_transactions__status='RELEASED',
-        )
+        .filter(_gain_acquis(), transporter=transporter, status='ACCEPTED')
         .exclude(job__pickup_governorate='')
         .exclude(job__dropoff_governorate='')
         .values('job__pickup_governorate', 'job__dropoff_governorate')

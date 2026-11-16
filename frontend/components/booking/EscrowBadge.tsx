@@ -4,6 +4,7 @@ import React from "react";
 import { ShieldCheck, Lock, Clock } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 interface Props {
   paymentMethod: "DIGITAL" | "COD";
@@ -12,7 +13,10 @@ interface Props {
 
 export function EscrowBadge({ paymentMethod, totalPrice }: Props) {
   const { t } = useAppI18n();
-  if (paymentMethod !== "DIGITAL") return null;
+  const { online_payment_enabled } = usePlatformConfig();
+  // Espèces seules : aucun séquestre à expliquer, même si un moyen DIGITAL
+  // traînait dans l'état de la page.
+  if (paymentMethod !== "DIGITAL" || !online_payment_enabled) return null;
 
   return (
     <div

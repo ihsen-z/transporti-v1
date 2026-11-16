@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { lirePaymentConfigServeur } from "@/lib/services/paymentConfigServeur";
+import { lirePlatformConfigServeur } from "@/lib/services/platformConfigServeur";
 import {
   LegalPage,
   Section,
@@ -33,7 +33,7 @@ export default async function AidePage() {
   // En mode « espèces seules », les réponses qui parlent du paiement en
   // ligne changent : il n'existe pas encore.
   const { cod_max_amount, commission_debt_limit, online_payment_enabled } =
-    await lirePaymentConfigServeur();
+    await lirePlatformConfigServeur();
 
   return (
     <LegalPage

@@ -24,6 +24,10 @@ export const fr = {
     findTrip: "Trouver un trajet",
     myOffers: "Mes offres",
     wallet: "Portefeuille",
+    // Espèces seules : plus de solde à retirer, seulement la commission due
+    // (transporteur) ou ce qui reste à payer à la livraison (client).
+    commissions: "Mes commissions",
+    myPayments: "Mes paiements",
     returnTrip: "Trajet retour",
     verification: "Vérification",
     helpCenter: "Centre d'aide",
@@ -41,6 +45,8 @@ export const fr = {
     tabSearch: "Rechercher",
     tabMessages: "Messages",
     tabProfile: "Profil",
+    tabRequests: "Demandes",
+    tabShipments: "Envois",
   },
 
   // Header
@@ -131,6 +137,14 @@ export const fr = {
     step2Title: "Recevez des offres",
     step2Desc:
       "Les transporteurs vérifiés vous envoient leurs propositions. Comparez et choisissez.",
+    // Canal classique fermé : les deux premières étapes du parcours trajet
+    // retour remplacent « publiez votre demande / recevez des offres ».
+    retStep1Title: "Cherchez un trajet retour",
+    retStep1Desc:
+      "Indiquez votre départ et votre arrivée : voyez les transporteurs qui font déjà ce trajet.",
+    retStep2Title: "Envoyez votre demande",
+    retStep2Desc:
+      "Décrivez votre marchandise et proposez votre prix. Le transporteur accepte ou vous fait une contre-proposition.",
     step3Title: "Livraison sécurisée",
     step3Desc:
       "Suivez votre colis et payez uniquement à la livraison confirmée.",
@@ -158,6 +172,9 @@ export const fr = {
     faq3Q: "Quels sont les frais de la plateforme ?",
     faq3A:
       "La commission est de 12% pour le transport et 15% pour le déménagement. Aucun frais caché — le transporteur voit le montant net avant de soumettre son offre.",
+    // Canal classique fermé : pas d'offre, le transporteur accepte une demande.
+    faq3AReturn:
+      "La commission est de {taux} sur une mission née d'un trajet retour, et n'est due que sur une mission réalisée. Aucun frais caché — le transporteur voit le montant net avant d'accepter une demande.",
     faq4Q: "Puis-je payer en espèces ?",
     faq4A:
       "Oui, et c'est pour l'instant le seul mode de paiement : vous payez le transporteur en espèces à la livraison, jusqu'à {cap} TND par mission. Le paiement en ligne n'est pas encore disponible.",
@@ -193,6 +210,12 @@ export const fr = {
     clientCTAFirstDesc:
       "Cherchez d'abord un trajet retour sur votre corridor : moins cher, plus rapide. Sinon, publiez votre demande en quelques clics.",
     findTripCTA: "Trouver un trajet",
+    // Canal classique fermé : le trajet retour est le seul parcours client.
+    clientCTAReturnOnlyDesc:
+      "Cherchez un trajet retour sur votre corridor : moins cher, plus rapide. Envoyez votre demande au transporteur et payez en espèces à la livraison.",
+    findTripLink: "Trouver un trajet retour →",
+    viewReceivedRequests: "Voir mes demandes reçues",
+    proposeReturnTripLink: "Publier mon trajet retour →",
     publishAd: "Publier une annonce",
     activeAds: "Annonces actives",
     offersReceived: "Offres reçues",
@@ -257,6 +280,9 @@ export const fr = {
     noTripsDesc:
       "Aucun trajet ne correspond à votre recherche pour le moment. Publiez votre demande — les transporteurs vous feront des offres — ou créez une alerte pour être prévenu.",
     publishFallback: "Publier une demande pré-remplie",
+    // Canal classique fermé : pas de demande à publier, seulement l'alerte.
+    noTripsDescAlertOnly:
+      "Aucun trajet ne correspond à votre recherche pour le moment. Créez une alerte : vous serez prévenu dès qu'un transporteur publiera ce trajet.",
     createAlert: "M'alerter sur ce corridor",
     alertCreated:
       "Alerte créée ! Vous serez notifié dès qu'un trajet compatible est publié.",
@@ -624,6 +650,19 @@ export const fr = {
       "Ces montants sont déduits de votre solde disponible (compensation).",
     transporterOnly: "Le portefeuille est réservé aux transporteurs.",
     loadError: "Impossible de charger votre portefeuille.",
+    // Espèces seules : le client vous paie à la livraison, il n'y a ni solde
+    // à retirer ni séquestre ; seule la commission due reste à suivre.
+    cashSubtitle:
+      "Vos clients vous paient en espèces à la livraison. Voici la commission que vous devez à Transporti sur ces missions.",
+    debtLimitLabel: "Plafond autorisé",
+    debtLimitHint:
+      "Au-delà de ce plafond, vous ne pouvez plus accepter de mission tant que la commission n'est pas réglée.",
+    debtRemaining: "Encore {amount} avant le plafond.",
+    debtReached:
+      "Plafond atteint : réglez votre commission pour accepter de nouvelles missions.",
+    codDebtsCashHint:
+      "Commission à régler auprès de Transporti sur vos missions payées en espèces.",
+    noDebt: "Aucune commission due pour le moment.",
   },
 
   myOfferCard: {
@@ -734,6 +773,9 @@ export const fr = {
     protectedTitle: "Votre transaction est protégée",
     protectedVerified: "Transporteur vérifié avec documents validés",
     protectedEscrow: "Escrow sécurisé — pas de paiement direct",
+    // Réservation payée en espèces : aucun séquestre n'existe.
+    protectedCash:
+      "Paiement en espèces à la livraison, contre le code à 4 chiffres du client",
     protectedSupport: "Notre équipe examine chaque litige",
     // --- PaymentGateway ---
     missingJobRef:
@@ -932,6 +974,12 @@ export const fr = {
       "Vos conversations apparaîtront ici une fois qu'un transporteur aura accepté votre demande.",
     findMission: "Trouver une mission",
     publishAd: "Publier une annonce",
+    // Canal classique fermé : le transporteur accepte une demande reçue sur
+    // son trajet retour, le client cherche un trajet.
+    emptyTransporterReturn:
+      "Vos conversations apparaîtront ici dès que vous aurez accepté la demande d'un client sur l'un de vos trajets retour.",
+    viewReceivedRequests: "Voir mes demandes reçues",
+    findTrip: "Trouver un trajet retour",
     // --- detail /messages/[jobId] ---
     today: "Aujourd'hui",
     error403: "Vous n'avez pas accès à cette conversation.",
@@ -1397,6 +1445,13 @@ export const fr = {
     clientEmptyTitle: "Aucun transport",
     clientEmptyDesc: "Commencez par créer votre premier transport",
     clientEmptyCta: "Créer un transport",
+    // Canal classique fermé : pas de demande à publier ni d'offre à soumettre.
+    emptyMissionsDescReturn:
+      "Publiez votre trajet retour : les clients qui vont dans votre direction vous enverront leurs demandes.",
+    viewReceivedRequests: "Voir mes demandes reçues",
+    clientEmptyDescReturn:
+      "Cherchez un transporteur qui fait déjà votre trajet et envoyez-lui votre demande.",
+    findTrip: "Trouver un trajet retour",
   },
 
   // Détail de la mission (/jobs/[id])
@@ -1712,6 +1767,10 @@ export const fr = {
     trustOffers: "Vos offres deviennent acceptables",
     trustOffersDesc:
       "Sans vérification, aucune de vos offres ne peut être acceptée par un client. C'est un blocage, pas un malus.",
+    // Canal classique fermé : pas d'offre, des trajets et des demandes reçues.
+    trustOffersReturn: "Vos trajets et vos réponses sont débloqués",
+    trustOffersReturnDesc:
+      "Sans vérification, vous ne pouvez ni publier un trajet retour ni accepter la demande d'un client. C'est un blocage, pas un malus.",
     trustCash: "Vous encaissez directement",
     trustCashDesc:
       "Le client vous paie en espèces à la livraison, contre le code à 4 chiffres qu'il vous remet. Vous ne dépendez d'aucun virement ni délai de versement.",
@@ -1727,7 +1786,7 @@ export const fr = {
       "Rien. L'inscription et la publication de trajets sont gratuites. La plateforme ne prélève sa commission que sur une mission effectivement réalisée.",
     faqQ2: "Puis-je publier un trajet avant d'être vérifié ?",
     faqA2:
-      "Oui. La publication est ouverte dès l'inscription, et votre trajet indique alors que votre vérification est en cours. En revanche, une offre ne peut être acceptée qu'une fois la vérification obtenue.",
+      "Non. Vous pouvez vous inscrire et déposer vos pièces tout de suite, mais la publication d'un trajet et la réponse aux demandes s'ouvrent une fois vos pièces validées par notre équipe.",
     faqQ3: "Quels documents faut-il fournir ?",
     faqA3:
       "Une pièce d'identité et les documents de votre véhicule. Le dépôt se fait depuis l'application, et l'état de chaque document est visible dans votre espace.",
@@ -1845,6 +1904,9 @@ export const fr = {
       "Vous payez le transporteur à la livraison, une fois la marchandise reçue.",
     finalCta: "Publier une annonce",
     finalSecondary: "Chercher un trajet retour",
+    // Canal classique fermé : on n'invite plus à publier une annonce.
+    finalTitleReturn: "Envoyez votre marchandise l'esprit tranquille",
+    finalPublishTrip: "Publier mon trajet retour",
   },
 
   onboarding: {
@@ -1861,6 +1923,11 @@ export const fr = {
       publishDesc:
         "Décrivez votre besoin de transport et recevez des offres de professionnels vérifiés.",
       publishCta: "Publier une annonce",
+      // Remplace l'étape « publier » quand le canal classique est fermé.
+      searchTitle: "Trouvez un trajet retour",
+      searchDesc:
+        "Cherchez un transporteur qui fait déjà votre trajet et envoyez-lui votre demande. Vous payez en espèces à la livraison.",
+      searchCta: "Chercher un trajet",
       browseTitle: "Explorez les transporteurs",
       browseDesc:
         "Consultez les profils, avis et scores de confiance avant de choisir.",
@@ -1879,11 +1946,18 @@ export const fr = {
       // verification fait REELLEMENT, et qui est applique par le code.
       verifyDesc:
         "Sans vérification, aucune de vos offres ne peut être acceptée, et le paiement sécurisé est indisponible.",
+      // Canal classique ou paiement en ligne fermé : ni offre ni paiement
+      // sécurisé, la vérification débloque trajets et demandes.
+      verifyDescLaunch:
+        "Sans vérification, vous ne pouvez ni publier un trajet retour ni accepter la demande d'un client.",
+      jobsDescLaunch:
+        "Publiez votre trajet retour et répondez aux demandes des clients qui vont dans votre direction.",
       verifyCta: "Lancer la vérification",
       jobsTitle: "Trouvez votre première mission",
       jobsDesc:
         "Parcourez les annonces disponibles dans votre zone et soumettez des offres compétitives.",
       jobsCta: "Voir les missions",
+      jobsCtaLaunch: "Publier mon trajet retour",
       zonesTitle: "Déclarez vos zones de service",
       zonesDesc:
         "Sans elles, la plateforme ne peut pas vous signaler les corridors où la demande dépasse l'offre — et vous ne voyez aucune opportunité sur votre écran Performance.",
@@ -2388,6 +2462,9 @@ export const fr = {
     tVerifQ1: "Comment devenir transporteur vérifié ?",
     tVerifA1:
       "Déposez vos documents (CIN, permis, carte grise, assurance) dans la section Vérification. Un modérateur les valide, puis vous pouvez proposer des offres.",
+    // Canal classique fermé : pas d'offre, des trajets et des demandes reçues.
+    tVerifA1Return:
+      "Déposez vos documents (CIN, permis, carte grise, assurance) dans la section Vérification. Un modérateur les valide, puis vous pouvez publier vos trajets retour et accepter les demandes des clients.",
     tVerifQ2: "Que se passe-t-il quand un document expire ?",
     tVerifA2:
       "Les documents à échéance (permis, assurance, carte grise) affichent un badge « expire bientôt » puis « expiré ». Redéposez une version à jour avant l'échéance pour rester actif.",
@@ -2404,7 +2481,7 @@ export const fr = {
     subtitle: "Ce que rapportent vos corridors, et où la demande vous attend.",
     revenueTitle: "Revenu par corridor",
     revenueHint:
-      "Revenu net encaissé, escrow libéré. Un aller et un retour sont deux corridors distincts.",
+      "Revenu net de vos missions livrées. Un aller et un retour sont deux corridors distincts.",
     revenueEmpty:
       "Aucune mission payée pour l'instant. Vos corridors apparaîtront ici dès votre première livraison confirmée.",
     colCorridor: "Corridor",

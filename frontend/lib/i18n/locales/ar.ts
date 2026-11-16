@@ -21,6 +21,10 @@ export const ar = {
     findTrip: "لوّج على رحلة",
     myOffers: "العروض متاعي",
     wallet: "المحفظة",
+    // Espèces seules : plus de solde à retirer, seulement la commission due
+    // (transporteur) ou ce qui reste à payer à la livraison (client).
+    commissions: "الكوميسيون متاعي",
+    myPayments: "الخلاص متاعي",
     returnTrip: "رحلة رجوع",
     verification: "التوثيق",
     helpCenter: "عاونة",
@@ -38,6 +42,8 @@ export const ar = {
     tabSearch: "لقّي",
     tabMessages: "مساجات",
     tabProfile: "بروفيل",
+    tabRequests: "الطلبات",
+    tabShipments: "الإرساليات",
   },
 
   publicHeader: {
@@ -114,6 +120,13 @@ export const ar = {
     step1Desc: "وصّف شنو تحب تبعث، منين لوين، و بقدّاش.",
     step2Title: "استنّى العروض",
     step2Desc: "الناقلين الموثّقين يبعثولك عروضهم. قارن واختار الّي يعجبك.",
+    // Canal classique fermé : les deux premières étapes du parcours trajet
+    // retour remplacent « publiez votre demande / recevez des offres ».
+    retStep1Title: "لوّج على رحلة رجوع",
+    retStep1Desc: "قول منين لوين: تشوف الناقلين اللي ديجا يعملو الثنية هاذي.",
+    retStep2Title: "ابعث طلبك",
+    retStep2Desc:
+      "وصّف السلعة متاعك و اقترح السوم. الناقل يقبل ولّا يبعثلك سوم آخر.",
     step3Title: "توصيل مضمون",
     step3Desc: "تابع حوايجك و خلّص كان بعد ما توصل سالمة.",
     whyTitle: "علاش Transporti؟",
@@ -135,6 +148,9 @@ export const ar = {
     faq3Q: "قدّاش تأخذو كوميسيون؟",
     faq3A:
       "الكوميسيون 12% على النقل و 15% على النقلة. ما فمّاش فرامة مخبّية — الناقل يشوف المبلغ الصافي قبل ما يحطّ عرضو.",
+    // Canal classique fermé : pas d'offre, le transporteur accepte une demande.
+    faq3AReturn:
+      "الكوميسيون {taux} على المهمة اللي جات من رحلة رجوع، و ما تتخلّصش كان على مهمة تعملت. ما فمّاش فرامة مخبّية — الناقل يشوف المبلغ الصافي قبل ما يقبل الطلب.",
     faq4Q: "ينجّم يكون الخلاص كاش؟",
     faq4A:
       "إيه، وهو اليوم الطريقة الوحيدة : تخلّص الناقل كاش عند التوصيل، حتى {cap} دينار للمهمة. الخلاص على الخط مازال ما يخدمش.",
@@ -165,6 +181,12 @@ export const ar = {
     clientCTAFirstDesc:
       "لوّج الأول على رحلة رجوع في الثنية متاعك: أرخص و أسرع. كان ما لقيتش، حطّ طلبك في دقايق.",
     findTripCTA: "لوّج على رحلة",
+    // Canal classique fermé : le trajet retour est le seul parcours client.
+    clientCTAReturnOnlyDesc:
+      "لوّج على رحلة رجوع في الثنية متاعك: أرخص و أسرع. ابعث طلبك للناقل و خلّص كاش وقت التوصيل.",
+    findTripLink: "لوّج على رحلة رجوع ←",
+    viewReceivedRequests: "شوف الطلبات اللي جاتني",
+    proposeReturnTripLink: "حطّ رحلة الرجوع متاعي ←",
     publishAd: "حطّ إعلان",
     activeAds: "إعلانات ناشطة",
     offersReceived: "عروض جاتك",
@@ -227,6 +249,9 @@ export const ar = {
     noTripsDesc:
       "حتى رحلة ما تتماشى مع التلويج متاعك توّا. حطّ طلبك — الناقلين يبعثولك عروض — ولّا اعمل تنبيه باش نعلموك.",
     publishFallback: "حطّ طلب معبّي وحدو",
+    // Canal classique fermé : pas de demande à publier, seulement l'alerte.
+    noTripsDescAlertOnly:
+      "حتى رحلة ما تتماشى مع التلويج متاعك توّا. اعمل تنبيه و نعلموك كيف ناقل يحطّ الرحلة هاذي.",
     createAlert: "نبّهني على الثنية هاذي",
     alertCreated: "التنبيه تسجّل! باش نعلموك كيف تتحط رحلة تتماشى.",
     alertError: "ما نجمناش نعملو التنبيه.",
@@ -564,6 +589,18 @@ export const ar = {
     codDebtsHint: "المبالغ هاذي تتنحى من رصيدك الموجود (مقاصة).",
     transporterOnly: "المحفظة للناقلين برك.",
     loadError: "ما نجمناش نحمّلو المحفظة متاعك.",
+    // Espèces seules : le client vous paie à la livraison, il n'y a ni solde
+    // à retirer ni séquestre ; seule la commission due reste à suivre.
+    cashSubtitle:
+      "الحرفاء يخلّصوك كاش وقت التوصيل. هاذي الكوميسيون اللي عليك لـ Transporti على المهمات هاذي.",
+    debtLimitLabel: "الحد المسموح",
+    debtLimitHint:
+      "كي تفوت الحد هذا، ما تنجّمش تقبل مهمة أخرى حتى تخلّص الكوميسيون.",
+    debtRemaining: "باقي {amount} قبل ما توصل للحد.",
+    debtReached: "وصلت للحد: خلّص الكوميسيون باش تقبل مهمات جدد.",
+    codDebtsCashHint:
+      "كوميسيون لازم تتخلّص لـ Transporti على المهمات اللي تخلّصت كاش.",
+    noDebt: "ما عليك حتى كوميسيون توّا.",
   },
 
   myOfferCard: {
@@ -671,6 +708,8 @@ export const ar = {
     protectedTitle: "عمليتك محمية",
     protectedVerified: "ترانسبورتور مكونفيرمي ومورقو مريقلة",
     protectedEscrow: "أمان Escrow — مفماش خلاص ديركت",
+    // Réservation payée en espèces : aucun séquestre n'existe.
+    protectedCash: "الخلاص كاش وقت التوصيل، مقابل الكود متاع الحريف من 4 أرقام",
     protectedSupport: "الفريق متاعنا يتفقّد كل نزاع",
     missingJobRef: "رقم المهمة ناقص. عاود شرجي الباج.",
     gatewayNoResponse: "بوابة الخلاص ما جاوبتش. عاود جرب.",
@@ -848,6 +887,12 @@ export const ar = {
     emptyClient: "المحادثات متاعك باش يبانو هوني كي ناقل يقبل الطلب متاعك.",
     findMission: "لوّج على خدمة",
     publishAd: "انشر إعلان",
+    // Canal classique fermé : le transporteur accepte une demande reçue sur
+    // son trajet retour, le client cherche un trajet.
+    emptyTransporterReturn:
+      "المحادثات متاعك باش يبانو هوني كي تقبل طلب حريف على رحلة من رحلات الرجوع متاعك.",
+    viewReceivedRequests: "شوف الطلبات اللي جاتني",
+    findTrip: "لوّج على رحلة رجوع",
     // --- detail /messages/[jobId] ---
     today: "اليوم",
     error403: "ما عندكش دخول للمحادثة هاذي.",
@@ -1294,6 +1339,12 @@ export const ar = {
     clientEmptyTitle: "ما فمّاش ترونسبور",
     clientEmptyDesc: "ابدا واعمل أوّل ترونسبور متاعك",
     clientEmptyCta: "اعمل ترونسبور",
+    // Canal classique fermé : pas de demande à publier ni d'offre à soumettre.
+    emptyMissionsDescReturn:
+      "حطّ رحلة الرجوع متاعك: الحرفاء اللي ماشين في ثنيتك يبعثولك طلباتهم.",
+    viewReceivedRequests: "شوف الطلبات اللي جاتني",
+    clientEmptyDescReturn: "لوّج على ناقل ديجا ماشي في ثنيتك و ابعثلو طلبك.",
+    findTrip: "لوّج على رحلة رجوع",
   },
 
   // Détail de la mission (/jobs/[id])
@@ -1584,6 +1635,10 @@ export const ar = {
     trustOffers: "عروضك تولّي مقبولة",
     trustOffersDesc:
       "بلا تأكيد، حتى عرض متاعك ما ينجّمش يتقبل من كلاينت. هذا حجز، ماهوش نقصان في النقاط.",
+    // Canal classique fermé : pas d'offre, des trajets et des demandes reçues.
+    trustOffersReturn: "رحلاتك و ردودك يتحلّو",
+    trustOffersReturnDesc:
+      "بلا تأكيد، ما تنجّمش تحطّ رحلة رجوع و لا تقبل طلب كلاينت. هذا حجز، ماهوش نقصان في النقاط.",
     trustCash: "تقبض مباشرة",
     trustCashDesc:
       "الكلاينت يخلّصك كاش عند التوصيل، مقابل الكود من 4 أرقام اللي يعطيهولك. ما عندك حتى تحويل ولا مهلة تستنّى فيها.",
@@ -1598,7 +1653,7 @@ export const ar = {
       "بلاش. التسجيل ونشر الرحلات بلاش. المنصة تاخذ العمولة كان على مهمة صارت بالفعل.",
     faqQ2: "نجّم ننشر رحلة قبل ما نتأكّد ؟",
     faqA2:
-      "إيه. النشر مفتوح من وقت التسجيل، ورحلتك تورّي أنّ التأكيد متاعك قاعد يتعمل. أما العرض ما ينجّمش يتقبل كان بعد ما يكمل التأكيد.",
+      "لا. تنجّم تسجّل وتبعث وثائقك توّا، أما نشر الرحلة والردّ على الطلبات يتحلّو كي الفريق متاعنا يقبل وثائقك.",
     faqQ3: "شنوّة الوثائق اللازمة ؟",
     faqA3:
       "بطاقة تعريف ووثائق الكرهبة. الإيداع يصير من التطبيق، وحالة كل وثيقة تتشاف في الفضاء متاعك.",
@@ -1710,6 +1765,9 @@ export const ar = {
     finalDesc: "تخلّص الناقل عند التوصيل، كي تستلم حوايجك.",
     finalCta: "انشر إعلان",
     finalSecondary: "لوّج على رحلة رجوع",
+    // Canal classique fermé : on n'invite plus à publier une annonce.
+    finalTitleReturn: "ابعث سلعتك وقلبك مرتاح",
+    finalPublishTrip: "حطّ رحلة الرجوع متاعي",
   },
 
   onboarding: {
@@ -1725,6 +1783,11 @@ export const ar = {
       publishTitle: "انشر أول إعلان متاعك",
       publishDesc: "وصّف شنوّة تحتاج تنقل، وتوصلك عروض من مهنيين مؤكّدين.",
       publishCta: "انشر إعلان",
+      // Remplace l'étape « publier » quand le canal classique est fermé.
+      searchTitle: "لوّج على رحلة رجوع",
+      searchDesc:
+        "لوّج على ناقل ديجا ماشي في ثنيتك و ابعثلو طلبك. تخلّص كاش وقت التوصيل.",
+      searchCta: "لوّج على رحلة",
       browseTitle: "شوف الناقلين",
       browseDesc: "شوف الملفات، التقييمات ونقاط الثقة قبل ما تختار.",
       browseCta: "شوف الناقلين",
@@ -1736,10 +1799,17 @@ export const ar = {
       verifyTitle: "أكّد هويتك",
       verifyDesc:
         "بلا تأكيد، حتى عرض متاعك ما ينجّمش يتقبل، والدفع المضمون ما يخدمش.",
+      // Canal classique ou paiement en ligne fermé : ni offre ni paiement
+      // sécurisé, la vérification débloque trajets et demandes.
+      verifyDescLaunch:
+        "بلا تأكيد، ما تنجّمش تحطّ رحلة رجوع و لا تقبل طلب حريف.",
+      jobsDescLaunch:
+        "حطّ رحلة الرجوع متاعك و جاوب على طلبات الحرفاء اللي ماشين في ثنيتك.",
       verifyCta: "ابدا التأكيد",
       jobsTitle: "لقى أول مهمة متاعك",
       jobsDesc: "شوف الإعلانات الموجودة في منطقتك وقدّم عروض تنافسية.",
       jobsCta: "شوف المهام",
+      jobsCtaLaunch: "انشر رحلة الرجوع متاعي",
       zonesTitle: "حدّد مناطق خدمتك",
       zonesDesc:
         "بلاشها، المنصة ما تنجّمش تنبّهك بالممرات اللي فيها طلب أكثر من العرض — وما تشوفش حتى فرصة في شاشة الأداء.",
@@ -2235,6 +2305,9 @@ export const ar = {
     tVerifQ1: "كيفاش نولّي ناقل موثّق؟",
     tVerifA1:
       "احطّ وثائقك (بطاقة التعريف، الرخصة، الكارت قريز، التأمين) في قسم التوثيق. مشرف يصادق عليهم، ومن بعد تنجّم تقدّم عروض.",
+    // Canal classique fermé : pas d'offre, des trajets et des demandes reçues.
+    tVerifA1Return:
+      "احطّ وثائقك (بطاقة التعريف، الرخصة، الكارت قريز، التأمين) في قسم التوثيق. مشرف يصادق عليهم، ومن بعد تنجّم تحطّ رحلات الرجوع متاعك و تقبل طلبات الحرفاء.",
     tVerifQ2: "شنوّة يصير كي تنتهي صلاحية وثيقة؟",
     tVerifA2:
       "الوثائق الّي عندها أجل (الرخصة، التأمين، الكارت قريز) يبان عليها بادج «قرب يخلص» ومن بعد «منتهي الصلاحية». عاود احطّ نسخة محيّنة قبل الأجل باش تبقى نشيط.",
@@ -2251,7 +2324,7 @@ export const ar = {
     subtitle: "شنوة تجيب المحاور متاعك، وفين الطلب يستنّى فيك.",
     revenueTitle: "المداخيل حسب المحور",
     revenueHint:
-      "المدخول الصافي المقبوض، بعد تحرير الضمان. الذهاب والرجوع زوز محاور مختلفين.",
+      "المدخول الصافي متاع المهام اللي وصّلتهم. الذهاب والرجوع زوز محاور مختلفين.",
     revenueEmpty:
       "ما فماش مهمة مخلّصة للتو. المحاور متاعك باش تبان هوني كي تكمّل أول توصيل مؤكّد.",
     colCorridor: "المحور",

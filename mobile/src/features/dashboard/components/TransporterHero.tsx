@@ -17,9 +17,10 @@ import type { TransporterStatsDto } from '@/features/stats/api/dto';
 // laisse le fond porter la couleur et ne fait que la relever.
 //
 // Écart assumé avec la maquette : elle titre « Revenus ce mois ». L'endpoint
-// canonique ne fournit pas d'agrégat mensuel — `earnings_confirmed` (K4) est
-// l'escrow libéré depuis toujours. On affiche donc « Gains confirmés », qui
-// décrit exactement le chiffre servi, plutôt qu'un intitulé faux.
+// canonique ne fournit pas d'agrégat mensuel. On affiche donc « Gains
+// confirmés » depuis toujours : `earnings_total`, soit l'escrow libéré plus les
+// espèces encaissées sur les missions livrées. (`earnings_confirmed` seul
+// vaut 0 en espèces ; il reste le repli face à un serveur plus ancien.)
 interface Props {
   stats: TransporterStatsDto | undefined;
   loading: boolean;
@@ -43,7 +44,9 @@ export function TransporterHero({ stats, loading }: Props) {
         </View>
       ) : (
         <Txt style={styles.big}>
-          {stats ? formatAmount(stats.earnings_confirmed) : '—'}
+          {stats
+            ? formatAmount(stats.earnings_total ?? stats.earnings_confirmed)
+            : '—'}
           <Txt style={styles.unit}> TND</Txt>
         </Txt>
       )}

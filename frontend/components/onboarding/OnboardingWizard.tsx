@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
 import { getTransporterProfile } from "@/lib/services/profiles";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 import { interpolate } from "@/lib/i18n/interpolate";
 import {
   MapPin,
@@ -41,6 +42,8 @@ interface OnboardingStep {
   /** Prefixe des cles i18n : `<cle>Title`, `<cle>Desc`, `<cle>Cta`. */
   cle: string;
   href: string;
+  /** Destination au lancement, quand l'étape d'origine mène à un pan fermé. */
+  hrefLancement?: string;
   color: string;
 }
 
@@ -68,6 +71,16 @@ const CLIENT_STEPS: OnboardingStep[] = [
   },
 ];
 
+// Canal classique fermé : la première étape du client devient la recherche
+// d'un trajet retour au lieu de la publication d'une demande.
+const ETAPE_RECHERCHE_CLIENT: OnboardingStep = {
+  id: "search",
+  icon: Search,
+  cle: "search",
+  href: "/recherche",
+  color: "bg-blue-700",
+};
+
 const TRANSPORTER_STEPS: OnboardingStep[] = [
   {
     id: "verify",
@@ -81,6 +94,7 @@ const TRANSPORTER_STEPS: OnboardingStep[] = [
     icon: Truck,
     cle: "jobs",
     href: "/jobs",
+    hrefLancement: "/retours/nouveau",
     color: "bg-blue-700",
   },
   {
@@ -105,6 +119,10 @@ const TRANSPORTER_STEPS: OnboardingStep[] = [
 export default function OnboardingWizard() {
   const { user } = useAuth();
   const { t } = useAppI18n();
+  const {
+    classic_channel_enabled: canalClassique,
+    online_payment_enabled: paiementEnLigne,
+  } = usePlatformConfig();
   const [dismissed, setDismissed] = useState(false);
   // T0.1 — l'etape « zones » ne doit pas survivre a son accomplissement. Un
   // guide qui redemande ce qui est deja fait cesse d'etre lu.
@@ -171,7 +189,11 @@ export default function OnboardingWizard() {
 
   const isTransporter = user.role?.toUpperCase() === "TRANSPORTER";
   // B3 (audit M2): never ask a VERIFIED account to verify its identity.
-  const allSteps = isTransporter ? TRANSPORTER_STEPS : CLIENT_STEPS;
+  const allSteps = isTransporter
+    ? TRANSPORTER_STEPS
+    : CLIENT_STEPS.map((s) =>
+        s.id === "publish" && !canalClassique ? ETAPE_RECHERCHE_CLIENT : s,
+      );
   const steps = allSteps.filter((s) => {
     // B3 (audit M2) : ne jamais demander a un compte VERIFIE de se verifier.
     if (s.id === "verify" && user.is_verified === true) return false;
@@ -183,7 +205,8 @@ export default function OnboardingWizard() {
   const step = steps[Math.min(currentStep, steps.length - 1)];
   // L'etape « zones » pointe le profil de l'utilisateur, dont l'URL depend de
   // son identifiant : impossible a ecrire dans une liste statique.
-  const destination = step.id === "zones" ? `/profile/${user.id}` : step.href;
+  const destinationHabituelle =
+    step.id === "zones" ? `/profile/${user.id}` : step.href;
   const StepIcon = step.icon;
 
   // Les textes de l'etape courante, lus dans le groupe correspondant a son
@@ -195,8 +218,20 @@ export default function OnboardingWizard() {
     ? t.onboarding.transporter
     : t.onboarding.client) as unknown as Record<string, string>;
   const titreEtape = textes[`${step.cle}Title`];
-  const descriptionEtape = textes[`${step.cle}Desc`];
-  const ctaEtape = textes[`${step.cle}Cta`];
+  // Au lancement (canal classique ou paiement en ligne fermé), les étapes
+  // transporteur qui parlent d'offres ou de paiement sécurisé ont une
+  // variante « Launch ».
+  const lancement = isTransporter && (!canalClassique || !paiementEnLigne);
+  const descriptionEtape =
+    (lancement ? textes[`${step.cle}DescLaunch`] : undefined) ??
+    textes[`${step.cle}Desc`];
+  const ctaEtape =
+    (lancement ? textes[`${step.cle}CtaLaunch`] : undefined) ??
+    textes[`${step.cle}Cta`];
+  const destination =
+    lancement && step.hrefLancement
+      ? step.hrefLancement
+      : destinationHabituelle;
 
   return (
     <div

@@ -22,6 +22,7 @@ import { useToast } from "@/components/ui/Toast";
 import { roleColorsOnBlue } from "@/lib/auth";
 import type { UserRole } from "@/lib/auth";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 /* -------------------------------------------------------------------------- */
 /*  En-tête applicatif — LE BANDEAU BLEU HAUT de la charte (§4)               */
@@ -43,6 +44,10 @@ export default function AppHeader() {
     useNotifications();
   const { showToast } = useToast();
   const { t } = useAppI18n();
+  const {
+    classic_channel_enabled: canalClassique,
+    online_payment_enabled: paiementEnLigne,
+  } = usePlatformConfig();
   const router = useRouter();
   const pathname = usePathname();
   const notifRef = useRef<HTMLDivElement>(null);
@@ -83,7 +88,16 @@ export default function AppHeader() {
       ["/demandes-recues", p.receivedRequests],
       ["/reservation", t.booking.pageTitle],
       ["/transporteur", p.profile],
-      ["/portefeuille", t.wallet.title],
+      // Espèces seules : plus de solde, seulement la commission due
+      // (transporteur) ou ce qui reste à payer à la livraison (client).
+      [
+        "/portefeuille",
+        paiementEnLigne
+          ? t.wallet.title
+          : role === "transporter"
+            ? t.nav.commissions
+            : t.nav.myPayments,
+      ],
       ["/performance", t.performance.title],
       ["/notifications", p.notifications],
       ["/mes-offres", t.nav.myOffers],
@@ -239,15 +253,18 @@ export default function AppHeader() {
                     {t.header.myProfile}
                   </Link>
                   {/* « Mes offres » : seul point d'entrée mobile depuis que la
-                      nav basse est limitée à quatre onglets par la charte. */}
-                  <Link
-                    href="/mes-offres"
-                    onClick={() => setIsUserMenuOpen(false)}
-                    className={menuItemClasses}
-                  >
-                    <FileText className="h-4 w-4" strokeWidth={2} />
-                    {t.nav.myOffers}
-                  </Link>
+                      nav basse est limitée à quatre onglets par la charte.
+                      Offres = canal classique : absent quand il est fermé. */}
+                  {canalClassique && (
+                    <Link
+                      href="/mes-offres"
+                      onClick={() => setIsUserMenuOpen(false)}
+                      className={menuItemClasses}
+                    >
+                      <FileText className="h-4 w-4" strokeWidth={2} />
+                      {t.nav.myOffers}
+                    </Link>
+                  )}
                   <Link
                     href="/compte"
                     onClick={() => setIsUserMenuOpen(false)}

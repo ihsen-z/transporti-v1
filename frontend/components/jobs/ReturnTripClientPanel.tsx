@@ -12,7 +12,7 @@ import {
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { formatTND } from "@/lib/format";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 import type { JobDetail } from "@/lib/types/jobs";
 
 interface Props {
@@ -48,7 +48,7 @@ export function ReturnTripClientPanel({
 }: Props) {
   const { t } = useAppI18n();
   // Le texte de réassurance dépend du mode de paiement réellement ouvert.
-  const { online_payment_enabled } = usePaymentConfig();
+  const { online_payment_enabled } = usePlatformConfig();
 
   return (
     <div className="bg-blue-50 rounded-tile p-5 animate-fade-in-up">

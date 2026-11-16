@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { apiClient } from '@/core/api/client';
 import type { CompleteRequest } from './dto';
+import { QUERIES_AFTER_DELIVERY, invalidateAll } from './afterMission';
 
 export type CompleteErrorKind =
   | 'pin_required'
@@ -104,7 +105,7 @@ export function useCompleteJob() {
   return useMutation<void, CompleteError, CompleteArgs>({
     mutationFn: postComplete,
     onSuccess: () => {
-      void qc.invalidateQueries({ queryKey: ['myMissions'] });
+      invalidateAll(qc, QUERIES_AFTER_DELIVERY);
     },
   });
 }

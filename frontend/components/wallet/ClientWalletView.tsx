@@ -10,6 +10,7 @@ import {
   type PortefeuilleClient,
 } from "@/lib/services/wallet";
 import { urlJob } from "@/lib/routes/jobs";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 /**
  * C5.1 — le portefeuille du CLIENT.
@@ -26,6 +27,7 @@ import { urlJob } from "@/lib/routes/jobs";
  */
 export function ClientWalletView() {
   const { t } = useAppI18n();
+  const { online_payment_enabled } = usePlatformConfig();
   const [donnees, setDonnees] = useState<PortefeuilleClient | null>(null);
   const [chargement, setChargement] = useState(true);
   const [erreur, setErreur] = useState(false);
@@ -67,7 +69,9 @@ export function ClientWalletView() {
     );
   }
 
-  const tuiles = [
+  // Espèces seules : pas de séquestre, donc ni « séquestré », ni « versé »,
+  // ni « remboursé » ; il reste ce qui est à payer à la livraison.
+  const toutesLesTuiles = [
     {
       cle: "held",
       icone: Lock,
@@ -97,6 +101,9 @@ export function ClientWalletView() {
       aide: t.clientWallet.codPendingHint,
     },
   ];
+  const tuiles = online_payment_enabled
+    ? toutesLesTuiles
+    : toutesLesTuiles.filter((tuile) => tuile.cle === "cod_pending");
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-6">
@@ -129,8 +136,11 @@ export function ClientWalletView() {
         ))}
       </div>
 
-      {/* Dit explicitement ce que les tuiles ne doivent PAS suggérer. */}
-      <p className="text-xs text-neutral-500">{t.clientWallet.noTotal}</p>
+      {/* Dit explicitement ce que les tuiles ne doivent PAS suggérer
+          (inutile quand il n'en reste qu'une). */}
+      {tuiles.length > 1 && (
+        <p className="text-xs text-neutral-500">{t.clientWallet.noTotal}</p>
+      )}
 
       <section className="bg-surface rounded-card shadow-card p-5">
         <h2 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-4">

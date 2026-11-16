@@ -396,6 +396,10 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         fields = ['job', 'price_net', 'message', 'valid_until']
 
     def validate_job(self, value):
+        # Canal classique fermé : pas de nouvelle offre sur une demande classique.
+        if not value.is_return_trip:
+            from logistics.classic_channel import ensure_classic_channel_open
+            ensure_classic_channel_open()
         if value.status != TransportJob.Status.PUBLISHED:
             raise serializers.ValidationError("Les offres ne sont possibles que sur les missions publiées.")
         return value
@@ -1104,8 +1108,11 @@ class ReturnTripUpdateSerializer(StructuredCapacityValidationMixin,
 class ReturnTripRequestSerializer(serializers.ModelSerializer):
     """D5 — structured request on a return trip (read)."""
     client_name = serializers.SerializerMethodField()
-    job_pickup = serializers.CharField(source='job.pickup_address', read_only=True)
-    job_dropoff = serializers.CharField(source='job.dropoff_address', read_only=True)
+    # Depart et arrivee du TRAJET. L'adresse d'un trajet retour est
+    # facultative (le gouvernorat suffit a le publier) : sans repli, la carte
+    # d'une demande affichait une ligne « → » vide. Releve en recette le 16/11.
+    job_pickup = serializers.SerializerMethodField()
+    job_dropoff = serializers.SerializerMethodField()
     job_date = serializers.DateTimeField(source='job.scheduled_time', read_only=True)
 
     class Meta:
@@ -1128,6 +1135,12 @@ class ReturnTripRequestSerializer(serializers.ModelSerializer):
 
     def get_client_name(self, obj) -> str:
         return f"{obj.client.first_name} {obj.client.last_name[:1]}.".strip()
+
+    def get_job_pickup(self, obj) -> str:
+        return obj.job.pickup_address or obj.job.pickup_governorate
+
+    def get_job_dropoff(self, obj) -> str:
+        return obj.job.dropoff_address or obj.job.dropoff_governorate
 
 
 def _kg_lisible(valeur):

@@ -115,6 +115,18 @@ export function isKycRequired(e: unknown): boolean {
 }
 
 /**
+ * Code du refus « canal classique fermé » (backend/logistics/classic_channel.py) :
+ * créer une demande, publier un brouillon ou déposer une offre sur une demande
+ * classique alors que le lancement n'ouvre que les trajets retour.
+ */
+export const CLASSIC_CHANNEL_DISABLED_CODE = "CLASSIC_CHANNEL_DISABLED";
+
+/** Vrai quand le serveur refuse une entrée du canal classique, fermé. */
+export function isClassicChannelDisabled(e: unknown): boolean {
+  return getApiErrorCode(e) === CLASSIC_CHANNEL_DISABLED_CODE;
+}
+
+/**
  * Délai (en secondes) avant de pouvoir réessayer, quand le serveur le donne
  * (`retry_after_seconds` d'un 423 `PIN_LOCKED`). undefined = absent ou nul.
  */

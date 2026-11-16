@@ -61,6 +61,8 @@ export function useRespondRequest() {
       // racine : les trois onglets sont concernés, une acceptation faisant
       // passer la demande de « à décider » à « archivées ».
       void qc.invalidateQueries({ queryKey: ['receivedRequests'] });
+      // Une acceptation crée une mission : elle doit apparaître sur l'accueil.
+      void qc.invalidateQueries({ queryKey: ['myMissions'] });
     },
   });
 }

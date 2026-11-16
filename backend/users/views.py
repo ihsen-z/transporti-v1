@@ -360,9 +360,10 @@ class DashboardStatsView(APIView):
                     'available_missions': stats['available_missions'],
                     'active_offers': stats['active_offers'],
                     'completed_jobs': stats['completed_missions'],
-                    # K4: money actually secured (escrow released), no longer
-                    # the sum of every accepted offer.
-                    'total_earnings': stats['earnings_confirmed'],
+                    # Gains réellement acquis : escrow libéré (K4) + espèces
+                    # encaissées sur les missions livrées (K4 bis). Jamais la
+                    # somme de toutes les offres acceptées.
+                    'total_earnings': stats['earnings_total'],
                     'earnings_pending': stats['earnings_pending'],
                     'wallet_available': stats['wallet_available'],
                     'verification_status': stats['verification_status'],

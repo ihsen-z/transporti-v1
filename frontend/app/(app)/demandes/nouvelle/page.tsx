@@ -13,7 +13,11 @@ import {
   MapPin,
   Truck,
 } from "lucide-react";
-import { ApiError } from "@/lib/api/client";
+import {
+  ApiError,
+  getApiErrorReason,
+  isClassicChannelDisabled,
+} from "@/lib/api/client";
 import {
   countMatchingReturnTrips,
   estimatePrice,
@@ -351,7 +355,11 @@ export default function NewJobPage() {
 
       let errorMessage: string = t.newJob.publishGenericError;
 
-      if (error instanceof ApiError && error.body) {
+      if (isClassicChannelDisabled(error)) {
+        // Canal classique fermé côté serveur (page ouverte avant la
+        // fermeture) : sa phrase dit déjà quoi faire à la place.
+        errorMessage = getApiErrorReason(error) ?? errorMessage;
+      } else if (error instanceof ApiError && error.body) {
         // Erreurs par champ traduites en libellés lisibles, affichées dans
         // une bannière persistante (un toast de 4 s est illisible ici).
         const fieldLabels = t.newJob.fieldLabels as Record<string, string>;

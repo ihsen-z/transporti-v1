@@ -108,6 +108,9 @@ services:
         value: "300"
       - key: COMMISSION_DEBT_LIMIT
         value: "60"
+      # Canal classique (le client publie un besoin) fermé : seuls les trajets retour ouvrent.
+      - key: CLASSIC_CHANNEL_ENABLED
+        value: "false"
 
       # --- Fichiers envoyés : Backblaze B2 (compatible S3, gratuit sans
       # carte bancaire jusqu'à 10 Go ; choisi le 27/10/2026 à la place de

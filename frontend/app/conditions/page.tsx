@@ -8,7 +8,7 @@ import {
   ARemplir,
 } from "@/components/legal/LegalPage";
 import { SectionPrix } from "@/components/legal/conditions/SectionPrix";
-import { lirePaymentConfigServeur } from "@/lib/services/paymentConfigServeur";
+import { lirePlatformConfigServeur } from "@/lib/services/platformConfigServeur";
 
 export const metadata: Metadata = {
   title: "Conditions générales d'utilisation",
@@ -20,7 +20,7 @@ export default async function ConditionsPage() {
   // Comme l'aide : en mode « espèces seules », les articles qui parlent de
   // fonds retenus par la plateforme changent, car ce séquestre n'existe pas
   // encore. Les plafonds affichés viennent aussi du serveur.
-  const paymentConfig = await lirePaymentConfigServeur();
+  const paymentConfig = await lirePlatformConfigServeur();
   const enLigne = paymentConfig.online_payment_enabled;
 
   return (

@@ -11,6 +11,8 @@ import {
   type Avis as ReviewData,
 } from "@/lib/services/profiles";
 import { useAuth } from "@/hooks/useAuth";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import Image from "next/image";
 import ImageCropper from "@/components/ImageCropper";
 import { getMediaUrl } from "@/lib/imageUtils";
@@ -100,6 +102,9 @@ function ClientStatCard({
 export default function ClientProfilePage({ userId }: { userId: string }) {
   const router = useRouter();
   const { user } = useAuth();
+  const { t: tI18n } = useAppI18n();
+  // Canal classique fermé : l'action rapide cherche un trajet retour.
+  const canalClassique = useCanalClassiqueOuvert();
 
   const [client, setClient] = useState<ClientData | null>(null);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
@@ -897,11 +902,11 @@ export default function ClientProfilePage({ userId }: { userId: string }) {
               </h3>
               <div className="flex flex-col gap-2">
                 <Link
-                  href="/demandes/nouvelle"
+                  href={canalClassique ? "/demandes/nouvelle" : "/recherche"}
                   className="flex items-center gap-2 px-4 py-3 bg-surface rounded-tile text-sm font-medium text-neutral-700 hover:bg-warning-50 hover:text-warning-700 transition-colors border border-line"
                 >
                   <Package className="w-4 h-4" />
-                  Publier une annonce
+                  {canalClassique ? tI18n.nav.publishAd : tI18n.nav.findTrip}
                 </Link>
                 <Link
                   href="/jobs"

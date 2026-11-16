@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 
 /**
  * P3 — l'ouverture et la clôture de la page « Confiance et sécurité ».
@@ -40,6 +41,8 @@ export function TrustHero() {
 
 export function TrustFaq() {
   const { t } = useAppI18n();
+  // Canal classique fermé : l'appel final mène au parcours trajet retour.
+  const canalClassique = useCanalClassiqueOuvert();
   const p = t.trustPage;
 
   const questions = [
@@ -84,23 +87,45 @@ export function TrustFaq() {
 
         <div className="relative z-[1] mx-auto max-w-3xl px-5 text-center sm:px-6 lg:px-8">
           <h2 className="mb-4 text-[28px] font-extrabold tracking-title sm:text-[34px]">
-            {p.finalTitle}
+            {canalClassique ? p.finalTitle : p.finalTitleReturn}
           </h2>
           <p className="mb-8 text-[16px] leading-[1.55] text-on-blue-300">
             {p.finalDesc}
           </p>
-          <div className="flex flex-wrap gap-3 justify-center">
-            <Link
-              href="/demandes/nouvelle"
-              data-testid="confiance-cta-publier"
-              className="cta btn-base px-8"
-            >
-              {p.finalCta}
-            </Link>
-            <Link href="/recherche" className="btn-base btn-ghost-on-blue px-8">
-              {p.finalSecondary}
-            </Link>
-          </div>
+          {canalClassique ? (
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link
+                href="/demandes/nouvelle"
+                data-testid="confiance-cta-publier"
+                className="cta btn-base px-8"
+              >
+                {p.finalCta}
+              </Link>
+              <Link
+                href="/recherche"
+                className="btn-base btn-ghost-on-blue px-8"
+              >
+                {p.finalSecondary}
+              </Link>
+            </div>
+          ) : (
+            // Canal classique fermé : les deux portes du trajet retour.
+            <div className="flex flex-wrap gap-3 justify-center">
+              <Link
+                href="/recherche"
+                data-testid="confiance-cta-chercher"
+                className="cta btn-base px-8"
+              >
+                {p.finalSecondary}
+              </Link>
+              <Link
+                href="/retours/nouveau"
+                className="btn-base btn-ghost-on-blue px-8"
+              >
+                {p.finalPublishTrip}
+              </Link>
+            </div>
+          )}
         </div>
       </section>
     </>
