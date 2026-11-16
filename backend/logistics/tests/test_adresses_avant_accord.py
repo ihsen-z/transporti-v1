@@ -145,3 +145,32 @@ class AdressesAvantAccordTests(APITestCase):
         self.assertEqual(r.status_code, 200)
         self.assertFalse(r.data['addresses_masked'])
         self.assertEqual(r.data['pickup_address'], 'Sfax, zone industrielle')
+
+
+
+@override_settings(REST_FRAMEWORK=SANS_LIMITEUR)
+class LibelleDuTrajetSurUneDemandeTests(APITestCase):
+    """Un trajet publie sans adresse (le gouvernorat suffit) garde un libelle."""
+
+    def test_le_gouvernorat_remplace_une_adresse_vide(self):
+        from logistics.models import ReturnTripRequest
+        transporteur = _user('lib-tr@t.tn', 'TRANSPORTER')
+        verify_transporter(transporteur)
+        cliente = _user('lib-cli@t.tn', 'CLIENT')
+        trajet = TransportJob.objects.create(
+            owner=transporteur, status='PUBLISHED', job_type='TRANSPORT',
+            is_return_trip=True, pickup_address='', pickup_governorate='Sfax',
+            dropoff_address='', dropoff_governorate='Tunis',
+            scheduled_time=timezone.now() + timedelta(days=2))
+        ReturnTripRequest.objects.create(
+            job=trajet, client=cliente, status='PENDING',
+            description='Deux palettes', proposed_price=Decimal('120'),
+            payment_method='COD')
+
+        self.client.force_authenticate(transporteur)
+        r = self.client.get('/api/trip-requests/received/')
+
+        self.assertEqual(r.status_code, 200, r.data)
+        lignes = r.data['results'] if isinstance(r.data, dict) else r.data
+        self.assertEqual(lignes[0]['job_pickup'], 'Sfax')
+        self.assertEqual(lignes[0]['job_dropoff'], 'Tunis')

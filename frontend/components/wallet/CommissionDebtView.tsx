@@ -33,7 +33,10 @@ export function CommissionDebtView({
   const { t: allT } = useAppI18n();
   const t = allT.wallet;
   const reste = Math.max(0, plafond - data.cod_debt);
-  const plafondAtteint = data.cod_debt >= plafond;
+  // Le serveur décide du blocage (strictement au-delà du plafond). Comparer
+  // ici avec >= annonçait « plafond atteint » à 60 / 60 alors que le
+  // transporteur pouvait encore accepter une mission.
+  const plafondAtteint = data.blocked_for_debt ?? data.cod_debt > plafond;
 
   return (
     <div className="p-6 lg:p-8 max-w-5xl mx-auto">

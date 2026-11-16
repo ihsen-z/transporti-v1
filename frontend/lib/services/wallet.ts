@@ -31,6 +31,10 @@ export interface Portefeuille {
   pending_net: number;
   released_net: number;
   cod_debt: number;
+
+  /** Vrai quand le serveur bloque le transporteur pour dette. C'est lui qui
+   *  tranche : il ne bloque qu'AU-DELÀ du plafond, pas à égalité. */
+  blocked_for_debt?: boolean;
   withdrawals_total: number;
   cod_debts: { job_id: number; is_return_trip?: boolean; amount: number }[];
   history: LigneHistoriquePortefeuille[];
