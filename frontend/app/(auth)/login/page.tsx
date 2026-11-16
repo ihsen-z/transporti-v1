@@ -67,7 +67,15 @@ export default function LoginPage() {
         searchParams.get("redirect") || getDefaultRedirect(userRole);
       router.push(redirectTo);
     } else {
-      setError(result.error || t.auth.loginError);
+      setError(
+        result.errorKind === "account_locked"
+          ? t.auth.loginLocked
+          : result.errorKind === "rate_limited"
+            ? t.auth.loginRateLimited
+            : result.errorKind === "other"
+              ? t.auth.loginUnavailable
+              : t.auth.loginError,
+      );
     }
 
     setIsLoading(false);

@@ -42,7 +42,7 @@ export default function NotFound() {
         {/* Actions */}
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link
-            href="/dashboard"
+            href="/"
             className="btn-base min-h-[48px] rounded-cta bg-blue-700 px-5 text-[15px] text-white shadow-blue transition-colors duration-120 hover:bg-blue-800 active:translate-y-px"
           >
             <svg
@@ -57,7 +57,7 @@ export default function NotFound() {
               <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
               <polyline points="9 22 9 12 15 12 15 22" />
             </svg>
-            {t.errors.backToDashboard}
+            {t.errors.backHome}
           </Link>
           <Link
             href="/aide"

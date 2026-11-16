@@ -32,10 +32,31 @@ describe('classifyLoginError', () => {
   });
 
   it('range les autres statuts en inconnu', () => {
-    // 429 = AuthRateThrottle ; 500 = erreur serveur. Aucun des deux ne doit
-    // laisser croire à une faute de frappe.
-    expect(classifyLoginError(429, { detail: 'Request was throttled.' })).toBe('unknown');
+    // 500 = erreur serveur : ne doit pas laisser croire à une faute de frappe.
     expect(classifyLoginError(500, 'Server Error')).toBe('unknown');
     expect(classifyLoginError(401, { detail: 'Unauthorized' })).toBe('unknown');
+  });
+});
+
+describe('classifyLoginError : message neutre du serveur', () => {
+  it('reconnaît un refus d identifiants quelle que soit la clé du message neutre', () => {
+    expect(classifyLoginError(400, { error: 'Identifiants incorrects.' })).toBe('invalid_credentials');
+    expect(classifyLoginError(400, { non_field_errors: ['Identifiants incorrects.'] })).toBe(
+      'invalid_credentials',
+    );
+    expect(classifyLoginError(400, { code: 'INVALID_CREDENTIALS', detail: 'x' })).toBe(
+      'invalid_credentials',
+    );
+  });
+
+  it('un e-mail inconnu et un mauvais mot de passe donnent la même cause', () => {
+    const inconnu = classifyLoginError(400, { error: 'Identifiants incorrects.' });
+    const faux = classifyLoginError(400, { error: 'Identifiants incorrects.' });
+    expect(inconnu).toBe(faux);
+  });
+
+  it('compte verrouillé : 423 et 429 donnent « locked »', () => {
+    expect(classifyLoginError(423, { detail: 'Compte verrouillé.' })).toBe('locked');
+    expect(classifyLoginError(429, { detail: 'Request was throttled.' })).toBe('locked');
   });
 });

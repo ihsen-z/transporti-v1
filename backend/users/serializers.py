@@ -83,6 +83,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         return user
 
 
+INVALID_CREDENTIALS_MESSAGE = "Invalid email or password."
+
+
 class UserLoginSerializer(serializers.Serializer):
     """
     Validates login credentials.
@@ -94,13 +97,19 @@ class UserLoginSerializer(serializers.Serializer):
         email = attrs.get('email', '').lower()
         password = attrs.get('password')
 
+        # Même message (et même clé `email`, que lit l'app mobile) pour un
+        # e-mail inconnu et un mauvais mot de passe : on ne révèle pas quels
+        # e-mails ont un compte.
         try:
             user = User.objects.get(email=email)
         except User.DoesNotExist:
-            raise serializers.ValidationError({"email": "No account found with this email."})
+            # Hachage factice : le temps de réponse ne trahit pas non plus
+            # l'absence de compte (même technique que ModelBackend de Django).
+            User().set_password(password)
+            raise serializers.ValidationError({"email": INVALID_CREDENTIALS_MESSAGE})
 
         if not user.check_password(password):
-            raise serializers.ValidationError({"password": "Invalid password."})
+            raise serializers.ValidationError({"email": INVALID_CREDENTIALS_MESSAGE})
 
         if not user.is_active:
             raise serializers.ValidationError({"email": "Account is deactivated."})

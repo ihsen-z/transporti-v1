@@ -63,13 +63,7 @@ export default function AdminReviewsPage() {
   const { showToast } = useToast();
   const { t } = useI18n();
 
-  const {
-    data: allReviews,
-    source,
-    loading,
-    error,
-    refetch,
-  } = useAdminReviews();
+  const { data: allReviews, loading, error, refetch } = useAdminReviews();
 
   const filterTabs: { value: FilterTab; label: string }[] = [
     { value: "ALL", label: "Tous" },
@@ -278,19 +272,6 @@ export default function AdminReviewsPage() {
           <p className="text-neutral-500 dark:text-neutral-400">
             {t.reviews.subtitle}
           </p>
-        </div>
-        {/* Source Badge */}
-        <div
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium ${
-            source === "api"
-              ? "bg-green-50 text-green-700 border border-green-200"
-              : "bg-orange-50 text-orange-700 border border-orange-200"
-          }`}
-        >
-          <span
-            className={`w-2 h-2 rounded-full ${source === "api" ? "bg-green-500" : "bg-orange-500"}`}
-          />
-          {source === "api" ? "API Live" : "Mock Data"}
         </div>
       </div>
 

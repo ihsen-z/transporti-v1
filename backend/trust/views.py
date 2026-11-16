@@ -16,6 +16,31 @@ from .serializers import (
     AdminTrustProfileSerializer,
 )
 from .services import recalculate_profile_status
+from admin_audit.services import log_admin_action
+
+# Action d'audit pour la remise d'un lien signé vers une pièce KYC. Valeur hors
+# des choix du modèle AdminAuditLog, comme 'USERS_EXPORTED' : la colonne est un
+# CharField, et éviter une migration garde ce correctif local à trust/.
+ACTION_LIEN_KYC = 'DOCUMENT_LINK_ISSUED'
+
+
+def _journaliser_liens_kyc(request, target_type: str, target_id: int, label: str,
+                           ids: list[int]) -> None:
+    """
+    Trace qu'un admin/modérateur a reçu des liens signés vers des pièces
+    d'identité (une ligne par réponse, avec les identifiants concernés).
+    """
+    if not ids:
+        return
+    log_admin_action(
+        request, ACTION_LIEN_KYC, target_type, target_id,
+        target_label=label,
+        details={'ids': ids, 'count': len(ids)},
+    )
+
+
+def _libelle_transporteur(user) -> str:
+    return f"{user.first_name} {user.last_name}".strip() or user.email
 
 
 class VerificationDocumentListCreateView(generics.GenericAPIView):
@@ -87,7 +112,12 @@ class AdminVerificationListView(APIView):
             qs = qs.filter(status=backend_status)
 
         serializer = AdminVerificationRequestSerializer(qs, many=True)
-        return Response(serializer.data)
+        data = serializer.data
+        _journaliser_liens_kyc(
+            request, 'verification_request', 0, 'Liste des demandes de vérification',
+            [v.id for v in qs if v.document_file],
+        )
+        return Response(data)
 
 
 class AdminVerificationApproveView(APIView):
@@ -180,7 +210,12 @@ class AdminDocumentListView(APIView):
         ).select_related('reviewed_by').order_by('uploaded_at')
 
         user = profile.user
-        name = f"{user.first_name} {user.last_name}".strip() or user.email
+        name = _libelle_transporteur(user)
+
+        documents = AdminVerificationDocumentSerializer(docs, many=True).data
+        _journaliser_liens_kyc(
+            request, 'trust_profile', profile.id, name, [d.id for d in docs],
+        )
 
         return Response({
             'profileId': profile.id,
@@ -188,7 +223,7 @@ class AdminDocumentListView(APIView):
             'transporterEmail': user.email,
             'verificationStatus': profile.verification_status,
             'trustScore': profile.trust_score,
-            'documents': AdminVerificationDocumentSerializer(docs, many=True).data,
+            'documents': documents,
         })
 
 
@@ -232,6 +267,25 @@ class AdminDocumentReviewView(APIView):
 
         # Recalculate global profile status
         new_status = recalculate_profile_status(doc.profile)
+
+        # Piste d'audit : qui, quel document, quel transporteur, décision, motif.
+        # La réponse contient aussi un lien signé vers la pièce (fileUrl).
+        transporter = doc.profile.user
+        log_admin_action(
+            request,
+            'DOCUMENT_APPROVED' if action == 'approve' else 'DOCUMENT_REJECTED',
+            'document', doc.id,
+            target_label=f"{doc.document_type} — {_libelle_transporteur(transporter)}",
+            details={
+                'decision': action,
+                'reason': doc.rejection_reason,
+                'document_type': doc.document_type,
+                'transporter_id': transporter.id,
+                'profile_id': doc.profile_id,
+                'profile_status': new_status,
+                'link_issued': True,
+            },
+        )
 
         return Response({
             'message': f'Document #{doc_id} {"approuvé" if action == "approve" else "rejeté"}.',

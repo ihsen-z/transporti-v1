@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { POLL_INTERVAL_MS } from '@/core/api/polling';
 import { fetchAllPages } from '@/core/api/fetchAllPages';
 import type { TripRequestDto, TripRequestStatus } from './dto';
 
@@ -33,5 +34,8 @@ export function useReceivedRequests(onglet: OngletId) {
   return useQuery<TripRequestDto[]>({
     queryKey: ['receivedRequests', onglet],
     queryFn: () => fetchReceived(ONGLETS[onglet]),
+    // Pas de push au lancement : sondage + rechargement au retour dans l'app.
+    refetchInterval: POLL_INTERVAL_MS.receivedRequests,
+    refetchOnWindowFocus: true,
   });
 }

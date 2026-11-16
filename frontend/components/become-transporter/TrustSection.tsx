@@ -1,23 +1,21 @@
 "use client";
 
-import { ShieldCheck, Lock, BadgeCheck } from "lucide-react";
+import { ShieldCheck, Banknote, BadgeCheck } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /**
- * P4 — ce que la vérification débloque réellement.
+ * Ce que la vérification débloque réellement.
  *
- * **Aucune promesse de points de score ici.** L'assistant d'onboarding
- * annonçait « +20 points de score de confiance » : c'était faux, le score n'a
- * aucune composante de vérification (achèvement 30, litiges 20, paiement 25,
- * engagement 15, récence 10 = 100). La phrase a été corrigée avant cette page.
+ * Aucune promesse de points de score : le score de confiance n'a aucune
+ * composante de vérification.
  *
- * Ce qui est énoncé ici est appliqué par le code :
- * - `check_transporter_trust(..., require_verified=True)` bloque l'acceptation
- *   d'une offre (logistics/services.py:285) ;
- * - l'escrow numérique exige un transporteur vérifié
- *   (payments/services.py:507) ;
- * - le paiement en espèces exige un score minimum de 50
- *   (COD_MIN_TRUST_SCORE).
+ * Ce qui est énoncé ici est appliqué par le serveur :
+ * - `ensure_transporter_verified` (backend/logistics/kyc.py) refuse en 403
+ *   `KYC_REQUIRED` la publication d'un trajet retour, une offre, et
+ *   l'acceptation ou la contre-proposition sur une demande, tant que le
+ *   transporteur n'est pas VERIFIED (sauf dérogation admin) ;
+ * - le lancement se fait en espèces seules : le client paie le transporteur à
+ *   la livraison, il n'y a ni paiement en ligne ni séquestre.
  *
  * Le premier point est formulé comme un BLOCAGE, pas comme un avantage : un
  * transporteur non vérifié qui croit pouvoir travailler perdra du temps sur des
@@ -29,7 +27,7 @@ export function TrustSection() {
 
   const points = [
     { icone: ShieldCheck, titre: b.trustOffers, texte: b.trustOffersDesc },
-    { icone: Lock, titre: b.trustEscrow, texte: b.trustEscrowDesc },
+    { icone: Banknote, titre: b.trustCash, texte: b.trustCashDesc },
     { icone: BadgeCheck, titre: b.trustBadge, texte: b.trustBadgeDesc },
   ];
 

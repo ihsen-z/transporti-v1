@@ -113,7 +113,8 @@
       "email_taken": "Cet e-mail est déjà utilisé",
       "phone_taken": "Ce numéro est déjà utilisé",
       "validation": "Vérifiez les informations saisies",
-      "network": "Connexion au serveur impossible. Réessayez."
+      "network": "Connexion au serveur impossible. Réessayez.",
+      "locked": "Trop de tentatives. Réessayez dans quelques minutes."
     }
   },
   "tabs": {
@@ -320,7 +321,8 @@
       "COUNTERED": "Contre-proposé",
       "ACCEPTED": "Acceptée",
       "REJECTED": "Refusée",
-      "CANCELLED": "Annulée"
+      "CANCELLED": "Annulée",
+      "EXPIRED": "Expirée"
     },
     "action": {
       "accept": "Accepter",
@@ -366,7 +368,8 @@
       "IN_PROGRESS": "En cours",
       "COMPLETED": "Terminée",
       "PUBLISHED": "Publiée",
-      "CANCELLED": "Annulée"
+      "CANCELLED": "Annulée",
+      "DISPUTED": "En litige"
     },
     "confirm_start": "Confirmer le démarrage",
     "confirm_start_hint": "Paiement en espèces à la livraison (COD).",
@@ -379,7 +382,10 @@
       "pin_invalid": "Code de livraison incorrect.",
       "state": "Action impossible dans l'état actuel.",
       "forbidden": "Vous n'êtes pas assigné à cette mission.",
-      "network": "Connexion au serveur impossible. Réessayez."
+      "network": "Connexion au serveur impossible. Réessayez.",
+      "pin_invalid_remaining": "Code de livraison incorrect. Essais restants : {{n}}.",
+      "pin_locked": "Trop d'essais : la saisie du code est verrouillée. Contactez le support pour la débloquer.",
+      "pin_locked_minutes": "Trop d'essais. Réessayez dans {{minutes}} min."
     },
     "net": "{{amount}} TND net",
     "gross_commission": "Client : {{gross}} TND · commission {{commission}} TND",
@@ -535,7 +541,8 @@
       "COUNTERED": "Contre-proposé",
       "ACCEPTED": "Acceptée",
       "REJECTED": "Refusée",
-      "CANCELLED": "Annulée"
+      "CANCELLED": "Annulée",
+      "EXPIRED": "Expirée"
     },
     "proposed": "Proposé : {{price}} TND",
     "countered": "Contre-proposition : {{price}} TND",
@@ -697,7 +704,12 @@
       "permission": "Accès aux photos refusé.",
       "validation": "Envoi refusé (≤ 5 Mo, JPG/PNG, quota 10).",
       "network": "Connexion impossible. Réessayez."
-    }
+    },
+    "badge_rejected": "Refusé",
+    "rejected_reason": "Motif : {{reason}}",
+    "rejected_resend": "Renvoyez une nouvelle pièce lisible pour relancer la vérification.",
+    "open_verification": "Vérifier mon profil",
+    "notice_publish": "Votre profil n'est pas encore vérifié : tant que vos pièces ne sont pas validées, la publication sera refusée."
   },
   "profiles": {
     "service_areas": {
@@ -727,7 +739,9 @@
     "MODERATOR": "Modérateur"
   },
   "lang": {
-    "toggle": "العربية"
+    "toggle": "العربية",
+    "restart_title": "Redémarrage nécessaire",
+    "restart_body": "Fermez complètement l'application puis rouvrez-la pour appliquer la langue."
   },
   "gains": {
     "title": "Gains",
@@ -804,7 +818,8 @@
       "IN_PROGRESS": "En cours",
       "COMPLETED": "Terminée",
       "CANCELLED": "Annulée",
-      "PUBLISHED": "Publiée"
+      "PUBLISHED": "Publiée",
+      "DISPUTED": "En litige"
     },
     "payment": {
       "DIGITAL": "Paiement sécurisé",
@@ -947,6 +962,10 @@
         "confirm": {
           "title": "Confirmez la réception",
           "body": "C'est votre confirmation qui libère le paiement. Tant que vous ne l'avez pas donnée, l'argent reste retenu par la plateforme."
+        },
+        "pay_cash": {
+          "title": "Payez à la livraison",
+          "body": "Le paiement se fait en espèces au transporteur, à la livraison, dans la limite de {{max}} TND. Rien n'est payé dans l'application."
         }
       }
     },
@@ -967,11 +986,15 @@
         },
         "deliver": {
           "title": "Clôturez avec le code du client",
-          "body": "Le client vous remet un code à quatre chiffres. Le saisir prouve la livraison et clôt la mission : personne ne peut la contester ensuite."
+          "body": "Le client vous remet un code à quatre chiffres. Le saisir prouve la livraison et clôt la mission. En cas de désaccord, un litige reste possible."
         },
         "earn": {
           "title": "Voyez ce que vous gagnez vraiment",
           "body": "Le net vous est annoncé commission déduite, avant que vous acceptiez. Les encaissements en espèces sont comptés à part de votre solde retirable, avec la commission que vous devez."
+        },
+        "earn_cash": {
+          "title": "Voyez ce que vous gagnez vraiment",
+          "body": "Le net vous est annoncé commission déduite, avant que vous acceptiez. Le client vous paie en espèces à la livraison : vous encaissez directement, et la commission due à Transporti s'affiche à part dans votre portefeuille."
         },
         "withdraw": {
           "title": "Retirez vos gains",
@@ -986,7 +1009,7 @@
       },
       "verified": {
         "title": "Vérification d'identité",
-        "body": "Un transporteur dépose permis, carte grise et assurance. Le badge « Vérifié » n'apparaît qu'après contrôle de ces pièces — un simple numéro de téléphone confirmé ne suffit pas."
+        "body": "Un transporteur dépose sa CIN, son permis, sa carte grise et son assurance. Le badge « Vérifié » n'apparaît qu'après contrôle de ces pièces — un simple numéro de téléphone confirmé ne suffit pas."
       },
       "dispute": {
         "title": "Litiges",
@@ -1004,5 +1027,10 @@
       "subtitle": "Le lien que vous avez suivi ne mène nulle part. Il a peut-être expiré.",
       "back": "Retour"
     }
+  },
+  "refusals": {
+    "KYC_REQUIRED": "Vos pièces ne sont pas encore validées. Faites vérifier votre profil pour continuer.",
+    "COMMISSION_DEBT_LIMIT": "Votre dette de commission a atteint le plafond. Réglez-la pour continuer.",
+    "PIN_LOCKED": "Trop d'essais : la saisie du code est verrouillée. Réessayez plus tard ou contactez le support."
   }
 }

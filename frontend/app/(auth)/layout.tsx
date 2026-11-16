@@ -22,7 +22,10 @@ import { AuthLogo } from "@/components/brand/TransportiLogo";
 const ROUTES_APPLICATIVES = ["/register"];
 
 const REPERES_CONFIANCE = [
-  { icon: Shield, text: "Paiement sécurisé, libéré à la livraison" },
+  {
+    icon: Shield,
+    text: "Paiement en espèces à la livraison, contre le code de livraison",
+  },
   { icon: BadgeCheck, text: "Transporteurs vérifiés, documents contrôlés" },
   { icon: Clock, text: "Retours à vide : le bon corridor, au bon moment" },
 ];

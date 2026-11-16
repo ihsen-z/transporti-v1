@@ -5,6 +5,7 @@
  * (`getAccessToken`, `config`) hérités d'un `fetch` manuel disparu depuis.
  */
 import { apiClient } from "@/lib/api/client";
+import { storeTokens, type TokenPair } from "@/lib/api/tokenManager";
 
 export interface UtilisateurDuCompte {
   id: number;
@@ -53,14 +54,37 @@ export function updateLanguagePreference(langue: string): Promise<unknown> {
   });
 }
 
-export function changePassword(
+/**
+ * Nouvelle paire de jetons d'une réponse de changement de mot de passe, ou
+ * `null` si le serveur n'en renvoie pas (ancienne version : rien à stocker).
+ * Fonction pure : valide la forme au lieu de supposer.
+ */
+export function extraireNouveauxJetons(reponse: unknown): TokenPair | null {
+  if (typeof reponse !== "object" || reponse === null) return null;
+  const tokens = (reponse as { tokens?: unknown }).tokens;
+  if (typeof tokens !== "object" || tokens === null) return null;
+  const { access, refresh } = tokens as { access?: unknown; refresh?: unknown };
+  if (typeof access !== "string" || !access) return null;
+  if (typeof refresh !== "string" || !refresh) return null;
+  return { access, refresh };
+}
+
+/**
+ * Le serveur révoque TOUTES les sessions au changement de mot de passe et
+ * renvoie une nouvelle paire de jetons : on la stocke, sinon la session
+ * courante serait coupée au prochain rafraîchissement.
+ */
+export async function changePassword(
   motDePasseActuel: string,
   nouveauMotDePasse: string,
 ): Promise<unknown> {
-  return apiClient.post("/api/auth/change-password/", {
+  const reponse = await apiClient.post<unknown>("/api/auth/change-password/", {
     current_password: motDePasseActuel,
     new_password: nouveauMotDePasse,
   });
+  const jetons = extraireNouveauxJetons(reponse);
+  if (jetons) storeTokens(jetons);
+  return reponse;
 }
 
 /**

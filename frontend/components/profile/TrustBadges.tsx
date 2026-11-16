@@ -9,6 +9,8 @@ interface Props {
   completionRate: number;
   totalJobsCompleted: number;
   averageRating: number;
+  /** `insurance_valid_until` du profil public (AAAA-MM-JJ), ou null. */
+  insuranceValidUntil?: string | null;
 }
 
 export function TrustBadges({
@@ -17,8 +19,13 @@ export function TrustBadges({
   completionRate,
   totalJobsCompleted,
   averageRating,
+  insuranceValidUntil = null,
 }: Props) {
   const { t, locale } = useAppI18n();
+  // Date ISO (AAAA-MM-JJ) : la comparaison de chaînes suit l'ordre chronologique.
+  const aujourdhui = new Date().toISOString().slice(0, 10);
+  const assuranceValide =
+    insuranceValidUntil !== null && insuranceValidUntil >= aujourdhui;
   const badges = [
     {
       icon: ShieldCheck,
@@ -49,20 +56,21 @@ export function TrustBadges({
       activeClass: "bg-warning-50/60 text-warning-700 border-amber-300/60",
       inactiveClass: "bg-neutral-50 text-neutral-400 border-neutral-200",
     },
-    {
-      icon: ShieldCheck,
-      label: t.profile.businessLicense,
-      active: isVerified, // Demo logic: linking it to isVerified
-      activeClass: "bg-green-50/60 text-green-700 border-green-300/60",
-      inactiveClass: "bg-neutral-50 text-neutral-400 border-neutral-200",
-    },
-    {
-      icon: ShieldCheck,
-      label: t.profile.cargoInsurance,
-      active: true, // Demo logic: assuming they have it
-      activeClass: "bg-blue-50/60 text-blue-700 border-blue-300/60",
-      inactiveClass: "bg-neutral-50 text-neutral-400 border-neutral-200",
-    },
+    // Badge « assurance » : affiché UNIQUEMENT si le serveur fournit une date de
+    // validité d'assurance encore valable (`insurance_valid_until`). Il n'existe
+    // aucune donnée serveur pour une « licence » : ce badge a été retiré plutôt
+    // que d'être déduit de `isVerified`.
+    ...(assuranceValide
+      ? [
+          {
+            icon: ShieldCheck,
+            label: t.profile.cargoInsurance,
+            active: true,
+            activeClass: "bg-blue-50/60 text-blue-700 border-blue-300/60",
+            inactiveClass: "bg-neutral-50 text-neutral-400 border-neutral-200",
+          },
+        ]
+      : []),
     {
       icon: CheckCircle2,
       label:

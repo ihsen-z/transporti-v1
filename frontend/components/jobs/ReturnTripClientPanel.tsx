@@ -12,6 +12,7 @@ import {
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import { formatTND } from "@/lib/format";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
 import type { JobDetail } from "@/lib/types/jobs";
 
 interface Props {
@@ -46,6 +47,8 @@ export function ReturnTripClientPanel({
   onRetirerLaDemande,
 }: Props) {
   const { t } = useAppI18n();
+  // Le texte de réassurance dépend du mode de paiement réellement ouvert.
+  const { online_payment_enabled } = usePaymentConfig();
 
   return (
     <div className="bg-blue-50 rounded-tile p-5 animate-fade-in-up">
@@ -199,7 +202,9 @@ export function ReturnTripClientPanel({
         className="text-xs text-blue-600 text-center mt-2 flex items-center justify-center gap-1"
       >
         <ShieldCheck className="w-3 h-3" />
-        {t.jobDetail.securePaymentEscrow}
+        {online_payment_enabled
+          ? t.jobDetail.securePaymentEscrow
+          : t.jobDetail.securePaymentCash}
       </p>
     </div>
   );

@@ -54,7 +54,7 @@ export default function Footer() {
       liens: [
         { href: "/conditions", label: f.legalTerms },
         { href: "/confidentialite", label: f.privacy },
-        { href: "/litiges", label: f.legalDisputes },
+        { href: "/conditions#litiges", label: f.legalDisputes },
       ],
     },
   ];

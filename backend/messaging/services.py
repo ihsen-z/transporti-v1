@@ -15,11 +15,7 @@ from django.core.exceptions import ValidationError, PermissionDenied
 
 from .models import Conversation, Message
 from logistics.models import TransportJob
-from logistics.participants import (
-    get_job_client,
-    get_job_transporter,
-    is_conversation_participant,
-)
+from logistics.participants import get_current_participants, is_job_participant
 
 logger = logging.getLogger('transporti')
 
@@ -75,20 +71,17 @@ def _contains_bypass_attempt(content: str) -> tuple[bool, str]:
 
 def _is_job_participant(user, job: TransportJob) -> bool:
     """
-    Delegate to the shared rule (logistics/participants.py), in its broader
-    conversation flavour.
+    CURRENT participation in the job (logistics/participants.py, strict rule).
 
-    Messaging uses ``is_conversation_participant`` rather than the strict rule
-    because the return-trip acceptance path adds the client to
-    ``Conversation.participants`` explicitly, and a moderator may add someone
-    for support reasons. The strict rule stays reserved for money, reviews and
-    disputes.
+    ``Conversation.participants`` is no longer trusted for access: it kept a
+    transporter (or return-trip client) who had cancelled. That list is now
+    only a mirror of the current parties, refreshed by
+    :func:`sync_conversation_participants`.
 
-    The previous local implementation only knew "owner or accepted offer
-    transporter" — on a return trip the owner IS the transporter, so the client
-    was refused (403) on a conversation that GET conversations/ listed for them.
+    Before the match (job PUBLISHED) there is no pre-contact channel: only the
+    job owner is a participant, exactly as before this change.
     """
-    return is_conversation_participant(user, job)
+    return is_job_participant(user, job)
 
 
 def _is_moderator(user) -> bool:
@@ -100,24 +93,28 @@ def _is_moderator(user) -> bool:
 # CORE SERVICES
 # =============================================================================
 
+def sync_conversation_participants(conversation: Conversation, job: TransportJob) -> None:
+    """
+    Make the stored participant list match the CURRENT parties of the job:
+    adds the newly accepted side, removes the one who cancelled.
+    """
+    conversation.participants.set(get_current_participants(job))
+
+
 @transaction.atomic
 def get_or_create_conversation(job: TransportJob) -> Conversation:
     """
     Get existing conversation or create new one for a job.
-    Auto-populates participants from job owner and accepted transporter.
+    Participants are re-synced from the current parties on every call, so an
+    acceptance or a cancellation is reflected as soon as the conversation is
+    touched (system message, new message, opening).
     """
     conversation, created = Conversation.objects.get_or_create(job=job)
+    sync_conversation_participants(conversation, job)
 
     if created:
-        # Both sides resolved through the shared rule, so a return trip (where
-        # the owner is the transporter and the client comes from the accepted
-        # request) populates correctly instead of leaving the client out.
-        for party in (get_job_transporter(job), get_job_client(job)):
-            if party is not None:
-                conversation.participants.add(party)
-
         logger.info(f"CONVERSATION_CREATED: job_id={job.id}")
-    
+
     return conversation
 
 
@@ -201,7 +198,9 @@ def send_message(user, job: TransportJob, content: str, is_system: bool = False)
             from notifications.services import notify
             from users.models import NotificationPreference
             sender_name = f"{user.first_name} {user.last_name[:1]}.".strip() or user.email
-            for participant in conversation.participants.exclude(id=user.id):
+            # Current parties only: an evicted transporter gets nothing.
+            recipients = [p for p in get_current_participants(job) if p.id != user.id]
+            for participant in recipients:
                 prefs = NotificationPreference.objects.filter(user=participant).first()
                 if prefs and not prefs.notify_new_message:
                     continue

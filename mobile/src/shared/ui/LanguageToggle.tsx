@@ -23,7 +23,7 @@ export function LanguageToggle() {
     void i18n.changeLanguage(next);
     if (I18nManager.isRTL !== nextRTL) {
       I18nManager.forceRTL(nextRTL);
-      reloadApp();
+      reloadApp(next);
     }
   };
 

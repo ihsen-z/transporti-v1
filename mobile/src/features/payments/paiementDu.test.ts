@@ -1,4 +1,4 @@
-import { clientDoitPayer } from './paiementDu';
+import { clientDoitPayer, isAwaitingConfirmation } from './paiementDu';
 
 /**
  * Régression du 06/09 : en déplaçant le paiement dans la barre d'action fixe
@@ -38,5 +38,21 @@ describe('clientDoitPayer', () => {
     // Rôle absent = session en cours de restauration. On ne prive pas la
     // cliente de son bouton ; seul un TRANSPORTER identifié le perd.
     expect(clientDoitPayer(undefined, 'MATCHED', 'DIGITAL')).toBe(true);
+  });
+});
+
+describe('isAwaitingConfirmation', () => {
+  it('vrai : paiement en ligne, mission terminée, réception non confirmée', () => {
+    expect(isAwaitingConfirmation('COMPLETED', 'DIGITAL', false)).toBe(true);
+  });
+
+  it('FAUX en espèces : pas de séquestre, le serveur répondrait 400', () => {
+    expect(isAwaitingConfirmation('COMPLETED', 'COD', false)).toBe(false);
+    expect(isAwaitingConfirmation('COMPLETED', null, undefined)).toBe(false);
+  });
+
+  it('faux si déjà confirmée ou pas terminée', () => {
+    expect(isAwaitingConfirmation('COMPLETED', 'DIGITAL', true)).toBe(false);
+    expect(isAwaitingConfirmation('IN_PROGRESS', 'DIGITAL', false)).toBe(false);
   });
 });

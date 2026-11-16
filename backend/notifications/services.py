@@ -16,6 +16,19 @@ from .models import Notification, NotificationType, NotificationCategory
 logger = logging.getLogger('transporti')
 
 
+def _job_parties(job):
+    """
+    (client, transporteur) d'une mission, quel que soit le canal.
+
+    Sur un trajet retour, ``job.owner`` est le TRANSPORTEUR : notifier
+    ``job.owner`` en pensant joindre le client oubliait le client et doublait
+    les notifications du transporteur. logistics/participants.py est la seule
+    source de vérité ; import local pour éviter un import circulaire.
+    """
+    from logistics.participants import get_job_client, get_job_transporter
+    return get_job_client(job), get_job_transporter(job)
+
+
 # Coarse category → the concrete NotificationType stored on the row. Used by
 # create_notification(), whose callers reason in categories rather than in the
 # event-level types kept for backward compatibility.
@@ -271,9 +284,12 @@ def notify_escrow_released(escrow):
 def notify_escrow_refunded(escrow):
     """Notify client that escrow was refunded."""
     job = escrow.booking_reference
+    client, _ = _job_parties(job)
+    if client is None:
+        return None
 
     return _safe_notify(
-        user=job.owner,
+        user=client,
         notification_type=NotificationType.ESCROW_REFUNDED,
         title="💰 Remboursement effectué",
         message=f"Votre paiement de {escrow.amount} TND a été remboursé.",
@@ -288,19 +304,20 @@ def notify_escrow_refunded(escrow):
 def notify_escrow_blocked(job, reason: str):
     """Notify involved parties that escrow is blocked."""
     notifications = []
-    
-    # Notify client
-    notifications.append(_safe_notify(
-        user=job.client,
-        notification_type=NotificationType.ESCROW_BLOCKED,
-        title="⏸️ Paiement en attente",
-        message=f"Le paiement est bloqué : {reason}",
-        metadata={'job_id': job.id, 'reason': reason}
-    ))
-    
+    client, transporter = _job_parties(job)
+
+    # Notify client (TransportJob n'a pas d'attribut « client »)
+    if client is not None:
+        notifications.append(_safe_notify(
+            user=client,
+            notification_type=NotificationType.ESCROW_BLOCKED,
+            title="⏸️ Paiement en attente",
+            message=f"Le paiement est bloqué : {reason}",
+            metadata={'job_id': job.id, 'reason': reason}
+        ))
+
     # Notify transporter
-    try:
-        transporter = job.accepted_offer.transporter
+    if transporter is not None:
         notifications.append(_safe_notify(
             user=transporter,
             notification_type=NotificationType.ESCROW_BLOCKED,
@@ -308,9 +325,7 @@ def notify_escrow_blocked(job, reason: str):
             message=f"La libération du paiement est bloquée : {reason}",
             metadata={'job_id': job.id, 'reason': reason}
         ))
-    except AttributeError:
-        pass
-    
+
     return notifications
 
 
@@ -323,11 +338,12 @@ def notify_dispute_opened(dispute):
     notifications = []
     job = dispute.job
     
-    # Notify the other party
-    if dispute.opened_by == job.owner:
-        other_party = job.accepted_offer.transporter if hasattr(job, 'accepted_offer') else None
+    # Notify the other party (client et transporteur selon le canal)
+    client, transporter = _job_parties(job)
+    if client is not None and dispute.opened_by_id == client.id:
+        other_party = transporter
     else:
-        other_party = job.owner
+        other_party = client
     
     if other_party:
         notifications.append(_safe_notify(
@@ -350,7 +366,7 @@ def notify_dispute_resolved(dispute, resolution: str):
     notifications = []
     job = dispute.job
     
-    for user in [job.owner, getattr(getattr(job, 'accepted_offer', None), 'transporter', None)]:
+    for user in _job_parties(job):
         if user:
             notifications.append(_safe_notify(
                 user=user,
@@ -426,17 +442,18 @@ def notify_verification_result(user, approved: bool, reason: str = ""):
 def notify_job_completed(job):
     """Notify both parties about job completion."""
     notifications = []
-    
-    notifications.append(_safe_notify(
-        user=job.owner,
-        notification_type=NotificationType.JOB_COMPLETED,
-        title="🎉 Mission terminée",
-        message="Votre transport a été livré avec succès. N'oubliez pas de laisser un avis !",
-        metadata={'job_id': job.id}
-    ))
-    
-    try:
-        transporter = job.accepted_offer.transporter
+    client, transporter = _job_parties(job)
+
+    if client is not None:
+        notifications.append(_safe_notify(
+            user=client,
+            notification_type=NotificationType.JOB_COMPLETED,
+            title="🎉 Mission terminée",
+            message="Votre transport a été livré avec succès. N'oubliez pas de laisser un avis !",
+            metadata={'job_id': job.id}
+        ))
+
+    if transporter is not None:
         notifications.append(_safe_notify(
             user=transporter,
             notification_type=NotificationType.JOB_COMPLETED,
@@ -444,9 +461,7 @@ def notify_job_completed(job):
             message="Vous avez complété la mission de transport avec succès.",
             metadata={'job_id': job.id}
         ))
-    except AttributeError:
-        pass
-    
+
     return notifications
 
 
@@ -477,11 +492,30 @@ def notify_transporter_cancelled(job, transporter, reason: str = ""):
     message = f"Le transporteur {name} a annulé la mission. Elle est de nouveau ouverte aux offres."
     if reason:
         message += f" Raison : {reason}"
+    client, _ = _job_parties(job)
+    if client is None:
+        return None
     return _safe_notify(
-        user=job.owner,
+        user=client,
         notification_type=NotificationType.JOB_CANCELLED,
         title="⚠️ Le transporteur a annulé",
         message=message,
         metadata={'job_id': job.id}
     )
 
+
+# =============================================================================
+# REVIEW EVENT NOTIFICATIONS
+# =============================================================================
+
+def notify_review_received(review):
+    """Prévient la personne évaluée qu'un avis vient d'être déposé sur elle."""
+    # La note n'est pas dans le message : l'avis peut rester masqué tant que
+    # l'autre partie n'a pas noté à son tour (reviews/models.py).
+    return _safe_notify(
+        user=review.target,
+        notification_type=NotificationType.REVIEW_RECEIVED,
+        title="⭐ Nouvel avis reçu",
+        message=f"Vous avez reçu un avis sur la mission #{review.job_id}.",
+        metadata={'job_id': review.job_id, 'review_id': review.id},
+    )

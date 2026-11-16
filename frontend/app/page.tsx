@@ -233,27 +233,26 @@ export default function Home() {
         </section>
 
         {/* ================================================================
-           STATS
+           FAITS VÉRIFIABLES
+           Le service vient d'ouvrir : aucun chiffre d'activité n'est affiché.
+           Seuls figurent des faits vrais aujourd'hui.
            ================================================================ */}
         <section className="border-b border-line bg-surface py-12">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
               {[
-                { value: l.stat1Value, label: l.stat1Label, icon: "🚛" },
-                { value: l.stat2Value, label: l.stat2Label, icon: "📦" },
-                { value: l.stat3Value, label: l.stat3Label, icon: "📍" },
-                { value: l.stat4Value, label: l.stat4Label, icon: "⭐" },
-              ].map((stat, i) => (
+                { value: l.fact1Value, label: l.fact1Label, icon: "📍" },
+                { value: l.fact2Value, label: l.fact2Label, icon: "💵" },
+                { value: l.fact3Value, label: l.fact3Label, icon: "🛡️" },
+              ].map((fact, i) => (
                 <AnimatedSection key={i} delay={i * 0.1}>
-                  <div className="group cursor-default">
-                    <div className="text-3xl mb-1 group-transition-transform duration-300">
-                      {stat.icon}
-                    </div>
-                    <div className="figure-hero mb-1 text-blue-800">
-                      {stat.value}
+                  <div className="cursor-default">
+                    <div className="text-3xl mb-1">{fact.icon}</div>
+                    <div className="mb-1 text-[22px] font-extrabold tracking-title text-blue-800 sm:text-[26px]">
+                      {fact.value}
                     </div>
                     <div className="text-[12.5px] font-semibold text-ink-500">
-                      {stat.label}
+                      {fact.label}
                     </div>
                   </div>
                 </AnimatedSection>
@@ -391,77 +390,6 @@ export default function Home() {
                     <p className="text-[14.5px] leading-[1.55] text-ink-500">
                       {feature.desc}
                     </p>
-                  </div>
-                </AnimatedSection>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        {/* ================================================================
-           TESTIMONIALS
-           ================================================================ */}
-        <section className="bg-app py-16 lg:py-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <AnimatedSection className="text-center mb-16">
-              <h2 className="mb-4 text-[28px] font-extrabold tracking-title text-ink-900 sm:text-[34px]">
-                {l.testimonialsTitle}
-              </h2>
-              <p className="text-[16px] leading-[1.55] text-ink-500">
-                {l.testimonialsSubtitle}
-              </p>
-            </AnimatedSection>
-
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  name: l.review1Name,
-                  role: l.review1Role,
-                  text: l.review1Text,
-                  rating: 5,
-                },
-                {
-                  name: l.review2Name,
-                  role: l.review2Role,
-                  text: l.review2Text,
-                  rating: 5,
-                },
-                {
-                  name: l.review3Name,
-                  role: l.review3Role,
-                  text: l.review3Text,
-                  rating: 5,
-                },
-              ].map((testimonial, i) => (
-                <AnimatedSection key={i} delay={i * 0.12}>
-                  <div className="card hover-lift flex h-full flex-col p-6">
-                    <div className="flex gap-1 mb-4">
-                      {[1, 2, 3, 4, 5].map((star) => (
-                        <svg
-                          key={star}
-                          className={`h-4 w-4 ${star <= testimonial.rating ? "fill-warning-400 text-warning-400" : "text-neutral-200"}`}
-                          viewBox="0 0 20 20"
-                        >
-                          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                        </svg>
-                      ))}
-                    </div>
-                    <p className="mb-6 flex-1 text-[14.5px] italic leading-[1.55] text-ink-700">
-                      &ldquo;{testimonial.text}&rdquo;
-                    </p>
-                    <div className="flex items-center gap-3">
-                      <div className="grid h-10 w-10 flex-shrink-0 place-items-center rounded-full bg-blue-700 text-[14px] font-bold text-white">
-                        {testimonial.name.charAt(0)}
-                      </div>
-                      <div>
-                        <p className="text-[14px] font-bold text-ink-900">
-                          {testimonial.name}
-                        </p>
-                        <p className="text-[12.5px] text-ink-500">
-                          {testimonial.role}
-                        </p>
-                      </div>
-                    </div>
                   </div>
                 </AnimatedSection>
               ))}

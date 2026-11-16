@@ -58,9 +58,18 @@ services:
         value: production
       - key: DEBUG
         value: "False"
-      # daphne écoute sur le port 8000 (CMD du Dockerfile).
+      # Port d'écoute de daphne : le CMD du Dockerfile lit ${PORT:-8000}.
       - key: PORT
         value: "8000"
+
+      # --- Premier compte administrateur ---
+      # Lus à chaque démarrage par `manage.py creer_admin` (entrypoint.sh) :
+      # crée le compte s'il n'existe pas, ne change JAMAIS le mot de passe
+      # d'un compte existant (répare seulement le rôle). Sans elles : rien.
+      - key: ADMIN_EMAIL
+        sync: false
+      - key: ADMIN_PASSWORD
+        sync: false
 
       # --- Adresses ---
       - key: ALLOWED_HOSTS

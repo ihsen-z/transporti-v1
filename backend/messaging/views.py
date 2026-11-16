@@ -8,17 +8,61 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from django.core.exceptions import ValidationError, PermissionDenied
+from rest_framework.exceptions import NotFound
 
 from .models import Conversation, Message
 from .serializers import MessageSerializer, MessageCreateSerializer, ConversationSerializer, ConversationListSerializer
 from .services import (
     send_message, get_conversation_messages, 
-    get_or_create_conversation, mark_messages_as_read
+    get_or_create_conversation, mark_messages_as_read,
+    _is_job_participant, _is_moderator,
 )
 from logistics.models import TransportJob
+from logistics.participants import get_job_client, get_job_transporter
 from transporti_core.throttling import MessageRateThrottle
 
 logger = logging.getLogger('transporti')
+
+# Même réponse pour « mission inexistante » et « mission d'un autre » : un
+# tiers ne doit pas pouvoir sonder quelles missions existent.
+JOB_NOT_FOUND = 'Mission introuvable.'
+
+
+def _load_job(job_id) -> TransportJob:
+    job = TransportJob.objects.filter(id=job_id).first()
+    if job is None:
+        raise NotFound(JOB_NOT_FOUND)
+    return job
+
+
+def _deny(user, job_id, event: str):
+    """Tiers (ni participant actuel, ni modérateur) : 404 neutre."""
+    logger.warning(f"{event}: user={user.id}, job={job_id}")
+    raise NotFound(JOB_NOT_FOUND)
+
+
+def _current_participant_filter(user):
+    """
+    Conversations dont `user` est un participant ACTUEL de la mission
+    (même règle que logistics/participants.is_job_participant, en SQL) :
+    - propriétaire de la mission (client du canal classique, transporteur
+      d'un trajet retour) ;
+    - transporteur de l'offre ACCEPTED ;
+    - client de la demande ACCEPTED d'un trajet retour.
+    Exists plutôt que des jointures, pour ne pas fausser les Count().
+    """
+    from django.db.models import Exists, OuterRef, Q
+    from logistics.models import Offer, ReturnTripRequest
+
+    accepted_offer = Offer.objects.filter(
+        job=OuterRef('job'), status='ACCEPTED', transporter=user)
+    accepted_request = ReturnTripRequest.objects.filter(
+        job=OuterRef('job'), status='ACCEPTED', client=user)
+    return (
+        Q(job__owner=user)
+        | Q(Exists(accepted_offer))
+        | (Q(job__is_return_trip=True) & Q(Exists(accepted_request)))
+    )
 
 
 class UserConversationsView(generics.ListAPIView):
@@ -41,7 +85,9 @@ class UserConversationsView(generics.ListAPIView):
 
         return (
             Conversation.objects
-            .filter(participants=self.request.user)
+            # Participation ACTUELLE, pas la liste stockée (périmée après une
+            # annulation).
+            .filter(_current_participant_filter(self.request.user))
             .select_related('job')
             .prefetch_related('participants')
             .annotate(
@@ -108,84 +154,69 @@ class JobMessagesView(generics.GenericAPIView):
     
     def get(self, request, job_id):
         """Get messages for a job conversation."""
-        job = get_object_or_404(TransportJob, id=job_id)
-        
+        job = _load_job(job_id)
+        user = request.user
+        is_participant = _is_job_participant(user, job)
+        if not is_participant and not _is_moderator(user):
+            _deny(user, job_id, 'MESSAGES_ACCESS_DENIED')
+
+        conversation = Conversation.objects.filter(job=job).first()
+        if conversation is None:
+            # Seul un participant actuel peut créer la conversation ;
+            # un modérateur ne fait que lire.
+            if not is_participant:
+                return Response(
+                    {'error': 'Aucune conversation trouvée pour cette mission.'},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+            conversation = get_or_create_conversation(job)
+
         try:
-            # FIX #5: Auto-create conversation if job is active and user is participant
-            conversation = None
-            try:
-                conversation = Conversation.objects.get(job=job)
-            except Conversation.DoesNotExist:
-                # Auto-create only if user is a participant in the job
-                from logistics.models import Offer
-                is_owner = job.owner_id == request.user.id
-                is_transporter = Offer.objects.filter(
-                    job=job, status='ACCEPTED', transporter=request.user
-                ).exists()
-                
-                if is_owner or is_transporter:
-                    conversation = get_or_create_conversation(job)
-                else:
-                    return Response(
-                        {'error': 'Aucune conversation trouvée pour cette mission.'},
-                        status=status.HTTP_404_NOT_FOUND
-                    )
-            
-            messages = get_conversation_messages(
-                user=request.user,
-                job=job,
-                limit=100
-            )
+            messages = get_conversation_messages(user=user, job=job, limit=100)
+        except PermissionDenied:
+            _deny(user, job_id, 'MESSAGES_ACCESS_DENIED')
 
-            # 5.3 : `limit=100` est une troncature dure, pas une pagination —
-            # sans le total réel, le mobile ne peut pas savoir qu'il en manque.
-            total_count = conversation.messages.count() if conversation else len(messages)
+        # 5.3 : `limit=100` est une troncature dure, pas une pagination —
+        # sans le total réel, le mobile ne peut pas savoir qu'il en manque.
+        total_count = conversation.messages.count()
 
-            # Mark as read
-            mark_messages_as_read(request.user, job)
-            
-            conv_data = ConversationSerializer(conversation).data if conversation else None
-            
-            # Build job info for the chat header
-            job_info = {
-                'id': job.id,
-                'pickup_address': job.pickup_address,
-                'dropoff_address': job.dropoff_address,
-                'status': job.status,
-                'job_type': job.job_type,
-            }
-            
-            # Identify other party in the conversation
-            other_party = None
-            if conversation:
-                for p in conversation.participants.all():
-                    if p.id != request.user.id:
-                        other_party = {
-                            'id': p.id,
-                            'name': f"{p.first_name} {p.last_name}".strip() or p.email,
-                            'role': p.role,
-                            'phone': p.phone if job.status in ('IN_PROGRESS', 'COMPLETED') else None,
-                            'email': p.email if job.status in ('IN_PROGRESS', 'COMPLETED') else None,
-                        }
-                        break
-            
-            return Response({
-                'conversation': conv_data,
-                'messages': MessageSerializer(messages, many=True).data,
-                'count': len(messages),
-                'total_count': total_count,
-                'job': job_info,
-                'other_party': other_party,
-            })
-        
-        except PermissionDenied as e:
-            logger.warning(f"MESSAGES_ACCESS_DENIED: user={request.user.id}, job={job_id}")
-            return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
-    
+        # Lu/non lu : seul un participant marque comme lu. Un modérateur
+        # qui consulte ne doit rien changer (ni recevoir 403).
+        if is_participant:
+            mark_messages_as_read(user, job)
+
+        conv_data = ConversationSerializer(conversation).data
+
+        # Build job info for the chat header
+        job_info = {
+            'id': job.id,
+            'pickup_address': job.pickup_address,
+            'dropoff_address': job.dropoff_address,
+            'status': job.status,
+            'job_type': job.job_type,
+        }
+
+        return Response({
+            'conversation': conv_data,
+            'messages': MessageSerializer(messages, many=True).data,
+            'count': len(messages),
+            'total_count': total_count,
+            'job': job_info,
+            'other_party': _other_party(user, job) if is_participant else None,
+        })
+
     def post(self, request, job_id):
         """Send a message in a job conversation."""
-        job = get_object_or_404(TransportJob, id=job_id)
-        
+        job = _load_job(job_id)
+        if not _is_job_participant(request.user, job):
+            if _is_moderator(request.user):
+                # Le modérateur connaît la mission : refus explicite.
+                return Response(
+                    {'error': 'Les modérateurs lisent la conversation sans y écrire.'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            _deny(request.user, job_id, 'MESSAGE_SEND_DENIED')
+
         serializer = MessageCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -204,9 +235,8 @@ class JobMessagesView(generics.GenericAPIView):
                 'data': MessageSerializer(message).data
             }, status=status.HTTP_201_CREATED)
         
-        except PermissionDenied as e:
-            logger.warning(f"MESSAGE_SEND_DENIED: user={request.user.id}, job={job_id}")
-            return Response({'error': str(e)}, status=status.HTTP_403_FORBIDDEN)
+        except PermissionDenied:
+            _deny(request.user, job_id, 'MESSAGE_SEND_DENIED')
         
         except ValidationError as e:
             logger.warning(f"MESSAGE_SEND_FAILED: user={request.user.id}, job={job_id}, error={str(e)}")
@@ -222,7 +252,36 @@ class JobConversationView(generics.RetrieveAPIView):
     
     def get_object(self):
         job_id = self.kwargs['job_id']
-        job = get_object_or_404(TransportJob, id=job_id)
-        
-        # Use service to get or create
-        return get_or_create_conversation(job)
+        job = _load_job(job_id)
+        user = self.request.user
+
+        # Un participant peut ouvrir (et donc créer) la conversation.
+        if _is_job_participant(user, job):
+            return get_or_create_conversation(job)
+
+        # Un modérateur/admin lit une conversation existante, sans en créer.
+        if _is_moderator(user):
+            return get_object_or_404(Conversation, job=job)
+
+        # Tiers : même réponse qu'une mission inexistante (pas de fuite).
+        _deny(user, job_id, 'CONVERSATION_ACCESS_DENIED')
+
+
+def _other_party(user, job):
+    """L'autre partie ACTUELLE de la mission (pas la liste stockée)."""
+    transporter = get_job_transporter(job)
+    client = get_job_client(job)
+    if transporter is not None and transporter.id == user.id:
+        other = client
+    else:
+        other = transporter
+    if other is None or other.id == user.id:
+        return None
+    visible = job.status in ('IN_PROGRESS', 'COMPLETED')
+    return {
+        'id': other.id,
+        'name': f"{other.first_name} {other.last_name}".strip() or other.email,
+        'role': other.role,
+        'phone': other.phone if visible else None,
+        'email': other.email if visible else None,
+    }

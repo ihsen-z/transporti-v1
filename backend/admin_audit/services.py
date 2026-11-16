@@ -8,12 +8,8 @@ from .models import AdminAuditLog
 logger = logging.getLogger('transporti')
 
 
-def get_client_ip(request):
-    """Extract client IP, handling proxied requests."""
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        return x_forwarded_for.split(',')[0].strip()
-    return request.META.get('REMOTE_ADDR', 'unknown')
+# Règle unique (DRF + NUM_PROXIES), réexportée pour les appelants existants.
+from transporti_core.client_ip import get_client_ip  # noqa: E402,F401
 
 
 def log_admin_action(request, action, target_type, target_id, target_label='', details=None):

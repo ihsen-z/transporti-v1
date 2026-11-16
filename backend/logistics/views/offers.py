@@ -8,11 +8,12 @@ from django.http import Http404
 from django.shortcuts import get_object_or_404
 
 from ..models import TransportJob, Offer, ReturnTripRequest
+from ..acceptance_messages import client_next_step
 from ..serializers import (
     OfferCreateSerializer, OfferListSerializer, OfferDetailSerializer,
     OfferAcceptSerializer, TransportJobDetailSerializer,
 )
-from users.permissions import RequireRole, RequireVerification
+from users.permissions import RequireRole
 
 
 class JobOffersView(generics.ListAPIView):
@@ -66,7 +67,11 @@ class OfferCreateView(generics.CreateAPIView):
     POST /api/offers/
     Verified transporter submits an offer.
     """
-    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER'), RequireVerification]
+    # Le KYC est contrôlé dans OfferCreateSerializer.validate (logistics/kyc.py) :
+    # même refus 403 KYC_REQUIRED que les autres engagements, dérogation admin
+    # comprise. L'ancienne permission RequireVerification renvoyait un 403
+    # générique, sans code exploitable par l'application.
+    permission_classes = [IsAuthenticated, RequireRole.for_roles('TRANSPORTER')]
     serializer_class = OfferCreateSerializer
 
     def create(self, request, *args, **kwargs):
@@ -153,9 +158,11 @@ class OfferAcceptView(generics.GenericAPIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        # Transporteur au-delà du plafond de dette : réponse neutre au client.
-        from payments.debt import is_blocked_for_debt, transporter_unavailable_response
-        if is_blocked_for_debt(offer.transporter):
+        # Transporteur non vérifié (KYC), refusé, suspendu ou au-delà du
+        # plafond de dette : même réponse neutre au client, sans la raison.
+        from payments.debt import transporter_unavailable_response
+        from ..kyc import transporter_can_be_booked
+        if not transporter_can_be_booked(offer.transporter):
             return transporter_unavailable_response()
 
         # COD threshold guard — réglage central (settings.COD_MAX_AMOUNT).
@@ -235,10 +242,11 @@ class OfferAcceptView(generics.GenericAPIView):
             pass  # Conversation failure must never block booking
 
         response_data = {
-            'message': f'Offer accepted ({payment_method}). Job is now MATCHED — awaiting payment setup.',
+            'message': 'Offre acceptée. ' + client_next_step(payment_method),
             'payment_method': payment_method,
             'job': TransportJobDetailSerializer(job, context={'show_contact': True, 'request': request}).data,
-            'accepted_offer': OfferDetailSerializer(offer).data
+            # La requête est passée pour que le client voie ses propres adresses.
+            'accepted_offer': OfferDetailSerializer(offer, context={'request': request}).data
         }
 
         # Send email notification to transporter
@@ -397,6 +405,9 @@ class CounterOfferRespondView(APIView):
             )
 
         if action == 'accept':
+            # KYC obligatoire d'abord (403 KYC_REQUIRED), dette ensuite.
+            from ..kyc import ensure_transporter_verified
+            ensure_transporter_verified(request.user)
             from payments.debt import ensure_transporter_can_engage
             ensure_transporter_can_engage(request.user)
 

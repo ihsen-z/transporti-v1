@@ -24,7 +24,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Devenir transporteur",
   description:
-    "Transformez vos retours à vide en kilomètres payés. Commission réduite sur les trajets retour, paiement sécurisé par escrow, inscription gratuite.",
+    "Transformez vos retours à vide en kilomètres payés. Commission réduite sur les trajets retour, paiement en espèces à la livraison, inscription gratuite.",
 };
 
 export default function DevenirTransporteurLayout({

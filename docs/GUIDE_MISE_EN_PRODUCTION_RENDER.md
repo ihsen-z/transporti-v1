@@ -413,7 +413,25 @@ EMAIL_USE_TLS=True
 EMAIL_HOST_USER=<Login SMTP Brevo>
 SENDGRID_API_KEY=<clé SMTP Brevo>
 DEFAULT_FROM_EMAIL="Transporti <contact@votre-domaine>"
+ADMIN_EMAIL=<votre adresse e-mail>
+ADMIN_PASSWORD=<mot de passe administrateur, 12 caractères conseillés>
 ```
+
+**Le serveur refuse de démarrer** (déploiement en échec, message
+`CRITICAL: démarrage refusé en production — <VARIABLE> ...` dans **Logs**)
+tant que l'une de ces variables manque : `DATABASE_URL`, `FRONTEND_URL` (ni
+vide ni `localhost`), les cinq variables `AWS_...` du stockage, et
+`EMAIL_BACKEND` (obligatoire et différent des backends de développement
+console, fichier ou mémoire, qui écriraient les liens de réinitialisation
+dans les logs). Le message nomme la variable : ajoutez-la puis redéployez.
+Le message apparaît dès l'étape `Checking settings...`, avant les migrations.
+
+Le serveur se met en mode production dès que `ENV=production` **ou** que la
+variable `RENDER` (posée automatiquement par Render dans ses conteneurs)
+vaut `true` : oublier `ENV` ne rouvre plus l'admin Django ni la
+documentation publique. Pour démarrer volontairement
+sans stockage (fichiers perdus à chaque déploiement), posez
+`ALLOW_EPHEMERAL_MEDIA=1` — à éviter en vrai lancement.
 
 À ne **pas** créer : `RUN_SEED` (comptes de test), `AWS_S3_CUSTOM_DOMAIN` et
 `MEDIA_CDN_URL` (liens non signés vers des fichiers privés).
@@ -432,7 +450,37 @@ DEFAULT_FROM_EMAIL="Transporti <contact@votre-domaine>"
 ### 5.4 Créer votre compte administrateur
 
 La base est vide : il n'existe aucun compte, ni administrateur. L'offre
-gratuite de Render n'a pas de terminal (Shell), on passe donc par Neon.
+gratuite de Render n'a pas de terminal (Shell) : le compte est créé au
+démarrage du serveur, à partir de deux variables.
+
+**Méthode normale : les variables `ADMIN_EMAIL` et `ADMIN_PASSWORD`**
+
+1. **Avant d'ouvrir les inscriptions au public**, dans l'onglet
+   **Environment** du service, posez `ADMIN_EMAIL` (votre adresse) et
+   `ADMIN_PASSWORD` (bloc du §5.2). Le mot de passe doit passer les règles
+   habituelles : 8 caractères au moins, pas uniquement des chiffres, pas trop
+   proche de l'adresse, pas trop courant.
+2. Enregistrez et déployez. Dans **Logs**, cherchez la ligne
+   `creer_admin : compte administrateur créé (votre adresse)`. Si vous lisez
+   `creer_admin : AVERTISSEMENT — ADMIN_PASSWORD refusé`, aucun compte n'est
+   créé mais le serveur démarre quand même : choisissez un mot de passe plus
+   solide et redéployez. Le mot de passe n'apparaît jamais dans les logs.
+3. Connectez-vous au back-office avec cette adresse et ce mot de passe.
+4. **Après ce premier démarrage réussi, retirez `ADMIN_PASSWORD`** de
+   l'onglet Environment de Render (gardez `ADMIN_EMAIL` si vous voulez).
+   Les redémarrages suivants ne touchent de toute façon plus au compte.
+5. La commande ne crée un administrateur **que si l'adresse est libre**. Si
+   un compte existe déjà avec cette adresse :
+   - s'il est déjà administrateur : rien n'est modifié (ni mot de passe, ni
+     droits) ;
+   - s'il n'est PAS administrateur (par exemple quelqu'un s'est inscrit avec
+     votre adresse) : rien n'est modifié, le démarrage continue, et les logs
+     affichent `creer_admin : AVERTISSEMENT — l'adresse … est déjà utilisée
+     par un compte NON administrateur`. Choisissez alors une autre adresse
+     pour `ADMIN_EMAIL` et redéployez, ou utilisez le plan B ci-dessous après
+     avoir vérifié que ce compte est bien le vôtre.
+
+**Plan B : la requête SQL dans Neon** (si la méthode normale échoue)
 
 1. Sur le site Netlify, **inscrivez-vous normalement** avec votre adresse
    e-mail.

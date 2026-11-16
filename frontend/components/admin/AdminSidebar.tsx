@@ -20,9 +20,11 @@ import {
   X,
 } from "lucide-react";
 import { AdminSidebarLogo } from "../brand/TransportiLogo";
+import { usePaymentConfig } from "@/hooks/usePaymentConfig";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
 export default function AdminSidebar() {
+  const { online_payment_enabled } = usePaymentConfig();
   const pathname = usePathname();
   const { t, isRTL } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -40,7 +42,16 @@ export default function AdminSidebar() {
     },
     { href: "/admin/jobs", label: t.sidebar.transports, icon: Truck },
     { href: "/admin/users", label: t.sidebar.users, icon: Users },
-    { href: "/admin/payments", label: t.sidebar.payments, icon: CreditCard },
+    // Sans paiement en ligne, il n'y a ni séquestre ni flux à suivre ici.
+    ...(online_payment_enabled
+      ? [
+          {
+            href: "/admin/payments",
+            label: t.sidebar.payments,
+            icon: CreditCard,
+          },
+        ]
+      : []),
     // Pilote : règlement manuel des commissions dues sur les courses en espèces.
     { href: "/admin/commissions", label: t.sidebar.commissions, icon: Coins },
     {

@@ -439,6 +439,8 @@ def recalculate_profile_status(trust_profile) -> str:
     # Rule 2: All approved → VERIFIED
     if approved_count == total:
         trust_profile.mark_verified()
+        # Le score mis en cache restait à 0 après la vérification.
+        sync_trust_score(trust_profile.user)
         logger.info(
             f"DOC_REVIEW_RECALC: user_id={trust_profile.user_id}, "
             f"result=VERIFIED, all {total} documents approved"

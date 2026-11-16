@@ -1,4 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
+import { POLL_INTERVAL_MS } from '@/core/api/polling';
 import { fetchAllPages } from '@/core/api/fetchAllPages';
 import type { MissionDto, MissionStatus } from './dto';
 
@@ -26,5 +27,8 @@ export function useMyMissions() {
   return useQuery({
     queryKey: ['myMissions'],
     queryFn: fetchMyMissions,
+    // Pas de push au lancement : sondage + rechargement au retour dans l'app.
+    refetchInterval: POLL_INTERVAL_MS.myMissions,
+    refetchOnWindowFocus: true,
   });
 }

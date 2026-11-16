@@ -101,6 +101,9 @@ export interface ChangePasswordRequestDto {
 
 export interface ChangePasswordResponseDto {
   message: string;
+  // Nouvelle paire de jetons (le serveur révoque les anciennes sessions).
+  // Optionnel : absent sur une ancienne version du serveur.
+  tokens?: { access: string; refresh: string };
 }
 
 // POST /api/v1/auth/avatar/ (multipart, champ `avatar`). En RN un fichier se

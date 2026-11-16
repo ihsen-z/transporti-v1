@@ -19,7 +19,7 @@ const nextConfig = {
             { source: '/settings', destination: '/compte', permanent: true },
             { source: '/disputes', destination: '/litiges', permanent: true },
             { source: '/verification', destination: '/documents', permanent: true },
-            { source: '/transporter/:id', destination: '/transporteur/:id', permanent: true },
+            { source: '/transporter/:id', destination: '/profile/:id', permanent: true },
             { source: '/booking/:jobId', destination: '/reservation/:jobId', permanent: true },
 
             // Pages legales, 05/09/2026. Les stubs vivaient sous app/(app)/,

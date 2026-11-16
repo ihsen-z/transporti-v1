@@ -3,7 +3,12 @@
 import React, { useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { ApiError } from "@/lib/api/client";
+import {
+  ApiError,
+  getApiErrorCode,
+  getApiErrorReason,
+  isKycRequired,
+} from "@/lib/api/client";
 import { publishReturnTrip } from "@/lib/services/returnTrips";
 import { useToast } from "@/components/ui/Toast";
 import {
@@ -297,13 +302,23 @@ export default function ReturnTripPage() {
       }
     } catch (e) {
       if (e instanceof ApiError && e.body) {
-        const msg =
-          typeof e.body === "object"
+        // Refus à code stable (KYC_REQUIRED, COMMISSION_DEBT_LIMIT) : le motif
+        // lisible du serveur, pas la liste brute de tous les champs du corps.
+        // KYC manquant : lien direct vers la page des documents.
+        const msg = getApiErrorCode(e)
+          ? (getApiErrorReason(e) ?? t.errorPub)
+          : typeof e.body === "object"
             ? Object.values(e.body as Record<string, string[]>)
                 .flat()
                 .join(", ")
             : String(e.body);
-        showToast("error", msg);
+        showToast(
+          "error",
+          msg,
+          isKycRequired(e)
+            ? { label: allT.common.kycLink, href: "/documents" }
+            : undefined,
+        );
       } else {
         showToast("error", t.errorPub);
       }

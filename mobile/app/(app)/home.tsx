@@ -1,5 +1,6 @@
 import { useTabBarClearance } from '@/shared/ui/FloatingTabBar';
 import { useAuthStore } from '@/core/auth/authStore';
+import { useRefetchOnTabFocus } from '@/core/api/useRefetchOnTabFocus';
 import { useTransporterStats } from '@/features/stats/api/useTransporterStats';
 import { HomeTopBar } from '@/features/dashboard/components/HomeTopBar';
 import { TransporterHero } from '@/features/dashboard/components/TransporterHero';
@@ -33,6 +34,8 @@ export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
   const isTransporter = user?.role === 'TRANSPORTER';
   const isClient = user?.role === 'CLIENT';
+  // Pas de push : les listes d'accueil se rechargent au retour sur l'onglet.
+  useRefetchOnTabFocus([['myMissions'], ['myRequests']]);
 
   // Vue protégée par RequireRole('TRANSPORTER') : ne la demande pas pour un client.
   const stats = useTransporterStats(isTransporter);

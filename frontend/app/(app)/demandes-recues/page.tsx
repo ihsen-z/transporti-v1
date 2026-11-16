@@ -3,6 +3,8 @@
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
 import { useToast } from "@/components/ui/Toast";
+import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { getApiErrorReason, isKycRequired } from "@/lib/api/client";
 import Modal from "@/components/ui/Modal";
 import Button from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -39,6 +41,7 @@ const LIBELLES: Record<OngletId, string> = {
 
 export default function DemandesRecuesPage() {
   const { showToast } = useToast();
+  const { t } = useAppI18n();
 
   const [onglet, setOnglet] = useState<OngletId>("a-decider");
   const [demandes, setDemandes] = useState<TripRequest[] | null>(null);
@@ -95,8 +98,16 @@ export default function DemandesRecuesPage() {
       await action();
       showToast("success", succes);
       await Promise.all([charger(), chargerCompteurs()]);
-    } catch {
-      showToast("error", "L'action n'a pas abouti. Réessayez.");
+    } catch (e) {
+      // Le serveur dit POURQUOI il refuse (pièces non validées, plafond de
+      // dette...) : on l'affiche, avec un lien vers les documents si besoin.
+      showToast(
+        "error",
+        getApiErrorReason(e) ?? "L'action n'a pas abouti. Réessayez.",
+        isKycRequired(e)
+          ? { label: t.common.kycLink, href: "/documents" }
+          : undefined,
+      );
     } finally {
       setEnCours(null);
     }

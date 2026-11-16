@@ -141,6 +141,11 @@ class AdminUserResetPasswordView(APIView):
         user.set_password(temp_password)
         user.save(update_fields=['password'])
 
+        # Nouveau mot de passe : toutes les sessions ouvertes (refresh tokens)
+        # sont fermées, sinon un appareil volé resterait connecté 7 jours.
+        from users.services_sessions import revoke_all_refresh_tokens
+        revoke_all_refresh_tokens(user, reason='admin_password_reset')
+
         logger.info(
             f"ADMIN_ACTION: password_reset | admin={request.user.email} "
             f"| target={user.email} (ID:{user.id})"
@@ -152,12 +157,11 @@ class AdminUserResetPasswordView(APIView):
             target_label=user.email,
         )
 
-        # In production, send this via email instead of returning it
-        # For now, return it to the admin for manual communication
+        # Le mot de passe temporaire part par e-mail à l'utilisateur. Hors
+        # DEBUG, c'est le seul canal : il n'est jamais renvoyé dans la réponse.
         try:
             from notifications.emails import send_password_reset_notification
-            send_password_reset_notification(user, temp_password)
-            email_sent = True
+            email_sent = send_password_reset_notification(user, temp_password)
         except Exception:
             email_sent = False
 
@@ -282,12 +286,15 @@ class AdminUserWarnView(APIView):
         # In-app notification
         notification_sent = False
         try:
-            from notifications.models import Notification
-            Notification.objects.create(
+            # Le champ du modèle s'appelle « type » et « WARNING » n'existe
+            # pas : l'ancien appel levait une erreur, avalée ici.
+            from notifications.services import notify
+            notify(
                 user=user,
+                notification_type='SYSTEM_ALERT',
                 title='Avertissement administratif',
                 message=f'Vous avez reçu un avertissement : {reason}',
-                notification_type='WARNING',
+                metadata={'event': 'ADMIN_WARNING'},
             )
             notification_sent = True
         except Exception as e:
@@ -297,8 +304,7 @@ class AdminUserWarnView(APIView):
         email_sent = False
         try:
             from notifications.emails import send_warning_email
-            send_warning_email(user, reason)
-            email_sent = True
+            email_sent = send_warning_email(user, reason)
         except Exception as e:
             logger.warning(f"Email warning failed for user #{user.id}: {e}")
 

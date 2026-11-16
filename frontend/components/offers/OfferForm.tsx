@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   AlertTriangle,
   CheckCircle,
@@ -7,7 +8,12 @@ import {
   Send,
   XCircle,
 } from "lucide-react";
-import { ApiError } from "@/lib/api/client";
+import {
+  ApiError,
+  getApiErrorCode,
+  getApiErrorReason,
+  isKycRequired,
+} from "@/lib/api/client";
 import { countActiveOffers, submitOffer } from "@/lib/services/offers";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
@@ -59,6 +65,8 @@ export function OfferForm({
   const [feedback, setFeedback] = useState<{
     type: FeedbackType;
     message: string;
+    /** Affiche un lien vers /documents (refus KYC_REQUIRED). */
+    kycLink?: boolean;
   }>({ type: null, message: "" });
 
   // D1 (net garanti): the rate comes from the API only — no local constants,
@@ -108,7 +116,8 @@ export function OfferForm({
     if (feedback.type) {
       const timer = setTimeout(
         () => setFeedback({ type: null, message: "" }),
-        6000,
+        // Plus long quand un lien est proposé : le temps de le lire et de cliquer.
+        feedback.kycLink ? 15000 : 6000,
       );
       return () => clearTimeout(timer);
     }
@@ -145,8 +154,17 @@ export function OfferForm({
       if (error instanceof ApiError) {
         const body = error.body as Record<string, unknown> | undefined;
 
-        if (error.status === 403) {
-          // Verification or role issue
+        const code = getApiErrorCode(error);
+        if (code === "KYC_REQUIRED" || code === "COMMISSION_DEBT_LIMIT") {
+          // Refus à code stable : le serveur dit POURQUOI (pièces non
+          // validées ou plafond de dette), on l'affiche tel quel.
+          setFeedback({
+            type: "warning",
+            message: getApiErrorReason(error) ?? t.errorVerification,
+            kycLink: isKycRequired(error),
+          });
+        } else if (error.status === 403) {
+          // Autre refus 403 (rôle...) : message de vérification générique
           setFeedback({
             type: "warning",
             message: t.errorVerification,
@@ -256,7 +274,21 @@ export function OfferForm({
           {feedback.type === "error" && (
             <XCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
           )}
-          <span>{feedback.message}</span>
+          <span>
+            {feedback.message}
+            {feedback.kycLink && (
+              <>
+                {" "}
+                <Link
+                  href="/documents"
+                  data-testid="offer-kyc-link"
+                  className="font-bold underline"
+                >
+                  {allT.common.kycLink}
+                </Link>
+              </>
+            )}
+          </span>
         </div>
       )}
 

@@ -31,9 +31,10 @@ class RouteDesTachesPlanifieesTests(TestCase):
 
         self.assertEqual(reponse.status_code, 200)
         lancees = [c.args[0] for c in appel.call_args_list]
-        self.assertEqual(lancees, ['reveal_stale_reviews', 'purge_kyc_documents'])
+        self.assertEqual(lancees, ['reveal_stale_reviews', 'purge_kyc_documents', 'flushexpiredtokens'])
         self.assertEqual(reponse.json()['taches'], {
             'reveal_stale_reviews': True, 'purge_kyc_documents': True,
+            'flushexpiredtokens': True,
         })
 
     def test_les_taches_frequentes_ne_lancent_pas_la_purge(self):
@@ -96,10 +97,45 @@ class CommandeUneFoisParGroupeTests(TestCase):
             call_command('run_scheduled_tasks', once=True, groupe='quotidiennes', stdout=StringIO())
 
         lancees = [c.args[0] for c in appel.call_args_list]
-        self.assertEqual(lancees, ['reveal_stale_reviews', 'purge_kyc_documents'])
+        self.assertEqual(lancees, ['reveal_stale_reviews', 'purge_kyc_documents', 'flushexpiredtokens'])
 
     def test_once_sans_groupe_lance_tout(self):
         with mock.patch(APPEL) as appel:
             call_command('run_scheduled_tasks', once=True, stdout=StringIO())
 
-        self.assertEqual(appel.call_count, 4)
+        self.assertEqual(appel.call_count, 5)
+
+
+class PurgeDesJetonsExpiresTests(TestCase):
+    """
+    flushexpiredtokens (simplejwt) dans le groupe quotidien : la liste noire
+    ne grossit plus sans fin, et le groupe reste sous les 30 s du cron.
+    """
+
+    def test_le_groupe_quotidien_purge_les_jetons_expires_en_moins_de_30_s(self):
+        import time
+        from datetime import timedelta
+
+        from django.contrib.auth import get_user_model
+        from django.utils import timezone
+        from rest_framework_simplejwt.token_blacklist.models import OutstandingToken
+
+        from logistics.taches_planifiees import QUOTIDIENNES, executer_groupe
+
+        user = get_user_model().objects.create_user(
+            username='jet', email='jet@test.tn', password='SecurePass123!')
+        passe = timezone.now() - timedelta(days=1)
+        futur = timezone.now() + timedelta(days=1)
+        OutstandingToken.objects.bulk_create(
+            [OutstandingToken(user=user, jti=f'expire-{i}', token='x', expires_at=passe)
+             for i in range(2000)]
+            + [OutstandingToken(user=user, jti='valide', token='x', expires_at=futur)]
+        )
+
+        debut = time.monotonic()
+        resultats = executer_groupe(QUOTIDIENNES)
+        duree = time.monotonic() - debut
+
+        self.assertTrue(resultats['flushexpiredtokens'])
+        self.assertEqual(list(OutstandingToken.objects.values_list('jti', flat=True)), ['valide'])
+        self.assertLess(duree, 30)

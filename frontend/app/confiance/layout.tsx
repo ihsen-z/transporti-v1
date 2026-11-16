@@ -14,7 +14,7 @@ import type { Metadata } from "next";
 export const metadata: Metadata = {
   title: "Confiance et sécurité",
   description:
-    "Votre argent est retenu par la plateforme jusqu'à la livraison confirmée. Transporteurs vérifiés pièces à l'appui, litiges qui gèlent le versement.",
+    "Vous payez en espèces à la livraison. Transporteurs aux pièces vérifiées, code de livraison à 4 chiffres, avis après mission, litiges examinés par l'équipe.",
 };
 
 export default function ConfianceLayout({

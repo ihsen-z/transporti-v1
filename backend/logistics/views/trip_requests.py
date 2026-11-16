@@ -22,6 +22,7 @@ from ..serializers import (
     ReturnTripRequestSerializer, ReturnTripRequestCreateSerializer,
     TransportJobDetailSerializer,
 )
+from ..acceptance_messages import client_next_step, transporter_next_step
 
 
 def _notify(user, notif_type, title, message, metadata=None):
@@ -221,12 +222,11 @@ def _accept_request(request_obj, client_total):
             {'job_id': job.id, 'request_id': other.id},
         )
 
-    # Conversation: make sure the CLIENT is a participant (return trips:
-    # owner == transporter, the generic helper would only add them)
+    # Conversation : les participants sont resynchronisés depuis la demande
+    # ACCEPTED (messaging.services.sync_conversation_participants).
     try:
         from messaging.services import get_or_create_conversation, send_system_message
-        conversation = get_or_create_conversation(job)
-        conversation.participants.add(request_obj.client)
+        get_or_create_conversation(job)
         if request_obj.payment_method == 'DIGITAL':
             next_step = "💳 Prochaine étape : le client procède au paiement sécurisé pour démarrer la mission."
         else:
@@ -274,7 +274,10 @@ class TripRequestRespondView(APIView):
         message = str(request.data.get('message', '')).strip()[:500]
 
         # Au-delà du plafond de dette, refuser reste possible ; s'engager non.
+        # KYC obligatoire d'abord (403 KYC_REQUIRED), dette ensuite.
         if action in ('accept', 'counter'):
+            from ..kyc import ensure_transporter_verified
+            ensure_transporter_verified(request.user)
             from payments.debt import ensure_transporter_can_engage
             ensure_transporter_can_engage(request.user)
 
@@ -326,12 +329,12 @@ class TripRequestRespondView(APIView):
                 trip_request.client, 'TRIP_REQUEST_ACCEPTED',
                 '✅ Demande acceptée !',
                 f'Le transporteur a accepté votre demande ({trip_request.proposed_price} TND). '
-                'Finalisez le paiement pour démarrer la mission.',
+                + client_next_step(trip_request.payment_method),
                 {'job_id': trip_request.job_id, 'request_id': trip_request.id},
             )
             return Response({
                 'status': 'accepted',
-                'message': 'Demande acceptée. Le client va finaliser le paiement.',
+                'message': 'Demande acceptée. ' + transporter_next_step(trip_request.payment_method),
                 'job': TransportJobDetailSerializer(
                     trip_request.job, context={'request': request}
                 ).data,
@@ -365,8 +368,11 @@ class TripRequestAcceptCounterView(APIView):
                 status=status.HTTP_400_BAD_REQUEST
             )
 
-        from payments.debt import is_blocked_for_debt, transporter_unavailable_response
-        if is_blocked_for_debt(trip_request.job.owner):
+        # Transporteur non vérifié (KYC), refusé, suspendu ou au-delà du
+        # plafond de dette : même réponse neutre au client, sans la raison.
+        from payments.debt import transporter_unavailable_response
+        from ..kyc import transporter_can_be_booked
+        if not transporter_can_be_booked(trip_request.job.owner):
             return transporter_unavailable_response()
 
         offer, error = _accept_request(trip_request, trip_request.counter_price)
@@ -382,7 +388,7 @@ class TripRequestAcceptCounterView(APIView):
         )
         return Response({
             'status': 'accepted',
-            'message': 'Contre-proposition acceptée. Finalisez le paiement pour démarrer la mission.',
+            'message': 'Contre-proposition acceptée. ' + client_next_step(trip_request.payment_method),
             'job': TransportJobDetailSerializer(
                 trip_request.job, context={'request': request}
             ).data,

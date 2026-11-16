@@ -12,6 +12,8 @@ import { statusVariant } from '@/shared/ui/statusVariant';
 import { TOUCH_TARGET, colors, fontSize, radii, spacing } from '@/shared/theme';
 import type { RespondAction, TripRequestDto } from '../api/dto';
 import { useRespondRequest } from '../api/useRespondRequest';
+import { isKycRequired, refusalText } from '@/core/api/refusalText';
+import { KycRequiredLink } from '@/features/trust/components/KycRequiredLink';
 import { RequestGoodsSummary } from './RequestGoodsSummary';
 import { useSheetBottomPadding } from '@/shared/ui/useSheetBottomPadding';
 import { formatApiAmount } from '@/shared/format/money';
@@ -53,10 +55,11 @@ export function RequestCard({ request, jobId, montrerCorridor = false }: Props) 
 
   // Le serveur rédige ses refus en français et cite ses bornes : on
   // affiche son texte, et le message localisé sert de repli.
+  const errorFallback = `requests.errors.${respond.error?.kind === 'forbidden' ? 'forbidden' : respond.error?.kind === 'network' ? 'network' : 'validation'}`;
   const errorMsg = respond.error
-    ? (respond.error.serverMessage ??
-       t(`requests.errors.${respond.error.kind === 'forbidden' ? 'forbidden' : respond.error.kind === 'network' ? 'network' : 'validation'}`))
+    ? refusalText(respond.error.serverMessage, respond.error.code, t, errorFallback)
     : null;
+  const kycRequired = isKycRequired(respond.error?.code);
 
   // Bord à bord Android 16 : la feuille ne colle pas la barre de gestes.
   const sheetPadding = useSheetBottomPadding(spacing.xl);
@@ -146,6 +149,7 @@ export function RequestCard({ request, jobId, montrerCorridor = false }: Props) 
       ) : null}
 
       {errorMsg ? <Txt style={styles.error}>{errorMsg}</Txt> : null}
+      {kycRequired ? <KycRequiredLink testID={`request-${request.id}-kyc-open`} /> : null}
 
       <Modal
         visible={counterOpen}

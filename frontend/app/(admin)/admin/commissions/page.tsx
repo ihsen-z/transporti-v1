@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { CheckCircle, Lock, RefreshCw } from "lucide-react";
-import { getErrorMessage } from "@/lib/api/client";
+import { getApiErrorReason, getErrorMessage } from "@/lib/api/client";
 import {
   getDettesCommission,
   reglerDetteTransporteur,
@@ -61,7 +61,10 @@ export default function AdminCommissionsPage() {
       setMotif("");
       await charger();
     } catch (e) {
-      setErreur(getErrorMessage(e) ?? "Règlement impossible.");
+      // Le motif du serveur (ex. dette déjà réglée) plutôt que « API Error: 400 ».
+      setErreur(
+        getApiErrorReason(e) ?? getErrorMessage(e) ?? "Règlement impossible.",
+      );
     } finally {
       setEnCours(false);
     }

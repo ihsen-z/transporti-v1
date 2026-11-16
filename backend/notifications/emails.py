@@ -92,6 +92,15 @@ EMAIL_TEMPLATES = {
         'subject': '🔑 Réinitialisation de votre mot de passe — Transporti',
         'template': 'emails/password_reset.html',
     },
+    # Mot de passe temporaire fixé par un administrateur (back-office).
+    'admin_password_reset': {
+        'subject': '🔑 Votre nouveau mot de passe temporaire — Transporti',
+        'template': 'emails/admin_password_reset.html',
+    },
+    'account_warning': {
+        'subject': '⚠️ Avertissement concernant votre compte — Transporti',
+        'template': 'emails/account_warning.html',
+    },
 }
 
 
@@ -149,14 +158,15 @@ def send_transactional_email(
             fail_silently=False,
         )
         logger.info(
-            f"EMAIL_SENT: template={template_key}, to={recipient_email}, "
-            f"subject={template_config['subject']}"
+            # Ni adresse ni sujet : les journaux ne portent pas de donnée personnelle.
+            f"EMAIL_SENT: template={template_key}"
         )
         return sent > 0
     except Exception as e:
         logger.error(
-            f"EMAIL_FAILED: template={template_key}, to={recipient_email}, "
-            f"error={e}"
+            # Type seul : le texte de l'exception porte l'adresse du destinataire
+            # (SMTPRecipientsRefused), donnée personnelle hors des journaux.
+            f"EMAIL_FAILED: template={template_key}, error={type(e).__name__}"
         )
         return False
 
@@ -196,13 +206,43 @@ def notify_offer_accepted(offer):
 
 
 def notify_job_completed(job):
-    """Notify both parties that the job is completed."""
-    # Notify client
+    """Notify the client that the job is completed."""
+    # Le vrai client : sur un trajet retour, job.owner est le transporteur.
+    from logistics.participants import get_job_client
+    client = get_job_client(job)
+    if client is None:
+        return
     send_transactional_email(
         'job_completed',
-        recipient_email=job.owner.email,
-        recipient_name=job.owner.first_name,
+        recipient_email=client.email,
+        recipient_name=client.first_name,
         context={'job_id': job.id, 'role': 'client'},
+    )
+
+
+def send_password_reset_notification(user, temp_password: str) -> bool:
+    """
+    Envoie à l'utilisateur le mot de passe temporaire fixé par un admin.
+
+    C'est le SEUL canal par lequel ce mot de passe sort hors DEBUG : la vue
+    ne le renvoie pas dans sa réponse. Il n'est jamais écrit dans les journaux
+    (send_transactional_email ne journalise que le gabarit et l'adresse).
+    """
+    return send_transactional_email(
+        'admin_password_reset',
+        recipient_email=user.email,
+        recipient_name=user.first_name,
+        context={'temp_password': temp_password},
+    )
+
+
+def send_warning_email(user, reason: str) -> bool:
+    """Prévient l'utilisateur d'un avertissement émis par la modération."""
+    return send_transactional_email(
+        'account_warning',
+        recipient_email=user.email,
+        recipient_name=user.first_name,
+        context={'reason': reason},
     )
 
 
@@ -312,6 +352,17 @@ def _get_fallback_body(template_key: str, ctx: dict) -> str:
             + "\nCe lien est valable 24 heures et ne peut servir qu'une fois. "
             "Si vous n'êtes pas à l'origine de cette demande, ignorez ce message : "
             "votre mot de passe reste inchangé."
+        ),
+        'admin_password_reset': (
+            "Un administrateur de Transporti a réinitialisé votre mot de passe.\n\n"
+            f"Mot de passe temporaire : {ctx.get('temp_password', '')}\n\n"
+            "Connectez-vous avec ce mot de passe puis changez-le tout de suite "
+            "depuis votre profil. Si vous n'avez rien demandé, contactez le support."
+        ),
+        'account_warning': (
+            "Notre équipe de modération vous adresse un avertissement.\n\n"
+            f"Motif : {ctx.get('reason', '')}\n\n"
+            "En cas de récidive, votre compte pourra être suspendu."
         ),
     }
     return bodies.get(template_key, "Vous avez une nouvelle notification.")

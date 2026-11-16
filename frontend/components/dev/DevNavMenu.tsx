@@ -139,12 +139,6 @@ const ROUTE_MAP: RouteGroup[] = [
         icon: UserCircle,
         dynamic: true,
       },
-      {
-        path: "/transporteur/3",
-        label: "Détail Transporteur #3",
-        icon: Truck,
-        dynamic: true,
-      },
     ],
   },
   {

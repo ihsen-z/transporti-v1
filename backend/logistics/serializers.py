@@ -4,6 +4,11 @@ from rest_framework import serializers
 from django.utils import timezone
 from .models import TransportJob, Offer
 from .participants import get_paying_client
+from .address_privacy import (
+    ExactAddressesAfterAgreementMixin,
+    user_from_context,
+    visible_address,
+)
 from payments.online import (
     PAIEMENT_EN_LIGNE_INDISPONIBLE,
     default_payment_method,
@@ -51,7 +56,8 @@ class TransportJobCreateSerializer(serializers.ModelSerializer):
         return super().create(validated_data)
 
 
-class TransportJobListSerializer(serializers.ModelSerializer):
+class TransportJobListSerializer(ExactAddressesAfterAgreementMixin,
+                                serializers.ModelSerializer):
     """
     Read-only serializer for job listings.
     """
@@ -191,7 +197,8 @@ class TransportJobListSerializer(serializers.ModelSerializer):
 
 
 
-class TransportJobDetailSerializer(serializers.ModelSerializer):
+class TransportJobDetailSerializer(ExactAddressesAfterAgreementMixin,
+                                  serializers.ModelSerializer):
     """
     Detailed view for job owner.
     """
@@ -414,7 +421,9 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         user = self.context['request'].user
         job = attrs['job']
 
-        # Plafond de dette de commission (403, pas une erreur de champ).
+        # KYC obligatoire puis plafond de dette (403, pas une erreur de champ).
+        from logistics.kyc import ensure_transporter_verified
+        ensure_transporter_verified(user)
         from payments.debt import ensure_transporter_can_engage
         ensure_transporter_can_engage(user)
 
@@ -489,8 +498,9 @@ class OfferListSerializer(serializers.ModelSerializer):
     past_jobs_count = serializers.SerializerMethodField()
 
     # Job details for transporter's offer tracking view
-    job_pickup = serializers.CharField(source='job.pickup_address', read_only=True)
-    job_dropoff = serializers.CharField(source='job.dropoff_address', read_only=True)
+    # Adresse exacte seulement une fois l'offre acceptée (address_privacy).
+    job_pickup = serializers.SerializerMethodField()
+    job_dropoff = serializers.SerializerMethodField()
     job_type = serializers.CharField(source='job.job_type', read_only=True)
     job_date = serializers.DateTimeField(source='job.scheduled_time', read_only=True)
     # Nature du job. Le front construit l'URL canonique du job
@@ -518,6 +528,12 @@ class OfferListSerializer(serializers.ModelSerializer):
             'valid_until', 'created_at'
         ]
         read_only_fields = fields
+
+    def get_job_pickup(self, obj) -> str:
+        return visible_address(user_from_context(self.context), obj.job, 'pickup')
+
+    def get_job_dropoff(self, obj) -> str:
+        return visible_address(user_from_context(self.context), obj.job, 'dropoff')
 
     def get_transporter_name(self, obj) -> str:
         return f"{obj.transporter.first_name} {obj.transporter.last_name[0]}."
@@ -643,8 +659,8 @@ class OfferDetailSerializer(serializers.ModelSerializer):
         return {
             'id': obj.job.id,
             'type': obj.job.job_type,
-            'pickup': obj.job.pickup_address,
-            'dropoff': obj.job.dropoff_address
+            'pickup': visible_address(user_from_context(self.context), obj.job, 'pickup'),
+            'dropoff': visible_address(user_from_context(self.context), obj.job, 'dropoff'),
         }
 
 

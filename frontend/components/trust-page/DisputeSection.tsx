@@ -1,29 +1,19 @@
 "use client";
 
-import { AlertTriangle, Snowflake, Scale } from "lucide-react";
+import { AlertTriangle, Search, Scale } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 
 /**
- * P3 — le recours quand quelque chose se passe mal.
+ * « Confiance et sécurité » — le recours quand quelque chose se passe mal.
  *
- * C'est la section qui lève réellement l'objection : promettre que « tout se
- * passe bien » ne rassure personne, décrire ce qui arrive quand ça se passe
- * mal, oui.
+ * Décrire ce qui arrive quand ça se passe mal rassure plus que promettre que
+ * tout ira bien. Trois faits :
+ * - les motifs sont ceux de `Dispute.Reason` ;
+ * - l'équipe examine les éléments des deux parties ;
+ * - en espèces, Transporti ne détient aucun argent : un litige ne déclenche
+ *   donc ni remboursement ni versement. Le dire évite une fausse attente.
  *
- * Trois faits, tous vérifiés :
- * - les motifs sont ceux de `Dispute.Reason` (dégâts, absence, paiement,
- *   retard, harcèlement, fraude, autre) ;
- * - un litige ouvert gèle le versement, y compris le versement automatique à
- *   48 h — c'est ce qui rend ce délai acceptable, et les deux sections se
- *   répondent volontairement ;
- * - la résolution déclenche le mouvement d'argent DANS la même transaction
- *   (`ResolutionOutcome` : REFUND_CLIENT, RELEASE_TRANSPORTER, SPLIT). Ce
- *   détail d'implémentation vaut d'être dit au client : il signifie qu'une
- *   décision en sa faveur ne peut pas être prise puis oubliée.
- *
- * Le litige est présenté comme ouvrable PAR LES DEUX PARTIES, ce qui est le
- * cas (`DisputeCreateView`). Le présenter comme un recours réservé au client
- * serait faux, et donnerait de la plateforme une image d'arbitre partial.
+ * Le litige est ouvrable PAR LES DEUX PARTIES (`DisputeCreateView`).
  */
 export function DisputeSection() {
   const { t } = useAppI18n();
@@ -36,11 +26,11 @@ export function DisputeSection() {
       texte: p.disputeReasons,
     },
     {
-      icone: Snowflake,
-      titre: p.disputeFreezeTitle,
-      texte: p.disputeFreezeDesc,
+      icone: Search,
+      titre: p.disputeReviewTitle,
+      texte: p.disputeReviewDesc,
     },
-    { icone: Scale, titre: p.disputeOutcomeTitle, texte: p.disputeOutcomeDesc },
+    { icone: Scale, titre: p.disputeLimitTitle, texte: p.disputeLimitDesc },
   ];
 
   return (

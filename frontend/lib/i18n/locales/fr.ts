@@ -90,11 +90,11 @@ export const fr = {
 
   // Landing Page
   landing: {
-    badge: "Plateforme #1 de transport en Tunisie",
+    badge: "Transport de marchandises · Tunis – Sousse – Sfax",
     heroTitle1: "La logistique réinventée.",
     heroTitle2: "Simple, rapide, fiable.",
     heroDesc:
-      "Connectez-vous avec des transporteurs vérifiés en Tunisie. Envoyez vos colis en toute confiance avec paiement sécurisé.",
+      "Connectez-vous avec des transporteurs aux pièces vérifiées en Tunisie. Vous payez le transporteur en espèces à la livraison, une fois la marchandise reçue.",
     // Pivot « Return Trips First » — signatures officielles (vision v1.0)
     pivotHeroTitle1: "Chaque retour à vide",
     pivotHeroTitle2: "est une opportunité.",
@@ -102,7 +102,7 @@ export const fr = {
       "Transporteurs : gagnez plus avec les trajets que vous effectuez déjà. Clients : trouvez un transporteur fiable au meilleur prix, déjà en route sur votre trajet.",
     pivotCtaTransporter: "Publier mon trajet retour",
     pivotCtaClient: "Trouver un trajet",
-    pivotTrust1: "Paiement sécurisé par escrow",
+    pivotTrust1: "Paiement en espèces à la livraison",
     pivotTrust2: "Transporteurs vérifiés",
     pivotTrust3: "Commission réduite sur les retours",
     ctaPublish: "Publier une annonce",
@@ -110,20 +110,18 @@ export const fr = {
     ctaLogin: "Se connecter →",
     trust1: "Inscription gratuite",
     trust2: "Sans engagement",
-    trust3: "Paiement sécurisé",
+    trust3: "Paiement à la livraison",
     secureShipping: "Envoi sécurisé",
-    secureShippingDesc: "Paiement protégé par escrow",
+    secureShippingDesc: "Code de livraison à 4 chiffres",
     verifiedTransporters: "Transporteurs vérifiés",
     verifiedTransportersDesc: "Documents contrôlés",
     // Stats
-    stat1Value: "500+",
-    stat1Label: "Transporteurs vérifiés",
-    stat2Value: "12 000+",
-    stat2Label: "Livraisons réussies",
-    stat3Value: "24",
-    stat3Label: "Gouvernorats couverts",
-    stat4Value: "4.8/5",
-    stat4Label: "Satisfaction client",
+    fact1Value: "Tunis · Sousse · Sfax",
+    fact1Label: "Le corridor couvert au lancement",
+    fact2Value: "Espèces",
+    fact2Label: "Paiement au transporteur, à la livraison",
+    fact3Value: "Pièces vérifiées",
+    fact3Label: "CIN, permis, carte grise et assurance contrôlés",
     // How it works
     howTitle: "Comment ça marche ?",
     howSubtitle: "3 étapes simples pour envoyer vos colis",
@@ -139,9 +137,9 @@ export const fr = {
     // Features
     whyTitle: "Pourquoi choisir Transporti ?",
     whySubtitle: "Une plateforme moderne qui simplifie la logistique pour tous",
-    feat1Title: "Paiement sécurisé",
+    feat1Title: "Code de livraison",
     feat1Desc:
-      "Système d'escrow intégré. Votre argent est protégé jusqu'à la livraison confirmée.",
+      "Un code à 4 chiffres que vous seul détenez : le transporteur ne peut clore la mission qu'une fois la marchandise reçue.",
     feat2Title: "Suivi en direct",
     feat2Desc:
       "Suivez votre colis en temps réel et communiquez directement avec le transporteur.",
@@ -149,37 +147,23 @@ export const fr = {
     feat3Desc:
       "Réseau de transporteurs professionnels pour des livraisons rapides dans tout le pays.",
     // Testimonials
-    testimonialsTitle: "Ce que disent nos utilisateurs",
-    testimonialsSubtitle: "Des milliers de clients et transporteurs satisfaits",
-    review1Text:
-      "J'ai envoyé mes meubles de Tunis à Sousse en un clic. Le transporteur était ponctuel et très professionnel. Le paiement sécurisé m'a vraiment rassurée.",
-    review1Name: "Leila B.",
-    review1Role: "Cliente – Tunis",
-    review2Text:
-      "Depuis que j'utilise Transporti, j'ai doublé mes revenus. Les commissions sont transparentes et je reçois mes paiements rapidement.",
-    review2Name: "Mohamed K.",
-    review2Role: "Transporteur – Sfax",
-    review3Text:
-      "Déménagement parfait ! J'ai comparé 4 offres et choisi la meilleure. Tout est arrivé intact. Je recommande vivement cette plateforme.",
-    review3Name: "Fatma S.",
-    review3Role: "Cliente – Nabeul",
     // FAQ
     faqTitle: "Questions fréquentes",
-    faq1Q: "Comment fonctionne le paiement sécurisé ?",
+    faq1Q: "Comment suis-je protégé ?",
     faq1A:
-      "Lorsque vous acceptez une offre, le montant est placé en escrow (séquestre). Le transporteur ne reçoit le paiement qu'après votre confirmation de livraison. En cas de litige, notre équipe intervient sous 24h.",
+      "Les transporteurs sont vérifiés (CIN, permis, carte grise, assurance) avant de pouvoir recevoir des missions. Vous payez en espèces à la livraison seulement, et la mission ne se clôt qu'avec le code à 4 chiffres que vous remettez à la réception. En cas de problème, ouvrez un litige : notre équipe examine chaque litige.",
     faq2Q: "Comment les transporteurs sont-ils vérifiés ?",
     faq2A:
-      "Chaque transporteur doit soumettre ses documents (CIN, carte grise, assurance) qui sont vérifiés manuellement par notre équipe. Seuls les transporteurs validés peuvent recevoir des missions.",
+      "Chaque transporteur doit soumettre ses documents (CIN, permis, carte grise, assurance) qui sont vérifiés manuellement par notre équipe. Seuls les transporteurs validés peuvent recevoir des missions.",
     faq3Q: "Quels sont les frais de la plateforme ?",
     faq3A:
       "La commission est de 12% pour le transport et 15% pour le déménagement. Aucun frais caché — le transporteur voit le montant net avant de soumettre son offre.",
     faq4Q: "Puis-je payer en espèces ?",
     faq4A:
-      "Oui ! Le paiement à la livraison (COD) est disponible pour les montants jusqu'à {cap} TND. Au-delà, le paiement digital sécurisé est recommandé.",
+      "Oui, et c'est pour l'instant le seul mode de paiement : vous payez le transporteur en espèces à la livraison, jusqu'à {cap} TND par mission. Le paiement en ligne n'est pas encore disponible.",
     faq5Q: "Comment contester une livraison ?",
     faq5A:
-      "Vous pouvez ouvrir un litige directement depuis la page de votre transport. Notre équipe examine chaque cas et vous répond sous 24 heures ouvrées.",
+      "Vous pouvez ouvrir un litige directement depuis la page de votre transport. Notre équipe examine chaque litige.",
     // CTA section
     ctaTitle: "Prêt à commencer ?",
     ctaSubtitle:
@@ -302,6 +286,12 @@ export const fr = {
     fillAllFields: "Veuillez remplir tous les champs.",
     loginSuccess: "Connexion réussie !",
     loginError: "Email ou mot de passe incorrect.",
+    loginUnavailable:
+      "Connexion impossible pour le moment. Vérifiez votre connexion puis réessayez.",
+    loginLocked:
+      "Trop de tentatives échouées : ce compte est verrouillé pendant environ 30 minutes. Réessayez plus tard.",
+    loginRateLimited:
+      "Trop de tentatives de connexion. Patientez un instant avant de réessayer.",
     orContinueWith: "ou continuer avec",
     comingSoon: "Bientôt",
     socialLoginLoading: "Connexion en cours...",
@@ -376,7 +366,6 @@ export const fr = {
     pageError: "Erreur de chargement",
     pageErrorDesc:
       "Nous avons rencontré un problème lors du chargement de cette page.",
-    backToDashboard: "Tableau de bord",
     helpCenter: "Centre d'aide",
   },
 
@@ -388,6 +377,7 @@ export const fr = {
     save: "Enregistrer",
     cancel: "Annuler",
     confirm: "Confirmer",
+    kycLink: "Vérifier mes documents",
     close: "Fermer",
     search: "Rechercher...",
     noResults: "Aucun résultat",
@@ -414,7 +404,6 @@ export const fr = {
     insuranceValid: "Valide",
     insuranceExpired: "✗ Expirée",
     insuranceUntil: "jusqu'au",
-    businessLicense: "Patente professionnelle",
     cargoInsurance: "Assurance Marchandise",
     completionRate: "Taux de complétion",
     totalJobs: "Missions terminées",
@@ -745,7 +734,7 @@ export const fr = {
     protectedTitle: "Votre transaction est protégée",
     protectedVerified: "Transporteur vérifié avec documents validés",
     protectedEscrow: "Escrow sécurisé — pas de paiement direct",
-    protectedSupport: "Support 24/48h en cas de litige",
+    protectedSupport: "Notre équipe examine chaque litige",
     // --- PaymentGateway ---
     missingJobRef:
       "Référence de mission manquante. Rechargez la page et réessayez.",
@@ -1489,6 +1478,7 @@ export const fr = {
     bookThisTrip: "Réserver ce trajet",
     contactTransporter: "Contacter le transporteur",
     securePaymentEscrow: "Paiement sécurisé par escrow",
+    securePaymentCash: "Vous payez en espèces à la livraison",
     confirmBooking: "Confirmer la réservation",
     returnTripRef: "Trajet retour #{id}",
     proposedPrice: "Votre prix proposé (TND)",
@@ -1501,10 +1491,15 @@ export const fr = {
     booking: "Réservation...",
     confirm: "Confirmer",
     trustTitle: "Confiance & Sécurité",
-    trustVerified: "Transporteurs vérifiés (CIN, patente, assurance)",
+    trustVerified:
+      "Transporteurs vérifiés (CIN, permis, carte grise, assurance)",
     trustEscrow: "Paiement sécurisé par escrow — libéré après confirmation",
-    trustDisputes: "Résolution de litiges sous 24-48h",
-    trustReviews: "Avis authentiques de clients vérifiés",
+    trustCash:
+      "Paiement en espèces à la livraison, code de livraison à 4 chiffres",
+    trustDisputes: "Notre équipe examine chaque litige",
+    addressesMasked:
+      "L'adresse exacte et les indications d'accès vous sont communiquées une fois votre offre acceptée.",
+    trustReviews: "Avis laissés après une mission réalisée",
     missionInProgress: "Mission en cours",
     assignedToYou:
       "Vous êtes assigné à cette mission. Marquez-la comme livrée une fois terminée.",
@@ -1543,6 +1538,10 @@ export const fr = {
       "Confirmez-vous avoir livré la marchandise ? Le client sera notifié pour confirmer la réception.",
     markDeliveredLabel: "Oui, c'est livré",
     pinRequired: "Saisissez les 4 chiffres du code de livraison du client.",
+    pinLockedTimed:
+      "Trop d'essais : la saisie du code est verrouillée. Réessayez dans {minutes} min.",
+    pinLockedSupport:
+      "Trop d'essais : la saisie du code est verrouillée. Contactez le support pour la débloquer.",
     milestoneSaved: "Étape enregistrée.",
     milestoneArrived: "Je suis arrivé au chargement",
     milestoneLoaded: "Chargé — je suis en route",
@@ -1620,7 +1619,7 @@ export const fr = {
     openDisputeLink: "Ouvrir un litige →",
     howItWorks: "Comment fonctionne la résolution de litiges ?",
     how1: "Ouvrez un litige en sélectionnant la mission et le motif.",
-    how2: "Notre équipe examine votre réclamation sous 24-48h.",
+    how2: "Notre équipe examine chaque litige.",
     how3: "Vous serez notifié dès qu'une décision est prise.",
     how4: "En cas de résolution favorable, le remboursement est traité sous 3-5 jours.",
     // Create dispute modal
@@ -1705,7 +1704,7 @@ export const fr = {
       "Vous gardez la main sur le prix. Une contre-proposition repart vers le client, qui l'accepte ou non.",
     howStep4Title: "Livrez, et soyez payé",
     howStep4Desc:
-      "La livraison se confirme par un code et une photo. L'argent, séquestré depuis la réservation, vous est alors versé.",
+      "La livraison se confirme par un code et une photo. Le client vous règle en espèces à la livraison.",
 
     trustTitle: "Ce que la vérification débloque",
     trustDesc:
@@ -1713,14 +1712,14 @@ export const fr = {
     trustOffers: "Vos offres deviennent acceptables",
     trustOffersDesc:
       "Sans vérification, aucune de vos offres ne peut être acceptée par un client. C'est un blocage, pas un malus.",
-    trustEscrow: "Le paiement sécurisé s'ouvre",
-    trustEscrowDesc:
-      "L'argent du client est séquestré dès la réservation et libéré à la livraison confirmée. Vous ne dépendez plus de sa bonne volonté.",
+    trustCash: "Vous encaissez directement",
+    trustCashDesc:
+      "Le client vous paie en espèces à la livraison, contre le code à 4 chiffres qu'il vous remet. Vous ne dépendez d'aucun virement ni délai de versement.",
     trustBadge: "Votre profil porte un badge « Vérifié »",
     trustBadgeDesc:
       "Visible par chaque client avant qu'il vous choisisse, à côté de vos avis et de votre taux de missions menées à bien.",
     trustCod:
-      "Le paiement en espèces à la livraison demande en plus un score de confiance d'au moins 50 sur 100.",
+      "Sans pièces validées, vous ne pouvez ni publier un trajet ni accepter une demande.",
 
     faqTitle: "Questions fréquentes",
     faqQ1: "Combien ça coûte de s'inscrire ?",
@@ -1737,7 +1736,7 @@ export const fr = {
       "Vous. Le client propose un montant, vous l'acceptez, le refusez ou contre-proposez. Aucun prix ne vous est imposé.",
     faqQ5: "Et si le client ne paie pas ?",
     faqA5:
-      "En paiement sécurisé, il a déjà payé : l'argent est séquestré par la plateforme dès la réservation et vous est versé à la livraison confirmée. En espèces, vous encaissez directement à la livraison.",
+      "Vous êtes payé en espèces à la livraison, directement par le client, au moment où il vous remet le code de livraison. Transporti ne retient pas d'argent pour l'instant ; si le client refuse de payer, ouvrez un litige depuis la mission.",
 
     finalTitle: "Votre prochain retour peut être payé",
     finalDesc:
@@ -1780,30 +1779,23 @@ export const fr = {
 
   trustPage: {
     heroBadge: "Confiance et sécurité",
-    heroTitle1: "Votre argent n'est jamais",
-    heroTitle2: "entre les mains du transporteur.",
+    heroTitle1: "Vous payez en espèces,",
+    heroTitle2: "à la réception de la marchandise.",
     heroDesc:
-      "Il est retenu par la plateforme, et n'est versé qu'une fois la livraison confirmée. Voici exactement comment cela fonctionne — y compris ce qui pourrait vous surprendre.",
-
-    escrowTitle: "Le paiement sécurisé, étape par étape",
-    escrowStep1Title: "Vous payez à la réservation",
-    escrowStep1Desc:
-      "Le montant quitte votre moyen de paiement, mais ne va pas au transporteur : la plateforme le retient.",
-    escrowStep2Title: "L'argent est retenu pendant le transport",
-    escrowStep2Desc:
-      "Ni vous ni le transporteur n'y avez accès. C'est ce que garantit le séquestre, et il est visible dans votre portefeuille.",
-    escrowStep3Title: "La livraison se prouve",
-    escrowStep3Desc:
-      "Le transporteur saisit un code à 4 chiffres que vous seul détenez, et joint une photo. Sans les deux, la mission n'est pas marquée livrée.",
-    escrowStep4Title: "Le transporteur est payé",
-    escrowStep4Desc:
-      "Une fois la réception confirmée, la somme lui est versée, commission déduite.",
-
-    escrowDelayTitle: "Ce qu'il faut savoir sur le délai",
-    escrowDelayDesc:
-      "Si vous ne confirmez pas la réception, la somme est versée automatiquement au transporteur au bout de {heures} heures. Sans ce délai, un client injoignable bloquerait indéfiniment le paiement d'une livraison pourtant faite.",
-    escrowDelayGuard:
-      "Mais ouvrir un litige suspend ce versement : tant qu'il est en cours d'examen, l'argent ne bouge pas.",
+      "Aujourd'hui, le paiement se fait directement entre vous et le transporteur, en espèces, à la livraison : Transporti ne retient pas d'argent. Voici ce qui vous protège réellement — et ce qui ne vous protège pas.",
+    protectionsTitle: "Ce qui vous protège aujourd'hui",
+    protect1Title: "Vous payez à la réception",
+    protect1Desc:
+      "Le paiement se fait en espèces au transporteur, à la livraison. Ne remettez la somme qu'une fois la marchandise reçue : Transporti ne retient pas d'argent pour vous.",
+    protect2Title: "Le code de livraison",
+    protect2Desc:
+      "Un code à 4 chiffres que vous seul détenez. Le transporteur doit le saisir pour clore la mission. Ne le donnez qu'au moment où vous recevez réellement votre marchandise.",
+    protect3Title: "Les avis après mission",
+    protect3Desc:
+      "Une fois la mission terminée, un avis peut être laissé sur le profil du transporteur. Vous pouvez les lire avant de choisir.",
+    protect4Title: "Ce que Transporti ne fait pas",
+    protect4Desc:
+      "Transporti ne retient pas votre argent et ne le rembourse pas automatiquement. En cas de problème, notre équipe examine le dossier (voir ci-dessous).",
 
     verifTitle: "Qui sont les transporteurs",
     verifDesc:
@@ -1816,7 +1808,7 @@ export const fr = {
       "Le badge « Vérifié », le score de confiance, le nombre de missions menées à bien et les avis laissés par d'autres clients.",
     verifCodTitle: "Pour un paiement en espèces",
     verifCodDesc:
-      "L'encaissement à la livraison est réservé aux transporteurs dont le score de confiance atteint au moins {score} sur 100.",
+      "Seuls les transporteurs dont les pièces ont été validées peuvent publier un trajet ou accepter une demande, donc encaisser à la livraison.",
 
     disputeTitle: "Si quelque chose se passe mal",
     disputeDesc:
@@ -1824,33 +1816,33 @@ export const fr = {
     disputeReasonsTitle: "Les motifs prévus",
     disputeReasons:
       "Objets endommagés, transporteur absent, problème de paiement, retard de livraison, comportement inapproprié, soupçon de fraude, ou autre.",
-    disputeFreezeTitle: "L'argent est gelé pendant l'examen",
-    disputeFreezeDesc:
-      "Un litige ouvert bloque tout versement au transporteur, y compris le versement automatique. C'est la garantie qui rend le délai acceptable.",
-    disputeOutcomeTitle: "Trois issues possibles",
-    disputeOutcomeDesc:
-      "Remboursement intégral, versement au transporteur, ou partage. Le mouvement d'argent est déclenché par la décision elle-même, pas par une opération séparée qui pourrait être oubliée.",
+    disputeReviewTitle: "L'équipe examine le dossier",
+    disputeReviewDesc:
+      "Notre équipe examine chaque litige : elle étudie les éléments des deux parties — messages, photos, jalons de la mission.",
+    disputeLimitTitle: "Ce qu'un litige ne fait pas",
+    disputeLimitDesc:
+      "Pas de remboursement ni de versement automatique : en espèces, Transporti ne détient pas d'argent. La décision de l'équipe est consignée et compte dans le score de confiance du transporteur.",
 
     faqTitle: "Questions fréquentes",
     faqQ1: "Que se passe-t-il si le transporteur ne vient pas ?",
     faqA1:
-      "Ouvrez un litige pour « transporteur absent » depuis la mission. Le versement est immédiatement suspendu le temps de l'examen, et l'issue peut être un remboursement intégral.",
+      "Ouvrez un litige pour « transporteur absent » depuis la mission. L'équipe examine le dossier. Vous n'avez rien payé d'avance : le paiement se fait à la livraison.",
     faqQ2: "Puis-je payer en espèces à la livraison ?",
     faqA2:
-      "Oui, si le transporteur y est éligible. Dans ce cas la plateforme ne détient jamais votre argent : vous payez directement à la livraison, et la protection du séquestre ne s'applique pas.",
+      "Oui. C'est pour l'instant le seul mode de paiement : vous payez le transporteur en espèces à la livraison. Le paiement en ligne n'est pas encore disponible.",
     faqQ3: "Qui voit mes coordonnées ?",
     faqA3:
       "Votre adresse complète et votre téléphone ne sont transmis qu'au transporteur retenu, une fois la réservation faite. Avant cela, une annonce ne montre que les gouvernorats de départ et d'arrivée.",
-    faqQ4: "Et si je ne confirme pas la réception ?",
+    faqQ4: "Et si je ne donne pas le code de livraison ?",
     faqA4:
-      "Le versement est automatique après {heures} heures — sauf si un litige est ouvert, auquel cas rien ne bouge tant qu'il n'est pas tranché.",
+      "La mission ne peut pas être déclarée livrée sans lui. Ne le donnez qu'à la réception de la marchandise ; si on vous le réclame avant, refusez et ouvrez un litige.",
     faqQ5: "Le score de confiance, c'est quoi ?",
     faqA5:
       "Une note sur 100 calculée à partir de l'activité réelle du transporteur : missions menées à bien, litiges, fiabilité de paiement. Elle est affichée sur son profil, avec le détail de ce qui la compose.",
 
     finalTitle: "Publiez votre annonce l'esprit tranquille",
     finalDesc:
-      "Le paiement sécurisé est appliqué par défaut sur toute réservation en ligne.",
+      "Vous payez le transporteur à la livraison, une fois la marchandise reçue.",
     finalCta: "Publier une annonce",
     finalSecondary: "Chercher un trajet retour",
   },
@@ -1983,10 +1975,10 @@ export const fr = {
     tagline: "La logistique réinventée. Simple, rapide, fiable.",
     rights: "Tous droits réservés.",
 
-    trustPaymentTitle: "Paiement sécurisé",
-    trustPaymentDesc: "Protection escrow incluse",
+    trustPaymentTitle: "Paiement à la livraison",
+    trustPaymentDesc: "En espèces, contre le code de livraison",
     trustDisputeTitle: "Résolution de litiges",
-    trustDisputeDesc: "Modération sous 24h",
+    trustDisputeDesc: "Notre équipe examine chaque litige",
     trustVerifiedTitle: "Transporteurs vérifiés",
     trustVerifiedDesc: "Identité et véhicule",
     trustLocalTitle: "100% Tunisien",
@@ -2375,14 +2367,14 @@ export const fr = {
       "Envoyez une demande chiffrée au transporteur (description de la marchandise, prix proposé). Il accepte, refuse ou fait une contre-proposition ; son acceptation crée la mission.",
     cRequestQ2: "Quand vois-je les coordonnées du transporteur ?",
     cRequestA2:
-      "Par sécurité, le téléphone et l'email ne sont visibles qu'une fois la mission assignée et le paiement sécurisé. Avant, échangez via la messagerie.",
+      "Par sécurité, le téléphone et l'email ne sont visibles qu'une fois la mission assignée. Avant, échangez via la messagerie.",
     cPayTitle: "Paiement & litige",
-    cPayQ1: "Comment fonctionne le paiement sécurisé ?",
+    cPayQ1: "Comment fonctionne le paiement ?",
     cPayA1:
-      "Votre paiement est retenu en séquestre (escrow) et n'est libéré au transporteur qu'après votre confirmation de la livraison — ou automatiquement 48 h après, sans réclamation.",
+      "Vous payez le transporteur en espèces à la livraison, une fois la marchandise reçue. Transporti ne retient pas d'argent pour l'instant. Le transporteur clôt la mission avec le code de livraison à 4 chiffres que vous lui remettez à la réception.",
     cPayQ2: "Un problème avec ma livraison ?",
     cPayA2:
-      "Ouvrez un signalement depuis la mission. La libération du paiement est bloquée tant que le litige est en cours ; notre équipe tranche.",
+      "Ouvrez un signalement depuis la mission ; notre équipe examine les éléments des deux parties et tranche.",
 
     // --- Transporteur ---
     tPublishTitle: "Publier un trajet retour",
@@ -2399,13 +2391,13 @@ export const fr = {
     tVerifQ2: "Que se passe-t-il quand un document expire ?",
     tVerifA2:
       "Les documents à échéance (permis, assurance, carte grise) affichent un badge « expire bientôt » puis « expiré ». Redéposez une version à jour avant l'échéance pour rester actif.",
-    tEarnTitle: "Gains & retraits",
+    tEarnTitle: "Gains & commission",
     tEarnQ1: "Quand suis-je payé ?",
     tEarnA1:
-      "Le montant est séquestré dès le paiement du client et libéré sur votre portefeuille après confirmation de la livraison (code PIN + photo) ou automatiquement sous 48 h.",
-    tEarnQ2: "Comment retirer mes gains ?",
+      "Le client vous paie en espèces à la livraison : vous encaissez directement. La commission de Transporti devient une dette, affichée dans « Gains », à régler auprès de Transporti.",
+    tEarnQ2: "Y a-t-il un retrait à demander ?",
     tEarnA2:
-      "Depuis votre portefeuille, demandez un retrait par virement. La demande est traitée par notre back-office (statuts : demandé → en traitement → payé).",
+      "Non : le client vous paie en espèces à la livraison, vous avez déjà encaissé, il n'y a rien à retirer. Ce que vous devez, c'est la commission de Transporti : elle s'affiche comme une dette dans « Gains ». Au-delà du plafond de dette, vous ne pouvez plus accepter de mission jusqu'au règlement.",
   },
   performance: {
     title: "Performance",

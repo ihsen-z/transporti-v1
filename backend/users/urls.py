@@ -1,7 +1,8 @@
 from django.urls import path
-from rest_framework_simplejwt.views import TokenRefreshView
+from .token_refresh import AdminAwareTokenRefreshView
 
 from .views import RegisterView, LoginView, ProfileView, ChangePasswordView, DeleteAccountView, DashboardStatsView, AvatarUploadView, NotificationPreferenceView, PasswordResetRequestView, PasswordResetConfirmView, seed_db_view
+from .views_session import LogoutView
 from .views_admin_auth import AdminLoginView, AdminLogoutView, AdminSessionStatusView
 from .social_auth import GoogleLoginView, FacebookLoginView, SocialUserSetRoleView
 
@@ -9,12 +10,14 @@ urlpatterns = [
     # User Auth
     path('register/', RegisterView.as_view(), name='auth_register'),
     path('login/', LoginView.as_view(), name='auth_login'),
+    path('logout/', LogoutView.as_view(), name='auth_logout'),
 
     # Social Auth (Google & Facebook)
     path('social/google/', GoogleLoginView.as_view(), name='social_google'),
     path('social/facebook/', FacebookLoginView.as_view(), name='social_facebook'),
     path('social/set-role/', SocialUserSetRoleView.as_view(), name='social_set_role'),
-    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    # Rotation qui garde la durée admin pour un jeton `is_admin` (users/token_refresh.py).
+    path('token/refresh/', AdminAwareTokenRefreshView.as_view(), name='token_refresh'),
     path('profile/', ProfileView.as_view(), name='auth_profile'),
     path('change-password/', ChangePasswordView.as_view(), name='auth_change_password'),
     path('account/', DeleteAccountView.as_view(), name='auth_delete_account'),
