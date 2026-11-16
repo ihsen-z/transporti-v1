@@ -9,6 +9,7 @@ from django.db import transaction
 from django.utils import timezone
 from django.shortcuts import get_object_or_404
 
+from ..classic_channel import classic_channel_enabled, ensure_classic_channel_open
 from ..models import TransportJob, Offer
 from ..participants import get_job_client, get_job_transporter, is_job_participant
 from ..serializers import (
@@ -30,6 +31,8 @@ class JobCreateView(generics.CreateAPIView):
     serializer_class = TransportJobCreateSerializer
 
     def create(self, request, *args, **kwargs):
+        # Canal classique fermé au lancement : refus avant toute validation.
+        ensure_classic_channel_open()
         serializer = self.get_serializer(data=request.data, context={'request': request})
         if serializer.is_valid():
             job = serializer.save()
@@ -110,6 +113,11 @@ class JobPublicListView(generics.ListAPIView):
             status=TransportJob.Status.PUBLISHED,
             scheduled_time__gte=timezone.now()
         ).select_related('owner').prefetch_related('offers').order_by('-created_at')
+
+        # Canal classique fermé : on ne garde que les trajets retour, donc plus
+        # aucune demande classique (liste vide, pas d'erreur).
+        if not classic_channel_enabled():
+            queryset = queryset.filter(is_return_trip=True)
 
         # VISIBILITY: Transporters should NOT see other transporters' return trips
         # Only CLIENT, ADMIN, and unauthenticated users can see return trip publications
@@ -266,6 +274,10 @@ class JobPublishView(APIView):
 
     def post(self, request, job_id):
         job = get_object_or_404(TransportJob, id=job_id, owner=request.user)
+
+        # Publier un brouillon classique = nouvelle demande classique.
+        if not job.is_return_trip:
+            ensure_classic_channel_open()
 
         if job.status != TransportJob.Status.DRAFT:
             return Response({'error': 'Seules les demandes en brouillon peuvent être publiées.'}, status=status.HTTP_400_BAD_REQUEST)

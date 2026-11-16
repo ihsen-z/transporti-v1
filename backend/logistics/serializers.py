@@ -396,6 +396,10 @@ class OfferCreateSerializer(serializers.ModelSerializer):
         fields = ['job', 'price_net', 'message', 'valid_until']
 
     def validate_job(self, value):
+        # Canal classique fermé : pas de nouvelle offre sur une demande classique.
+        if not value.is_return_trip:
+            from logistics.classic_channel import ensure_classic_channel_open
+            ensure_classic_channel_open()
         if value.status != TransportJob.Status.PUBLISHED:
             raise serializers.ValidationError("Les offres ne sont possibles que sur les missions publiées.")
         return value

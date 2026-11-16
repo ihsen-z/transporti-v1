@@ -270,7 +270,7 @@ class ConfigurationServieAuxEcransTests(APITestCase):
         self.assertEqual(reponse.status_code, 200)
         self.assertEqual(reponse.data, {
             'cod_max_amount': 300.0, 'commission_debt_limit': 60.0,
-            'online_payment_enabled': True,
+            'online_payment_enabled': True, 'classic_channel_enabled': True,
         })
 
     @override_settings(COD_MAX_AMOUNT=Decimal('450'))
