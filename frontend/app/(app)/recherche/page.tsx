@@ -4,6 +4,7 @@ import React, { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 import { useAuth } from "@/hooks/useAuth";
 import { ApiError } from "@/lib/api/client";
 import {
@@ -62,6 +63,8 @@ const GOVERNORATES = [
 export default function ReturnTripsPage() {
   const { user, isLoading: authLoading } = useAuth();
   const { t } = useAppI18n();
+  // Canal classique fermé : le repli « publier une demande » disparaît.
+  const canalClassique = useCanalClassiqueOuvert();
   // Type permissif herite de JobFeedItem : le durcir fait tomber une cascade
   // sur une quinzaine de champs et merite son propre chantier.
   const [jobs, setJobs] = useState<JobFeedItem[]>([]);
@@ -430,18 +433,22 @@ export default function ReturnTripsPage() {
                   {t.returnTrips.noTrips}
                 </h3>
                 <p className="mx-auto mb-6 max-w-md text-[14.5px] leading-[1.55] text-ink-500">
-                  {t.returnTrips.noTripsDesc}
+                  {canalClassique
+                    ? t.returnTrips.noTripsDesc
+                    : t.returnTrips.noTripsDescAlertOnly}
                 </p>
                 {/* Funnel fallback (pivot §5.2, cas B) : jamais de cul-de-sac */}
                 <div className="flex flex-wrap justify-center gap-3">
-                  <Link
-                    data-testid="recherche-repli-publier"
-                    href={`/demandes/nouvelle?pickup_governorate=${encodeURIComponent(filters.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(filters.dropoff_governorate)}`}
-                    className="btn-base min-h-[48px] rounded-cta bg-blue-700 px-5 text-[15px] text-white shadow-blue transition-colors hover:bg-blue-800 active:translate-y-px"
-                  >
-                    <PlusCircle className="w-4 h-4" />
-                    {t.returnTrips.publishFallback}
-                  </Link>
+                  {canalClassique && (
+                    <Link
+                      data-testid="recherche-repli-publier"
+                      href={`/demandes/nouvelle?pickup_governorate=${encodeURIComponent(filters.pickup_governorate)}&dropoff_governorate=${encodeURIComponent(filters.dropoff_governorate)}`}
+                      className="btn-base min-h-[48px] rounded-cta bg-blue-700 px-5 text-[15px] text-white shadow-blue transition-colors hover:bg-blue-800 active:translate-y-px"
+                    >
+                      <PlusCircle className="w-4 h-4" />
+                      {t.returnTrips.publishFallback}
+                    </Link>
+                  )}
                   {filters.pickup_governorate &&
                     filters.dropoff_governorate && (
                       <button

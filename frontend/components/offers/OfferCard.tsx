@@ -22,7 +22,7 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND, formatDateTime } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
 import type { JobOffer } from "@/lib/types/jobs";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 interface OfferCardProps {
   offer: JobOffer;
@@ -33,7 +33,7 @@ interface OfferCardProps {
 export function OfferCard({ offer, isOwner, onAccept }: OfferCardProps) {
   const { t } = useAppI18n();
   // Plafond espèces lu sur le serveur (il était écrit 300 en dur ici).
-  const { cod_max_amount: codMax } = usePaymentConfig();
+  const { cod_max_amount: codMax } = usePlatformConfig();
   const rating = offer.transporter_rating ?? 0;
   const jobsCount = offer.transporter_jobs_count ?? 0;
   const completionRate = offer.transporter_completion_rate ?? null;

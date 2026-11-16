@@ -8,10 +8,13 @@ import {
   MessageSquare,
   UserCircle,
   Plus,
+  Inbox,
+  Package,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 
 /* -------------------------------------------------------------------------- */
 /*  Navigation basse — charte §3                                              */
@@ -37,15 +40,27 @@ export default function BottomNav() {
   const { t } = useAppI18n();
   const role = user?.role?.toUpperCase();
   const estTransporteur = role === "TRANSPORTER";
+  // Canal classique fermé (défaut tant que le serveur n'a pas répondu) : ni
+  // fil des demandes classiques, ni publication d'une demande.
+  const canalClassique = useCanalClassiqueOuvert();
+
+  // Deuxième onglet. Transporteur : le fil classique, ou ses demandes reçues
+  // quand ce canal est fermé. Client : la recherche, ou ses envois quand la
+  // recherche est déjà portée par le bouton flottant.
+  const ongletDeux: Onglet = estTransporteur
+    ? canalClassique
+      ? { href: "/demandes", icon: Search, label: t.nav.tabSearch }
+      : { href: "/demandes-recues", icon: Inbox, label: t.nav.tabRequests }
+    : canalClassique
+      ? { href: "/recherche", icon: Search, label: t.nav.tabSearch }
+      : { href: "/jobs", icon: Package, label: t.nav.tabShipments };
 
   // Deux onglets à gauche du bouton flottant, deux à droite.
   // Libelles COURTS : 11px sur quatre emplacements ne laissent pas la place
   // aux intitules complets de la barre laterale, qui se couperaient.
   const onglets: Onglet[] = [
     { href: "/dashboard", icon: LayoutDashboard, label: t.nav.tabHome },
-    estTransporteur
-      ? { href: "/demandes", icon: Search, label: t.nav.tabSearch }
-      : { href: "/recherche", icon: Search, label: t.nav.tabSearch },
+    ongletDeux,
     { href: "/messages", icon: MessageSquare, label: t.nav.tabMessages },
     {
       href: `/profile/${user?.id || ""}`,
@@ -54,12 +69,19 @@ export default function BottomNav() {
     },
   ];
 
-  // Le bouton flottant publie : un retour pour le transporteur, une demande
-  // pour le client. Les deux routes existaient déjà dans la barre latérale.
+  // Le bouton flottant porte l'action première : publier un retour pour le
+  // transporteur ; pour le client, publier une demande si le canal classique
+  // est ouvert, sinon chercher un trajet retour.
   const hrefPublier = estTransporteur
     ? "/retours/nouveau"
-    : "/demandes/nouvelle";
-  const labelPublier = estTransporteur ? t.nav.returnTrip : t.nav.publishAd;
+    : canalClassique
+      ? "/demandes/nouvelle"
+      : "/recherche";
+  const labelPublier = estTransporteur
+    ? t.nav.returnTrip
+    : canalClassique
+      ? t.nav.publishAd
+      : t.nav.findTrip;
 
   const estActif = (href: string) =>
     pathname === href || pathname.startsWith(`${href}/`);

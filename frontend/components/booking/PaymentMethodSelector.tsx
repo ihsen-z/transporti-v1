@@ -4,7 +4,7 @@ import React from "react";
 import { CreditCard, Banknote, ShieldCheck, AlertTriangle } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 interface Props {
   selected: "DIGITAL" | "COD";
@@ -21,7 +21,7 @@ export function PaymentMethodSelector({
   codThreshold,
 }: Props) {
   const { t } = useAppI18n();
-  const { cod_max_amount, online_payment_enabled } = usePaymentConfig();
+  const { cod_max_amount, online_payment_enabled } = usePlatformConfig();
   const seuil = codThreshold ?? cod_max_amount;
   const codBlocked = totalPrice > seuil;
 

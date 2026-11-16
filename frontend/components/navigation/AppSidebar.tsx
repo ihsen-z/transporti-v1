@@ -22,7 +22,8 @@ import {
   Inbox,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
-import { RETURN_TRIPS_FIRST } from "@/lib/flags";
+import { retourEnPremier } from "@/lib/flags";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 import NavItem from "./NavItem";
 import { SidebarLogo } from "@/components/brand/TransportiLogo";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
@@ -32,6 +33,12 @@ export default function AppSidebar() {
   const { user } = useAuth();
   const { t, isRTL } = useAppI18n();
   const role = user?.role?.toUpperCase();
+  // Interrupteurs serveur : fermés tant que la réponse n'est pas là, donc
+  // aucune entrée vers une porte fermée n'apparaît pendant le chargement.
+  const {
+    classic_channel_enabled: canalClassique,
+    online_payment_enabled: paiementEnLigne,
+  } = usePlatformConfig();
 
   type NavItemDef = { href: string; icon: LucideIcon; label: string };
 
@@ -52,29 +59,32 @@ export default function AppSidebar() {
     { href: "/litiges", icon: AlertTriangle, label: t.nav.disputes },
   ];
 
-  // RETURN_TRIPS_FIRST (pivot): searching an existing trip is the primary
-  // client action; publishing a classic request is the fallback.
-  const clientItems: NavItemDef[] = RETURN_TRIPS_FIRST
-    ? [
-        { href: "/recherche", icon: Search, label: t.nav.findTrip },
-        {
-          href: "/demandes/nouvelle",
-          icon: PlusCircle,
-          label: t.nav.publishAd,
-        },
-      ]
-    : [
-        {
-          href: "/demandes/nouvelle",
-          icon: PlusCircle,
-          label: t.nav.publishAd,
-        },
-        {
-          href: "/recherche",
-          icon: RotateCcw,
-          label: t.nav.returnTrips,
-        },
-      ];
+  // Pivot : chercher un trajet existant est l'action première du client ;
+  // publier une demande classique n'est qu'un repli, et disparaît quand le
+  // canal classique est fermé.
+  const clientItems: NavItemDef[] = !canalClassique
+    ? [{ href: "/recherche", icon: Search, label: t.nav.findTrip }]
+    : retourEnPremier(canalClassique)
+      ? [
+          { href: "/recherche", icon: Search, label: t.nav.findTrip },
+          {
+            href: "/demandes/nouvelle",
+            icon: PlusCircle,
+            label: t.nav.publishAd,
+          },
+        ]
+      : [
+          {
+            href: "/demandes/nouvelle",
+            icon: PlusCircle,
+            label: t.nav.publishAd,
+          },
+          {
+            href: "/recherche",
+            icon: RotateCcw,
+            label: t.nav.returnTrips,
+          },
+        ];
 
   // Le retour passe en tête (IA-2) : c'est la racine du transporteur, pas une
   // entrée parmi d'autres. « Compléter mon aller » (/demandes) devient
@@ -97,9 +107,19 @@ export default function AppSidebar() {
       label: t.header.pageTitles.receivedRequests,
     },
     { href: "/retours/nouveau", icon: PlusCircle, label: t.nav.returnTrip },
-    { href: "/demandes", icon: Search, label: t.nav.findMission },
-    { href: "/mes-offres", icon: FileText, label: t.nav.myOffers },
-    { href: "/portefeuille", icon: Wallet, label: t.nav.wallet },
+    // Canal classique : fil des demandes et offres déposées.
+    ...(canalClassique
+      ? [
+          { href: "/demandes", icon: Search, label: t.nav.findMission },
+          { href: "/mes-offres", icon: FileText, label: t.nav.myOffers },
+        ]
+      : []),
+    // Espèces seules : la page ne montre plus que la commission due.
+    {
+      href: "/portefeuille",
+      icon: Wallet,
+      label: paiementEnLigne ? t.nav.wallet : t.nav.commissions,
+    },
     // T5.4 — B-3b avait ete livre au lot 1 sans aucun ecran pour le lire.
     { href: "/performance", icon: BarChart3, label: t.performance.title },
     { href: "/documents", icon: ShieldCheck, label: t.nav.verification },
@@ -122,7 +142,11 @@ export default function AppSidebar() {
     mainItems = [
       ...clientItems,
       ...mainItems,
-      { href: "/portefeuille", icon: Wallet, label: t.nav.wallet },
+      {
+        href: "/portefeuille",
+        icon: Wallet,
+        label: paiementEnLigne ? t.nav.wallet : t.nav.myPayments,
+      },
       favorisItem,
       avisItem,
     ];

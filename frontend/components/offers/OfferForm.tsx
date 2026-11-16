@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import {
   ApiError,
+  CLASSIC_CHANNEL_DISABLED_CODE,
   getApiErrorCode,
   getApiErrorReason,
   isKycRequired,
@@ -17,7 +18,7 @@ import {
 import { countActiveOffers, submitOffer } from "@/lib/services/offers";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 import { formatTND } from "@/lib/format";
 
 interface OfferFormProps {
@@ -43,7 +44,7 @@ export function OfferForm({
 }: OfferFormProps) {
   const { t: allT } = useAppI18n();
   // Plafond espèces du serveur, cité dans la note sous le prix.
-  const { cod_max_amount } = usePaymentConfig();
+  const { cod_max_amount } = usePlatformConfig();
   const t = allT.offerForm;
 
   const [priceNet, setPriceNet] = useState("");
@@ -155,9 +156,14 @@ export function OfferForm({
         const body = error.body as Record<string, unknown> | undefined;
 
         const code = getApiErrorCode(error);
-        if (code === "KYC_REQUIRED" || code === "COMMISSION_DEBT_LIMIT") {
+        if (
+          code === "KYC_REQUIRED" ||
+          code === "COMMISSION_DEBT_LIMIT" ||
+          code === CLASSIC_CHANNEL_DISABLED_CODE
+        ) {
           // Refus à code stable : le serveur dit POURQUOI (pièces non
-          // validées ou plafond de dette), on l'affiche tel quel.
+          // validées, plafond de dette, canal classique fermé), on
+          // l'affiche tel quel.
           setFeedback({
             type: "warning",
             message: getApiErrorReason(error) ?? t.errorVerification,

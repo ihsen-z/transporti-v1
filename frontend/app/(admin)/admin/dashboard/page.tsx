@@ -45,6 +45,7 @@ import {
   useDashboardConfig,
 } from "@/components/admin/DashboardConfig";
 import { useI18n } from "@/lib/i18n/useAppI18n";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 /* -------------------------------------------------------------------------- */
 /*  Inner Dashboard (needs context)                                           */
@@ -67,6 +68,7 @@ function DashboardContent() {
 
   const { prefs, isWidgetVisible } = useDashboardConfig();
   const { t, locale } = useI18n();
+  const { online_payment_enabled: paiementEnLigne } = usePlatformConfig();
   const refreshTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [chartDays, setChartDays] = useState(30);
 
@@ -280,7 +282,10 @@ function DashboardContent() {
       ]
     : [];
 
-  const visiblePrimary = primaryKPIs.filter((k) => isWidgetVisible(k.id));
+  // Espèces seules : la tuile « Escrow » n'a rien à compter.
+  const visiblePrimary = primaryKPIs.filter(
+    (k) => isWidgetVisible(k.id) && (paiementEnLigne || k.id !== "kpi-escrow"),
+  );
   const visibleSecondary = secondaryKPIs.filter((k) => isWidgetVisible(k.id));
 
   const compactClass = prefs.compactMode

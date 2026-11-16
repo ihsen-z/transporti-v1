@@ -54,8 +54,8 @@ import { useToast } from "@/components/ui/Toast";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { formatTND } from "@/lib/format";
 import { interpolate } from "@/lib/i18n/interpolate";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
-import { moyenDePaiementParDefaut } from "@/lib/services/paymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
+import { moyenDePaiementParDefaut } from "@/lib/services/platformConfig";
 import {
   BadgeCheck,
   ShieldAlert,
@@ -108,8 +108,8 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
   const [showBookingModal, setShowBookingModal] = useState(false);
   const [bookingPrice, setBookingPrice] = useState("");
   // Moyen proposé à l'ouverture de la demande : espèces en mode « espèces
-  // seules » (lib/services/paymentConfig.ts).
-  const paymentConfig = usePaymentConfig();
+  // seules » (lib/platform/config.ts).
+  const paymentConfig = usePlatformConfig();
   const [bookingPayment, setBookingPayment] = useState<"DIGITAL" | "COD">(
     moyenDePaiementParDefaut(paymentConfig),
   );
@@ -503,14 +503,23 @@ export function JobDetailScreen({ nature }: { nature: NatureDeJob }) {
   const myOffer = job.my_offer ?? null;
   const showMyOfferCard =
     isTransporter && !isOwner && job.status === "PUBLISHED" && !!myOffer;
+  // Canal classique fermé : déposer une offre sur une demande classique est
+  // une ENTRÉE du canal (le serveur la refuse en 403). La consultation de la
+  // mission, elle, reste entière.
+  const offreOuverte = isReturnTrip || paymentConfig.classic_channel_enabled;
   const showOfferForm =
     isTransporter &&
     !isOwner &&
     job.status === "PUBLISHED" &&
     isVerified &&
-    !myOffer;
+    !myOffer &&
+    offreOuverte;
   const showVerificationGate =
-    isTransporter && !isOwner && job.status === "PUBLISHED" && !isVerified;
+    isTransporter &&
+    !isOwner &&
+    job.status === "PUBLISHED" &&
+    !isVerified &&
+    offreOuverte;
   const showOffersList =
     isOwner && (job.status === "PUBLISHED" || job.status === "IN_PROGRESS");
   const showCancelButton =

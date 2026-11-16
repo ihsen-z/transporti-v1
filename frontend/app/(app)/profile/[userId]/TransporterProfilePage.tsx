@@ -13,6 +13,7 @@ import {
 } from "@/lib/services/profiles";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 import Image from "next/image";
 import ImageCropper from "@/components/ImageCropper";
 import { getMediaUrl } from "@/lib/imageUtils";
@@ -191,6 +192,7 @@ export default function TransporterProfilePage({
   const router = useRouter();
   const { user } = useAuth();
   const { t: t_i18n } = useAppI18n();
+  const canalClassique = useCanalClassiqueOuvert();
 
   const [transporter, setTransporter] = useState<TransporterData | null>(null);
   const [reviews, setReviews] = useState<ReviewData[]>([]);
@@ -471,8 +473,9 @@ export default function TransporterProfilePage({
           <p className="text-error-500 mb-4">
             {error || t_i18n.profile.profileNotFound}
           </p>
+          {/* Canal classique fermé : retour à la liste des missions. */}
           <Link
-            href="/demandes"
+            href={canalClassique ? "/demandes" : "/jobs"}
             className="text-brand-600 hover:underline text-sm font-medium"
           >
             ← {t_i18n.profile.backToMissions}

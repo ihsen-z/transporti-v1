@@ -550,7 +550,11 @@ export default function BookingPage() {
               <div className="flex items-start gap-2">
                 <Wallet className="w-4 h-4 text-brand-600 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-neutral-600">
-                  {t.booking.protectedEscrow}
+                  {/* Le séquestre n'existe que pour une réservation payée en
+                      ligne ; en espèces, le code de livraison protège. */}
+                  {isDigital
+                    ? t.booking.protectedEscrow
+                    : t.booking.protectedCash}
                 </p>
               </div>
               <div className="flex items-start gap-2">

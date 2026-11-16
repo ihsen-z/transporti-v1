@@ -20,6 +20,7 @@ import { formatDate } from "@/lib/format";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n, type AppTranslationKeys } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -229,6 +230,7 @@ const POLL_INTERVAL_MS = 30_000;
 export default function MessagesInboxPage() {
   const { isAuthenticated, user } = useAuth();
   const { t } = useAppI18n();
+  const canalClassique = useCanalClassiqueOuvert();
   const [conversations, setConversations] = useState<ConversationItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -306,8 +308,21 @@ export default function MessagesInboxPage() {
   // FIX #8: Adapt empty state message to user role
   const emptyMessage =
     role === "TRANSPORTER"
-      ? t.messages.emptyTransporter
+      ? canalClassique
+        ? t.messages.emptyTransporter
+        : t.messages.emptyTransporterReturn
       : t.messages.emptyClient;
+
+  // État vide : on renvoie vers le parcours ouvert. Canal classique fermé,
+  // ni fil de demandes ni publication : demandes reçues ou recherche.
+  const lienVide =
+    role === "TRANSPORTER"
+      ? canalClassique
+        ? { href: "/demandes", label: t.messages.findMission }
+        : { href: "/demandes-recues", label: t.messages.viewReceivedRequests }
+      : canalClassique
+        ? { href: "/demandes/nouvelle", label: t.messages.publishAd }
+        : { href: "/recherche", label: t.messages.findTrip };
 
   return (
     <div className="p-6 lg:p-8 max-w-3xl mx-auto">
@@ -416,12 +431,10 @@ export default function MessagesInboxPage() {
           </p>
           {!searchQuery && (
             <Link
-              href={role === "TRANSPORTER" ? "/demandes" : "/demandes/nouvelle"}
+              href={lienVide.href}
               className="inline-flex items-center gap-2 mt-6 text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
             >
-              {role === "TRANSPORTER"
-                ? t.messages.findMission
-                : t.messages.publishAd}
+              {lienVide.label}
               <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
             </Link>
           )}

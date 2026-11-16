@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   AlertCircle,
 } from "lucide-react";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 interface OfferListProps {
   jobId: number;
@@ -34,7 +34,7 @@ export function OfferList({
   const [offers, setOffers] = useState<JobOffer[]>([]);
   // Plafond espèces lu sur le serveur (il était écrit 300 en dur ici).
   const { cod_max_amount: COD_MAX_TND, online_payment_enabled } =
-    usePaymentConfig();
+    usePlatformConfig();
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(false);
   const [selectedOffer, setSelectedOffer] = useState<JobOffer | null>(null);

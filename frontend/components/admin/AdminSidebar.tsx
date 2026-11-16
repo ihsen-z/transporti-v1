@@ -20,11 +20,11 @@ import {
   X,
 } from "lucide-react";
 import { AdminSidebarLogo } from "../brand/TransportiLogo";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 import { useI18n } from "@/lib/i18n/useAppI18n";
 
 export default function AdminSidebar() {
-  const { online_payment_enabled } = usePaymentConfig();
+  const { online_payment_enabled } = usePlatformConfig();
   const pathname = usePathname();
   const { t, isRTL } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);

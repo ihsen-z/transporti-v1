@@ -25,7 +25,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import { useI18n } from "@/lib/i18n/useAppI18n";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 /* -------------------------------------------------------------------------- */
 /*  Status Config                                                              */
@@ -69,7 +69,7 @@ export default function AdminDisputesPage() {
   // Sans paiement en ligne il n'existe pas de séquestre : rembourser, verser
   // ou partager échouerait côté serveur. Le litige ne porte pas le mode de
   // paiement de sa mission ; on s'appuie donc sur le réglage global.
-  const { online_payment_enabled } = usePaymentConfig();
+  const { online_payment_enabled } = usePlatformConfig();
   const [filter, setFilter] = useState<FilterTab>("ALL");
   const [selectedDispute, setSelectedDispute] = useState<BackendDispute | null>(
     null,

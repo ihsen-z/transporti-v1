@@ -12,6 +12,7 @@ import {
 import { ApiError } from "@/lib/api/client";
 import { withdrawOffer } from "@/lib/services/offers";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 import { formatTND, formatDateTime } from "@/lib/format";
 import { useToast } from "@/components/ui/Toast";
 import ConfirmModal from "@/components/ui/ConfirmModal";
@@ -43,6 +44,7 @@ const STATUS_STYLES: Record<string, string> = {
 
 export function MyOfferCard({ offer, onChanged }: MyOfferCardProps) {
   const { t: allT } = useAppI18n();
+  const canalClassique = useCanalClassiqueOuvert();
   const t = allT.myOfferCard;
   const { showToast } = useToast();
 
@@ -162,13 +164,17 @@ export function MyOfferCard({ offer, onChanged }: MyOfferCardProps) {
             {allT.offers.actionWithdraw}
           </button>
         )}
-        <Link
-          href="/mes-offres"
-          className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-200 transition-colors"
-        >
-          {t.viewMyOffers}
-          <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
-        </Link>
+        {/* /mes-offres est fermée avec le canal classique : pas de lien
+            vers une page qui redirigerait aussitôt. */}
+        {canalClassique && (
+          <Link
+            href="/mes-offres"
+            className="inline-flex items-center gap-2 px-4 py-2 bg-neutral-100 text-neutral-700 rounded-lg text-sm font-medium hover:bg-neutral-200 transition-colors"
+          >
+            {t.viewMyOffers}
+            <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
+          </Link>
+        )}
       </div>
     </div>
   );

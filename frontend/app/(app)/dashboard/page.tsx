@@ -32,7 +32,8 @@ import {
   StatTile,
   StatTileGrid,
 } from "@/components/dashboard/BandHeroCard";
-import { RETURN_TRIPS_FIRST } from "@/lib/flags";
+import { retourEnPremier } from "@/lib/flags";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 import { urlJob } from "@/lib/routes/jobs";
 
 /* -------------------------------------------------------------------------- */
@@ -95,6 +96,10 @@ function ClientDashboard({
   salutation: string;
 }) {
   const { t } = useAppI18n();
+  // Canal classique fermé (défaut tant que le serveur n'a pas répondu) :
+  // aucune invitation à publier une demande ni à parcourir le fil classique.
+  const canalClassique = useCanalClassiqueOuvert();
+  const retourDAbord = retourEnPremier(canalClassique);
   return (
     <>
       {/* Onboarding Wizard — shown only on first visits */}
@@ -109,14 +114,14 @@ function ClientDashboard({
             {salutation}
           </p>
           <h2 className="text-[21px] font-extrabold leading-[1.25] tracking-heading text-white">
-            {RETURN_TRIPS_FIRST
-              ? t.dashboard.clientCTAFirst
-              : t.dashboard.clientCTA}
+            {retourDAbord ? t.dashboard.clientCTAFirst : t.dashboard.clientCTA}
           </h2>
           <p className="max-w-lg text-[14.5px] leading-[1.5] text-on-blue-300">
-            {RETURN_TRIPS_FIRST
-              ? t.dashboard.clientCTAFirstDesc
-              : t.dashboard.clientCTADesc}
+            {!canalClassique
+              ? t.dashboard.clientCTAReturnOnlyDesc
+              : retourDAbord
+                ? t.dashboard.clientCTAFirstDesc
+                : t.dashboard.clientCTADesc}
           </p>
         </div>
 
@@ -136,19 +141,21 @@ function ClientDashboard({
           />
         </StatTileGrid>
 
-        {RETURN_TRIPS_FIRST ? (
+        {retourDAbord ? (
           <div className="flex flex-col gap-3 sm:flex-row">
             <Link href="/recherche" className="btn-base btn-secondary flex-1">
               <Search className="h-[18px] w-[18px]" strokeWidth={2.2} />
               {t.dashboard.findTripCTA}
             </Link>
-            <Link
-              href="/demandes/nouvelle"
-              className="btn-base btn-ghost-on-blue flex-1"
-            >
-              <PlusCircle className="h-[18px] w-[18px]" strokeWidth={2.2} />
-              {t.dashboard.publishAd}
-            </Link>
+            {canalClassique && (
+              <Link
+                href="/demandes/nouvelle"
+                className="btn-base btn-ghost-on-blue flex-1"
+              >
+                <PlusCircle className="h-[18px] w-[18px]" strokeWidth={2.2} />
+                {t.dashboard.publishAd}
+              </Link>
+            )}
           </div>
         ) : (
           <Link href="/demandes/nouvelle" className="btn-base btn-secondary">
@@ -177,10 +184,12 @@ function ClientDashboard({
             <div className="px-6 py-8 text-center text-neutral-400 text-sm">
               {t.dashboard.noAdsYet}{" "}
               <Link
-                href="/demandes/nouvelle"
+                href={canalClassique ? "/demandes/nouvelle" : "/recherche"}
                 className="text-brand-600 font-medium"
               >
-                {t.dashboard.publishAdLink}
+                {canalClassique
+                  ? t.dashboard.publishAdLink
+                  : t.dashboard.findTripLink}
               </Link>
             </div>
           ) : (
@@ -240,6 +249,9 @@ function TransporterDashboard({
   salutation: string;
 }) {
   const { t } = useAppI18n();
+  // Canal classique fermé (défaut tant que le serveur n'a pas répondu) :
+  // aucune invitation à publier une demande ni à parcourir le fil classique.
+  const canalClassique = useCanalClassiqueOuvert();
   return (
     <>
       {/* Onboarding Wizard — shown only on first visits */}
@@ -307,9 +319,16 @@ function TransporterDashboard({
         </StatTileGrid>
 
         <div className="flex flex-col gap-3 sm:flex-row">
-          <Link href="/demandes" className="btn-base btn-secondary flex-1">
+          {/* Canal classique fermé : plus de fil de demandes à parcourir,
+              le transporteur traite les demandes reçues sur ses retours. */}
+          <Link
+            href={canalClassique ? "/demandes" : "/demandes-recues"}
+            className="btn-base btn-secondary flex-1"
+          >
             <Search className="h-[18px] w-[18px]" strokeWidth={2.2} />
-            {t.dashboard.browseMissions}
+            {canalClassique
+              ? t.dashboard.browseMissions
+              : t.dashboard.viewReceivedRequests}
           </Link>
           <Link
             href="/retours/nouveau"
@@ -446,8 +465,13 @@ function TransporterDashboard({
             {recentJobs.length === 0 ? (
               <div className="px-6 py-8 text-center text-neutral-400 text-sm">
                 {t.dashboard.noRecentMissions}{" "}
-                <Link href="/demandes" className="text-brand-600 font-medium">
-                  {t.dashboard.browseMissionsLink}
+                <Link
+                  href={canalClassique ? "/demandes" : "/retours/nouveau"}
+                  className="text-brand-600 font-medium"
+                >
+                  {canalClassique
+                    ? t.dashboard.browseMissionsLink
+                    : t.dashboard.proposeReturnTripLink}
                 </Link>
               </div>
             ) : (

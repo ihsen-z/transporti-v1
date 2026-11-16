@@ -3,6 +3,8 @@
 import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
+import { useAuth } from "@/hooks/useAuth";
 
 /**
  * J3 — Titres de pages par route.
@@ -15,6 +17,9 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 export default function DocumentTitle() {
   const pathname = usePathname();
   const { t } = useAppI18n();
+  const { online_payment_enabled: paiementEnLigne } = usePlatformConfig();
+  const { user } = useAuth();
+  const estTransporteur = user?.role?.toUpperCase() === "TRANSPORTER";
 
   useEffect(() => {
     const n = t.nav;
@@ -30,7 +35,15 @@ export default function DocumentTitle() {
       ["/messages", n.messages],
       ["/notifications", n.notifications],
       ["/litiges", n.disputes],
-      ["/portefeuille", n.wallet],
+      // Même libellé que la barre latérale (espèces seules ou non).
+      [
+        "/portefeuille",
+        paiementEnLigne
+          ? n.wallet
+          : estTransporteur
+            ? n.commissions
+            : n.myPayments,
+      ],
       ["/documents", n.verification],
       ["/help", n.helpCenter],
       ["/compte", n.settings],
@@ -43,7 +56,7 @@ export default function DocumentTitle() {
     // Le layout racine définit le template "%s | Transporti" pour les titres
     // servis via metadata ; ici on pose le titre complet côté client.
     document.title = hit ? `${hit[1]} | Transporti` : "Transporti";
-  }, [pathname, t]);
+  }, [pathname, t, paiementEnLigne, estTransporteur]);
 
   return null;
 }

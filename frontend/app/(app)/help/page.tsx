@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 import type { LucideIcon } from "lucide-react";
 
 /* -------------------------------------------------------------------------- */
@@ -37,6 +38,7 @@ export default function HelpCenterPage() {
   const { t } = useAppI18n();
   const { user } = useAuth();
   const h = t.help;
+  const canalClassique = useCanalClassiqueOuvert();
 
   // Onglet par défaut = rôle de l'utilisateur connecté.
   const isTransporter = user?.role?.toUpperCase() === "TRANSPORTER";
@@ -85,7 +87,10 @@ export default function HelpCenterPage() {
       icon: Shield,
       title: h.tVerifTitle,
       questions: [
-        { q: h.tVerifQ1, a: h.tVerifA1 },
+        {
+          q: h.tVerifQ1,
+          a: canalClassique ? h.tVerifA1 : h.tVerifA1Return,
+        },
         { q: h.tVerifQ2, a: h.tVerifA2 },
       ],
     },

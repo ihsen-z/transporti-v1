@@ -43,6 +43,7 @@ import {
   type TripRequest,
 } from "@/lib/services/tripRequests";
 import { urlJob } from "@/lib/routes/jobs";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 
 /* -------------------------------------------------------------------------- */
 /*  Types & Helpers                                                            */
@@ -358,6 +359,7 @@ const MissionCard = React.memo(function MissionCardInner({
 
 function TransporterMissionsView() {
   const { t } = useAppI18n();
+  const canalClassique = useCanalClassiqueOuvert();
   const { showToast } = useToast();
   const [missions, setMissions] = useState<TransporterMission[]>([]);
   const [loading, setLoading] = useState(true);
@@ -600,14 +602,19 @@ function TransporterMissionsView() {
               {t.jobsList.emptyMissionsTitle}
             </p>
             <p className="text-sm text-neutral-400 max-w-md mx-auto">
-              {t.jobsList.emptyMissionsDesc}
+              {canalClassique
+                ? t.jobsList.emptyMissionsDesc
+                : t.jobsList.emptyMissionsDescReturn}
             </p>
             <div className="flex gap-3 justify-center mt-5">
+              {/* Canal classique fermé : demandes reçues au lieu du fil. */}
               <Link
-                href="/demandes"
+                href={canalClassique ? "/demandes" : "/demandes-recues"}
                 className="inline-flex items-center gap-2 text-sm font-semibold text-white bg-blue-700 hover:bg-blue-800 px-5 py-2.5 rounded-xl transition-all hover:shadow-md hover:-translate-y-0.5"
               >
-                {t.jobsList.findMission}
+                {canalClassique
+                  ? t.jobsList.findMission
+                  : t.jobsList.viewReceivedRequests}
                 <ArrowRight className="w-4 h-4 rtl:-scale-x-100" />
               </Link>
               {/* La publication d'un retour vit sur /retours/nouveau depuis
@@ -651,6 +658,7 @@ function TransporterMissionsView() {
 
 function ClientJobsView() {
   const { t } = useAppI18n();
+  const canalClassique = useCanalClassiqueOuvert();
   const { data: jobs, loading } = useJobs();
   const [clientPage, setClientPage] = useState(1);
   const CLIENT_PAGE_SIZE = 10;
@@ -724,12 +732,14 @@ function ClientJobsView() {
             {t.jobsList.clientSubtitle}
           </p>
         </div>
+        {/* Canal classique fermé : un nouvel envoi commence par la
+            recherche d'un trajet retour. */}
         <Link
-          href="/demandes/nouvelle"
+          href={canalClassique ? "/demandes/nouvelle" : "/recherche"}
           className="bg-brand-700 hover:bg-brand-800 text-white font-semibold px-6 py-3 rounded-lg shadow-sm transition-colors flex items-center gap-2"
         >
           <Plus className="w-5 h-5" />
-          {t.jobsList.newTransport}
+          {canalClassique ? t.jobsList.newTransport : t.jobsList.findTrip}
         </Link>
       </div>
 
@@ -833,12 +843,16 @@ function ClientJobsView() {
           <h3 className="text-[17px] font-extrabold tracking-heading text-ink-900 mb-2">
             {t.jobsList.clientEmptyTitle}
           </h3>
-          <p className="text-neutral-600 mb-4">{t.jobsList.clientEmptyDesc}</p>
+          <p className="text-neutral-600 mb-4">
+            {canalClassique
+              ? t.jobsList.clientEmptyDesc
+              : t.jobsList.clientEmptyDescReturn}
+          </p>
           <Link
-            href="/demandes/nouvelle"
+            href={canalClassique ? "/demandes/nouvelle" : "/recherche"}
             className="bg-brand-700 hover:bg-brand-800 text-white font-medium px-6 py-2 rounded-lg transition-colors inline-block"
           >
-            {t.jobsList.clientEmptyCta}
+            {canalClassique ? t.jobsList.clientEmptyCta : t.jobsList.findTrip}
           </Link>
         </div>
       ) : (

@@ -15,8 +15,8 @@ import { BookingSummary } from "@/components/booking/BookingSummary";
 import { PaymentMethodSelector } from "@/components/booking/PaymentMethodSelector";
 import { PaymentGateway } from "@/components/booking/PaymentGateway";
 import { EscrowBadge } from "@/components/booking/EscrowBadge";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
-import { moyenDePaiementParDefaut } from "@/lib/services/paymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
+import { moyenDePaiementParDefaut } from "@/lib/services/platformConfig";
 import LoadingState from "@/components/ui/LoadingState";
 import {
   ArrowLeft,
@@ -71,7 +71,7 @@ export default function BookingPage() {
     : undefined;
 
   const [step, setStep] = useState<BookingStep>("review");
-  const paymentConfig = usePaymentConfig();
+  const paymentConfig = usePlatformConfig();
   const [paymentMethod, setPaymentMethod] = useState<"DIGITAL" | "COD">(
     moyenDePaiementParDefaut(paymentConfig),
   );

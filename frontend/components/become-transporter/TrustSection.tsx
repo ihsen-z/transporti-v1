@@ -2,6 +2,7 @@
 
 import { ShieldCheck, Banknote, BadgeCheck } from "lucide-react";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
+import { useCanalClassiqueOuvert } from "@/hooks/usePlatformConfig";
 
 /**
  * Ce que la vérification débloque réellement.
@@ -24,9 +25,17 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 export function TrustSection() {
   const { t } = useAppI18n();
   const b = t.becomeTransporter;
+  // Canal classique fermé : il n'y a plus d'offre à rendre acceptable.
+  const canalClassique = useCanalClassiqueOuvert();
 
   const points = [
-    { icone: ShieldCheck, titre: b.trustOffers, texte: b.trustOffersDesc },
+    canalClassique
+      ? { icone: ShieldCheck, titre: b.trustOffers, texte: b.trustOffersDesc }
+      : {
+          icone: ShieldCheck,
+          titre: b.trustOffersReturn,
+          texte: b.trustOffersReturnDesc,
+        },
     { icone: Banknote, titre: b.trustCash, texte: b.trustCashDesc },
     { icone: BadgeCheck, titre: b.trustBadge, texte: b.trustBadgeDesc },
   ];

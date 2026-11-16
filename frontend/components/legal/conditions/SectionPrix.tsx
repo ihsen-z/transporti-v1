@@ -1,5 +1,5 @@
 import { Section, Liste, Encadre } from "@/components/legal/LegalPage";
-import type { PaymentConfig } from "@/lib/services/paymentConfig";
+import type { PlatformConfig } from "@/lib/services/platformConfig";
 
 /** Montant en dinars, au format français (ex. « 1 500 »). */
 function tnd(montant: number): string {
@@ -14,7 +14,7 @@ function tnd(montant: number): string {
  * plafonds viennent aussi du serveur, pour ne jamais annoncer une valeur
  * périmée.
  */
-export function SectionPrix({ config }: { config: PaymentConfig }) {
+export function SectionPrix({ config }: { config: PlatformConfig }) {
   const { cod_max_amount, commission_debt_limit, online_payment_enabled } =
     config;
 

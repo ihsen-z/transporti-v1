@@ -11,7 +11,7 @@ import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
 import type { JobDetail } from "@/lib/types/jobs";
 import type { MoyenDePaiement } from "@/lib/services/jobDetail";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 interface Props {
   ouvert: boolean;
@@ -53,7 +53,8 @@ export function TripRequestDialog({
 }: Props) {
   const { t } = useAppI18n();
   // Plafond espèces lu sur le serveur (il était écrit 300 en dur ici).
-  const { cod_max_amount: codMax, online_payment_enabled } = usePaymentConfig();
+  const { cod_max_amount: codMax, online_payment_enabled } =
+    usePlatformConfig();
 
   if (!ouvert) return null;
 

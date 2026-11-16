@@ -20,6 +20,7 @@ import {
 import StatusBadge from "@/components/admin/StatusBadge";
 import { formatCurrency, formatDate } from "@/lib/format";
 import { getAdminJobDetail } from "@/lib/services/admin";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
 
 /* -------------------------------------------------------------------------- */
 /*  Types                                                                      */
@@ -108,6 +109,8 @@ export default function AdminJobDetailPage() {
   const params = useParams();
   const router = useRouter();
   const jobId = params?.id;
+  // Espèces seules : pas de séquestre, donc pas de lignes « Escrow ».
+  const { online_payment_enabled: paiementEnLigne } = usePlatformConfig();
 
   const [job, setJob] = useState<JobDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -410,7 +413,7 @@ export default function AdminJobDetailPage() {
                   {formatCurrency(job.price || 0)}
                 </span>
               </div>
-              {job.escrow && (
+              {paiementEnLigne && job.escrow && (
                 <>
                   <div className="flex items-center justify-between">
                     <span className="text-neutral-600 text-sm">Escrow</span>
@@ -426,7 +429,7 @@ export default function AdminJobDetailPage() {
                   </div>
                 </>
               )}
-              {!job.escrow && (
+              {paiementEnLigne && !job.escrow && (
                 <p className="text-neutral-400 italic text-sm">
                   Pas d&apos;escrow
                 </p>

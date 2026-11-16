@@ -7,8 +7,9 @@ import { Check, Lock } from "lucide-react";
 import { useScrollAnimation } from "@/hooks/useScrollAnimation";
 import { useAppI18n } from "@/lib/i18n/useAppI18n";
 import { interpolate } from "@/lib/i18n/interpolate";
-import { usePaymentConfig } from "@/hooks/usePaymentConfig";
-import { RETURN_TRIPS_FIRST } from "@/lib/flags";
+import { usePlatformConfig } from "@/hooks/usePlatformConfig";
+import { retourEnPremier } from "@/lib/flags";
+import { pourcentage, TAUX_COMMISSION_AFFICHES } from "@/lib/commissions";
 
 /* ============================================================================
    Scroll-Animated Section Wrapper
@@ -41,7 +42,11 @@ export default function Home() {
   const { t } = useAppI18n();
   const l = t.landing;
   // La FAQ cite le plafond espèces du serveur (route publique).
-  const { cod_max_amount } = usePaymentConfig();
+  const { cod_max_amount, classic_channel_enabled: canalClassique } =
+    usePlatformConfig();
+  // Canal classique fermé (défaut tant que le serveur n'a pas répondu) : la
+  // page ne parle que du parcours trajet retour.
+  const retourDAbord = retourEnPremier(canalClassique);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -64,18 +69,18 @@ export default function Home() {
                   {l.badge}
                 </div>
                 <h1 className="mb-5 text-[34px] font-extrabold leading-[1.12] tracking-title sm:text-[44px]">
-                  {RETURN_TRIPS_FIRST ? l.pivotHeroTitle1 : l.heroTitle1}
+                  {retourDAbord ? l.pivotHeroTitle1 : l.heroTitle1}
                   <br />
                   <span className="text-green-300">
-                    {RETURN_TRIPS_FIRST ? l.pivotHeroTitle2 : l.heroTitle2}
+                    {retourDAbord ? l.pivotHeroTitle2 : l.heroTitle2}
                   </span>
                 </h1>
                 <p className="mb-8 max-w-lg text-[16px] leading-[1.55] text-on-blue-300">
-                  {RETURN_TRIPS_FIRST ? l.pivotHeroDesc : l.heroDesc}
+                  {retourDAbord ? l.pivotHeroDesc : l.heroDesc}
                 </p>
 
                 {/* CTA Buttons — pivot: dual promise (transporter + client) */}
-                {RETURN_TRIPS_FIRST ? (
+                {retourDAbord ? (
                   <>
                     <div className="flex flex-wrap gap-3">
                       <Link
@@ -279,15 +284,15 @@ export default function Home() {
               {[
                 {
                   step: "1",
-                  title: l.step1Title,
-                  desc: l.step1Desc,
+                  title: canalClassique ? l.step1Title : l.retStep1Title,
+                  desc: canalClassique ? l.step1Desc : l.retStep1Desc,
                   color: "bg-blue-700",
                   bgColor: "bg-primary-50",
                 },
                 {
                   step: "2",
-                  title: l.step2Title,
-                  desc: l.step2Desc,
+                  title: canalClassique ? l.step2Title : l.retStep2Title,
+                  desc: canalClassique ? l.step2Desc : l.retStep2Desc,
                   color: "bg-green-500",
                   bgColor: "bg-accent-50",
                 },
@@ -412,7 +417,16 @@ export default function Home() {
               {[
                 { q: l.faq1Q, a: l.faq1A },
                 { q: l.faq2Q, a: l.faq2A },
-                { q: l.faq3Q, a: l.faq3A },
+                {
+                  q: l.faq3Q,
+                  // Canal classique fermé : toute mission naît d'un trajet
+                  // retour, donc au taux retour (source : lib/commissions.ts).
+                  a: canalClassique
+                    ? l.faq3A
+                    : interpolate(l.faq3AReturn, {
+                        taux: pourcentage(TAUX_COMMISSION_AFFICHES.RETURN_TRIP),
+                      }),
+                },
                 {
                   q: l.faq4Q,
                   a: interpolate(l.faq4A, { cap: cod_max_amount }),
@@ -465,8 +479,13 @@ export default function Home() {
                 {l.ctaSubtitle}
               </p>
               <div className="flex flex-wrap justify-center gap-4">
+                {/* Canal classique fermé : on cherche un trajet retour. */}
                 <Link
-                  href="/login?redirect=/demandes/nouvelle"
+                  href={
+                    canalClassique
+                      ? "/login?redirect=/demandes/nouvelle"
+                      : "/login?redirect=/recherche"
+                  }
                   className="btn-base min-h-[56px] rounded-cta bg-white px-8 text-[16.5px] text-blue-700 shadow-glass transition-colors hover:bg-blue-50 active:translate-y-px"
                   id="footer-cta-publish"
                 >
@@ -483,7 +502,7 @@ export default function Home() {
                       d="M12 4v16m8-8H4"
                     />
                   </svg>
-                  {l.ctaPublish}
+                  {canalClassique ? l.ctaPublish : l.pivotCtaClient}
                 </Link>
                 <Link
                   href="/register"
